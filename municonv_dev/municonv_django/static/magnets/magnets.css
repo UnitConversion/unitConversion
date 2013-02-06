@@ -1,0 +1,35 @@
+#sideNaviArea{
+    width: 35%;
+    height: 90%; 
+    vertical-align: bottom;
+    float: left;
+    margin: 5px 5px 0px 10px;
+    position: relative;
+    bottom: 0px;
+/*    border: 2px solid green;  */
+    background-color: #dddddd; 
+}
+#magNavArea {
+    position: relative;
+    padding: 10px;
+    height: 20%;
+    overflow: auto;
+    background-color: #ddddaa; 
+    border: 2px solid blue;  
+}
+#inventoryNavArea {
+    position: relative;
+    padding: 10px;
+    height: 30%;
+    overflow: auto;
+    background-color: #ddddff; 
+    border: 2px solid blue;  
+}
+#municonvNavArea {
+    position: relative;
+    padding: 10px;
+    height: 40%;
+    overflow: auto;
+    background-color: #dddddd; 
+    border: 2px solid blue; 
+}

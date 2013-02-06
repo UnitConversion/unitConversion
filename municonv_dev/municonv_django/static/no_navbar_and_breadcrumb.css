@@ -1,0 +1,12 @@
+.navbar {
+    display: none;
+}
+
+/* space for navbar is made by offsetting the body, remove this as well */
+body {
+	padding-top: 0px;
+}
+
+.breadcrumb {
+    display: none;
+}

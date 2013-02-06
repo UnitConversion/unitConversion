@@ -1,0 +1,68 @@
+<html>
+    <head>
+        <title>Magnet Data Service</title>
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" href="/static/irmisP1.css">
+        <link rel="stylesheet" href="/static/magnets/magnets.css">
+        <script type="text/javascript" src="/static/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/viewcommon.js"></script>
+        <script type="text/javascript" src="/static/magnets/magnets.js"></script>
+    </head>
+
+    <body>
+        <div id="title" class="pageTitle">IRMIS3 Magnet Data Service</div>
+        <div class="help">
+        <span class="horSpacing"><a href="/magnets/web/magnets_help.html">Help</a></span>
+        </div>
+
+        {% if error %}
+        <p style="color: red;">
+            Please submit a search term.
+        </p>
+        {% endif %}
+
+       <div id="sideNaviArea">
+            <div id="magNavArea">
+                <span class="boldem">Select Magnet Type</span>
+                <form action="/magnets/web/" method="get">
+                    {% for ii in inventory_instance_types %}
+<!--                     <input type="radio" name="cmpnt_type" value="{{ii}}" class="radio1"
+                    {% ifequal selected ii %} checked {% endifequal %} >
+                    {{ii}}
+                    <br/> -->
+                    <input type="checkbox" name="cmpnt_type" value="{{ii}}">
+                    {{ii}}
+                    <br/>
+                    {% endfor %}
+                    <br />
+                    Enter serial number #:
+                    <input type="text" name="serialno" value="{{serialno}}">
+                    <br />
+                    <input type="submit" value="get magnets instances">
+                </form>
+            </div>
+            <div id="inventoryNavArea">
+                <span class="boldem">Magnets found:</span>
+<!--                 {% if inventory_instances %} -->
+               
+                <br/>
+                {% for ci in inventory_instances %}
+                <input type="button" id="{{ci.0}}" value="{{ci.1}} s/n: {{ci.2}}" onClick = "ajgetcidesc(event);">
+                <br />
+                <!-- #?# need 'event' above to pass the event object in firefox. -->
+                <!-- #?# but window.event is not recognized as a global event in getpvdesc -->
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div id='municonvNavArea'>
+                <span class="boldem">Convert units:</span>                
+                <br/>
+                something should be here.
+            </div>
+        </div>
+        <div id="content">
+            <div id="content1"> </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,61 @@
+{% extends "user_interface/template.base.html" %}
+{% load verbatim %}
+
+
+{############################ META TITLE ############################}
+{% block meta_title %}{% block title %}Edit{% endblock %}{% endblock %}
+
+{############################ ADD HEADER CONTENT (CSS) ############################}
+{% block add_header_content %}
+
+	<meta http-equiv="cache-control" content="no-cache" />
+	<link rel="stylesheet" href="/static/irmisP1.css">
+	<link rel="stylesheet" href="/static/no_navbar_and_breadcrumb.css">
+ 	<script type="text/javascript" src="/static/jquery.min.js"></script>
+ 	<script type="text/javascript" src="/static/viewcommon.js"></script>
+ 	<script type="text/javascript" src="/static/uicommon.js"></script>
+
+    <style type="text/css">        
+        
+		#title {
+			margin-bottom: 16px;
+		}
+		     
+    </style>
+
+	{% block head_include %}{% endblock %}
+
+{% endblock %}
+
+
+{############################ ADD FOOTER CONTENT (JAVASCRIPT) ############################}
+{% block add_footer_content %}
+{% endblock %}
+
+
+
+
+{############################ PAGE CONTENT ############################}
+{% block content %}
+
+	<div id="main" class="scrollable">
+		<form name="form" class="well">
+			<input type="hidden" name="callback" id="callback" />
+			{% block form_inputs %}{% endblock %}
+			<div>
+				<h4><div id="title" class="nowrap">{% block page_title %}Add{% endblock %}</div></h4>
+			
+				{% block mainArea %}
+				<div id="mainArea" class="wideContent"></div>
+				{% endblock %}
+				
+			</div>
+		</form>
+		<div align="center" class="panelElement">
+	 		<input type="button" class="btn" value="Update" onclick="commit();">
+			<input type="button" class="btn" value="Cancel" onclick="cancel();">
+		</div>
+	</div>
+	{% block footerArea %}{% endblock %}
+
+{% endblock %}

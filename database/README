@@ -1,0 +1,31 @@
+The database schemas were derived from IRMIS3 v0_2 from pyirmis project with the following modification:
+$ hg diff v0_2.sql 
+diff -r fdf9eb0eb5eb database/v0_2/v0_2.sql
+--- a/database/v0_2/v0_2.sql    Fri Jan 18 11:27:33 2013 -0800
++++ b/database/v0_2/v0_2.sql    Mon Feb 04 16:58:52 2013 -0500
+@@ -633,6 +633,7 @@
+   `install_id` int(11) NOT NULL AUTO_INCREMENT,
+   `cmpnt_type_id` int(11) NOT NULL DEFAULT '0',
+   `field_name` varchar(255),
++  `location` varchar(255),
+   PRIMARY KEY(`install_id`),
+   CONSTRAINT `Ref_99` FOREIGN KEY (`cmpnt_type_id`)
+     REFERENCES `cmpnt_type`(`cmpnt_type_id`)
+@@ -909,7 +910,7 @@
+   `inventory_prop_id` int(11) NOT NULL AUTO_INCREMENT,
+   `inventory_id` int(11) NOT NULL,
+   `inventory_prop_tmplt_id` int(11) NOT NULL DEFAULT '0',
+-  `inventory_prop_value` varchar(255),
++  `inventory_prop_value` varchar(4096),
+   PRIMARY KEY(`inventory_prop_id`),
+   INDEX `idx_cmpnt_id`(`inventory_id`),
+   CONSTRAINT `Ref_71` FOREIGN KEY (`inventory_id`)
+@@ -989,7 +990,7 @@
+   `cmpnt_type_prop_id` int(11) NOT NULL AUTO_INCREMENT,
+   `cmpnt_type_id` int(11) NOT NULL DEFAULT '0',
+   `cmpnt_type_prop_type_id` int(11),
+-  `cmpnt_type_prop_value` varchar(255),
++  `cmpnt_type_prop_value` varchar(4096),
+   PRIMARY KEY(`cmpnt_type_prop_id`),
+   CONSTRAINT `Ref_188` FOREIGN KEY (`cmpnt_type_prop_type_id`)
+     REFERENCES `cmpnt_type_prop_type`(`cmpnt_type_prop_type_id`)

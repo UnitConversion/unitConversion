@@ -1,0 +1,357 @@
+/*
+* {margin: 0;}
+aqua, black, blue, fuchsia, gray, green, lime, maroon, 
+navy, olive, orange, purple, red, silver, teal, white, and yellow*/
+body, html {
+    height:100%;
+    margin: 0px auto;
+    overflow-y: hidden ! important; 
+    overflow-x: auto ! important; 
+ 
+}
+
+.body {
+    font-family: georgia;
+    margin: 0px;
+    padding: 0px;
+    border: 5px solid olive;
+}
+.formX {
+	height: 30%;
+}
+.pageTitle {
+	margin: 16px 0px 4px 0px;
+	text-align: center;
+	font-size: 30px;
+	width: 100%;
+	color: blue;
+	border-top: 2px solid yellow; 
+	border-bottom: 2px solid yellow; 
+
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+#leftNavArea {
+    width: 35%;
+    height: 90%; 
+    vertical-align: bottom;
+    float: left;
+    margin: 5px 5px 0px 10px;
+    position: relative;
+    bottom: 0px;
+/*    border: 2px solid green;  */
+    background-color: #ccffcc; 
+}
+
+.topNavArea {
+    background-color: #aaffaa; 
+	border: 5px solid #aaffaa;
+	border-right-width: 10px;
+	border-left-width: 10px;
+	
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#leftNavArea1 {
+    position: relative;
+    padding: 10px;
+    height: 30%;
+	overflow: auto;
+    background-color: #aaffaa; 
+/*    border: 2px solid blue;  */
+}
+#leftNavArea2 {
+    position: relative;
+    padding: 10px;
+    height: 30%;
+	overflow: auto;
+    background-color: #ddddff; 
+/*    border: 2px solid black;  */
+}
+#leftNavArea3 {
+    position: relative;
+    padding: 10px;
+    height: 20%;
+	overflow: auto;
+    background-color: #dddddd; 
+/*    border: 2px solid grey; */
+}
+#content {
+	position: relative;
+    width: 60%;
+    height: 88%;   
+    vertical-align: top;
+    float: left;
+    margin: 5px 5px 0px 0px;
+/*    background-color: orange; */
+    border: 2px solid orange;
+/*    overflow: auto; */
+}
+#content1 {
+    position: relative;
+    padding: 10px;
+    overflow: auto;
+    height: 97%;
+    overflow: auto;
+/*    background-color: maroon; */
+}
+#content2 {
+    position: relative;
+    padding: 10px;
+    overflow: auto;
+    height: 50%;
+    overflow: auto;
+/*    background-color: maroon; */
+}
+
+.wideContent {
+	position: relative;
+    width: 100%;
+    vertical-align: top;
+    border: 2px solid orange;
+
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.pvtext {
+	width: 100%;
+	height: 75px;
+	border: 2px solid black;
+
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.boldem {
+	font-weight: bold;
+	font-style: italic;
+	color: blue; 
+}
+
+.boldem2 {
+	font-weight: bold;
+	font-style: italic;
+	font-size:120%
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.searchResults {
+
+    padding: 10px;
+    height: 100%;
+	overflow: auto;
+
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.buttonGroup {
+	text-align: center; 
+}
+
+.sideButton {
+	text-align: right; 
+}
+
+.dataTable {
+	width: 100%;
+	border: 1px solid #a0a0a0;
+	border-spacing: 0px;
+}
+
+.dataTable th,
+.dataTable td {
+	border: 1px solid #a0a0a0;
+}
+
+.layoutTable {
+	width:100%;
+	border-spacing: 0px;
+}
+
+.layoutTable td {
+	border: none;
+	padding: 0px;
+}
+
+.content {
+    border: 2px solid orange;
+    margin: 5px 5px 5px 5px;
+}
+
+.content td {
+    padding: 2px;
+}
+
+.mainText {
+	font-weight:bold;
+}
+
+.textSpacing {
+	padding-right:25px ! important;
+}
+
+.propertyName {
+	white-space: nowrap;
+	font-weight: bold;
+	font-style: italic;
+	color: blue; 
+}
+
+.disabled {
+	color: grey; 
+}
+
+.disabled a:link {
+	color: grey; 
+}
+
+.help {
+    text-align: right;
+    margin: 0px 8px 0px 0px;
+}
+
+.scrollable {
+    overflow-y: auto ! important; 
+    overflow-x: auto ! important; 
+ }
+
+.wideField {
+	width:90%;
+}
+
+.nowrap {
+	white-space: nowrap;
+}
+
+tr.selected td {
+	background-color: #aaffaa
+}
+
+.allWidth {
+	width:100%;
+}
+
+.horSpacing {
+	margin-left: 40px;
+}
+
+.horSpace {
+	margin-left: 10px;
+}
+
+.panel {
+	margin: 0px 10px 16px 10px;
+}
+
+.panelElement {
+	margin: 0px 0px 10px 0px;
+	overflow: auto;
+}
+
+.panelContent {
+	background-color: #dddddd; 
+    padding: 5px 5px 5px 5px;
+}
+
+.subViewContainer {
+	width: 100%;
+	
+	border: 0px;
+
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.subView {
+	border-top: 2px solid black;
+	border-bottom: 2px solid black;
+}
+
+.hidden {
+	visibility: hidden;
+}
+
+.shown {
+	visibility: visible;
+}
+
+.collapsed {
+	display: none;
+}
+
+.border {
+	border :2px solid Silver;
+}
+
+.buttonPanel {
+	padding: 4px 8px 4px 8px;
+}
+
+.warning {
+	color: red;
+}
+
+.well-small {
+	padding: 8px 16px 8px 16px;
+ 	margin-top: 4px;
+}
+
+/* make input fields inside table cells span the whole space */
+td input[type="text"],
+td textarea {
+	/* due to the way boostrap.css operates 100% goes already outside of the cell, so use slightly less */
+	width: 95%;
+}
+
+/* make select fields inside table cells span the whole space */
+td select {
+	width: 95%;
+}
+
+input[type="text"].modified,
+select.modified,
+textarea.modified {
+	/* light yellow, important is set to override boostrap.css */
+	background-color: #ffff80 ! important;
+}
+
+input[type="text"].invalid,
+select.invalid,
+textarea.invalid {
+	/* light red, important is set to override boostrap.css */
+	background-color: #ff8080 ! important;
+}
+
+.spacingBottom {
+	margin-bottom: 8px;
+}
+
+.spacingTop {
+	margin-top: 8px;
+}
+		
+.spacingRight {
+	margin-right: 16px;
+}
+
+.spacingLeft {
+	margin-left: 16px;
+}
