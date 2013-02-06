@@ -1,0 +1,4 @@
+syntax: glob
+municonv_dev/municonv_django/credentials.py
+.pydevproject
+.project
