@@ -76,11 +76,22 @@ def _gettreexml(data):
     xml += '</system>'
     return xml
 
+def _retrievesystemdata(request):
+    res = None
+    try:
+        name = request.GET["name"]
+        res = municonv.retrievesystem(name)
+    except KeyError:
+        res = municonv.retrievesystem()
+    return res
+
 def systemlistweb(request):
-    return systemlist(request)
+    res = _retrievesystemdata(request)
+    return render_to_response("magnets/magnets.html", {'system': res})
 
 def systemlist(request):
-    res = municonv.retrievesystem()
+    res = _retrievesystemdata(request)
+
     if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype='application/xml')
         return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
