@@ -141,7 +141,7 @@ def saveinstall(dfile):
             if len(ctypedata) == 1:
                 ctypeid = ctypedata[0][0]
             if ctypeid != None and invid != None:
-                res = municonv.retrieveinstall(field_name, ctypeid, section)
+                res = municonv.retrieveinstall(field_name, ctype, section)
                 if len(res) == 0:
                     municonv.saveinstall(field_name, ctypeid, section, invid)
             else:
@@ -155,7 +155,7 @@ def saveinstall(dfile):
             if len(ctypedata) == 1:
                 ctypeid = ctypedata[0][0]
             if ctypeid != None:
-                res = municonv.retrieveinstall(field_name, ctypeid, section)
+                res = municonv.retrieveinstall(field_name, ctype, section)
                 if len(res) == 0:
                     municonv.saveinstall(field_name, ctypeid, section)
     

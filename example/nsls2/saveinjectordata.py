@@ -134,7 +134,7 @@ def savesol(fpath):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:
@@ -420,7 +420,7 @@ def savelnqdp(fpath):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:
@@ -683,7 +683,7 @@ def savelbtdpl(fpath):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:
@@ -863,7 +863,7 @@ def savequad1340(fpath):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:
@@ -1049,7 +1049,7 @@ def savequad5200(fpath, section):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:
@@ -1323,7 +1323,7 @@ def savedpl9035(fpath):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:
@@ -1409,7 +1409,7 @@ def saveboosterdata(devname, devsn, designlen, devtype, dtypedesc, paramdict):
         # retrieve install to check whether it exists already.
         res = ()
         try:
-            res = municonv.retrieveinstall(devname[i], ctypeid=ctid, location=section)
+            res = municonv.retrieveinstall(devname[i], ctypename=devtype, location=section)
         except:
             pass
         if len(res) == 0:

@@ -60,11 +60,47 @@ def __wildcardformat(regxval):
 def magnets_help(request):
     return render_to_response("magnets/magnets_help.html")
 
+def _retrievemagnetinfo(request):
+    getcmd = request.GET.copy()
+    if getcmd.has_key('name'):
+        name = getcmd['name']
+    else:
+        name = "*"
+    
+    cmpnt_type = None
+    if getcmd.has_key('cmpnt_type'):
+        cmpnt_type = getcmd['cmpnt_type']
+
+    location = None
+    if getcmd.has_key('system'):
+        location = getcmd['system']
+    
+    if getcmd.has_key('serialno'):
+        # get a list of devices from inventory which have been installed
+        serialno = getcmd['serialno']
+    else:
+        serialno = "*"
+    if name == "*" and location == None:
+        res = municonv.retrieveinventory(serialno, ctypename=cmpnt_type)
+    else:
+        res = municonv.retrieveinstalledinventory(name, serialno, ctypename=cmpnt_type, location=location)
+    return res
+    
 def magnetdevicesweb(request):
-    return magnetdevices(request)
+    res = _retrievemagnetinfo(request)
+    return render_to_response("magnets/magnets.html", {'device': res})
 
 def magnetdevices(request):
-    pass
+    res = _retrievemagnetinfo(request)
+    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
+        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
+    else:
+        data = {}
+        if len(res) >0:
+            for val in res:
+                data[val[1]] = list(val)
+        return HttpResponse(json.dumps(data), mimetype="application/json")
+
 
 def _getxmlheader():
     return '<?xml version="1.0" encoding="iso-8859-1" ?>'
@@ -77,11 +113,11 @@ def _gettreexml(data):
     return xml
 
 def _retrievesystemdata(request):
-    res = None
-    try:
+    getcmd = request.GET.copy()
+    if getcmd.has_key('name'):
         name = request.GET["name"]
         res = municonv.retrievesystem(name)
-    except KeyError:
+    else:
         res = municonv.retrievesystem()
     return res
 

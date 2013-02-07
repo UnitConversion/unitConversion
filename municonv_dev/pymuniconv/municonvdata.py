@@ -480,7 +480,7 @@ class municonvdata(object):
         
         if value:
             value = self.__wildcardformat(value)
-            if ("%" or "_") in value:
+            if "%" in value or "_" in value:
                 sql += " value like %s "
             else:
                 sql += " value = %s "
@@ -559,10 +559,10 @@ class municonvdata(object):
         
         return True
         
-    def retrieveinstall(self, name, ctypeid=None, location=None):
+    def retrieveinstall(self, name, ctypename=None, location=None):
         '''Retrieve installed device name with table id upon giving device name.
         
-        return: tuple of id, field name, and component type id ((id, field name, component type id, location), ...)
+        return: tuple with format as ((id, field name, location, component type name, description), ...)
         '''
         if not isinstance(name, (str, unicode)):
             raise Exception('Device name has to be a string.')
@@ -570,24 +570,29 @@ class municonvdata(object):
         name = self.__wildcardformat(name)
 
         sql = '''
-        select install_id, field_name, cmpnt_type_id, location
+        select install_id, field_name, location, cmpnt_type_name, description
         from install
+        left join cmpnt_type on install.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         where
         '''
         
         if '%' in name or '_' in name:
-            sql += " filed_name like %s "
+            sql += " field_name like %s "
         else:
             sql += " field_name = %s "
         vals = [name]
 
-        if ctypeid:
-            sql += " and cmpnt_type_id = %s "
-            vals.append(ctypeid)
+        if ctypename:
+            ctypename = self.__wildcardformat(ctypename)
+            if "%" in ctypename or "_" in ctypename:
+                sql += " and cmpnt_type_name like %s "
+            else:
+                sql += " and cmpnt_type_name = %s "
+            vals.append(ctypename)
 
         if location:
             location = self.__wildcardformat(location)
-            if ("%" or "_") in location:
+            if "%" in location or "_" in location:
                 sql += " and location like %s "
             else:
                 sql += " and location = %s "
@@ -611,13 +616,20 @@ class municonvdata(object):
         if not isinstance(name, (str, unicode)) or not isinstance(location, (str, unicode)):
             raise Exception('Both device name and location info have to be string.')
 
-        res = self.retrieveinstall(name, ctypeid=ctypeid, location=location)
+        sql = 'select cmpnt_type_name from cmpnt_type where cmpnt_type_id = %s'        
+        cur=self.conn.cursor()
+        cur.execute(sql, (ctypeid,))
+        ctypename = cur.fetchone()
+        if ctypename != None:
+            ctypename=ctypename[0]
+        else:
+            raise ValueError("component type (id=%s) does not exist."%(ctypeid))
+        
+        res = self.retrieveinstall(name, ctypename=ctypename, location=location)
         if len(res) > 0:
             raise Exception('Device (%s) exists already' %(name) )
         
         # For data consistency, using transaction to avoid insertion error
-        
-        cur=self.conn.cursor()
         try:
             # insert device name to install table
             sql = '''
@@ -665,51 +677,39 @@ class municonvdata(object):
         return: tuple of inventory id, serial number like:
             with vendor name, component type name, and component type description if both component type and vendor are given
                 like ((inventory id, serial no, component type name, type description, vendor), ...)
-            or if only component type is given with serial no
-                like ((inventory id, serial no, component type name, type description),...)
-            or if only vendor is given with serial no
-                like ((inventory id, serial no, vendor name), ...)
-            or if serial no is given
-                like ((inventory id, serial no), ...)
-            
         '''
         if not isinstance(serial, (str, unicode)):
             raise Exception('Serial no has to be string.')
 
+        '''select install.install_id, inventory.inventory_id, install.field_name, install.location,
+        inventory.serial_no, 
+        cmpnt_type.cmpnt_type_name, cmpnt_type.description,
+        vendor.vendor_name
+        '''
+        
         serial = self.__wildcardformat(serial)
+        sql = '''
+        select inv.inventory_id, inv.serial_no, ctype.cmpnt_type_name, ctype.description, vendor.vendor_name
+        from inventory inv
+        left join cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
+        left join cmpnttype__vendor ctvendor on ctvendor.cmpnt_type_id = ctype.cmpnt_type_id
+        left join vendor on vendor.vendor_id = ctvendor.vendor_id
+        where inv.serial_no like %s 
+        '''
+        vals = [serial]
         try:
             cur=self.conn.cursor()
-            if ctypename and vendor:
-                # both component type and vendor are provided
-                sql = '''
-                select inv.inventory_id, inv.serial_no, ctype.cmpnt_type_name, ctype.description, vendor.vendor_name
-                from inventory inv
-                left join cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
-                left join cmpnttype__vendor ctvendor on ctvendor.cmpnt_type_id = ctype.cmpnt_type_id
-                left join vendor on vendor.vendor_id = ctvendor.vendor_id
-                where inv.serial_no like %s and ctype.cmpnt_type_name like %s and vendor.vendor_name like %s
-                '''
+#            if ctypename and vendor:
+#                # both component type and vendor are provided
+#                ctypename = self.__wildcardformat(ctypename)
+#                vendor = self.__wildcardformat(vendor)
+#                cur.execute(sql, (serial, ctypename, vendor))
+            if ctypename:
+                sql += ' and ctype.cmpnt_type_name like %s '
                 ctypename = self.__wildcardformat(ctypename)
-                vendor = self.__wildcardformat(vendor)
-                cur.execute(sql, (serial, ctypename, vendor))
-            elif ctypename:
-                # only component type is provided
-                sql = '''
-                select inv.inventory_id, inv.serial_no, ctype.cmpnt_type_name, ctype.description
-                from inventory inv
-                left join cmpnt_type ctype on inv.cmpnt_type_id = ctype.cmpnt_type_id
-                where inv.serial_no like %s and ctype.cmpnt_type_name like %s 
-                '''
-                ctypename = self.__wildcardformat(ctypename)
-                cur.execute(sql, (serial, ctypename))
+                vals.append(ctypename)
             elif vendor:
-                # only vendor is provided
-                sql = '''
-                select inv.inventory_id, inv.serial_no, vendor.vendor_name
-                from inventory inv
-                left join vendor on inv.vendor_id = vendor.vendor_id
-                where inv.serial_no like %s and vendor.vendor_name like %s
-                '''
+                sql += ' and vendor.vendor_name like %s '
                 vendor = self.__wildcardformat(vendor)
                 cur.execute(sql, (serial, vendor))
             else:
@@ -786,58 +786,72 @@ class municonvdata(object):
         self.commit()
         return invid
     
-    def retrieveinstalledinventory(self, name, serial, ctypename=None, vendor=None):
+    def retrieveinstalledinventory(self, name, serial, ctypename=None, vendor=None, location=None):
         '''
         Retrieve devices from inventory what have been installed according given device name, serial number, component type and vendor.
 
         Wildcards are support in all parameters (device name, serial number, component type name, and vendor), 
         which uses "*" for multiple match, and "?" for single character match.
         
-        Return: tuple of property type of component type ((install id, inventory id, device name, serial number), ...).
+        Return: tuple with format like ((install id, inventory id, device name, location, serial number, component type name, description, vendor name), ...).
         '''
-        sql = '''select install.install_id, inventory.inventory_id, install.field_name, inventory.serial_no
+        sql = '''select install.install_id, inventory.inventory_id, install.field_name, install.location,
+        inventory.serial_no, 
+        cmpnt_type.cmpnt_type_name, cmpnt_type.description,
+        vendor.vendor_name
         from install
-        join inventory__install on install.install_id = inventory__install.install_id
-        join inventory on inventory__install.inventory_id = inventory.inventory_id
+        left join inventory__install on install.install_id = inventory__install.install_id
+        left join inventory on inventory__install.inventory_id = inventory.inventory_id
+        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
+        left join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
         '''
-        if ctypename:
-            sql += '''join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-            '''
-        if vendor:
-            sql += '''join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
-            join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
-            '''
+#        if ctypename:
+#            sql += '''join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+#            '''
+#        if vendor:
+#            sql += '''join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
+#            join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
+#            '''
 #        # use raw sql query instead of calling API for efficiency issue.
 #        invres = self.retrieveinventory(serial, ctypename=ctypename, vendor=vendor)
         name = self.__wildcardformat(name)
-        if ("%" or "_") in name:
-            sql += ' install.field_name like %s '
+        if "%" in name or "_" in name:
+            sql += ' where install.field_name like %s '
         else:
-            sql += ' install.field_name = %s '
+            sql += ' where install.field_name = %s '
         vals = [name]
         
         serial = self.__wildcardformat(serial)
-        if ("%" or "_") in serial:
-            sql += ' inventory.serial_no like %s '
+        if "%" in serial or "_" in serial:
+            sql += ' and inventory.serial_no like %s '
         else:
-            sql += ' inventory.serial_no = %s '
+            sql += ' and inventory.serial_no = %s '
         vals.append(serial)
         
         if ctypename:
             ctypename=self.__wildcardformat(ctypename)
-            if ("%" or "_") in ctypename:
-                sql += ' cmpnt_type.cmpnt_type_name like %s '
+            if "%" in ctypename or "_" in ctypename:
+                sql += ' and cmpnt_type.cmpnt_type_name like %s '
             else:
-                sql += ' cmpnt_type.cmpnt_type_name = %s '
+                sql += ' and cmpnt_type.cmpnt_type_name = %s '
             vals.append(ctypename)
         
         if vendor:
             vendor = self.__wildcardformat(vendor)
-            if ("%" or "_") in vendor:
-                sql += ' vendor.vendor_name like %s '
+            if "%" in vendor or "_" in vendor:
+                sql += ' and vendor.vendor_name like %s '
             else:
-                sql += ' vendor.vendor_name = %s '
+                sql += ' and vendor.vendor_name = %s '
             vals.append(vendor)
+        if location:
+            location = self.__wildcardformat(location)
+            if "%" in vendor or "_" in vendor:
+                sql += ' and install.location like %s '
+            else:
+                sql += ' and install.location = %s '
+            vals.append(location)
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
