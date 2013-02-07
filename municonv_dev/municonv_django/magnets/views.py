@@ -61,6 +61,13 @@ def magnets_help(request):
     return render_to_response("magnets/magnets_help.html")
 
 def _retrievemagnetinfo(request):
+    '''
+    acceptable key words:
+     -- name
+     -- cmpnt_type
+     -- system
+     -- serialno
+    '''
     getcmd = request.GET.copy()
     if getcmd.has_key('name'):
         name = getcmd['name']
@@ -81,8 +88,40 @@ def _retrievemagnetinfo(request):
     else:
         serialno = "*"
     if name == "*" and location == None:
+        # convert data format
+        # From: 
+        #inv.inventory_id,
+        #inv.serial_no, 
+        #ctype.cmpnt_type_name, 
+        #ctype.description, 
+        #vendor.vendor_name
+        # To:
+        # ''
+        #inv.inventory_id,
+        # ''
+        # ''
+        #inv.serial_no, 
+        #ctype.cmpnt_type_name, 
+        #ctype.description, 
+        #vendor.vendor_name
         res = municonv.retrieveinventory(serialno, ctypename=cmpnt_type)
+        if len(res) >0:
+            res = list(res)
+            for i in range(len(res)):
+                data = list(res[i])
+                data.insert(1, '')
+                data.insert(1, '')
+                data.insert(0, '')
+                res[i] = data
     else:
+        #install.install_id, 
+        #inventory.inventory_id, 
+        #install.field_name, 
+        #install.location,
+        #inventory.serial_no, 
+        #cmpnt_type.cmpnt_type_name, 
+        #cmpnt_type.description,
+        #vendor.vendor_name
         res = municonv.retrieveinstalledinventory(name, serialno, ctypename=cmpnt_type, location=location)
     return res
     

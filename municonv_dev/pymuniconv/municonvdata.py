@@ -699,11 +699,6 @@ class municonvdata(object):
         vals = [serial]
         try:
             cur=self.conn.cursor()
-#            if ctypename and vendor:
-#                # both component type and vendor are provided
-#                ctypename = self.__wildcardformat(ctypename)
-#                vendor = self.__wildcardformat(vendor)
-#                cur.execute(sql, (serial, ctypename, vendor))
             if ctypename:
                 sql += ' and ctype.cmpnt_type_name like %s '
                 ctypename = self.__wildcardformat(ctypename)
@@ -711,15 +706,8 @@ class municonvdata(object):
             elif vendor:
                 sql += ' and vendor.vendor_name like %s '
                 vendor = self.__wildcardformat(vendor)
-                cur.execute(sql, (serial, vendor))
-            else:
-                # Neither component type nor vendor is provided
-                sql = '''
-                select inventory_id, serial_no
-                from inventory
-                where inventory.serial_no like %s 
-                '''
-                cur.execute(sql, (serial, ))
+                vals.append(vendor)
+            cur.execute(sql, vals)
             res = cur.fetchall()
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' %(serial, e.args[1], e.args[0]))
