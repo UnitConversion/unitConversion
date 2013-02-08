@@ -173,11 +173,27 @@ def systemlist(request):
     else:
         return HttpResponse(json.dumps({ "system": res}), mimetype="application/json")
 
+def _retrieveconversioninfo(request):
+    '''
+    acceptable key words to identify device(s):
+     -- name
+     -- cmpnt_type
+     -- system
+     -- serialno
+     
+     for conversion:
+     -- from (i, b, k)
+     -- to (i, b, k)
+     -- value
+     -- unit
+    '''
+
 def conversionweb(request):
-    return conversion(request)
+    res = _retrieveconversioninfo(request)
+    return render_to_response("magnets/magnets.html", {'system': res})
     
 def conversion(request):
-    res = ['Under development']
+    res = _retrieveconversioninfo(request)
     if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
         return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype='application/xml')
         #return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
