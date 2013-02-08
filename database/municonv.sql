@@ -288,7 +288,7 @@ ENGINE=INNODB;
 DROP TABLE IF EXISTS `machine_mode`;
 
 CREATE TABLE `machine_mode` (
-  `machine_mode_id` int(11) NOT NULL,
+  `machine_mode_id` int(11) NOT NULL AUTO_INCREMENT,
   `machine_mode_name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `machine_mode_description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
   PRIMARY KEY(`machine_mode_id`)
