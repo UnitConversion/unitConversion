@@ -28,35 +28,13 @@ def __wildcardformat(regxval):
     """
     return regxval.replace("*","%").replace("?","_")
 
-#def __getinventorydata(request):
-#    # fetch all component types from inventory
-#    cmpnt_types = municonv.retrievecmpnttype("%")
-#    inventory_instance_types = ['All']
-#    for ici in cmpnt_types:
-#        inventory_instance_types.append(''.join(ici[1]))
-#    inventory_instances = []                #stores the retrieved component instances
-#    serialno = '*'              #default serial number 
-#    get = request.GET.copy()
-#    #first time in- no serialno or inventory_cmpnt_type_req - inventory_instances is empty
-#    if(not(get.has_key('serialno') or get.has_key('cmpnt_type'))):
-#        return inventory_instances, serialno, inventory_instance_types, 'All'
-#    
-#    #filters accompany the web request
-#    #has the effect of treating an empty GET as a '%'
-#    serialno = request.GET['serialno']
-#    #convert * to %, and ? to _
-#    wildcard = __wildcardformat(serialno)
-#
-#    #default to 'All' if no inventory_cmpnt_type_req submitted
-#    inventory_cmpnt_type_req = request.GET.get('cmpnt_type','All')
-#    if inventory_cmpnt_type_req == 'All':
-#        ctis = municonv.retrieveinventory(wildcard)
-#    else:
-#        ctis = municonv.retrieveinventory(wildcard, ctypename=inventory_cmpnt_type_req)
-#    for cti in ctis:
-#        inventory_instances.append(cti)
-#
-#    return inventory_instances, serialno, inventory_instance_types, inventory_cmpnt_type_req
+def _getcmddict(request):
+    '''
+    Retrieve GET request parameters, lower all keys, and return parameter dictionary.
+    '''
+    getcmd = request.GET.copy()
+    return dict((k.lower(), v.lower()) for k,v in getcmd.iteritems())
+
 def magnets_help(request):
     return render_to_response("magnets/magnets_help.html")
 
@@ -68,7 +46,7 @@ def _retrievemagnetinfo(request):
      -- system
      -- serialno
     '''
-    getcmd = request.GET.copy()
+    getcmd = _getcmddict(request)
     if getcmd.has_key('name'):
         name = getcmd['name']
     else:
@@ -152,7 +130,7 @@ def _gettreexml(data):
     return xml
 
 def _retrievesystemdata(request):
-    getcmd = request.GET.copy()
+    getcmd = _getcmddict(request)
     if getcmd.has_key('name'):
         name = request.GET["name"]
         res = municonv.retrievesystem(name)
@@ -176,17 +154,19 @@ def systemlist(request):
 def _retrieveconversioninfo(request):
     '''
     acceptable key words to identify device(s):
-     -- name
-     -- cmpnt_type
-     -- system
-     -- serialno
+     -- id: inventory id
      
-     for conversion:
+    for conversion:
      -- from (i, b, k)
      -- to (i, b, k)
      -- value
      -- unit
     '''
+    getcmd = _getcmddict(request)
+    if getcmd.has_key('from') and getcmd.has_key('to') and getcmd.has_key('value'):
+        print('do conversion here.')
+    else:
+        print('get conversion info only')
 
 def conversionweb(request):
     res = _retrieveconversioninfo(request)

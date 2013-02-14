@@ -19,7 +19,7 @@ except ImportError:
 
 from pymuniconv import municonvdata
 
-from propertytemplate import (proptmplt, proptmpltdesc, proptmplt_chain, proptmpltdesc_chain)
+from pymuniconv.municonvprop import (proptmplt, proptmpltdesc, proptmplt_chain, proptmpltdesc_chain)
 from rdbinfo import (host, user, pw, db)
 
 def __readdata(xlname, sheetno=0, sheetname=None):

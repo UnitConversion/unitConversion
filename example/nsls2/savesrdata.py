@@ -20,7 +20,7 @@ except ImportError:
 from pymuniconv import municonvdata
 
 from devicelist import (dipoletype2draw, quadtype2draw, sexttype2draw, cortype2draw, hcortype2draw, vcortype2draw)
-from propertytemplate import (proptmplt, proptmpltdesc, cmpnttypeproptype, cmpnttypeproptypedesc)
+from pymuniconv.municonvprop import (proptmplt, proptmpltdesc, cmpnttypeproptype, cmpnttypeproptypedesc)
 from rdbinfo import (host, user, pw, db)
 
 draw2typedict = {}

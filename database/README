@@ -1,4 +1,25 @@
 The database schemas were derived from IRMIS3 v0_2 from pyirmis project with the following modification:
+2013.02.08
+Add auto increment for machine_mode table
+
+$ hg diff -r 6:7 database/municonv.sql
+diff -r f817b4639fef -r 640fe1dcd21f database/municonv.sql
+--- a/database/municonv.sql Fri Feb 08 12:06:54 2013 -0500
++++ b/database/municonv.sql Fri Feb 08 12:07:28 2013 -0500
+@@ -288,7 +288,7 @@
+ DROP TABLE IF EXISTS `machine_mode`;
+ 
+ CREATE TABLE `machine_mode` (
+-  `machine_mode_id` int(11) NOT NULL,
++  `machine_mode_id` int(11) NOT NULL AUTO_INCREMENT,
+   `machine_mode_name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
+   `machine_mode_description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
+   PRIMARY KEY(`machine_mode_id`)
+   
+   
+2013.02.06
+Increase the value length
+
 $ hg diff v0_2.sql 
 diff -r fdf9eb0eb5eb database/v0_2/v0_2.sql
 --- a/database/v0_2/v0_2.sql    Fri Jan 18 11:27:33 2013 -0800
