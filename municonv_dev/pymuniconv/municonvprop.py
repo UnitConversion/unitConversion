@@ -13,3 +13,5 @@ proptmpltdesc_chain="unit conversion parameters for NSLS II magnets, which is a 
 cmpnttypeproptype = "Reference Drawing"
 cmpnttypeproptypedesc = "Reference Drawing"
 
+magneticlen = 'design length'
+magneticlendesc = 'design magnetic length'

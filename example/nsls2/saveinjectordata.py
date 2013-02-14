@@ -461,7 +461,7 @@ def savelnqdp(fpath):
             else:
                 paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
 
-        if data[4][10] == 'magnet_len_meas' and data[4][11] != '':
+        if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
             paramdict['magnetic_len_meas'] = data[4][11]
         
         if data[0][1] != "" and data[0][0] == 'Magnet Type':
@@ -594,7 +594,8 @@ def savelbtdpl(fpath):
                  'serial': serial,
                  'energy_default': 0.2,
                  'current_unit': 'A',
-                 'field_unit': 'T-m'
+                 'field_unit': 'T-m',
+                 'magnetic_len_design': designlen[idx]
                  }
     slope = None
     if data[0][10] == 'slope' and data[0][11] != '':
@@ -610,7 +611,7 @@ def savelbtdpl(fpath):
         else:
             paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
 
-    if data[4][10] == 'magnet_len_meas' and data[4][11] != '':
+    if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
         paramdict['magnetic_len_meas'] = data[4][11]
     
     if data[0][1] != "" and data[0][0] == 'Magnet Type':
@@ -783,7 +784,8 @@ def savequad1340(fpath):
                  'serial': serial,
                  'energy_default': 0.2,
                  'current_unit': 'A',
-                 'field_unit': 'T'
+                 'field_unit': 'T',
+                 'magnetic_len_design': designlen[idx]
                  }
     slope = None
     if data[0][10] == 'slope' and data[0][11] != '':
@@ -799,7 +801,7 @@ def savequad1340(fpath):
         else:
             paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
 
-    if data[4][10] == 'magnet_len_meas' and data[4][11] != '':
+    if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
         paramdict['magnetic_len_meas'] = data[4][11]
     
     if data[0][1] != "" and data[0][0] == 'Magnet Type':
@@ -925,7 +927,7 @@ def savequad5200(fpath, section):
                         'BS-Q9': ['BST-MG-QDP-5200', 11, 0],
                         'BS-Q10': ['BST-MG-QDP-5200',12, 0],
                         'BS-Q11': ['BST-MG-QDP-5200',13, 0],
-                        'BS-Q12': ['BST-MG-QDP-5200',14, 0],
+                        'BS-Q12': ['BST-MG-QDP-5200',14, 1],
                         'BS-Q13': ['BST-MG-QDP-5200',15, 0],
                         'BS-Q14': ['BST-MG-QDP-5200',16, 0],
                         'BS-Q2BD1': ['BST-MG-QDP-5200',8, 0],
@@ -1121,7 +1123,7 @@ def savequad5200(fpath, section):
         else:
             raise ValueError("QDP 5200 only available in section LBT/BST.")
 
-        if data[4][10] == 'magnet_len_meas' and data[4][11] != '':
+        if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
             paramdict['magnetic_len_meas'] = data[4][11]
 
         if data[0][1] != "" and data[0][0] == 'Magnet Type':
@@ -1249,7 +1251,8 @@ def savedpl9035(fpath):
                  'serial': serial,
                  'energy_default': 3.0,
                  'current_unit': 'A',
-                 'field_unit': 'T-m'
+                 'field_unit': 'T-m',
+                 'magnetic_len_design': designlen[i]
                  }
     slope = None
     if data[0][10] == 'slope' and data[0][11] != '':
@@ -1265,7 +1268,7 @@ def savedpl9035(fpath):
         else:
             paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
 
-    if data[4][10] == 'magnet_len_meas' and data[4][11] != '':
+    if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
         paramdict['magnetic_len_meas'] = data[4][11]
     
     if data[0][1] != "" and data[0][0] == 'Magnet Type':
@@ -1781,14 +1784,14 @@ if __name__ == '__main__':
     municonv = municonvdata()
     municonv.connectdb(host=host, user=user, pwd=pw, db=db)
 
-    #~/Documents/Work/Magnetic.Measurement/NSLS2/MagnetMeasurements/injector/NewFormat
+    #/Users/shengb/Documents/Work/Magnetic.Measurement/NSLS2/MagnetMeasurements/injector/NewFormat
     rootpath = None
     if sys.version_info[:2] > (3,0):
         rootpath = input ('Please specify the path to the data file directory:')
     else:
         rootpath = raw_input('Please specify the path to the data file directory:')
 
-    rootpath = ''
     main (rootpath)
+    print('Finish saving magnet measurement data.')
 
     
