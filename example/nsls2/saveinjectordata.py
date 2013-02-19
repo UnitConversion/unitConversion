@@ -1382,7 +1382,7 @@ def saveboosterdata(devname, devsn, designlen, devtype, dtypedesc, paramdict):
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
-        municonv.updateinventoryprop(jsondump, ctid, ctypeproptypeid)
+        municonv.updatecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
 
     ####################################
     # save inventory and installation

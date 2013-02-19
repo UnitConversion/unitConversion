@@ -319,7 +319,7 @@ class municonvdata(object):
 
         res = self.retrievecmpnttypeprop(ctypeid, cptypeid)
         if len(res) > 0:
-            raise Exception('A value has been given')
+            raise ValueError('A value has been given')
         
         sql = '''
         insert into cmpnt_type_prop
@@ -562,7 +562,7 @@ class municonvdata(object):
     def retrieveinstall(self, name, ctypename=None, location=None):
         '''Retrieve installed device name with table id upon giving device name.
         
-        return: tuple with format as ((id, field name, location, component type name, description), ...)
+        return: tuple with format as ((id, field name, location, component type name, description, vendor), ...)
         '''
         if not isinstance(name, (str, unicode)):
             raise Exception('Device name has to be a string.')
@@ -570,9 +570,11 @@ class municonvdata(object):
         name = self.__wildcardformat(name)
 
         sql = '''
-        select install_id, field_name, location, cmpnt_type_name, description
+        select install_id, field_name, location, cmpnt_type_name, description, vendor_name
         from install
         left join cmpnt_type on install.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
+        left join vendor on cmpnttype__vendor.vendor_id = vendor.vendor_id
         where
         '''
         
@@ -834,13 +836,14 @@ class municonvdata(object):
             vals.append(vendor)
         if location:
             location = self.__wildcardformat(location)
-            if "%" in vendor or "_" in vendor:
+            if "%" in location or "_" in location:
                 sql += ' and install.location like %s '
             else:
                 sql += ' and install.location = %s '
             vals.append(location)
 
         try:
+            print(sql, vals)
             cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
@@ -927,4 +930,102 @@ class municonvdata(object):
         for r in rawres:
             system.append(r[0])
         return system    
+        
+    def retrievemuniconv4inventory(self, invid, invproptmpltname, invproptmpltdesc):
+        '''
+        Get magnet unit conversion information for given inventory id with inventory property template name and its description.
+        '''
+        sql = '''
+        select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
+        from inventory
+        left join inventory_prop on inventory_prop.inventory_id = inventory.inventory_id
+        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join inventory_prop_tmplt on inventory_prop_tmplt.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        where
+        inventory.inventory_id = %s
+        and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
+        and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
+        '''
+        #'''
+        #select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
+        #from inventory_prop
+        #left join inventory on inventory_prop.inventory_id = inventory.inventory_id
+        #left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        #left join inventory_prop_tmplt on inventory_prop_tmplt.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        #where 
+        #inventory.inventory_id = %s 
+        #and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
+        #and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
+        #'''
+        invproptmpltname = self.__wildcardformat(invproptmpltname)
+        invproptmpltdesc = self.__wildcardformat(invproptmpltdesc)
+        
+        cur = self.conn.cursor()
+        cur.execute(sql, (invid, invproptmpltname, invproptmpltdesc))
+        rawres = cur.fetchone()
+        return rawres
+        
+    def retrievemuniconvbycmpnttype4inventory(self, invid, ctypeproptypetmpltname, ctypeproptmpltdesc):
+        '''
+        Get magnet unit conversion information for given inventory id with component type property template name and its description.
+        This method retrieve a common information for given magnet type.
+        
+        Use this method only when the measurement data for each individual magnet is not available.
+        '''
+        sql = '''
+        select inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
+        from inventory
+        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join cmpnt_type_prop on cmpnt_type_prop.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join cmpnt_type_prop_type on cmpnt_type_prop.cmpnt_type_prop_type_id = cmpnt_type_prop_type.cmpnt_type_prop_type_id
+        where 
+        inventory.inventory_id = %s 
+        and cmpnt_type_prop_type.cmpnt_type_prop_type_name like %s
+        and cmpnt_type_prop_type.cmpnt_type_prop_type_desc like %s
+        '''
+        ctypeproptypetmpltname = self.__wildcardformat(ctypeproptypetmpltname)
+        ctypeproptmpltdesc = self.__wildcardformat(ctypeproptmpltdesc)
+        
+        cur = self.conn.cursor()
+        cur.execute(sql, (invid, ctypeproptypetmpltname, ctypeproptmpltdesc))
+        rawres = cur.fetchone()
+        return rawres
+
+    def retrievemuniconv4install(self, name, ctypeproptypetmpltname, ctypeproptmpltdesc):
+        '''
+        Get magnet unit conversion information for given field name with component type property template name and its description.
+        This method retrieve a common information for given magnet type.
+        '''
+        sql = '''
+        select field_name, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
+        from install
+        left join cmpnt_type on install.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join cmpnt_type_prop on cmpnt_type_prop.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+        left join cmpnt_type_prop_type on cmpnt_type_prop.cmpnt_type_prop_type_id = cmpnt_type_prop_type.cmpnt_type_prop_type_id
+        where 
+        install.field_name like %s 
+        and cmpnt_type_prop_type.cmpnt_type_prop_type_name like %s
+        and cmpnt_type_prop_type.cmpnt_type_prop_type_desc like %s
+        '''
+        name = self.__wildcardformat(name)
+        ctypeproptypetmpltname = self.__wildcardformat(ctypeproptypetmpltname)
+        ctypeproptmpltdesc = self.__wildcardformat(ctypeproptmpltdesc)
+        
+        cur = self.conn.cursor()
+        cur.execute(sql, (name, ctypeproptypetmpltname, ctypeproptmpltdesc))
+        rawres = cur.fetchone()
+        return rawres
+        
+    def retrieveinventoryid(self, name):
+        ''''''
+        sql = '''
+        select field_name, ii.inventory_id 
+        from install 
+        left join inventory__install ii on ii.install_id = install.install_id
+        where field_name like %s;
+        '''
+        name = self.__wildcardformat(name)
+        cur=self.conn.cursor()
+        cur.execute(sql, (name,))
+        return cur.fetchall()
         
