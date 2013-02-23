@@ -181,7 +181,7 @@ def savesol(fpath):
             paramdict['ref_draw'] = data[0][1] 
         
         if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-            paramdict['ref_radius'] = data[5][1]
+            paramdict['ref_radius'] = float(data[5][1])/1000.00
         
         current=[]
         sig_current=[]
@@ -468,7 +468,7 @@ def savelnqdp(fpath):
             paramdict['ref_draw'] = data[0][1] 
         
         if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-            paramdict['ref_radius'] = data[5][1]
+            paramdict['ref_radius'] = float(data[5][1])/1000.00
         
         current=[]
         sig_current=[]
@@ -618,7 +618,7 @@ def savelbtdpl(fpath):
         paramdict['ref_draw'] = data[0][1] 
     
     if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-        paramdict['ref_radius'] = data[5][1]
+        paramdict['ref_radius'] = float(data[5][1])/1000.00
     
     if data[5][10] == 'brho' and data[5][11] != '':
         paramdict['brho'] = data[5][11]
@@ -809,6 +809,10 @@ def savequad1340(fpath):
     
     if data[5][1] != "" and data[5][0] == 'Reference_Radius':
         paramdict['ref_radius'] = data[5][1]
+
+    # need to confirm this function.
+    # format: algorithm id, algorithm expression, field order (1: dipole; 2: Quad, K1; 3: Sext, K2)
+    paramdict['b2k'] = [0, "input/(3.335646*energy)", 2]
     
     current=[]
     sig_current=[]
@@ -1131,6 +1135,7 @@ def savequad5200(fpath, section):
         
         if data[5][1] != "" and data[5][0] == 'Reference_Radius':
             paramdict['ref_radius'] = float(data[5][1])/1000.0
+            paramdict['b2k'] = [0, "input/(%s*3.335646*energy)"%(paramdict['ref_radius']), 2]
         
         current=[]
         field=[]

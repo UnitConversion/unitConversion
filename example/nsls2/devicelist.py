@@ -4,15 +4,15 @@ dipoletype2draw = [
 ]
 
 quadtype2draw = [
-    ['Quad A', '66mm, SNGL COIL, SHORT QUAD', 'QDP-9801'] ,
-    ['Quad B', '66mm, SNGL COIL, SHORT QUAD', 'QDW-9802'] ,
-    ['Quad C', '66mm, DBL COIL, LONG QUAD', 'QDP-9804'] ,
-    ['Quad Cp', '66mm, LONG, DBL COIL KINKED QUAD', 'QDP-9807'] ,
-    ['Quad D', '66mm, DBL COIL, SHORT QUAD', 'QDP-9809'] ,
-    ['Quad D2', '66mm, DBL COIL, SHORT QUAD', 'QDP-9810'] ,
-    ['Quad E', '66mm, DBL COIL, WIDE QUAD', 'QDW-9812'] ,
-    ['Quad E2', '66mm, DBL COIL, WIDE QUAD', 'QDW-9813'] ,
-    ['Quad F', '90mm, DBL COIL, SHORT QUAD', 'QDP-9815'] ,
+    ['Quad A', '66mm, SNGL COIL, SHORT QUAD', 'QDP-9801'],
+    ['Quad B', '66mm, SNGL COIL, SHORT QUAD', 'QDW-9802'],
+    ['Quad C', '66mm, DBL COIL, LONG QUAD', 'QDP-9804'],
+    ['Quad Cp', '66mm, LONG, DBL COIL KINKED QUAD', 'QDP-9807'],
+    ['Quad D', '66mm, DBL COIL, SHORT QUAD', 'QDP-9809'],
+    ['Quad D2', '66mm, DBL COIL, SHORT QUAD', 'QDP-9810'],
+    ['Quad E', '66mm, DBL COIL, WIDE QUAD', 'QDW-9812'],
+    ['Quad E2', '66mm, DBL COIL, WIDE QUAD', 'QDW-9813'],
+    ['Quad F', '90mm, DBL COIL, SHORT QUAD', 'QDP-9815'],
 ]
 
 sexttype2draw = [

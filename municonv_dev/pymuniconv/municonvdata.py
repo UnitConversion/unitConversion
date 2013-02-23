@@ -693,11 +693,13 @@ class municonvdata(object):
         sql = '''
         select inv.inventory_id, inv.serial_no, ctype.cmpnt_type_name, ctype.description, vendor.vendor_name
         from inventory inv
+        left join vendor on vendor.vendor_id = inv.vendor_id
         left join cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
-        left join cmpnttype__vendor ctvendor on ctvendor.cmpnt_type_id = ctype.cmpnt_type_id
-        left join vendor on vendor.vendor_id = ctvendor.vendor_id
         where inv.serial_no like %s 
         '''
+        # adjust order order to avoid unexpected error.
+#        left join cmpnttype__vendor ctvendor on ctvendor.cmpnt_type_id = ctype.cmpnt_type_id
+#        left join vendor on vendor.vendor_id = ctvendor.vendor_id
         vals = [serial]
         try:
             cur=self.conn.cursor()

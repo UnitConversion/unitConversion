@@ -9,15 +9,33 @@ try:
 except ImportError:
     import json
 
-def make_func(expr, revert=False, y=0.0):
+def makei2b(expr, revert=False, y=0.0):
     f=None
     
     if revert:
-        funcstr='''def f(i):
+        funcstr='''def f(input):
         return {e} - {y}
         '''.format(e=expr, y=y)        
     else:
-        funcstr='''def f(i):
+        funcstr='''def f(input):
+        return {e}
+        '''.format(e=expr)
+    exec(funcstr)
+    return f
+
+def makeb2k(expr, revert=False, y=0.0):
+    f=None
+    
+    if revert:
+        funcstr='''def f(input, energy=None):
+        if(energy == None):
+            raise ValueError("Cannnot get beam energy")
+        return {e} - {y}
+        '''.format(e=expr, y=y)        
+    else:
+        funcstr='''def f(input, energy=None):
+        if(energy == None):
+            raise ValueError("Cannnot get beam energy")
         return {e}
         '''.format(e=expr)
     exec(funcstr)
@@ -37,27 +55,34 @@ paramdict={'elem_name': 'LN-Q1',
            'magnetic_len_meas': 0.1204868968,
            'magnetic_len_design': None,
            'ref_radius': 0.00575,
-           'fitting_i2b': 'i2b:0.009933391 + 0.10315794*input:Integrated Gradient (T)',
-           'fitting_b2k': 'b2k:input/radius_ref/(3.335646*energy):input has to be in the unit Tesla-m'
+           'i2b': [0, '0.009933391 + 0.10315794*input'],
+           'b2k': [0, 'input/(%s**2*3.335646*energy)'%(1.234), 3],
            }
 
 jsondump = json.dumps(paramdict)
-print type(jsondump)
-pprint.pprint(jsondump)
+#print type(jsondump)
+#pprint.pprint(jsondump)
 
 paramsnew = json.loads(jsondump)
-print type(paramsnew)
-pprint.pprint(paramsnew)
+#print type(paramsnew)
+#pprint.pprint(paramsnew)
 
-fitting = paramsnew['fitting'].split(':')
-fitting = [i.strip() for i in fitting]
-expr = fitting[1]
-func = make_func(expr)
+fitting = paramsnew['i2b']
+fid = fitting[0]
+fitfunc = fitting[1]
+func = makei2b(fitfunc)
 print func(1.25)
-#revertf = make_func(fitting[1], revert=True, y = func(.4))
+#revertf = makei2b(fitting[1], revert=True, y = func(.4))
 
 from scipy import optimize
-print optimize.fsolve(make_func(expr, revert=True, y = 0.138880816), 0.0)
+print optimize.fsolve(makei2b(fitfunc, revert=True, y = 0.138880816), 0.0)
 
-#if __name__ == '__main__':
-#    pass
+fitting = paramsnew['b2k']
+fid = fitting[0]
+fitfunc = fitting[1]
+func = makeb2k(fitfunc)
+print func(1.25, 3.0)
+#revertf = makei2b(fitting[1], revert=True, y = func(.4))
+
+#from scipy import optimize
+print optimize.fsolve(makeb2k(fitfunc, revert=True, y = 0.138880816), 0.0, 2.8)

@@ -352,6 +352,14 @@ def saverotcoildata(files):
             paramdict['int_trans_func'] = transf1
             paramdict['sub device'] = dev1
             paramdict['i2b'] = [3, 'interpolating']
+            try:
+                if ctypename in ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F']:
+                    paramdict['b2k'] = [0, "input/(%s*3.335646*energy)"%(paramdict['ref_radius']), 2]
+                elif ctypename in ['Sext A', 'Sext B', 'Sext C']:
+                    paramdict['b2k'] = [0, "input/(%s**2*3.335646*energy)"%(paramdict['ref_radius']), 3]
+            except:
+                # do not add function for b2k since reference radius is not available.
+                pass
 
         jsondump = json.dumps(paramdict)
         try:
@@ -397,19 +405,17 @@ def main(root):
     # save data into inventory
     #####################################
     # save magnet data measured with rotating coil method
-    #saverotcoildata(rotcoils)
+    saverotcoildata(rotcoils)
 #    # save magnet data measured with hall probe method
 #    savehallprobedata(hallmaps)
 #
     saveinstall("/".join((root, 'Alignment/SR-MG-INSTALL-SN.xls')))
-#    # link inventory to install
-#    linkinventoryinstall()
 
 if __name__ == '__main__':
     municonv = municonvdata()
     municonv.connectdb(host=host, user=user, pwd=pw, db=db)
 
-    #~Documents/Work/Magnetic.Measurement/NSLS2/MagnetMeasurements/Ring
+    #/Users/shengb/Documents/Work/Magnetic.Measurement/NSLS2/MagnetMeasurements/Ring
     rootpath = None
     if sys.version_info[:2] > (3,0):
         rootpath = input ('Please specify the path to the data file directory:')
@@ -417,3 +423,4 @@ if __name__ == '__main__':
         rootpath = raw_input('Please specify the path to the data file directory:')
 
     main(rootpath)
+    print('Finish saving magnet measurement data.')
