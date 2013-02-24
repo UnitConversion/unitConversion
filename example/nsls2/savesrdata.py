@@ -130,13 +130,28 @@ def saveinstall(dfile):
             ctype = data[4]
             #refdraw = data[5]
             #desc = data[6]
+            
+            # special case: change the SN    from    |       to
+            #              Provided by: Animesh Jain |   Chenghao Yu
+            # SR-MG-QDW-9810-SN             0002     |      1002
+            # SR-MG-QDW-9810-SN             0003     |      1003
+            # SR-MG-QDW-9813-SN             0002     |      1002
+            # SR-MG-QDW-9813-SN             0003     |      1003
+            # SR-MG-QDW-9813-SN             0004     |      1004
+            #
+            # SR-MG-QDP-9810 == Quad D2
+            # SR-MG-QDW-9813 == Quad E2
             serial = int(data[7])
+#            print(ctype, serial)
+#            if ctype in ["Quad D2", 'Quad E2'] and serial != 1:
+#                serial += 1000
             #alias = data[8]
             invid = None
             invdata = municonv.retrieveinventory(str(serial), ctype)
             if len(invdata) == 1:
                 invid = invdata[0][0]
             ctypedata = municonv.retrievecmpnttype(ctype)
+            
             ctypeid = None
             if len(ctypedata) == 1:
                 ctypeid = ctypedata[0][0]
@@ -206,7 +221,7 @@ def saverotcoildata(files):
             # SR-MG-QDW-9813-SN             0002     |      1002
             # SR-MG-QDW-9813-SN             0003     |      1003
             # SR-MG-QDW-9813-SN             0004     |      1004
-            if data[0][1].strip() in ["SR-MG-QDW-9813", 'SR-MG-QDW-9810'] and serial != 1:
+            if data[0][1].strip() in ['SR-MG-QDP-9810', "SR-MG-QDW-9813"] and serial != 1:
                 serial += 1000
         else:
             print ('No no reference drawing for %s'%(dfile))
@@ -354,9 +369,9 @@ def saverotcoildata(files):
             paramdict['i2b'] = [3, 'interpolating']
             try:
                 if ctypename in ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F']:
-                    paramdict['b2k'] = [0, "input/(%s*3.335646*energy)"%(paramdict['ref_radius']), 2]
+                    paramdict['b2k'] = [0, "input/(%s*3.33567*energy)"%(paramdict['ref_radius']), 2]
                 elif ctypename in ['Sext A', 'Sext B', 'Sext C']:
-                    paramdict['b2k'] = [0, "input/(%s**2*3.335646*energy)"%(paramdict['ref_radius']), 3]
+                    paramdict['b2k'] = [0, "2*input/(%s**2*3.33567*energy)"%(paramdict['ref_radius']), 3]
             except:
                 # do not add function for b2k since reference radius is not available.
                 pass

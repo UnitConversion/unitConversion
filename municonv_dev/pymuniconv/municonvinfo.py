@@ -10,7 +10,7 @@ except ImportError:
     import json
 
 from scipy import optimize
-from scipy.interpolate import interp1d
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 from pymuniconv.municonvdata import municonvdata
 from pymuniconv.municonvprop import (proptmplt, proptmpltdesc)
@@ -143,8 +143,9 @@ def _conversioninfobyinvid(invid):
             localdict['municonv'] = json.loads(resfromctype[2])
         
     resfrominvchain = municonv.retrievemuniconv4inventory(invid, proptmplt_chain, proptmpltdesc_chain)
+
     if resfrominvchain != None:
-        localdict['municonv_chain'] = json.loads(resfrominv[2])
+        localdict['municonv_chain'] = json.loads(resfrominvchain[2])
     else:
         resfromctypechain = municonv.retrievemuniconvbycmpnttype4inventory(invid, proptmplt_chain, proptmpltdesc_chain)
         if resfromctypechain != None:
@@ -266,7 +267,7 @@ def retrieveconversioninfo(params):
             energy = params['energy']
         mcdata=False
         if params.has_key('mcdata'):
-            mcdata = params['mcdata']
+            mcdata = True
         src = params['from']
         dst = params['to']
         value = params['value']
@@ -277,7 +278,10 @@ def retrieveconversioninfo(params):
             for key in keys:
                 if v.has_key(key):
                     municonvparams = v[key]
-                    result = conversion(src, dst, value, municonvparams, energy=energy, mcdata=mcdata)
+                    efflen=None
+                    if v.has_key('design length'):
+                        efflen = v['design length']
+                    result = conversion(src, dst, value, municonvparams, energy=energy, mcdata=mcdata, efflen=efflen)
                     if result != None:
                         v[key] = result
                         resdict[k] = v
@@ -317,14 +321,14 @@ def _makeb2k(expr, revert=False, y=0.0):
     exec(funcstr)
     return f
 
-def _doi2b(paramsdict, value, revert=False):
+def _doi2b(paramsdict, value, revert=False, key='i2b'):
     res = None
     if revert:
         message = 'successfully convert magnetic field to current.'
     else:
         message = 'successfully convert current to magnetic field.'
-    if paramsdict.has_key('i2b'):
-        funcexpr = paramsdict['i2b']
+    if paramsdict.has_key(key):
+        funcexpr = paramsdict[key]
         if funcexpr[0] == 0:
             # linear fitting with given function
             if revert:
@@ -363,12 +367,19 @@ def _doi2b(paramsdict, value, revert=False):
             if len(cur) != 0:
                 if revert:
                     # fit field to current
-                    func = interp1d(fld, cur, kind='cubic')
-                    res = func(value)[0]
+                    # spline order: 1 linear, 2 quadratic, 3 cubic ... 
+                    order = 1 
+                    # do inter/extrapolation
+                    func = InterpolatedUnivariateSpline(fld, cur, k=order)
+#                    func = interp1d(fld, cur, kind='cubic')
+                    res = func(value).item()
                 else:
                     # fit current to field
-                    func = interp1d(cur, fld, kind='cubic')
-                    res = func(value)[0]
+                    # spline order: 1 linear, 2 quadratic, 3 cubic ... 
+                    order = 3 
+                    # do inter/extrapolation
+                    func = InterpolatedUnivariateSpline(cur, fld, k=order)
+                    res = func(value).item()
             else:
                 message = "Data is not consistent, cannnot do interpolating."
         else:
@@ -378,7 +389,7 @@ def _doi2b(paramsdict, value, revert=False):
         
     return res, message
 
-def _dob2k(paramsdict, value, energy, revert=False):
+def _dob2k(paramsdict, value, energy, revert=False, efflen=None):
     res = None
     message = 'successfully convert magnetic field to K value.'
     if paramsdict.has_key('b2k'):
@@ -387,17 +398,23 @@ def _dob2k(paramsdict, value, energy, revert=False):
             # linear fitting with given function
             if revert:
                 res = optimize.fsolve(_makeb2k(funcexpr[1], revert=True, y = value), 0.0, energy)[0]
+                if efflen != None:
+                    res = res*efflen
             else:
                 func = _makeb2k(funcexpr[1])
                 res = func(value, energy)
+                if efflen != None:
+                    res = res/efflen
         elif funcexpr[0] == 1:
             # high order polynomial fitting with given function.
             # need b2i to perform reversed calculation.
             if revert:
                 message = "No algorithm found to convert K value to magnetic field."
             else:
-                func = _makei2b(funcexpr[1])
+                func = _makeb2k(funcexpr[1])
                 res = func(value, energy)
+                if efflen != None:
+                    res = res/efflen
         elif funcexpr[0] == 2:
             # linear fitting without function given. Use raw data to do fitting.
             # to be implemented later
@@ -413,10 +430,10 @@ def _dob2k(paramsdict, value, energy, revert=False):
             message = "Fitting algorithm is not supported yet."
     else:
         message = "No conversion algorithm available to convert magnet current to magnet field."
-        
+    
     return res, message
 
-def doconversion(src, dst, value, paramsdict, energy=None):
+def doconversion(src, dst, value, paramsdict, energy=None, efflen=None):
     '''
     Carry out the unit conversion for given value between unit system source and destination.
     The conversion parameters are saved in paramdict.
@@ -427,7 +444,12 @@ def doconversion(src, dst, value, paramsdict, energy=None):
     
     value = _strunicode2num(value)
     energy = _strunicode2num(energy)
-
+    if paramsdict.has_key('magnetic_len_means'):
+        efflen=paramsdict['magnetic_len_meas']
+    elif  paramsdict.has_key('magnetic_len_design'):
+        efflen=paramsdict['magnetic_len_design']
+    efflen = _strunicode2num(efflen)
+    
     res = None
     message = ""
     if src == dst:
@@ -446,7 +468,7 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                         if res == None:
                             message = 'Failed to convert current to K value.'
                         else:
-                            res, message = _dob2k(paramsdict, res, energy)
+                            res, message = _dob2k(paramsdict, res, energy, efflen=efflen)
                             if res == None:
                                 message = 'Failed to convert current to K value.'
                     else:
@@ -457,9 +479,12 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                     message = "Cannot find algorithm to convert current to K value."
     elif src == 'b':
         if dst == 'i':
-            res, message = _doi2b(paramsdict, value, revert=True)
+            if paramsdict.has_key('b2i'):
+                res, message = _doi2b(paramsdict, value, key='b2i')
+            elif paramsdict.has_key('i2b'):
+                res, message = _doi2b(paramsdict, value, revert=True)
         elif dst == 'k':
-            res, message = _dob2k(paramsdict, value, energy)
+            res, message = _dob2k(paramsdict, value, energy, efflen=efflen)
             if res == None:
                 message = 'Failed to convert magnetic field to K value.'
     elif src == 'k':
@@ -467,23 +492,31 @@ def doconversion(src, dst, value, paramsdict, energy=None):
             message = "No energy value given. Cannnot calculate the magnetic field with given K value."
         else:
             if dst == 'i':
-                if paramsdict.has_key('k2b'):
-                    if paramsdict.has_key('b2i'):
-                        res, message = _dob2k(paramsdict, value, energy, revert=True)
+                if paramsdict.has_key('b2k'):
+                    if paramsdict.has_key('i2b'):
+                        res, message = _dob2k(paramsdict, value, energy, revert=True, efflen=efflen)
                         if res == None:
                             message = 'Failed to convert current to K value.'
                         else:
                             res, message = _doi2b(paramsdict, res, revert=True)
                             if res == None:
                                 message = 'Failed to convert current to K value.'
+                    elif paramsdict.has_key('b2i'):
+                        res, message = _dob2k(paramsdict, value, energy, revert=True, efflen=efflen)
+                        if res == None:
+                            message = 'Failed to convert current to K value.'
+                        else:
+                            res, message = _doi2b(paramsdict, res, key='b2i')
+                            if res == None:
+                                message = 'Failed to convert current to K value.'
                     else:
                         message = "Cannot find algorithm to convert current to K value."
-                elif paramsdict.has_key('k2i'):
+                elif paramsdict.has_key('k2i') or paramsdict.has_key('i2k'):
                     message = "Converting K value directly to current to be implemented later."
                 else:
                     message = "Cannot find algorithm to convert K value to current."
             elif dst == 'b':
-                res, message = _dob2k(paramsdict, value, energy, revert=True)
+                res, message = _dob2k(paramsdict, value, energy, revert=True, efflen=efflen)
                 if res == None:
                     message = 'Failed to convert K value to magnetic field.'
     
@@ -498,7 +531,7 @@ def _strunicode2num(value):
         res=value
     return res
 
-def conversion(src, dst, value, paramsdict, energy=None, mcdata=False):    
+def conversion(src, dst, value, paramsdict, energy=None, mcdata=False, efflen=None):    
     if mcdata:
         resdict = paramsdict.copy()
     else:
@@ -515,13 +548,13 @@ def conversion(src, dst, value, paramsdict, energy=None, mcdata=False):
                 subparams = paramsdict[key]
             else:
                 subparams = {}
-            res, message = doconversion(src, dst, value, paramsdict[key], energy=energy)
+            res, message = doconversion(src, dst, value, paramsdict[key], energy=energy, efflen=efflen)
             if res != None:
                 subparams['result'] = res
             subparams['message'] = message
             resdict[key] = subparams
-    if paramsdict.has_key('i2b') or paramsdict.has_key('b2k'):
-        res, message = doconversion(src, dst, value, paramsdict, energy=energy)
+    if paramsdict.has_key('i2b') or paramsdict.has_key('b2k')  or paramsdict.has_key('b2i'):
+        res, message = doconversion(src, dst, value, paramsdict, energy=energy, efflen=efflen)
         if res != None:
             resdict['result'] = res
         resdict['message'] = message

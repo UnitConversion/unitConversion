@@ -36,11 +36,14 @@ class municonvdata(object):
         if connection != None:
             self.conn = connection
     
-    def connectdb(self, host=None, user=None, pwd=None, db=None):
+    def connectdb(self, host=None, user=None, pwd=None, db=None,port=3306):
         if host == None or user == None or pwd == None or db == None:
             raise ValueError("Cannot initialize municonv database since information is not sufficient.")
         
-        self.conn = MySQLdb.connect(host=host, user=user, passwd=pwd, db=db)
+        if host.startswith("/"):
+            self.conn = MySQLdb.connect(unix_socket=host, user=user, passwd=pwd, db=db)
+        else:
+            self.conn = MySQLdb.connect(host=host, user=user, passwd=pwd, db=db, port=port)
         return self.conn
 
     def disconnectdb(self):
@@ -941,13 +944,24 @@ class municonvdata(object):
         select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
         from inventory
         left join inventory_prop on inventory_prop.inventory_id = inventory.inventory_id
+        left join inventory_prop_tmplt on inventory_prop_tmplt.inventory_prop_tmplt_id = inventory_prop.inventory_prop_tmplt_id
         left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-        left join inventory_prop_tmplt on inventory_prop_tmplt.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         where
         inventory.inventory_id = %s
         and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
         and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
         '''
+#        sql = '''
+#        select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
+#        from inventory
+#        left join inventory_prop on inventory_prop.inventory_id = inventory.inventory_id
+#        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+#        left join inventory_prop_tmplt on inventory_prop_tmplt.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+#        where
+#        inventory.inventory_id = %s
+#        and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
+#        and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
+#        '''
         #'''
         #select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
         #from inventory_prop
