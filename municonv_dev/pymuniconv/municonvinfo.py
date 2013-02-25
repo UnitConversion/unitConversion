@@ -321,6 +321,23 @@ def _makeb2k(expr, revert=False, y=0.0):
     exec(funcstr)
     return f
 
+def _sortdata(x, y):
+    length = len(x)
+    if length != len(y):
+        raise ValueError('Data set lengths are not equivalent.')
+    
+    oldset = []
+    for i in range(length):
+        oldset.append([x[i], y[i]])
+    newset = sorted(oldset)
+    new_x = []
+    new_y = []
+    for i in range(length):
+        new_x.append(newset[i][0])
+        new_y.append(newset[i][1])
+
+    return new_x, new_y
+
 def _doi2b(paramsdict, value, revert=False, key='i2b'):
     res = None
     if revert:
@@ -368,15 +385,22 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                 if revert:
                     # fit field to current
                     # spline order: 1 linear, 2 quadratic, 3 cubic ... 
-                    order = 1 
+                    order = 1                     
+                    # sort data
+                    # x value has to be x values are not monotonically increasing for InterpolatedUnivariateSpline
+                    fld, cur = _sortdata(fld, cur)
                     # do inter/extrapolation
                     func = InterpolatedUnivariateSpline(fld, cur, k=order)
 #                    func = interp1d(fld, cur, kind='cubic')
                     res = func(value).item()
                 else:
                     # fit current to field
-                    # spline order: 1 linear, 2 quadratic, 3 cubic ... 
-                    order = 3 
+                    # spline order: 1 linear, 2 quadratic, 3 cubic ...
+                    # use linear (k=1) degree of the smoothing spline to avoid potential fitting problem. 
+                    order = 1 
+                    # sort data
+                    # x value has to be x values are not monotonically increasing for InterpolatedUnivariateSpline
+                    cur, fld = _sortdata(cur, fld)
                     # do inter/extrapolation
                     func = InterpolatedUnivariateSpline(cur, fld, k=order)
                     res = func(value).item()
