@@ -138,29 +138,34 @@ def _conversioninfobyinvid(invid):
     retrieve conversion information by inventory id
     Try to get each magnet measurement data. If not, use common info for that type.
     '''
+    
+    #select install.field_name, install.location, inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
+    
     localdict={}
     resfrominv = municonv.retrievemuniconv4inventory(invid, proptmplt, proptmpltdesc)
     if resfrominv != None:
-        localdict['municonv'] = json.loads(resfrominv[2])
+        localdict['municonv'] = json.loads(resfrominv[4])
     else:
         resfromctype = municonv.retrievemuniconvbycmpnttype4inventory(invid, proptmplt, proptmpltdesc)
         if resfromctype != None:
-            localdict['municonv'] = json.loads(resfromctype[2])
+            localdict['municonv'] = json.loads(resfromctype[4])
         
     resfrominvchain = municonv.retrievemuniconv4inventory(invid, proptmplt_chain, proptmpltdesc_chain)
 
     if resfrominvchain != None:
-        localdict['municonv_chain'] = json.loads(resfrominvchain[2])
+        localdict['municonv_chain'] = json.loads(resfrominvchain[4])
     else:
         resfromctypechain = municonv.retrievemuniconvbycmpnttype4inventory(invid, proptmplt_chain, proptmpltdesc_chain)
         if resfromctypechain != None:
-            localdict['municonv_chain'] = json.loads(resfromctypechain[2])
+            localdict['municonv_chain'] = json.loads(resfromctypechain[4])
     
     res4magenticlen = municonv.retrievemuniconvbycmpnttype4inventory(invid, magneticlen, magneticlendesc)
     if res4magenticlen != None:
-        localdict['serial'] = res4magenticlen[0]
-        localdict['type'] = res4magenticlen[1]
-        localdict['design length'] = res4magenticlen[2]
+        localdict['name'] = res4magenticlen[0]
+        localdict['system'] = res4magenticlen[1]
+        localdict['serial'] = res4magenticlen[2]
+        localdict['cmpnt_type'] = res4magenticlen[3]
+        localdict['design_length'] = res4magenticlen[4]
     
     return localdict
     
@@ -172,16 +177,19 @@ def _conversioninfobyfieldname(fieldname):
     localdict = {}
     resfromctype = municonv.retrievemuniconv4install(fieldname, proptmplt, proptmpltdesc)
     if resfromctype != None:
-        localdict['municonv'] = json.loads(resfromctype[2])
+        localdict['municonv'] = json.loads(resfromctype[4])
     
     resfromctypechain = municonv.retrievemuniconv4install(fieldname, proptmplt_chain, proptmpltdesc_chain)
     if resfromctypechain != None:
-        localdict['municonv_chain'] = json.loads(resfromctypechain[2])
+        localdict['municonv_chain'] = json.loads(resfromctypechain[4])
     
     res4magenticlen = municonv.retrievemuniconv4install(fieldname, magneticlen, magneticlendesc)
     if res4magenticlen != None:
-        localdict['type'] = res4magenticlen[1]
-        localdict['design length'] = res4magenticlen[2]
+        #localdict['name'] = res4magenticlen[0]
+        localdict['system'] = res4magenticlen[1]
+        localdict['serial'] = res4magenticlen[2]
+        localdict['cmpnt_type'] = res4magenticlen[3]
+        localdict['design_length'] = res4magenticlen[4]
     
     return localdict
     
@@ -284,8 +292,8 @@ def retrieveconversioninfo(params):
                 if v.has_key(key):
                     municonvparams = v[key]
                     efflen=None
-                    if v.has_key('design length'):
-                        efflen = v['design length']
+                    if v.has_key('design_length'):
+                        efflen = v['design_length']
                     result = conversion(src, dst, value, municonvparams, energy=energy, mcdata=mcdata, efflen=efflen)
                     if result != None:
                         v[key] = result

@@ -909,6 +909,32 @@ class municonvdata(object):
             self.commit()
         
         return ii_id
+
+    def updateinventory2install(self, installid, inventoryid):
+        '''
+        link an inventory as installed device
+        '''
+        ii_id = self.inventory2install(installid, inventoryid)
+        
+        sql = '''
+        UPDATE inventory__install
+        SET
+        inventory_id = %s
+        WHERE
+        install_id = %s
+        '''
+        cur = self.conn.cursor()
+        try:
+            cur.execute(sql, (inventoryid, installid))
+            self.commit()
+        except MySQLdb.Error as e:
+            self.conn.rollback()
+            self.logger.info('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)' 
+                             %(installid, inventoryid, e.args[1], e.args[0]))
+            raise Exception('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)' 
+                             %(installid, inventoryid, e.args[1], e.args[0]))
+                
+        return ii_id
     
     def retrievesystem(self, location = None):
         '''
@@ -941,8 +967,10 @@ class municonvdata(object):
         Get magnet unit conversion information for given inventory id with inventory property template name and its description.
         '''
         sql = '''
-        select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
+        select install.field_name, install.location, inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
         from inventory
+        left join inventory__install on inventory__install.inventory_id = inventory.inventory_id
+        left join install on inventory__install.install_id = install.install_id
         left join inventory_prop on inventory_prop.inventory_id = inventory.inventory_id
         left join inventory_prop_tmplt on inventory_prop_tmplt.inventory_prop_tmplt_id = inventory_prop.inventory_prop_tmplt_id
         left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
@@ -951,35 +979,13 @@ class municonvdata(object):
         and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
         and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
         '''
-#        sql = '''
-#        select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
-#        from inventory
-#        left join inventory_prop on inventory_prop.inventory_id = inventory.inventory_id
-#        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-#        left join inventory_prop_tmplt on inventory_prop_tmplt.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-#        where
-#        inventory.inventory_id = %s
-#        and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
-#        and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
-#        '''
-        #'''
-        #select inventory.serial_no, cmpnt_type.cmpnt_type_name, inventory_prop.inventory_prop_value
-        #from inventory_prop
-        #left join inventory on inventory_prop.inventory_id = inventory.inventory_id
-        #left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-        #left join inventory_prop_tmplt on inventory_prop_tmplt.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-        #where 
-        #inventory.inventory_id = %s 
-        #and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
-        #and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
-        #'''
         invproptmpltname = self.__wildcardformat(invproptmpltname)
         invproptmpltdesc = self.__wildcardformat(invproptmpltdesc)
         
         cur = self.conn.cursor()
         cur.execute(sql, (invid, invproptmpltname, invproptmpltdesc))
-        rawres = cur.fetchone()
-        return rawres
+        res = cur.fetchone()
+        return res
         
     def retrievemuniconvbycmpnttype4inventory(self, invid, ctypeproptypetmpltname, ctypeproptmpltdesc):
         '''
@@ -989,8 +995,10 @@ class municonvdata(object):
         Use this method only when the measurement data for each individual magnet is not available.
         '''
         sql = '''
-        select inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
+        select install.field_name, install.location, inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
         from inventory
+        left join inventory__install on inventory__install.inventory_id = inventory.inventory_id
+        left join install on inventory__install.install_id = install.install_id
         left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         left join cmpnt_type_prop on cmpnt_type_prop.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         left join cmpnt_type_prop_type on cmpnt_type_prop.cmpnt_type_prop_type_id = cmpnt_type_prop_type.cmpnt_type_prop_type_id
@@ -1004,17 +1012,20 @@ class municonvdata(object):
         
         cur = self.conn.cursor()
         cur.execute(sql, (invid, ctypeproptypetmpltname, ctypeproptmpltdesc))
-        rawres = cur.fetchone()
-        return rawres
+        res = cur.fetchone()
+        return res
 
     def retrievemuniconv4install(self, name, ctypeproptypetmpltname, ctypeproptmpltdesc):
         '''
         Get magnet unit conversion information for given field name with component type property template name and its description.
         This method retrieve a common information for given magnet type.
         '''
+        #select field_name, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
         sql = '''
-        select field_name, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
+        select install.field_name, install.location, inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
         from install
+        left join inventory__install on inventory__install.install_id = install.install_id
+        left join inventory on inventory__install.inventory_id = inventory.inventory_id
         left join cmpnt_type on install.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         left join cmpnt_type_prop on cmpnt_type_prop.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         left join cmpnt_type_prop_type on cmpnt_type_prop.cmpnt_type_prop_type_id = cmpnt_type_prop_type.cmpnt_type_prop_type_id
@@ -1029,8 +1040,8 @@ class municonvdata(object):
         
         cur = self.conn.cursor()
         cur.execute(sql, (name, ctypeproptypetmpltname, ctypeproptmpltdesc))
-        rawres = cur.fetchone()
-        return rawres
+        res = cur.fetchone()
+        return res
         
     def retrieveinventoryid(self, name):
         ''''''
