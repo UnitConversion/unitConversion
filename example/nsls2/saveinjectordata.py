@@ -204,7 +204,7 @@ def savesol(fpath):
         paramdict['direction'] = direction
         paramdict['magnetic_len'] = mag_len
 
-        jsondump = json.dumps(paramdict)
+        jsondump = json.dumps({'standard':paramdict})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
@@ -309,7 +309,7 @@ def savesolavg(fpath):
             paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
         paramdict['raw'] = "(%s*I+%s)*(1-%s)"%(p1, p2, p3)
 
-        jsondump = json.dumps(paramdict)
+        jsondump = json.dumps({'standard':paramdict})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
@@ -491,7 +491,7 @@ def savelnqdp(fpath):
         paramdict['direction'] = direction
         paramdict['magnetic_len'] = mag_len
 
-        jsondump = json.dumps(paramdict)
+        jsondump = json.dumps({'standard':paramdict})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
@@ -650,7 +650,7 @@ def savelbtdpl(fpath):
     paramdict['direction'] = direction
     paramdict['magnetic_len'] = mag_len
 
-    jsondump = json.dumps(paramdict)
+    jsondump = json.dumps({'standard':paramdict})
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
@@ -835,7 +835,7 @@ def savequad1340(fpath):
     paramdict['direction'] = direction
     paramdict['magnetic_len'] = mag_len
 
-    jsondump = json.dumps(paramdict)
+    jsondump = json.dumps({'standard':paramdict})
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
@@ -1154,7 +1154,7 @@ def savequad5200(fpath, section):
         paramdict['field'] = field
         paramdict['direction'] = direction
 
-        jsondump = json.dumps(paramdict)
+        jsondump = json.dumps({'standard':paramdict})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
@@ -1297,7 +1297,7 @@ def savedpl9035(fpath):
     paramdict['current'] = current
     paramdict['field'] = field
 
-    jsondump = json.dumps(paramdict)
+    jsondump = json.dumps({'standard':paramdict})
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
@@ -1482,7 +1482,9 @@ def savebooster(fpath):
     bd1len = [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 
               1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
     desc1 = 'Dipole type BD1 for booster ring'
-    paramdict = {}
+    paramstandard = {}
+    paramcomplex = {}
+    paramdict={}
     idx = 2
     for i in range(4):
         subparam = {'current_unit': 'A'}
@@ -1492,22 +1494,27 @@ def savebooster(fpath):
         if i == 0:
             subparam['field_unit'] = 'T'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Dipole field component for a combined funbction magnet'
-            paramdict['1'] = subparam
+            subparam['description'] = 'Dipole field component for a combined funbction magnet'
+            paramcomplex['1'] = subparam
         elif i ==1:
             subparam['field_unit'] = 'T/m'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Quadrupole field component for a combined funbction magnet'
-            paramdict['2'] = subparam
+            subparam['description'] = 'Quadrupole field component for a combined funbction magnet'
+            paramcomplex['2'] = subparam
         elif i ==2:
             subparam['field_unit'] = 'T/m^2'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Sextupole field component for a combined funbction magnet'
-            paramdict['3'] = subparam
+            subparam['description'] = 'Sextupole field component for a combined funbction magnet'
+            paramcomplex['3'] = subparam
         elif i ==3:
-            paramdict['current_unit'] = 'A'
-            paramdict['field_unit'] = 'T'
-            paramdict['b2i'] = [1, createfit(k)]
+            paramstandard['current_unit'] = 'A'
+            paramstandard['field_unit'] = 'T'
+            paramstandard['b2i'] = [1, createfit(k)]
+    if paramstandard:
+        paramdict['standard'] = paramstandard
+    if paramcomplex:
+        paramdict['complex']=paramcomplex
+            
 #    import pprint
 #    pprint.pprint (paramdict)
     saveboosterdata(devbd1, devbd1sn, bd1len, devtype1, desc1, paramdict)
@@ -1525,6 +1532,8 @@ def savebooster(fpath):
     bd2len = [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 
               1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
     desc2 = 'Dipole type BD2 for booster ring'
+    paramstandard.clear()
+    paramcomplex.clear()
     paramdict.clear()
     for i in range(4):
         subparam = {'current_unit': 'A'}
@@ -1534,23 +1543,26 @@ def savebooster(fpath):
         if i == 0:
             subparam['field_unit'] = 'T'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Dipole field component for a combined funbction magnet'
-            paramdict['1'] = subparam
+            subparam['description'] = 'Dipole field component for a combined funbction magnet'
+            paramcomplex['1'] = subparam
         elif i ==1:
             subparam['field_unit'] = 'T/m'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Quadrupole field component for a combined funbction magnet'
-            paramdict['2'] = subparam
+            subparam['description'] = 'Quadrupole field component for a combined funbction magnet'
+            paramcomplex['2'] = subparam
         elif i ==2:
             subparam['field_unit'] = 'T/m^2'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Sextupole field component for a combined funbction magnet'
-            paramdict['3'] = subparam
+            subparam['description'] = 'Sextupole field component for a combined funbction magnet'
+            paramcomplex['3'] = subparam
         elif i ==3:
-            paramdict['current_unit'] = 'A'
-            paramdict['field_unit'] = 'T'
-            paramdict['b2i'] = [1, createfit(k)]
-#    pprint.pprint (paramdict)
+            paramstandard['current_unit'] = 'A'
+            paramstandard['field_unit'] = 'T'
+            paramstandard['b2i'] = [1, createfit(k)]
+    if paramstandard:
+        paramdict['standard'] = paramstandard
+    if paramcomplex:
+        paramdict['complex']=paramcomplex
     saveboosterdata(devbd2, devbd2sn, bd2len, devtype2, desc2, paramdict)
     idx += 1
     
@@ -1572,6 +1584,8 @@ def savebooster(fpath):
              1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,
              1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24]
     desc3 = 'Dipole type BF for booster ring'
+    paramstandard.clear()
+    paramcomplex.clear()
     paramdict.clear()
     for i in range(4):
         subparam = {'current_unit': 'A'}
@@ -1581,22 +1595,26 @@ def savebooster(fpath):
         if i == 0:
             subparam['field_unit'] = 'T'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Dipole field component for a combined funbction magnet'
-            paramdict['1'] = subparam
+            subparam['description'] = 'Dipole field component for a combined funbction magnet'
+            paramcomplex['1'] = subparam
         elif i ==1:
             subparam['field_unit'] = 'T/m'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Quadrupole field component for a combined funbction magnet'
-            paramdict['2'] = subparam
+            subparam['description'] = 'Quadrupole field component for a combined funbction magnet'
+            paramcomplex['2'] = subparam
         elif i ==2:
             subparam['field_unit'] = 'T/m^2'
             subparam['i2b'] = [1, createfit(k)]
-            subparam['desc'] = 'Sextupole field component for a combined funbction magnet'
-            paramdict['3'] = subparam
+            subparam['description'] = 'Sextupole field component for a combined funbction magnet'
+            paramcomplex['3'] = subparam
         elif i ==3:
-            paramdict['current_unit'] = 'A'
-            paramdict['field_unit'] = 'T'
-            paramdict['b2i'] = [1, createfit(k)]
+            paramstandard['current_unit'] = 'A'
+            paramstandard['field_unit'] = 'T'
+            paramstandard['b2i'] = [1, createfit(k)]
+    if paramstandard:
+        paramdict['standard'] = paramstandard
+    if paramcomplex:
+        paramdict['complex']=paramcomplex
 #    pprint.pprint (paramdict)
     saveboosterdata(devbf, devbfsn, bflen, devtype3, desc3, paramdict)
     idx += 2
@@ -1630,7 +1648,7 @@ def savebooster(fpath):
         elif i == 3:
             paramdict['b2i'] = [1, createfit(k)]
 #    pprint.pprint (paramdict)
-    saveboosterdata(devqf, devqfsn, qflen, devtypeqf, descqf, paramdict)
+    saveboosterdata(devqf, devqfsn, qflen, devtypeqf, descqf, {'standard':paramdict})
     idx += 1
     
     #device name
@@ -1659,7 +1677,7 @@ def savebooster(fpath):
         elif i == 3:
             paramdict['b2i'] = [1, createfit(k)]
 #    pprint.pprint (paramdict)
-    saveboosterdata(devqd, devqdsn, qdlen, devtypeqd, descqd, paramdict)
+    saveboosterdata(devqd, devqdsn, qdlen, devtypeqd, descqd, {'standard':paramdict})
     idx += 1
 
     #device name
@@ -1688,7 +1706,7 @@ def savebooster(fpath):
         elif i == 3:
             paramdict['b2i'] = [1, createfit(k)]
 #    pprint.pprint (paramdict)
-    saveboosterdata(devqg, devqgsn, qglen, devtypeqg, descqg, paramdict)
+    saveboosterdata(devqg, devqgsn, qglen, devtypeqg, descqg, {'standard':paramdict})
     idx += 2
 
     ####################################
@@ -1720,7 +1738,7 @@ def savebooster(fpath):
         elif i == 3:
             paramdict['b2i'] = [1, createfit(k)]
 #    pprint.pprint (paramdict)
-    saveboosterdata(devsf, devsfsn, sflen, devtypesf, descsf, paramdict)
+    saveboosterdata(devsf, devsfsn, sflen, devtypesf, descsf, {'standard':paramdict})
     idx += 1
 
     #device name
@@ -1749,7 +1767,7 @@ def savebooster(fpath):
         elif i == 3:
             paramdict['b2i'] = [1, createfit(k)]
 #    pprint.pprint (paramdict)
-    saveboosterdata(devsd, devsdsn, sdlen, devtypesd, descsd, paramdict)
+    saveboosterdata(devsd, devsdsn, sdlen, devtypesd, descsd, {'standard':paramdict})
     idx += 1
     
 def main(fpath):

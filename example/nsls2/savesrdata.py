@@ -202,6 +202,7 @@ def saverotcoildata(files):
         serial = None
         ctype = None
         paramdict = {}
+        resdict={}
         if data[3][0] == 'Serial Number' and data[3][1] != '':
             serial = int(data[3][1])
             paramdict['serial'] = serial
@@ -321,6 +322,7 @@ def saverotcoildata(files):
                 dev3.append(field[2])
             
         if len(cur2) != 0 or len(cur3) != 0:
+            tempdict = {}
             if len(cur1) != 0:
                 subparam = {'run': run1,
                             'current': cur1,
@@ -329,10 +331,11 @@ def saverotcoildata(files):
                             'field': bref1,
                             'field_unit': 'T-m',
                             'int_trans_func': transf1,
-                            'sub device': dev1,
+                            'description': dev1,
                             'i2b': [3, 'interpolating']
                             }
-                paramdict['1'] = subparam
+                subparam.update(paramdict)
+                tempdict['1'] = subparam
             if len(cur2) != 0:
                 subparam = {'run': run2,
                             'current': cur2,
@@ -341,10 +344,11 @@ def saverotcoildata(files):
                             'field': bref2,
                             'field_unit': 'T-m',
                             'int_trans_func': transf2,
-                            'sub device': dev2,
+                            'description': dev2,
                             'i2b': [3, 'interpolating']
                             }
-                paramdict['2'] = subparam
+                subparam.update(paramdict)
+                tempdict['2'] = subparam
             if len(cur3) != 0:
                 subparam = {'run': run3,
                             'current': cur3,
@@ -353,10 +357,13 @@ def saverotcoildata(files):
                             'field': bref3,
                             'field_unit': 'T-m',
                             'int_trans_func': transf3,
-                            'sub device': dev3,
+                            'description': dev3,
                             'i2b': [3, 'interpolating']
                             }
-                paramdict['3'] = subparam
+                subparam.update(paramdict)
+                tempdict['3'] = subparam
+            if not tempdict:
+                resdict['complex'] = tempdict
         else:
             paramdict['run'] = run1
             paramdict['current'] = cur1
@@ -365,7 +372,7 @@ def saverotcoildata(files):
             paramdict['field'] = bref1
             paramdict['field_unit'] = 'T-m'
             paramdict['int_trans_func'] = transf1
-            paramdict['sub device'] = dev1
+            paramdict['description'] = dev1
             paramdict['i2b'] = [3, 'interpolating']
             try:
                 if ctypename in ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F']:
@@ -375,8 +382,9 @@ def saverotcoildata(files):
             except:
                 # do not add function for b2k since reference radius is not available.
                 pass
+            resdict['standard'] = paramdict
 
-        jsondump = json.dumps(paramdict)
+        jsondump = json.dumps(resdict)
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:

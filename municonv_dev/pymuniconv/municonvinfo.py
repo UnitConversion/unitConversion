@@ -57,7 +57,7 @@ def retrievesystemdata(params):
                     temp = municonv.retrievesystem(name)
                     for x in temp:
                         res.append(x)
-        elif name=="":
+        elif names=="":
             res = municonv.retrievesystem()
         else:
             res = municonv.retrievesystem(names)
@@ -98,34 +98,39 @@ def retrievemagnetinfo(params):
     if name == "*" and location == None:
         # returned data format 
         # ((inventory_id, serial_no, cmpnt_type_name, description, vendor_name), ...)
-        res = municonv.retrieveinventory(serialno, ctypename=cmpnt_type)
-        # convert to:
-        # [[install_id, inventory_id, field_name, location, serial_no, cmpnt_type_name, description, vendor_name], ...]
-        if len(res) >0:
-            res = list(res)
-            for i in range(len(res)):
-                data = list(res[i])
-                data.insert(1, '') # location place
-                data.insert(1, '') # field name place
-                data.insert(0, '') # install id place
-                res[i] = data
+        if serialno==None:
+            tmps = municonv.retrieveinventory("*", ctypename=cmpnt_type)
+        else:
+            tmps = municonv.retrieveinventory(serialno, ctypename=cmpnt_type)
+        key = ['inventory_id', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
+        res = []
+        for tmp in tmps:
+            sub={}
+            for i in range(len(key)):
+                sub[key[i]] = tmp[i]
+            res.append(sub)
     elif serialno == None:
         # returned data format
         # ((install id, field name, location, component type name, description, vendor), ...)
-        res=municonv.retrieveinstall(name, ctypename=cmpnt_type, location=location)
-        # convert to:
-        # [[install_id, inventory_id, field_name, location, serial_no, cmpnt_type_name, description, vendor_name], ...]
-        if len(res) >0:
-            res = list(res)
-            for i in range(len(res)):
-                data = list(res[i])
-                data.insert(3,'') # serial no place
-                data.insert(1,'') # inventory id place
-                res[i] = data
+        tmps=municonv.retrieveinstall(name, ctypename=cmpnt_type, location=location)
+        key = ['install_id', 'name', 'system', 'cmpnt_type_name', 'type_description', 'vendor']
+        res = []
+        for tmp in tmps:
+            sub={}
+            for i in range(len(key)):
+                sub[key[i]] = tmp[i]
+            res.append(sub)
     else:
         # returned data format
         # ((install id, inventory id, field name, location, serial no, component type name, description, vendor), ...)
-        res = municonv.retrieveinstalledinventory(name, serialno, ctypename=cmpnt_type, location=location)
+        tmps = municonv.retrieveinstalledinventory(name, serialno, ctypename=cmpnt_type, location=location)
+        key = ['install_id', 'inventory_id', 'name', 'system', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
+        res = []
+        for tmp in tmps:
+            sub={}
+            for i in range(len(key)):
+                sub[key[i]] = tmp[i]
+            res.append(sub)
     return res
    
 def _conversioninfobyinvid(invid):
@@ -556,31 +561,45 @@ def _strunicode2num(value):
     return res
 
 def conversion(src, dst, value, paramsdict, energy=None, mcdata=False, efflen=None):    
-    if mcdata:
-        resdict = paramsdict.copy()
-    else:
-        resdict={}
-            
+    resdict={}
+    
     if (src == 'k' or dst == 'k') and energy == None and paramsdict.has_key('energy_default'):
         # use default energy
         energy = paramsdict['energy_default']
     
-    keys = ['1','2','3']
-    for key in keys:
-        if paramsdict.has_key(key):
+    if paramsdict.has_key('standard'):
+        paramstandard = paramsdict['standard']
+        if paramstandard.has_key('i2b') or paramstandard.has_key('b2k')  or paramstandard.has_key('b2i'):
+            res, message = doconversion(src, dst, value, paramstandard, energy=energy, efflen=efflen)
             if mcdata:
-                subparams = paramsdict[key]
+                if res != None:
+                    paramstandard['result'] = res
+                paramstandard['message'] = message
+                resdict['standard'] = paramstandard
             else:
-                subparams = {}
-            res, message = doconversion(src, dst, value, paramsdict[key], energy=energy, efflen=efflen)
-            if res != None:
-                subparams['result'] = res
-            subparams['message'] = message
-            resdict[key] = subparams
-    if paramsdict.has_key('i2b') or paramsdict.has_key('b2k')  or paramsdict.has_key('b2i'):
-        res, message = doconversion(src, dst, value, paramsdict, energy=energy, efflen=efflen)
-        if res != None:
-            resdict['result'] = res
-        resdict['message'] = message
+                tempdict={}
+                if res != None:
+                    tempdict['result'] = res
+                tempdict['message'] = message
+                resdict['standard'] = tempdict
+
+    if paramsdict.has_key('complex'):
+        paramcomplex = paramsdict['complex']
+        tempdict ={}
+        for k, v in paramcomplex.iteritems():
+            if v.has_key('i2b') or v.has_key('b2k')  or v.has_key('b2i'):
+                res, message = doconversion(src, dst, value, v, energy=energy, efflen=efflen)
+                if mcdata:
+                    if res != None:
+                        v['result'] = res
+                    v['message'] = message
+                    tempdict[k] = v
+                else:
+                    tempdict2={}
+                    if res != None:
+                        tempdict2['result'] = res
+                    tempdict2['message'] = message
+                    tempdict[k] = tempdict2
+        resdict['complex'] = tempdict
 
     return resdict
