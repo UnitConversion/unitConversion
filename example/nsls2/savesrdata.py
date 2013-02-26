@@ -299,24 +299,24 @@ def saverotcoildata(files):
         for field in data[11:]:
             if str(field[3]).strip() == '' and str(field[4]).strip() == '' and str(field[5]).strip() == '':
                 break
-            elif str(field[3]).strip() != '':
+            elif str(field[6]).strip() != '':
                 run1.append(field[1])
                 cur1.append(field[3])
                 direction1.append(field[6])
                 bref1.append(field[13])
                 transf1.append(field[10])
                 dev1.append(field[2])
-            elif str(field[4]).strip() != '':
+            elif str(field[7]).strip() != '':
                 run2.append(field[1])
-                cur2.append(field[3])
-                direction2.append(field[6])
+                cur2.append(field[4])
+                direction2.append(field[7])
                 bref2.append(field[13])
                 transf2.append(field[10])
                 dev2.append(field[2])
-            elif str(field[5]).strip() != '':
+            elif str(field[8]).strip() != '':
                 run3.append(field[1])
-                cur3.append(field[3])
-                direction3.append(field[6])
+                cur3.append(field[5])
+                direction3.append(field[8])
                 bref3.append(field[13])
                 transf3.append(field[10])
                 dev3.append(field[2])
@@ -362,7 +362,7 @@ def saverotcoildata(files):
                             }
                 subparam.update(paramdict)
                 tempdict['3'] = subparam
-            if not tempdict:
+            if tempdict:
                 resdict['complex'] = tempdict
         else:
             paramdict['run'] = run1
