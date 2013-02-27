@@ -9,6 +9,7 @@ try:
 except ImportError:
     import json
 
+import numpy as np
 from scipy import optimize
 from scipy.interpolate import InterpolatedUnivariateSpline
 
@@ -359,7 +360,10 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
         message = 'successfully convert current to magnetic field.'
     if paramsdict.has_key(key):
         funcexpr = paramsdict[key]
-        if funcexpr[0] == 0:
+        if not isinstance(funcexpr, (tuple, list)) or len(funcexpr) < 2:
+            res = None
+            message = 'conversion information is not sufficient.'
+        elif funcexpr[0] == 0:
             # linear fitting with given function
             if revert:
                 res = optimize.fsolve(_makei2b(funcexpr[1], revert=True, y = value), 0.0)[0]
@@ -375,12 +379,31 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                 func = _makei2b(funcexpr[1])
                 res = func(value)
         elif funcexpr[0] == 2:
-            # linear fitting without function given. Use raw data to do fitting.
-            # to be implemented later
-            if revert:
-                message = "No algorithm found to convert magnetic field to current."
+            # polynomial fitting using raw data..
+            # fitting order is determined by funcexpr[1]
+            if funcexpr[1] < 1:
+                res = None
+                message = "ploy fitting order is zero."
             else:
-                message = "fitting raw data with linear function to be implemented later."
+                current = paramsdict['current']
+                field = paramsdict['field']
+                direction = paramsdict['direction']
+                cur=[]
+                fld=[]
+                for i in range(len(direction)):
+                    if str(direction[i]).upper() in ['UP', 'NA', 'N/A']:
+                        cur.append(current[i])
+                        fld.append(field[i])
+                
+                funcexpr[1]
+                if len (cur) == 1:
+                    cur.insert(0, 0.0)
+                    fld.insert(0, 0.0)
+                if revert:
+                    coeffs=np.polyfit(fld, cur, deg=funcexpr[1])
+                else:
+                    coeffs=np.polyfit(cur, fld, deg=funcexpr[1])
+                res = np.polyval(coeffs, value)
         elif funcexpr[0] == 3:
             # 1D interpolating with raw magnetic data
             # use up curve for current stage
@@ -394,31 +417,39 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                 if str(direction[i]).upper() in ['UP', 'NA', 'N/A']:
                     cur.append(current[i])
                     fld.append(field[i])
-            if len(cur) != 0:
+             
+            if len (cur) in [1, 2]:
+                # if the data length is small, use linear fit instead
+                if len (cur) == 1:
+                    cur.insert(0, 0.0)
+                    fld.insert(0, 0.0)
+                x = cur
+                y = fld
                 if revert:
                     # fit field to current
-                    # spline order: 1 linear, 2 quadratic, 3 cubic ... 
-                    order = 1                     
-                    # sort data
-                    # x value has to be x values are not monotonically increasing for InterpolatedUnivariateSpline
-                    fld, cur = _sortdata(fld, cur)
-                    # do inter/extrapolation
-                    func = InterpolatedUnivariateSpline(fld, cur, k=order)
-#                    func = interp1d(fld, cur, kind='cubic')
-                    res = func(value).item()
-                else:
-                    # fit current to field
-                    # spline order: 1 linear, 2 quadratic, 3 cubic ...
-                    # use linear (k=1) degree of the smoothing spline to avoid potential fitting problem. 
-                    order = 1 
-                    # sort data
-                    # x value has to be x values are not monotonically increasing for InterpolatedUnivariateSpline
-                    cur, fld = _sortdata(cur, fld)
-                    # do inter/extrapolation
-                    func = InterpolatedUnivariateSpline(cur, fld, k=order)
-                    res = func(value).item()
+                    x = fld
+                    y = cur
+                # sort data to ensure x value to be monotonically increasing
+                #x, y = _sortdata(x, y)
+                coeffs=np.polyfit(x,y, deg=1)
+                res = np.polyfit(coeffs, value)
+            elif len(cur) != 0:
+                # use linear spline interpolation
+                x = cur
+                y = fld
+                if revert:
+                    # fit field to current
+                    x = fld
+                    y = cur
+                # sort data to ensure x value to be monotonically increasing
+                x, y = _sortdata(x, y)
+                # do inter/extrapolation
+                # spline order: 1 linear, 2 quadratic, 3 cubic ... 
+                func = InterpolatedUnivariateSpline(x, y, k=1)
+                #func = interp1d(x, y, kind='cubic')
+                res = func(value).item()
             else:
-                message = "Data is not consistent, cannnot do interpolating."
+                message = "Data set is empty, cannnot do interpolating."
         else:
             message = "Fitting algorithm is not supported yet."
     else:
