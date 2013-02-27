@@ -10,7 +10,7 @@ from django.views.generic.simple import redirect_to
 # Production URLS
 urlpatterns = patterns('',
     (r'^$', redirect_to, {'url': '/magnets/', 'permanent' : False}),
-    (r'^', include('municonv_django.magnets.urls')),
+    (r'^', include('physics_django.magnets.urls')),
     
     # do not use this setting for your production.
     (r'^static/(.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_DOC_ROOT}),
@@ -23,5 +23,5 @@ urlpatterns = patterns('',
 if not settings.PRODUCTION:
     urlpatterns += patterns('',
 
-        (r'^', include('municonv_django.magnets.urls')),
+        (r'^', include('physics_django.magnets.urls')),
     )
