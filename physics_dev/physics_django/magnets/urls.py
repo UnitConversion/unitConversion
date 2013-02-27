@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 
-from municonv_django.magnets.views import (magnetdevicesweb, magnets_help, systemlistweb, conversionweb) 
-from municonv_django.magnets.views import (magnetdevices, systemlist, conversion) 
+from physics_django.magnets.views import (magnetdevicesweb, magnets_help, systemlistweb, conversionweb) 
+from physics_django.magnets.views import (magnetdevices, systemlist, conversion) 
 
 urlpatterns = patterns(
     '',
