@@ -1,5 +1,5 @@
 #!/bin/sh -X
-export DJANGO_MANAGE_LOCATION=municonv_dev/django/manage.py
-export PYTHONPATH=~/V4/municonv/municonv_dev:$PYTHONPATH
-cd ../municonv_dev/django
+export DJANGO_MANAGE_LOCATION=physics_dev/physics_django/manage.py
+export PYTHONPATH=${PWD}/../phyirmis/physics_dev:$PYTHONPATH
+cd ../physics_dev/physics_django
 python manage.py runserver --noreload
