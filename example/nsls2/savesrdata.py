@@ -63,7 +63,7 @@ def crowfiles(root):
                     `-- ...
 
     '''
-    for path, subdirs, files in os.walk(root):
+    for path, _, files in os.walk(root):
         for name in files:
             if 'Latest_Data' in path:
                 yield (os.path.join(path, name))

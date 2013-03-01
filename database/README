@@ -1,3 +1,6 @@
+2013.03.01
+Update to IRMIS3 v0_5, merge all changes in 2013.02.08
+
 The database schemas were derived from IRMIS3 v0_2 from pyirmis project with the following modification:
 2013.02.08
 Add auto increment for machine_mode table
