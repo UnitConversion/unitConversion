@@ -78,6 +78,32 @@ class municonvdata(object):
         """
         return regxval.replace("*","%").replace("?","_")
     
+    def _assemblesql(self, sql, data, strpattern, res):
+        ''''''
+        strpattern1 = strpattern + " like %s or"
+        strpattern2 = strpattern + " like %s " 
+        strpattern3 = strpattern + " = %s or"
+        strpattern4 = strpattern + " = %s " 
+        if isinstance(data, (tuple, list)):
+            sql += " ( "
+            for s in data:
+                s = self.__wildcardformat(s)
+                if "%" in s or "_" in s:
+                    sql += strpattern1
+                else:
+                    sql += strpattern3
+                res.append(s)
+            sql = sql[:-2]
+            sql += " ) "
+        else:
+            data = self.__wildcardformat(data)
+            if "%" in data or "_" in data:
+                sql += strpattern2
+            else:
+                sql += strpattern4
+            res.append(data)
+        return res, sql
+    
     def retrievecmpnttype(self, name, desc=None, vendor=None):
         '''Retrieve id of a given component type name, description [optional], and vendor [optional].
         
@@ -567,11 +593,9 @@ class municonvdata(object):
         
         return: tuple with format as ((id, field name, location, component type name, description, vendor), ...)
         '''
-        if not isinstance(name, (str, unicode)):
-            raise Exception('Device name has to be a string.')
+#        if not isinstance(name, (str, unicode)):
+#            raise Exception('Device name has to be a string.')
         
-        name = self.__wildcardformat(name)
-
         sql = '''
         select install_id, field_name, location, cmpnt_type_name, description, vendor_name
         from install
@@ -580,28 +604,34 @@ class municonvdata(object):
         left join vendor on cmpnttype__vendor.vendor_id = vendor.vendor_id
         where
         '''
+        vals = []
         
-        if '%' in name or '_' in name:
-            sql += " field_name like %s "
-        else:
-            sql += " field_name = %s "
-        vals = [name]
+        vals, sql = self._assemblesql(sql, name, " field_name ", vals)
+
+#        name = self.__wildcardformat(name)
+#        if '%' in name or '_' in name:
+#            sql += " field_name like %s "
+#        else:
+#            sql += " field_name = %s "
+#        vals = [name]
 
         if ctypename:
-            ctypename = self.__wildcardformat(ctypename)
-            if "%" in ctypename or "_" in ctypename:
-                sql += " and cmpnt_type_name like %s "
-            else:
-                sql += " and cmpnt_type_name = %s "
-            vals.append(ctypename)
+            vals, sql = self._assemblesql(sql, name, " and cmpnt_type_name ", vals)
+#            ctypename = self.__wildcardformat(ctypename)
+#            if "%" in ctypename or "_" in ctypename:
+#                sql += " and cmpnt_type_name like %s "
+#            else:
+#                sql += " and cmpnt_type_name = %s "
+#            vals.append(ctypename)
 
         if location:
-            location = self.__wildcardformat(location)
-            if "%" in location or "_" in location:
-                sql += " and location like %s "
-            else:
-                sql += " and location = %s "
-            vals.append(location)
+            vals, sql = self._assemblesql(sql, name, " and location ", vals)
+#            location = self.__wildcardformat(location)
+#            if "%" in location or "_" in location:
+#                sql += " and location like %s "
+#            else:
+#                sql += " and location = %s "
+#            vals.append(location)
 
         try:
             cur = self.conn.cursor()
@@ -698,22 +728,51 @@ class municonvdata(object):
         from inventory inv
         left join vendor on vendor.vendor_id = inv.vendor_id
         left join cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
-        where inv.serial_no like %s 
+        where  
         '''
-        # adjust order order to avoid unexpected error.
-#        left join cmpnttype__vendor ctvendor on ctvendor.cmpnt_type_id = ctype.cmpnt_type_id
-#        left join vendor on vendor.vendor_id = ctvendor.vendor_id
-        vals = [serial]
+        vals = []
         try:
-            cur=self.conn.cursor()
+            vals, sql = self._assemblesql(sql, serial, " inv.serial_no ", vals)
+#            if isinstance(serial, (tuple, list)):
+#                sql += " ( "
+#                for s in serial:
+#                    sql += " inv.serial_no like %s or"
+#                    vals.appaned(self.__wildcardformat(s))
+#                sql = sql[:-2]
+#                sql += " ) "
+#            else:
+#                sql += " inv.serial_no like %s "
+#                vals.appaned(self.__wildcardformat(serial))
+
             if ctypename:
-                sql += ' and ctype.cmpnt_type_name like %s '
-                ctypename = self.__wildcardformat(ctypename)
-                vals.append(ctypename)
-            elif vendor:
-                sql += ' and vendor.vendor_name like %s '
-                vendor = self.__wildcardformat(vendor)
-                vals.append(vendor)
+                vals, sql = self._assemblesql(sql, ctypename, " and ctype.cmpnt_type_name ", vals)
+#                if isinstance(ctypename, (tuple, list)):
+#                    sql += " ( "
+#                    for s in ctypename:
+#                        sql += " and ctype.cmpnt_type_name like %s or"
+#                        vals.appaned(self.__wildcardformat(s))
+#                    sql = sql[:-2]
+#                    sql += " ) "
+#                else:
+#                    sql += ' and ctype.cmpnt_type_name like %s '
+#                    ctypename = self.__wildcardformat(ctypename)
+#                    vals.append(ctypename)
+
+            if vendor:
+                vals, sql = self._assemblesql(sql, vendor, " and vendor.vendor_name ", vals)
+#                if isinstance(vendor, (tuple, list)):
+#                    sql += " ( "
+#                    for s in vendor:
+#                        sql += " and vendor.vendor_name like %s or"
+#                        vals.appaned(self.__wildcardformat(s))
+#                    sql = sql[:-2]
+#                    sql += " ) "
+#                else:
+#                    sql += ' and vendor.vendor_name like %s '
+#                    vendor = self.__wildcardformat(vendor)
+#                    vals.append(vendor)
+
+            cur=self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
         except MySQLdb.Error as e:
@@ -800,55 +859,54 @@ class municonvdata(object):
         left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
         left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
         left join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
+        where 
         '''
-#        if ctypename:
-#            sql += '''join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-#            '''
-#        if vendor:
-#            sql += '''join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
-#            join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
-#            '''
-#        # use raw sql query instead of calling API for efficiency issue.
-#        invres = self.retrieveinventory(serial, ctypename=ctypename, vendor=vendor)
-        name = self.__wildcardformat(name)
-        if "%" in name or "_" in name:
-            sql += ' where install.field_name like %s '
-        else:
-            sql += ' where install.field_name = %s '
-        vals = [name]
+        vals = []
         
-        serial = self.__wildcardformat(serial)
-        if "%" in serial or "_" in serial:
-            sql += ' and inventory.serial_no like %s '
-        else:
-            sql += ' and inventory.serial_no = %s '
-        vals.append(serial)
+        vals, sql = self._assemblesql(sql, vendor, " install.field_name ", vals)
+
+#        name = self.__wildcardformat(name)
+#        if "%" in name or "_" in name:
+#            sql += ' where install.field_name like %s '
+#        else:
+#            sql += ' where install.field_name = %s '
+#        vals = [name]
+        
+        vals, sql = self._assemblesql(sql, vendor, " and inventory.serial_no ", vals)
+#        serial = self.__wildcardformat(serial)
+#        if "%" in serial or "_" in serial:
+#            sql += ' and inventory.serial_no like %s '
+#        else:
+#            sql += ' and inventory.serial_no = %s '
+#        vals.append(serial)
         
         if ctypename:
-            ctypename=self.__wildcardformat(ctypename)
-            if "%" in ctypename or "_" in ctypename:
-                sql += ' and cmpnt_type.cmpnt_type_name like %s '
-            else:
-                sql += ' and cmpnt_type.cmpnt_type_name = %s '
-            vals.append(ctypename)
+            vals, sql = self._assemblesql(sql, vendor, " and cmpnt_type.cmpnt_type_name ", vals)
+#            ctypename=self.__wildcardformat(ctypename)
+#            if "%" in ctypename or "_" in ctypename:
+#                sql += ' and cmpnt_type.cmpnt_type_name like %s '
+#            else:
+#                sql += ' and cmpnt_type.cmpnt_type_name = %s '
+#            vals.append(ctypename)
         
         if vendor:
-            vendor = self.__wildcardformat(vendor)
-            if "%" in vendor or "_" in vendor:
-                sql += ' and vendor.vendor_name like %s '
-            else:
-                sql += ' and vendor.vendor_name = %s '
-            vals.append(vendor)
+            vals, sql = self._assemblesql(sql, vendor, " and vendor.vendor_name ", vals)
+#            vendor = self.__wildcardformat(vendor)
+#            if "%" in vendor or "_" in vendor:
+#                sql += ' and vendor.vendor_name like %s '
+#            else:
+#                sql += ' and vendor.vendor_name = %s '
+#            vals.append(vendor)
         if location:
-            location = self.__wildcardformat(location)
-            if "%" in location or "_" in location:
-                sql += ' and install.location like %s '
-            else:
-                sql += ' and install.location = %s '
-            vals.append(location)
+            vals, sql = self._assemblesql(sql, vendor, " and install.location ", vals)
+#            location = self.__wildcardformat(location)
+#            if "%" in location or "_" in location:
+#                sql += ' and install.location like %s '
+#            else:
+#                sql += ' and install.location = %s '
+#            vals.append(location)
 
         try:
-            print(sql, vals)
             cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
@@ -941,21 +999,26 @@ class municonvdata(object):
         retrieve location information from install table
         '''
         sql = '''
-        select distinct location from install where location %s
+        select distinct location from install where 
         '''
         val = None
         if location == None:
             sql = sql%("like %s")
             val = "%"
         else:
-            val = self.__wildcardformat(location)
-            if "%" in val or "_" in val:
-                sql = sql%("like %s")
-            else:
-                sql = sql %(' = %s')
+            val = []
+            val, sql = self._assemblesql(sql, location, " location ", val)
+#            val = self.__wildcardformat(location)
+#            if "%" in val or "_" in val:
+#                sql = sql%("like %s")
+#            else:
+#                sql = sql %(' = %s')
                 
         cur = self.conn.cursor()
-        cur.execute(sql, (val,))
+        if isinstance(val, (list, tuple)):
+            cur.execute(sql, val)
+        else:
+            cur.execute(sql, (val,))
         rawres = cur.fetchall()
         system = []
         for r in rawres:

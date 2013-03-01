@@ -20,26 +20,6 @@ from pymuniconv.municonvprop import (magneticlen, magneticlendesc)
 
 municonv = municonvdata(connection)
 
-def _getfirst(inst, getnone=True):
-    '''
-    get the first value if inst is a list or tuple.
-    
-    if inst is None, or empty string, return None when getnone is False,
-    otherwise, return "*". 
-    '''
-    res = None
-    if isinstance(inst, (list, tuple)):
-        res=inst[0]
-    else:
-        res=inst
-    if res=="" or res == None:
-        if getnone:
-            return None
-        else:
-            return "*"
-    else:
-        return res
-
 def retrievesystemdata(params):
     '''
     acceptable key words:
@@ -79,22 +59,29 @@ def retrievemagnetinfo(params):
             [[install_id, inventory_id, field_name, location, serial_no, cmpnt_type_name, description, vendor_name], ...]
     '''
     if params.has_key('name'):
-        name = _getfirst(params['name'], getnone=False)
+        name = params['name']
+        if isinstance(name, (list, tuple)) and "" in name:
+            name = "*"
     else:
         name = "*"
 
     cmpnt_type = None
     if params.has_key('cmpnt_type'):
-        cmpnt_type = _getfirst(params['cmpnt_type'])
+        cmpnt_type = params['cmpnt_type']
+        if "" in cmpnt_type:
+            cmpnt_type = "*"
 
     location = None
     if params.has_key('system'):
-        location = _getfirst(params['system'])
+        location = params['system']
+        if "" in location:
+            location = "*"
     
     serialno=None
     if params.has_key('serialno'):
-        # get a list of devices from inventory which have been installed
-        serialno = _getfirst(params['serialno'], getnone=False)
+        serialno = params['serialno']
+        if "" in serialno:
+            serialno = "*"
 
     if name == "*" and location == None:
         # returned data format 
