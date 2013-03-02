@@ -128,7 +128,6 @@ def _conversioninfobyinvid(invid):
     '''
     
     #select install.field_name, install.location, inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
-    
     localdict={}
     resfrominv = municonv.retrievemuniconv4inventory(invid, proptmplt, proptmpltdesc)
     if resfrominv != None:
@@ -181,7 +180,7 @@ def _conversioninfobyfieldname(fieldname):
     
     return localdict
     
-def retrieveconversioninfo(params):
+def retrieveconversioninfo(params, cache=True):
     '''
     acceptable key words to identify device(s):
      -- id: inventory id
@@ -194,6 +193,10 @@ def retrieveconversioninfo(params):
      -- value
      -- unit
      -- energy
+    
+    Some global switch
+     -- mcdata: return conversion information with result, False by default.
+     -- cache: use cached value, True by default.
     '''
     resdict = {}
     names = None
@@ -221,12 +224,17 @@ def retrieveconversioninfo(params):
         if isinstance(names, (list, tuple)):
             invids = []
             fieldnames = []
-            for name in names:
-                if name != "":
-                    res = municonv.retrieveinventoryid(name)
-                    for r in res:
-                        invids.append(r[1])
-                        fieldnames.append(r[0])
+            res = municonv.retrieveinventoryid(names)
+            for r in res:
+                invids.append(r[1])
+                fieldnames.append(r[0])
+
+#            for name in names:
+#                if name != "":
+#                    res = municonv.retrieveinventoryid(name)
+#                    for r in res:
+#                        invids.append(r[1])
+#                        fieldnames.append(r[0])
         elif names != "":
             res = municonv.retrieveinventoryid(names)
             if len(res) == 0:
@@ -246,18 +254,32 @@ def retrieveconversioninfo(params):
     if fieldnames == None or len(fieldnames) == 0:
         fieldnames = None
 
+    cache = True
+    if params.has_key('cache'):
+        cache = True
+
     if fieldnames != None:
         # use field name as key
         for i in range(len(invids)):
-            invid = invids[i]
-            if invid == None:
-                resdict[fieldnames[i]] = _conversioninfobyfieldname(fieldnames[i])
+            if cache and municonv.cachedconversioninfo.has_key(fieldnames[i]):
+                resdict[fieldnames[i]] = municonv.cachedconversioninfo[fieldnames[i]]
             else:
-                resdict[fieldnames[i]] = _conversioninfobyinvid(invid)
+                invid = invids[i]
+                if invid == None:
+                    tmpres = _conversioninfobyfieldname(fieldnames[i])
+                else:
+                    tmpres = _conversioninfobyinvid(invid)
+                resdict[fieldnames[i]] = tmpres
+                municonv.cachedconversioninfo.update({fieldnames[i]: tmpres})
     elif invids != None:
         # use inventory id as key
         for invid in invids:
-            resdict[invid] = _conversioninfobyinvid(invid)
+            if cache and municonv.cachedconversioninfo.has_key(invid):
+                resdict[invid] = municonv.cachedconversioninfo[invid]
+            else:
+                tmpres = _conversioninfobyinvid(invid)
+                resdict[invid] = tmpres
+                municonv.cachedconversioninfo.update({invid: tmpres})
     else:
         #no enough information, nothing can do.
         return resdict
@@ -266,12 +288,19 @@ def retrieveconversioninfo(params):
         energy=None
         if params.has_key('energy'):
             energy = params['energy']
+            if isinstance(energy, (list, tuple)):
+                resdict['message'] = 'multiple beam energy found'
+                return resdict
         mcdata=False
         if params.has_key('mcdata'):
             mcdata = True
+        
         src = params['from']
         dst = params['to']
         value = params['value']
+        if isinstance(src, (list, tuple)) or isinstance(dst, (list, tuple)) or isinstance(value, (list, tuple)):
+            resdict['message'] = 'too many conversion info found. Please check from, to, and/or value parameter.'
+            return resdict
         
         keys = ['municonv', 'municonv_chain']
         

@@ -35,6 +35,7 @@ class municonvdata(object):
         self.logger.setLevel(logging.WARNING)
         if connection != None:
             self.conn = connection
+        self.cachedconversioninfo = {}
     
     def connectdb(self, host=None, user=None, pwd=None, db=None,port=3306):
         if host == None or user == None or pwd == None or db == None:
@@ -90,6 +91,8 @@ class municonvdata(object):
                 s = self.__wildcardformat(s)
                 if "%" in s or "_" in s:
                     sql += strpattern1
+                elif s == "":
+                    pass
                 else:
                     sql += strpattern3
                 res.append(s)
@@ -99,6 +102,8 @@ class municonvdata(object):
             data = self.__wildcardformat(data)
             if "%" in data or "_" in data:
                 sql += strpattern2
+            elif s == "":
+                pass
             else:
                 sql += strpattern4
             res.append(data)
@@ -1003,7 +1008,7 @@ class municonvdata(object):
         '''
         val = None
         if location == None:
-            sql = sql%("like %s")
+            sql += " location like %s "
             val = "%"
         else:
             val = []
@@ -1013,13 +1018,17 @@ class municonvdata(object):
 #                sql = sql%("like %s")
 #            else:
 #                sql = sql %(' = %s')
-                
-        cur = self.conn.cursor()
-        if isinstance(val, (list, tuple)):
-            cur.execute(sql, val)
-        else:
-            cur.execute(sql, (val,))
-        rawres = cur.fetchall()
+        try:
+            cur = self.conn.cursor()
+            if isinstance(val, (list, tuple)):
+                cur.execute(sql, val)
+            else:
+                cur.execute(sql, (val,))
+            rawres = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching system from install table:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching system from install table:\n%s (%d)' %(e.args[1], e.args[0]))
+        
         system = []
         for r in rawres:
             system.append(r[0])
@@ -1045,9 +1054,14 @@ class municonvdata(object):
         invproptmpltname = self.__wildcardformat(invproptmpltname)
         invproptmpltdesc = self.__wildcardformat(invproptmpltdesc)
         
-        cur = self.conn.cursor()
-        cur.execute(sql, (invid, invproptmpltname, invproptmpltdesc))
-        res = cur.fetchone()
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (invid, invproptmpltname, invproptmpltdesc))
+            res = cur.fetchone()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+
         return res
         
     def retrievemuniconvbycmpnttype4inventory(self, invid, ctypeproptypetmpltname, ctypeproptmpltdesc):
@@ -1073,9 +1087,14 @@ class municonvdata(object):
         ctypeproptypetmpltname = self.__wildcardformat(ctypeproptypetmpltname)
         ctypeproptmpltdesc = self.__wildcardformat(ctypeproptmpltdesc)
         
-        cur = self.conn.cursor()
-        cur.execute(sql, (invid, ctypeproptypetmpltname, ctypeproptmpltdesc))
-        res = cur.fetchone()
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (invid, ctypeproptypetmpltname, ctypeproptmpltdesc))
+            res = cur.fetchone()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching magnet unit conversion information for inventory with given component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching magnet unit conversion information for inventory with given component type:\n%s (%d)' %(e.args[1], e.args[0]))
+
         return res
 
     def retrievemuniconv4install(self, name, ctypeproptypetmpltname, ctypeproptmpltdesc):
@@ -1101,9 +1120,14 @@ class municonvdata(object):
         ctypeproptypetmpltname = self.__wildcardformat(ctypeproptypetmpltname)
         ctypeproptmpltdesc = self.__wildcardformat(ctypeproptmpltdesc)
         
-        cur = self.conn.cursor()
-        cur.execute(sql, (name, ctypeproptypetmpltname, ctypeproptmpltdesc))
-        res = cur.fetchone()
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (name, ctypeproptypetmpltname, ctypeproptmpltdesc))
+            res = cur.fetchone()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching magnet unit conversion information for install:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching magnet unit conversion information for install:\n%s (%d)' %(e.args[1], e.args[0]))
+
         return res
         
     def retrieveinventoryid(self, name):
@@ -1112,10 +1136,16 @@ class municonvdata(object):
         select field_name, ii.inventory_id 
         from install 
         left join inventory__install ii on ii.install_id = install.install_id
-        where field_name like %s;
+        where 
         '''
-        name = self.__wildcardformat(name)
-        cur=self.conn.cursor()
-        cur.execute(sql, (name,))
-        return cur.fetchall()
-        
+        vals=[]
+        vals, sql = self._assemblesql(sql, name, " field_name ", vals)
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, vals)
+            res = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching device name and inventory information:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching device name and inventory information:\n%s (%d)' %(e.args[1], e.args[0]))
+
+        return res
