@@ -11,7 +11,10 @@ except ImportError:
 
 import numpy as np
 from scipy import optimize
-from scipy.interpolate import InterpolatedUnivariateSpline
+#from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import interp1d
+
+import copy
 
 from pymuniconv.municonvdata import municonvdata
 from pymuniconv.municonvprop import (proptmplt, proptmpltdesc)
@@ -262,28 +265,28 @@ def retrieveconversioninfo(params, cache=True):
         # use field name as key
         for i in range(len(invids)):
             if cache and municonv.cachedconversioninfo.has_key(fieldnames[i]):
-                resdict[fieldnames[i]] = municonv.cachedconversioninfo[fieldnames[i]]
+                resdict[fieldnames[i]] = copy.deepcopy(municonv.cachedconversioninfo[fieldnames[i]])
             else:
                 invid = invids[i]
                 if invid == None:
                     tmpres = _conversioninfobyfieldname(fieldnames[i])
                 else:
                     tmpres = _conversioninfobyinvid(invid)
-                resdict[fieldnames[i]] = tmpres
-                municonv.cachedconversioninfo.update({fieldnames[i]: tmpres})
+                resdict[fieldnames[i]] = copy.deepcopy(tmpres)
+                municonv.cachedconversioninfo.update({fieldnames[i]: copy.deepcopy(tmpres)})
     elif invids != None:
         # use inventory id as key
         for invid in invids:
             if cache and municonv.cachedconversioninfo.has_key(invid):
-                resdict[invid] = municonv.cachedconversioninfo[invid]
+                resdict[invid] = copy.deepcopy(municonv.cachedconversioninfo[invid])
             else:
                 tmpres = _conversioninfobyinvid(invid)
-                resdict[invid] = tmpres
-                municonv.cachedconversioninfo.update({invid: tmpres})
+                resdict[invid] = copy.deepcopy(tmpres)
+                municonv.cachedconversioninfo.update({invid: copy.deepcopy(tmpres)})
     else:
         #no enough information, nothing can do.
         return resdict
-    
+
     if params.has_key('from') and params.has_key('to') and params.has_key('value'):
         energy=None
         if params.has_key('energy'):
@@ -461,9 +464,13 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                 x, y = _sortdata(x, y)
                 # do inter/extrapolation
                 # spline order: 1 linear, 2 quadratic, 3 cubic ... 
-                func = InterpolatedUnivariateSpline(x, y, k=1)
-                #func = interp1d(x, y, kind='cubic')
-                res = func(value).item()
+                #func = InterpolatedUnivariateSpline(x, y, k=1)
+                func = interp1d(x, y, kind='cubic')
+                try:
+                    res = func(value).item()
+                except ValueError:
+                    value *= -1
+                    res = (func(value).item()*-1)
             else:
                 message = "Data set is empty, cannnot do interpolating."
         else:

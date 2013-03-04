@@ -102,7 +102,7 @@ class municonvdata(object):
             data = self.__wildcardformat(data)
             if "%" in data or "_" in data:
                 sql += strpattern2
-            elif s == "":
+            elif data == "":
                 pass
             else:
                 sql += strpattern4

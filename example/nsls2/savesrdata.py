@@ -331,6 +331,7 @@ def saverotcoildata(files):
                             'field': bref1,
                             'field_unit': 'T-m',
                             'int_trans_func': transf1,
+                            'energy_default': 3.0,
                             'description': dev1,
                             'i2b': [3, 'interpolating']
                             }
@@ -344,6 +345,7 @@ def saverotcoildata(files):
                             'field': bref2,
                             'field_unit': 'T-m',
                             'int_trans_func': transf2,
+                            'energy_default': 3.0,
                             'description': dev2,
                             'i2b': [3, 'interpolating']
                             }
@@ -357,6 +359,7 @@ def saverotcoildata(files):
                             'field': bref3,
                             'field_unit': 'T-m',
                             'int_trans_func': transf3,
+                            'energy_default': 3.0,
                             'description': dev3,
                             'i2b': [3, 'interpolating']
                             }
@@ -372,6 +375,7 @@ def saverotcoildata(files):
             paramdict['field'] = bref1
             paramdict['field_unit'] = 'T-m'
             paramdict['int_trans_func'] = transf1
+            paramdict['energy_default'] = 3.0
             paramdict['description'] = dev1
             paramdict['i2b'] = [3, 'interpolating']
             try:
