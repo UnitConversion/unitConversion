@@ -576,8 +576,6 @@ class municonvdata(object):
 
         if ctypename:
             vals, sql = _assemblesql(sql, ctypename, " cmpnt_type_name ", vals, connector="and")
-            print sql
-            print 
 #            ctypename = _wildcardformat(ctypename)
 #            if "%" in ctypename or "_" in ctypename:
 #                sql += " and cmpnt_type_name like %s "
