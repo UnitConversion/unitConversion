@@ -24,6 +24,8 @@ Created on Oct 2, 2012
 import logging
 import MySQLdb
 
+from utils import (_wildcardformat, _assemblesql)
+
 class municonvdata(object):
     '''Save magnet unit conversion data class'''
     def __init__(self, connection=None):
@@ -37,7 +39,7 @@ class municonvdata(object):
             self.conn = connection
         self.cachedconversioninfo = {}
     
-    def connectdb(self, host=None, user=None, pwd=None, db=None,port=3306):
+    def connectdb(self, host=None, user=None, pwd=None, db=None, port=3306):
         if host == None or user == None or pwd == None or db == None:
             raise ValueError("Cannot initialize municonv database since information is not sufficient.")
         
@@ -60,55 +62,7 @@ class municonvdata(object):
             return False
         
         return True
-    
-    def __wildcardformat(self, regxval):
-        """
-        The LIKE condition allows user to use wildcards in the where clause of an SQL statement.
-        This allows user to perform pattern matching. The LIKE condition can be used in any valid
-        SQL statement - select, insert, update, or delete.
-        The patterns that a user can choose from are:
-            % allows you to match any string of any length (including zero length)
-            _ allows you to match on a single character
-    
-        The client uses "*" for multiple match, and "?" for single character match.
-        This function replaces "*" with "%", and "?" with "_".
-    
-        For example:
-        >>> __wildcardformat("a*b?c*d*e?f")
-        u'a%b_c%d%e_f'
-        """
-        return regxval.replace("*","%").replace("?","_")
-    
-    def _assemblesql(self, sql, data, strpattern, res):
-        ''''''
-        strpattern1 = strpattern + " like %s or"
-        strpattern2 = strpattern + " like %s " 
-        strpattern3 = strpattern + " = %s or"
-        strpattern4 = strpattern + " = %s " 
-        if isinstance(data, (tuple, list)):
-            sql += " ( "
-            for s in data:
-                s = self.__wildcardformat(s)
-                if "%" in s or "_" in s:
-                    sql += strpattern1
-                elif s == "":
-                    pass
-                else:
-                    sql += strpattern3
-                res.append(s)
-            sql = sql[:-2]
-            sql += " ) "
-        else:
-            data = self.__wildcardformat(data)
-            if "%" in data or "_" in data:
-                sql += strpattern2
-            elif data == "":
-                pass
-            else:
-                sql += strpattern4
-            res.append(data)
-        return res, sql
-    
+        
     def retrievecmpnttype(self, name, desc=None, vendor=None):
         '''Retrieve id of a given component type name, description [optional], and vendor [optional].
         
@@ -140,20 +94,20 @@ class municonvdata(object):
             ctype.cmpnt_type_name like %s
             '''
         
-        name = self.__wildcardformat(name)
+        name = _wildcardformat(name)
         try:
             cur = self.conn.cursor()
             if desc and vendor:
-                desc = self.__wildcardformat(desc)
-                vendor = self.__wildcardformat(vendor)
+                desc = _wildcardformat(desc)
+                vendor = _wildcardformat(vendor)
                 sql += " and ctype.description like %s and vendor.vendor_name like %s "
                 cur.execute(sql, (name, desc, vendor))
             elif desc:
-                desc = self.__wildcardformat(desc)
+                desc = _wildcardformat(desc)
                 sql += " and ctype.description like %s "
                 cur.execute(sql, (name, desc))
             elif vendor:
-                vendor = self.__wildcardformat(vendor)
+                vendor = _wildcardformat(vendor)
                 sql += " and vendor.vendor_name like %s "
                 cur.execute(sql, (name, vendor))
             else:
@@ -264,7 +218,7 @@ class municonvdata(object):
         cmpnt_type_prop_type_name like %s
         '''
         
-        name = self.__wildcardformat(name)
+        name = _wildcardformat(name)
         try:
             cur = self.conn.cursor()
             if desc:
@@ -327,7 +281,7 @@ class municonvdata(object):
         try:
             cur = self.conn.cursor()
             if value:
-                value = self.__wildcardformat(value)
+                value = _wildcardformat(value)
                 if "%" in value or "_" in value:
                     sql += " and cmpnt_type_prop_value like %s "
                 else:
@@ -422,7 +376,7 @@ class municonvdata(object):
         inventory_prop_tmplt_name like %s
         '''
         
-        name = self.__wildcardformat(name)
+        name = _wildcardformat(name)
         value = [name]
         
         if ctypeid:
@@ -513,7 +467,7 @@ class municonvdata(object):
         values = [inventoryid, iproptmpltid]
         
         if value:
-            value = self.__wildcardformat(value)
+            value = _wildcardformat(value)
             if "%" in value or "_" in value:
                 sql += " value like %s "
             else:
@@ -611,9 +565,9 @@ class municonvdata(object):
         '''
         vals = []
         
-        vals, sql = self._assemblesql(sql, name, " field_name ", vals)
+        vals, sql = _assemblesql(sql, name, " field_name ", vals)
 
-#        name = self.__wildcardformat(name)
+#        name = _wildcardformat(name)
 #        if '%' in name or '_' in name:
 #            sql += " field_name like %s "
 #        else:
@@ -621,8 +575,10 @@ class municonvdata(object):
 #        vals = [name]
 
         if ctypename:
-            vals, sql = self._assemblesql(sql, name, " and cmpnt_type_name ", vals)
-#            ctypename = self.__wildcardformat(ctypename)
+            vals, sql = _assemblesql(sql, ctypename, " cmpnt_type_name ", vals, connector="and")
+            print sql
+            print 
+#            ctypename = _wildcardformat(ctypename)
 #            if "%" in ctypename or "_" in ctypename:
 #                sql += " and cmpnt_type_name like %s "
 #            else:
@@ -630,8 +586,8 @@ class municonvdata(object):
 #            vals.append(ctypename)
 
         if location:
-            vals, sql = self._assemblesql(sql, name, " and location ", vals)
-#            location = self.__wildcardformat(location)
+            vals, sql = _assemblesql(sql, location, " location ", vals, connector="and")
+#            location = _wildcardformat(location)
 #            if "%" in location or "_" in location:
 #                sql += " and location like %s "
 #            else:
@@ -727,7 +683,7 @@ class municonvdata(object):
         vendor.vendor_name
         '''
         
-        serial = self.__wildcardformat(serial)
+        serial = _wildcardformat(serial)
         sql = '''
         select inv.inventory_id, inv.serial_no, ctype.cmpnt_type_name, ctype.description, vendor.vendor_name
         from inventory inv
@@ -737,44 +693,44 @@ class municonvdata(object):
         '''
         vals = []
         try:
-            vals, sql = self._assemblesql(sql, serial, " inv.serial_no ", vals)
+            vals, sql = _assemblesql(sql, serial, " inv.serial_no ", vals)
 #            if isinstance(serial, (tuple, list)):
 #                sql += " ( "
 #                for s in serial:
 #                    sql += " inv.serial_no like %s or"
-#                    vals.appaned(self.__wildcardformat(s))
+#                    vals.appaned(_wildcardformat(s))
 #                sql = sql[:-2]
 #                sql += " ) "
 #            else:
 #                sql += " inv.serial_no like %s "
-#                vals.appaned(self.__wildcardformat(serial))
+#                vals.appaned(_wildcardformat(serial))
 
             if ctypename:
-                vals, sql = self._assemblesql(sql, ctypename, " and ctype.cmpnt_type_name ", vals)
+                vals, sql = _assemblesql(sql, ctypename, " ctype.cmpnt_type_name ", vals, connector="and")
 #                if isinstance(ctypename, (tuple, list)):
 #                    sql += " ( "
 #                    for s in ctypename:
 #                        sql += " and ctype.cmpnt_type_name like %s or"
-#                        vals.appaned(self.__wildcardformat(s))
+#                        vals.appaned(_wildcardformat(s))
 #                    sql = sql[:-2]
 #                    sql += " ) "
 #                else:
 #                    sql += ' and ctype.cmpnt_type_name like %s '
-#                    ctypename = self.__wildcardformat(ctypename)
+#                    ctypename = _wildcardformat(ctypename)
 #                    vals.append(ctypename)
 
             if vendor:
-                vals, sql = self._assemblesql(sql, vendor, " and vendor.vendor_name ", vals)
+                vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
 #                if isinstance(vendor, (tuple, list)):
 #                    sql += " ( "
 #                    for s in vendor:
 #                        sql += " and vendor.vendor_name like %s or"
-#                        vals.appaned(self.__wildcardformat(s))
+#                        vals.appaned(_wildcardformat(s))
 #                    sql = sql[:-2]
 #                    sql += " ) "
 #                else:
 #                    sql += ' and vendor.vendor_name like %s '
-#                    vendor = self.__wildcardformat(vendor)
+#                    vendor = _wildcardformat(vendor)
 #                    vals.append(vendor)
 
             cur=self.conn.cursor()
@@ -868,17 +824,17 @@ class municonvdata(object):
         '''
         vals = []
         
-        vals, sql = self._assemblesql(sql, vendor, " install.field_name ", vals)
+        vals, sql = _assemblesql(sql, name, " install.field_name ", vals)
 
-#        name = self.__wildcardformat(name)
+#        name = _wildcardformat(name)
 #        if "%" in name or "_" in name:
 #            sql += ' where install.field_name like %s '
 #        else:
 #            sql += ' where install.field_name = %s '
 #        vals = [name]
         
-        vals, sql = self._assemblesql(sql, vendor, " and inventory.serial_no ", vals)
-#        serial = self.__wildcardformat(serial)
+        vals, sql = _assemblesql(sql, serial, " inventory.serial_no ", vals, connector="and")
+#        serial = _wildcardformat(serial)
 #        if "%" in serial or "_" in serial:
 #            sql += ' and inventory.serial_no like %s '
 #        else:
@@ -886,8 +842,8 @@ class municonvdata(object):
 #        vals.append(serial)
         
         if ctypename:
-            vals, sql = self._assemblesql(sql, vendor, " and cmpnt_type.cmpnt_type_name ", vals)
-#            ctypename=self.__wildcardformat(ctypename)
+            vals, sql = _assemblesql(sql, ctypename, " cmpnt_type.cmpnt_type_name ", vals, connector="and")
+#            ctypename=_wildcardformat(ctypename)
 #            if "%" in ctypename or "_" in ctypename:
 #                sql += ' and cmpnt_type.cmpnt_type_name like %s '
 #            else:
@@ -895,16 +851,16 @@ class municonvdata(object):
 #            vals.append(ctypename)
         
         if vendor:
-            vals, sql = self._assemblesql(sql, vendor, " and vendor.vendor_name ", vals)
-#            vendor = self.__wildcardformat(vendor)
+            vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
+#            vendor = _wildcardformat(vendor)
 #            if "%" in vendor or "_" in vendor:
 #                sql += ' and vendor.vendor_name like %s '
 #            else:
 #                sql += ' and vendor.vendor_name = %s '
 #            vals.append(vendor)
         if location:
-            vals, sql = self._assemblesql(sql, vendor, " and install.location ", vals)
-#            location = self.__wildcardformat(location)
+            vals, sql = _assemblesql(sql, location, " install.location ", vals, connector="and")
+#            location = _wildcardformat(location)
 #            if "%" in location or "_" in location:
 #                sql += ' and install.location like %s '
 #            else:
@@ -1012,8 +968,8 @@ class municonvdata(object):
             val = "%"
         else:
             val = []
-            val, sql = self._assemblesql(sql, location, " location ", val)
-#            val = self.__wildcardformat(location)
+            val, sql = _assemblesql(sql, location, " location ", val)
+#            val = _wildcardformat(location)
 #            if "%" in val or "_" in val:
 #                sql = sql%("like %s")
 #            else:
@@ -1051,8 +1007,8 @@ class municonvdata(object):
         and inventory_prop_tmplt.inventory_prop_tmplt_name like %s
         and inventory_prop_tmplt.inventory_prop_tmplt_desc like %s
         '''
-        invproptmpltname = self.__wildcardformat(invproptmpltname)
-        invproptmpltdesc = self.__wildcardformat(invproptmpltdesc)
+        invproptmpltname = _wildcardformat(invproptmpltname)
+        invproptmpltdesc = _wildcardformat(invproptmpltdesc)
         
         try:
             cur = self.conn.cursor()
@@ -1084,8 +1040,8 @@ class municonvdata(object):
         and cmpnt_type_prop_type.cmpnt_type_prop_type_name like %s
         and cmpnt_type_prop_type.cmpnt_type_prop_type_desc like %s
         '''
-        ctypeproptypetmpltname = self.__wildcardformat(ctypeproptypetmpltname)
-        ctypeproptmpltdesc = self.__wildcardformat(ctypeproptmpltdesc)
+        ctypeproptypetmpltname = _wildcardformat(ctypeproptypetmpltname)
+        ctypeproptmpltdesc = _wildcardformat(ctypeproptmpltdesc)
         
         try:
             cur = self.conn.cursor()
@@ -1116,9 +1072,9 @@ class municonvdata(object):
         and cmpnt_type_prop_type.cmpnt_type_prop_type_name like %s
         and cmpnt_type_prop_type.cmpnt_type_prop_type_desc like %s
         '''
-        name = self.__wildcardformat(name)
-        ctypeproptypetmpltname = self.__wildcardformat(ctypeproptypetmpltname)
-        ctypeproptmpltdesc = self.__wildcardformat(ctypeproptmpltdesc)
+        name = _wildcardformat(name)
+        ctypeproptypetmpltname = _wildcardformat(ctypeproptypetmpltname)
+        ctypeproptmpltdesc = _wildcardformat(ctypeproptmpltdesc)
         
         try:
             cur = self.conn.cursor()
@@ -1139,7 +1095,7 @@ class municonvdata(object):
         where 
         '''
         vals=[]
-        vals, sql = self._assemblesql(sql, name, " field_name ", vals)
+        vals, sql = _assemblesql(sql, name, " field_name ", vals)
         try:
             cur=self.conn.cursor()
             cur.execute(sql, vals)

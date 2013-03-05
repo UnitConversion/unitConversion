@@ -71,19 +71,19 @@ def retrievemagnetinfo(params):
     cmpnt_type = None
     if params.has_key('cmpnt_type'):
         cmpnt_type = params['cmpnt_type']
-        if "" in cmpnt_type:
+        if isinstance(cmpnt_type, (list, tuple)) and "" in cmpnt_type:
             cmpnt_type = "*"
-
+    
     location = None
     if params.has_key('system'):
         location = params['system']
-        if "" in location:
+        if isinstance(location, (list, tuple)) and "" in location:
             location = "*"
     
     serialno=None
     if params.has_key('serialno'):
         serialno = params['serialno']
-        if "" in serialno:
+        if isinstance(serialno, (list, tuple)) and "" in serialno:
             serialno = "*"
 
     if name == "*" and location == None:
@@ -371,6 +371,28 @@ def _sortdata(x, y):
 
     return new_x, new_y
 
+def _quickfind(value, vallist):
+    try:
+        return vallist.index(value)
+    except ValueError:
+        length = len(vallist)
+        if value < vallist[0]:
+            return 0
+        elif value > vallist[length-1]:
+            return length
+        elif value < vallist[length/2]:
+            return _quickfind(value, vallist[:length/2])
+        else:
+            return length/2 + _quickfind(value, vallist[length/2:])
+
+def _getsub(index, val, count=2):
+    if index < count:
+        return val[:2*count]
+    elif index > (len(val)-count):
+        return val[len(val)-2*count:]
+    else:
+        return val[index-count:index+count]
+
 def _doi2b(paramsdict, value, revert=False, key='i2b'):
     res = None
     if revert:
@@ -462,15 +484,37 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                     y = cur
                 # sort data to ensure x value to be monotonically increasing
                 x, y = _sortdata(x, y)
+                # algorithm 1
                 # do inter/extrapolation
                 # spline order: 1 linear, 2 quadratic, 3 cubic ... 
                 #func = InterpolatedUnivariateSpline(x, y, k=1)
+                
+                # algorithm 2
+                # 2nd order interpolation
                 func = interp1d(x, y, kind='cubic')
                 try:
                     res = func(value).item()
                 except ValueError:
                     value *= -1
-                    res = (func(value).item()*-1)
+                    res = -1*func(value).item()
+                
+                #algorithm 3
+                # 2nd order polynomial fitting
+                #doit = True
+                #reversesign = False
+                #if value < x[0] or value > x[len(x)-1]:
+                #    value*=-1
+                #    if value < x[0] or value > x[len(x)-1]:
+                #        doit=False
+                #        message = "given value is out of data range, can not do interpolate it."
+                #    else:
+                #        reversesign = True
+                #if doit:
+                #    index = _quickfind(value, x)
+                #    coeff = np.polyfit(_getsub(index, x), _getsub(index, y), 2)
+                #    res = np.polyval(coeff,value)
+                #    if reversesign:
+                #        res *= -1
             else:
                 message = "Data set is empty, cannnot do interpolating."
         else:
