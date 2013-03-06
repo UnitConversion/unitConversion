@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 3/1/2013 11:51:02 AM
--- Diagram Version: 429
+-- Created on: 3/6/2013 3:23:17 PM
+-- Diagram Version: 433
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -331,7 +331,7 @@ DROP TABLE IF EXISTS `element_type`;
 
 CREATE TABLE `element_type` (
   `element_type_id` int(11) NOT NULL AUTO_INCREMENT,
-  `element_type` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  `element_type_name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `element_type_description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
   PRIMARY KEY(`element_type_id`)
 )
@@ -467,6 +467,7 @@ CREATE TABLE `install` (
   `field_name` varchar(255),
   `location` varchar(255),
   PRIMARY KEY(`install_id`),
+  UNIQUE INDEX `field_name`(`field_name`),
   CONSTRAINT `Ref_99` FOREIGN KEY (`cmpnt_type_id`)
     REFERENCES `cmpnt_type`(`cmpnt_type_id`)
     ON DELETE NO ACTION
@@ -2283,4 +2284,3 @@ CREATE TABLE `fld` (
 ENGINE=INNODB;
 
 SET FOREIGN_KEY_CHECKS=1;
-
