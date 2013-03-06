@@ -23,6 +23,7 @@ def _wildcardformat(regxval):
 
 def _assemblesql(sql, data, strpattern, res, connector=""):
     ''''''
+    strpattern = " "+ strpattern
     strpattern1 = strpattern + " like %s or"
     strpattern2 = strpattern + " like %s " 
     strpattern3 = strpattern + " = %s or"

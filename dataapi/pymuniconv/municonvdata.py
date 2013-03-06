@@ -552,9 +552,6 @@ class municonvdata(object):
         
         return: tuple with format as ((id, field name, location, component type name, description, vendor), ...)
         '''
-#        if not isinstance(name, (str, unicode)):
-#            raise Exception('Device name has to be a string.')
-        
         sql = '''
         select install_id, field_name, location, cmpnt_type_name, description, vendor_name
         from install
