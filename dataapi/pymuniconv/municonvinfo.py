@@ -87,13 +87,12 @@ def retrievemagnetinfo(params):
             serialno = "*"
 
     if name == "*" and location == None:
-        # returned data format 
-        # ((inventory_id, serial_no, cmpnt_type_name, description, vendor_name), ...)
         if serialno==None:
             tmps = municonv.retrieveinventory("*", ctypename=cmpnt_type)
         else:
             tmps = municonv.retrieveinventory(serialno, ctypename=cmpnt_type)
-        key = ['inventory_id', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
+        #key = ['inventory_id', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
+        key = ['install_id', 'inventory_id', 'name', 'system', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
         res = []
         for tmp in tmps:
             sub={}
@@ -101,8 +100,6 @@ def retrievemagnetinfo(params):
                 sub[key[i]] = tmp[i]
             res.append(sub)
     elif serialno == None:
-        # returned data format
-        # ((install id, field name, location, component type name, description, vendor), ...)
         tmps=municonv.retrieveinstall(name, ctypename=cmpnt_type, location=location)
         key = ['install_id', 'name', 'system', 'cmpnt_type_name', 'type_description', 'vendor']
         res = []
@@ -112,8 +109,6 @@ def retrievemagnetinfo(params):
                 sub[key[i]] = tmp[i]
             res.append(sub)
     else:
-        # returned data format
-        # ((install id, inventory id, field name, location, serial no, component type name, description, vendor), ...)
         tmps = municonv.retrieveinstalledinventory(name, serialno, ctypename=cmpnt_type, location=location)
         key = ['install_id', 'inventory_id', 'name', 'system', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
         res = []

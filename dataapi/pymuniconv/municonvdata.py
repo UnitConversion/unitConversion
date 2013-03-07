@@ -672,18 +672,17 @@ class municonvdata(object):
         if not isinstance(serial, (str, unicode)):
             raise Exception('Serial no has to be string.')
 
-        '''select install.install_id, inventory.inventory_id, install.field_name, install.location,
-        inventory.serial_no, 
-        cmpnt_type.cmpnt_type_name, cmpnt_type.description,
-        vendor.vendor_name
-        '''
-        
         serial = _wildcardformat(serial)
         sql = '''
-        select inv.inventory_id, inv.serial_no, ctype.cmpnt_type_name, ctype.description, vendor.vendor_name
+        select install.install_id, inv.inventory_id, install.field_name, install.location,
+        inv.serial_no, 
+        ctype.cmpnt_type_name, ctype.description, 
+        vendor.vendor_name
         from inventory inv
         left join vendor on vendor.vendor_id = inv.vendor_id
         left join cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
+        left join inventory__install on inventory__install.inventory_id = inv.inventory_id
+        left join install on inventory__install.install_id = install.install_id
         where  
         '''
         vals = []
