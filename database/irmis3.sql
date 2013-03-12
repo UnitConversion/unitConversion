@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 3/6/2013 3:23:17 PM
--- Diagram Version: 433
+-- Created on: 3/12/2013 10:31:16 AM
+-- Diagram Version: 434
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -1321,6 +1321,7 @@ CREATE TABLE `lattice` (
   `updated_by` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `update_date` datetime,
   PRIMARY KEY(`lattice_id`),
+  UNIQUE INDEX `lattice_name_version_branch`(`lattice_name`, `lattice_version`, `lattice_branch`),
   CONSTRAINT `FK_model_line` FOREIGN KEY (`model_line_id`)
     REFERENCES `model_line`(`model_line_id`)
     ON DELETE NO ACTION
@@ -2284,3 +2285,4 @@ CREATE TABLE `fld` (
 ENGINE=INNODB;
 
 SET FOREIGN_KEY_CHECKS=1;
+
