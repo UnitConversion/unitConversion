@@ -149,7 +149,7 @@ def saveinstall(dfile):
             invid = None
             invdata = municonv.retrieveinventory(str(serial), ctype)
             if len(invdata) == 1:
-                invid = invdata[0][0]
+                invid = invdata[0][1]
             ctypedata = municonv.retrievecmpnttype(ctype)
             
             ctypeid = None
@@ -205,14 +205,14 @@ def saverotcoildata(files):
         resdict={}
         if data[3][0] == 'Serial Number' and data[3][1] != '':
             serial = int(data[3][1])
-            paramdict['serial'] = serial
+            paramdict['serialNumber'] = serial
         else:
             print ('No serial number for %s'%(dfile))
         serial = checksn(os.path.split(str(dfile))[1], serial)
 
         if data[0][0] == 'Magnet Type' and data[0][1] != '':
             ctype = data[0][1].strip()
-            paramdict['ref_draw'] = data[0][1].strip()
+            paramdict['referenceDraw'] = data[0][1].strip()
             ctype = draw2typedict[ctype[6:]]
             
             # special case: change the SN    from    |       to
@@ -228,7 +228,7 @@ def saverotcoildata(files):
             print ('No no reference drawing for %s'%(dfile))
         
         if data[1][0] == 'Alias' and data[1][1] != '':
-            paramdict['alias'] = data[1][1].strip()
+            paramdict['aliasName'] = data[1][1].strip()
         else:
             print ('No alias for %s'%(dfile))
         if data[2][0] == 'Vendor ID' and data[2][1] != '':
@@ -242,11 +242,11 @@ def saverotcoildata(files):
 #            print ('No coil id for %s'%(dfile))
         if data[5][0] == 'Reference_Radius' and data[5][1] != '':
             # convert reference radius from mm to meter
-            paramdict['ref_radius'] = data[5][1]/1000.00
+            paramdict['referenceRadius'] = data[5][1]/1000.00
         else:
             print ('No reference radius for %s'%(dfile))        
         if data[8][0] == 'Conditioning Current' and data[8][1] != '':
-            paramdict['condition_cur'] = data[8][1]
+            paramdict['conditionCurrent'] = data[8][1]
         
         ctypeid = ctype[0]
         ctypename = ctype[1]
@@ -276,7 +276,7 @@ def saverotcoildata(files):
         if len(res) == 0:
             invid = municonv.saveinventory(str(serial), ctypename, vendor)
         else:
-            invid = res[0][0]
+            invid = res[0][1]
 
         run1 = []
         run2 = []
@@ -320,73 +320,114 @@ def saverotcoildata(files):
                 bref3.append(field[13])
                 transf3.append(field[10])
                 dev3.append(field[2])
-            
+        
+        defaultEnergy = 3.0
         if len(cur2) != 0 or len(cur3) != 0:
-            tempdict = {}
             if len(cur1) != 0:
-                subparam = {'run': run1,
-                            'current': cur1,
-                            'current_unit': 'A',
-                            'direction': direction1,
-                            'field': bref1,
-                            'field_unit': 'T-m',
-                            'int_trans_func': transf1,
-                            'energy_default': 3.0,
-                            'description': dev1,
-                            'i2b': [3, 'interpolating']
-                            }
-                subparam.update(paramdict)
-                tempdict['1'] = subparam
+                measurementDatadict = {'runNumber': run1,
+                                    'current': cur1,
+                                    'currentUnit': 'A',
+                                    'direction': direction1,
+                                    'field': bref1,
+                                    'fieldUnit': 'T-m',
+                                    'integralTransferFunction': transf1,
+                                    'description': dev1,
+                                    }
+                measurementDatadict.update(paramdict)
+                conversionsdict = {'i2b': {'algorithmId': 2,
+                                           'auxInfo': 1,
+                                           'function': 'polynomial',
+                                           'initialUnit': 'A',
+                                           'resultUnit': 'T-m'},
+                                   'b2k': {}}
+                resdict['complex:1'] = {'measurementData': measurementDatadict,
+                                         'algorithms': conversionsdict,
+                                         'description': 'Horizontal corrector component',
+                                         'defaultEnergy': defaultEnergy}
             if len(cur2) != 0:
-                subparam = {'run': run2,
-                            'current': cur2,
-                            'current_unit': 'A',
-                            'direction': direction2,
-                            'field': bref2,
-                            'field_unit': 'T-m',
-                            'int_trans_func': transf2,
-                            'energy_default': 3.0,
-                            'description': dev2,
-                            'i2b': [3, 'interpolating']
-                            }
-                subparam.update(paramdict)
-                tempdict['2'] = subparam
+                measurementDatadict = {'runNumber': run2,
+                                    'current': cur2,
+                                    'currentUnit': 'A',
+                                    'direction': direction2,
+                                    'field': bref2,
+                                    'fieldUnit': 'T-m',
+                                    'integralTransferFunction': transf2,
+                                    'description': dev2,
+                                    }
+                conversionsdict = {'i2b': {'algorithmId': 2,
+                                           'auxInfo': 1,
+                                           'function': 'polynomial',
+                                           'initialUnit': 'A',
+                                           'resultUnit': 'T-m'},
+                                   'b2k': {}}
+                measurementDatadict.update(paramdict)
+                resdict['complex:2'] = {'measurementData': measurementDatadict,
+                                        'algorithms': conversionsdict,
+                                        'description': 'Vertical corrector component',
+                                        'defaultEnergy': defaultEnergy}
             if len(cur3) != 0:
-                subparam = {'run': run3,
-                            'current': cur3,
-                            'current_unit': 'A',
-                            'direction': direction3,
-                            'field': bref3,
-                            'field_unit': 'T-m',
-                            'int_trans_func': transf3,
-                            'energy_default': 3.0,
-                            'description': dev3,
-                            'i2b': [3, 'interpolating']
-                            }
-                subparam.update(paramdict)
-                tempdict['3'] = subparam
-            if tempdict:
-                resdict['complex'] = tempdict
+                measurementDatadict = {'runNumber': run3,
+                                    'current': cur3,
+                                    'currentUnit': 'A',
+                                    'direction': direction3,
+                                    'field': bref3,
+                                    'fieldUnit': 'T-m',
+                                    'integralTransferFunction': transf3,
+                                    'description': dev3,
+                                    }
+                conversionsdict = {'i2b': {'algorithmId': 2,
+                                           'auxInfo': 1,
+                                           'function': 'polynomial',
+                                           'initialUnit': 'A',
+                                           'resultUnit': 'T-m'},
+                                   'b2k': {}}
+                measurementDatadict.update(paramdict)
+                resdict['complex:3'] = {'measurementData': measurementDatadict,
+                                        'algorithms': conversionsdict,
+                                        'description': 'Skew quadrupole component',
+                                        'defaultEnergy': defaultEnergy}
         else:
-            paramdict['run'] = run1
-            paramdict['current'] = cur1
-            paramdict['current_unit'] = 'A'
-            paramdict['direction'] = direction1
-            paramdict['field'] = bref1
-            paramdict['field_unit'] = 'T-m'
-            paramdict['int_trans_func'] = transf1
-            paramdict['energy_default'] = 3.0
-            paramdict['description'] = dev1
-            paramdict['i2b'] = [3, 'interpolating']
-            try:
-                if ctypename in ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F']:
-                    paramdict['b2k'] = [0, "input/(%s*3.33567*energy)"%(paramdict['ref_radius']), 2]
-                elif ctypename in ['Sext A', 'Sext B', 'Sext C']:
-                    paramdict['b2k'] = [0, "2*input/(%s**2*3.33567*energy)"%(paramdict['ref_radius']), 3]
-            except:
-                # do not add function for b2k since reference radius is not available.
-                pass
-            resdict['standard'] = paramdict
+            measurementDatadict = {'runNumber': run1,
+                                'current': cur1,
+                                'currentUnit': 'A',
+                                'direction': direction1,
+                                'field': bref1,
+                                'fieldUnit': 'T-m',
+                                'integralTransferFunction': transf1,
+                                'description': dev1}
+            conversionsdict = {'i2b': {'algorithmId': 3,
+                                       'auxInfo': 0,
+                                       'function': 'interpolating',
+                                       'initialUnit': 'A',
+                                       'resultUnit': 'T-m'},
+                              }
+
+            if ctypename in ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F']:
+                try:
+                    conversionsdict['b2k'] = {'algorithmId': 0,
+                                              'auxInfo': 2,
+                                              'function': "input/(%s*3.33567*energy)"%(paramdict['referenceRadius']),
+                                              'initialUnit': 'T-m',
+                                              'resultUnit': '1/m2'}
+                except:
+                    # do not add function for b2k since reference radius is not available.
+                    pass
+                description = "pure quadrupole component"
+            elif ctypename in ['Sext A', 'Sext B', 'Sext C']:
+                try:
+                    conversionsdict['b2k'] = {'algorithmId': 0,
+                                              'auxInfo': 3,
+                                              'function': "2*input/(%s**2*3.33567*energy)"%(paramdict['referenceRadius']),
+                                              'initialUnit': 'T-m',
+                                              'resultUnit': '1/m3'}
+                except:
+                    # do not add function for b2k since reference radius is not available.
+                    pass
+                description = "pure sextupole component"
+            resdict['standard'] = {'measurementData': measurementDatadict,
+                                   'algorithms': conversionsdict,
+                                   'description': description,
+                                   'defaultEnergy': defaultEnergy}
 
         jsondump = json.dumps(resdict)
         try:
@@ -415,12 +456,6 @@ def main(root):
                     rotcoils.append(f)
                 elif 'Hall_Maps' in f:
                     hallmaps.append(f)
-#            else:
-#                print("ignore file:  %s"%(f))
-#        else:
-#            print("ignore file:  %s"%(f))
-#    print('Rotating Coil Data: ', len(rotcoils))
-#    print('Hall Probe Data: ', len(hallmaps))
 
     #####################################
     # save storage magnet component types 
@@ -434,20 +469,20 @@ def main(root):
     # save magnet data measured with rotating coil method
     saverotcoildata(rotcoils)
 #    # save magnet data measured with hall probe method
-#    savehallprobedata(hallmaps)
-#
+    savehallprobedata(hallmaps)
+
     saveinstall("/".join((root, 'Alignment/SR-MG-INSTALL-SN.xls')))
 
 if __name__ == '__main__':
     municonv = municonvdata()
     municonv.connectdb(host=host, user=user, pwd=pw, db=db)
 
-    #/Users/shengb/Documents/Work/Magnetic.Measurement/NSLS2/MagnetMeasurements/Ring
-    rootpath = None
-    if sys.version_info[:2] > (3,0):
-        rootpath = input ('Please specify the path to the data file directory:')
+    if len(sys.argv) > 1:
+        rootpath = sys.argv[1]
     else:
-        rootpath = raw_input('Please specify the path to the data file directory:')
-
+        if sys.version_info[:2] > (3,0):
+            rootpath = input ('Please specify the path to the data file directory:')
+        else:
+            rootpath = raw_input('Please specify the path to the data file directory:')
     main(rootpath)
     print('Finish saving magnet measurement data.')

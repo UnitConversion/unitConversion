@@ -7,11 +7,11 @@ Created on Feb 5, 2013
 proptmplt = "municonv"
 proptmpltdesc="unit conversion parameters for NSLS II magnets"
 
-proptmplt_chain = "municonv_chain"
+proptmplt_chain = "municonvChain"
 proptmpltdesc_chain="unit conversion parameters for NSLS II magnets, which is a chain powered by a common power supply."
 
-cmpnttypeproptype = "Reference Drawing"
+cmpnttypeproptype = "referenceDraw"
 cmpnttypeproptypedesc = "Reference Drawing"
 
-magneticlen = 'design length'
+magneticlen = 'designLength'
 magneticlendesc = 'design magnetic length'

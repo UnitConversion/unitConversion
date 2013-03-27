@@ -1,4 +1,3 @@
-
 '''
 This script is to read data related to magnet unit conversion for NSLS II injector system,
 and save all data into IRMIS database.
@@ -154,34 +153,19 @@ def savesol(fpath):
         ####################################
         # Create a parameter dictionary
         ####################################
-        paramdict = {'elem_name': devname[i],
-                     'device_name': devname[i],
-                     'serial': devsn[i],
-                     'current_unit': 'A',
-                     'field_unit': 'T'
-                     }
-        slope = None
-        if data[0][10] == 'slope' and data[0][11] != '':
-            slope = data[0][11]
-        offset = None
-        if data[2][10] == 'offset' and data[2][11] != '':
-            offset = data[2][11]
-
-        #print(slope, offset)
-        if slope and offset:
-            if offset < 0.0:
-                paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
-            else:
-                paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
+        measurementData = {'serialNumber': devsn[i],
+                           'currentUnit': 'A',
+                           'fieldUnit': 'T'
+                          }
 
         if data[4][10] == 'magnet_len_meas' and data[4][11] != '':
-            paramdict['magnetic_len_meas'] = data[4][11]
+            measurementData['averageLength'] = data[4][11]
         
         if data[0][1] != "" and data[0][0] == 'Magnet Type':
-            paramdict['ref_draw'] = data[0][1] 
+            measurementData['referenceDraw'] = data[0][1] 
         
         if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-            paramdict['ref_radius'] = float(data[5][1])/1000.00
+            measurementData['referenceRadius'] = float(data[5][1])/1000.00
         
         current=[]
         sig_current=[]
@@ -197,32 +181,43 @@ def savesol(fpath):
             sig_field.append(vals[9])
             mag_len.append(vals[13])
         
-        paramdict['current'] = current
-        paramdict['sig_current'] = sig_current
-        paramdict['field'] = field
-        paramdict['sig_field'] = sig_field
-        paramdict['direction'] = direction
-        paramdict['magnetic_len'] = mag_len
+        measurementData['current'] = current
+        measurementData['currentError'] = sig_current
+        measurementData['field'] = field
+        measurementData['fieldError'] = sig_field
+        measurementData['direction'] = direction
+        measurementData['magneticLength'] = mag_len
 
-        jsondump = json.dumps({'standard':paramdict})
+        slope = None
+        if data[0][10] == 'slope' and data[0][11] != '':
+            slope = data[0][11]
+        offset = None
+        if data[2][10] == 'offset' and data[2][11] != '':
+            offset = data[2][11]
+        #print(slope, offset)
+        conversionsdict={}
+        if slope and offset:
+            if offset < 0.0:
+                conversionsdict['i2b'] = {'algorithmId': 0,
+                                          'auxInfo': 0,
+                                          'function': '%s*input %s' %(slope, offset),
+                                          'initialUnit': 'A',
+                                          'resultUnit': 'T'}
+            else:
+                conversionsdict['i2b'] = {'algorithmId': 0,
+                                          'auxInfo': 0,
+                                          'function': '%s*input + %s' %(slope, offset),
+                                          'initialUnit': 'A',
+                                          'resultUnit': 'T'}
+
+        jsondump = json.dumps({'standard':{'measurementData': measurementData,
+                                           'algorithms': conversionsdict,
+                                           'description': 'individual solenoid measurement data'}})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
             municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
         
-#    retrievedata = municonv.retrieveinventoryprop(invid, invproptmpltid)
-#    if len(retrievedata) == 1:
-##        print (retrievedata[0][0], retrievedata[0][2], retrievedata[0][3])
-#        dump = retrievedata[0][1]
-#        print (dump)
-##        print (type(dump))
-#        restoredata = json.loads(dump)
-##        print (restoredata)
-##        print (type(restoredata))
-#        print (restoredata['i2b'])
-#    else:
-#        raise ValueError('More than one entry found in inventory property table for municonv.')
-
 def savesolavg(fpath):
     '''save average solenoid data. The hardware in this group is a chain, and powered by a common power supply.
     '''
@@ -295,8 +290,7 @@ def savesolavg(fpath):
                             %(devname[i], str(devsn[i]), section, devtype))
 #        print (invid)
 
-        paramdict = {}
-        
+        conversionsdict={}
         line = startidx + i/2
         p1 = float(data[line][1])
         p2 = float(data[line][2])
@@ -304,30 +298,24 @@ def savesolavg(fpath):
         slope = p1*(1.0 - p3)
         offset = p2*(1.0 - p3)
         if offset < 0.0:
-            paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T'}
         else:
-            paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
-        paramdict['raw'] = "(%s*I+%s)*(1-%s)"%(p1, p2, p3)
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input + %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T'}
 
-        jsondump = json.dumps({'standard':paramdict})
+        jsondump = json.dumps({'standard':{'algorithms': conversionsdict,
+                                           'description': 'average solenoid measurement data'}})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
             municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
-
-#        print(jsondump)
-#    retrievedata = municonv.retrieveinventoryprop(invid, invproptmpltid)
-#    if len(retrievedata) == 1:
-#        print (retrievedata[0][0], retrievedata[0][2], retrievedata[0][3])
-#        dump = retrievedata[0][1]
-#        print (dump)
-#        print (type(dump))
-#        restoredata = json.loads(dump)
-#        print (restoredata)
-#        print (type(restoredata))
-#    else:
-#        raise ValueError('More than one entry found in inventory property table for municonv.')
-
 
 def savelnqdp(fpath):
     '''save linac quadrupole data
@@ -347,9 +335,9 @@ def savelnqdp(fpath):
     devname = ['LN-Q1', 'LN-Q2', 'LN-Q3',
                'LN-Q4', 'LN-Q5', 'LN-Q6',
                'LN-Q7', 'LN-Q8', 'LN-Q9']
-    designlen = [0.10, 0.10, 0.10, 
-                 0.10, 0.10, 0.10, 
-                 0.10, 0.10, 0.10]
+#    designlen = [0.10, 0.10, 0.10, 
+#                 0.10, 0.10, 0.10, 
+#                 0.10, 0.10, 0.10]
     section="Linac"
     vendor = "RI"
 
@@ -440,35 +428,19 @@ def savelnqdp(fpath):
         ####################################
         # Create a parameter dictionary
         ####################################
-        paramdict = {'elem_name': devname[i],
-                     'device_name': devname[i],
-                     'serial': devsn[i],
-                     'magnetic_len_design': designlen[i],
-                     'current_unit': 'A',
-                     'field_unit': 'T'
-                     }
-        slope = None
-        if data[0][10] == 'slope' and data[0][11] != '':
-            slope = data[0][11]
-        offset = None
-        if data[2][10] == 'offset' and data[2][11] != '':
-            offset = data[2][11]
-
-        #print(slope, offset)
-        if slope and offset:
-            if offset < 0.0:
-                paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
-            else:
-                paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
+        measurementData = {'serialNumber': devsn[i],
+                           'currentUnit': 'A',
+                           'fieldUnit': 'T'
+                           }
 
         if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
-            paramdict['magnetic_len_meas'] = data[4][11]
+            measurementData['averageLength'] = data[4][11]
         
         if data[0][1] != "" and data[0][0] == 'Magnet Type':
-            paramdict['ref_draw'] = data[0][1] 
+            measurementData['referenceDraw'] = data[0][1] 
         
         if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-            paramdict['ref_radius'] = float(data[5][1])/1000.00
+            measurementData['referenceRadius'] = float(data[5][1])/1000.00
         
         current=[]
         sig_current=[]
@@ -484,31 +456,41 @@ def savelnqdp(fpath):
             sig_field.append(vals[9])
             mag_len.append(vals[13])
         
-        paramdict['current'] = current
-        paramdict['sig_current'] = sig_current
-        paramdict['field'] = field
-        paramdict['sig_field'] = sig_field
-        paramdict['direction'] = direction
-        paramdict['magnetic_len'] = mag_len
+        measurementData['current'] = current
+        measurementData['currentError'] = sig_current
+        measurementData['field'] = field
+        measurementData['fieldError'] = sig_field
+        measurementData['direction'] = direction
+        measurementData['magneticLength'] = mag_len
 
-        jsondump = json.dumps({'standard':paramdict})
+        conversionsdict = {}
+        slope = None
+        if data[0][10] == 'slope' and data[0][11] != '':
+            slope = data[0][11]
+        offset = None
+        if data[2][10] == 'offset' and data[2][11] != '':
+            offset = data[2][11]
+        if slope and offset:
+            if offset < 0.0:
+                conversionsdict['i2b'] = {'algorithmId': 0,
+                                          'auxInfo': 0,
+                                          'function': '%s*input %s' %(slope, offset),
+                                          'initialUnit': 'A',
+                                          'resultUnit': 'T'}
+            else:
+                conversionsdict['i2b'] = {'algorithmId': 0,
+                                          'auxInfo': 0,
+                                          'function': '%s*input + %s' %(slope, offset),
+                                          'initialUnit': 'A',
+                                          'resultUnit': 'T'}
+
+        jsondump = json.dumps({'standard':{'measurementData': measurementData,
+                                           'algorithms': conversionsdict,
+                                           'description': 'individual linac quadrupole measurement data'}})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
             municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
-
-#    retrievedata = municonv.retrieveinventoryprop(invid, invproptmpltid)
-#    if len(retrievedata) == 1:
-##        print (retrievedata[0][0], retrievedata[0][2], retrievedata[0][3])
-#        dump = retrievedata[0][1]
-#        print (dump)
-##        print (type(dump))
-#        restoredata = json.loads(dump)
-##        print (restoredata)
-##        print (type(restoredata))
-#        print (restoredata['i2b'])
-#    else:
-#        raise ValueError('More than one entry found in inventory property table for municonv.')
 
 def savelbtdpl(fpath):
     '''save linac to booster transport line dipole data
@@ -522,7 +504,7 @@ def savelbtdpl(fpath):
     # refer to "magnet SN assignments.xlsx"
     devsn = [3, 2, 1, 4]
     devname = ['LB-B1', 'LB-B2', 'LB-B3', 'LB-B4']
-    designlen = [0.35, 0.35, 0.35, 0.35]
+    #designlen = [0.35, 0.35, 0.35, 0.35]
 
     # use which measure data set 
     # dictionary device name: [reference draw, serial #]
@@ -532,7 +514,7 @@ def savelbtdpl(fpath):
 #                    'LB-B4': ['LBT-MG-DPL-4800', 3]
 #                   }
     length = len(devsn)
-    if length != len(devname) or length != len(designlen):
+    if length != len(devname):
         raise ValueError('data length does not match each other.')
     
     section="LBT"
@@ -589,42 +571,25 @@ def savelbtdpl(fpath):
     ####################################
     # Create a parameter dictionary
     ####################################
-    paramdict = {'elem_name': devname[idx],
-                 'device_name': devname[idx],
-                 'serial': serial,
-                 'energy_default': 0.2,
-                 'current_unit': 'A',
-                 'field_unit': 'T-m',
-                 'magnetic_len_design': designlen[idx]
-                 }
-    slope = None
-    if data[0][10] == 'slope' and data[0][11] != '':
-        slope = data[0][11]
-    offset = None
-    if data[2][10] == 'offset' and data[2][11] != '':
-        offset = data[2][11]
-
-    #print(slope, offset)
-    if slope and offset:
-        if offset < 0.0:
-            paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
-        else:
-            paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
-
+    measurementdatadict = {'serialNumber': serial,
+                           'currentUnit': 'A',
+                           'fieldUnit': 'T-m'
+                           }
+    
     if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
-        paramdict['magnetic_len_meas'] = data[4][11]
+        measurementdatadict['averageLength'] = data[4][11]
     
     if data[0][1] != "" and data[0][0] == 'Magnet Type':
-        paramdict['ref_draw'] = data[0][1] 
+        measurementdatadict['referenceDraw'] = data[0][1] 
     
     if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-        paramdict['ref_radius'] = float(data[5][1])/1000.00
+        measurementdatadict['referenceRadius'] = float(data[5][1])/1000.00
     
     if data[5][10] == 'brho' and data[5][11] != '':
-        paramdict['brho'] = data[5][11]
+        measurementdatadict['magneticRigidity'] = data[5][11]
     
     if data[6][10] == 'brho_unit' and data[6][11] != '':
-        paramdict['brho_unit'] = data[6][11]
+        measurementdatadict['magneticRigidityUnit'] = data[6][11]
 
     current=[]
     sig_current=[]
@@ -642,15 +607,43 @@ def savelbtdpl(fpath):
         sig_field.append(vals[9])
         mag_len.append(vals[13])
     
-    paramdict['run_number'] = run
-    paramdict['current'] = current
-    paramdict['sig_current'] = sig_current
-    paramdict['field'] = field
-    paramdict['sig_field'] = sig_field
-    paramdict['direction'] = direction
-    paramdict['magnetic_len'] = mag_len
+    measurementdatadict['runNumber'] = run
+    measurementdatadict['current'] = current
+    measurementdatadict['currentError'] = sig_current
+    measurementdatadict['field'] = field
+    measurementdatadict['fieldError'] = sig_field
+    measurementdatadict['direction'] = direction
+    measurementdatadict['magneticLength'] = mag_len
 
-    jsondump = json.dumps({'standard':paramdict})
+    slope = None
+    if data[0][10] == 'slope' and data[0][11] != '':
+        slope = data[0][11]
+    offset = None
+    if data[2][10] == 'offset' and data[2][11] != '':
+        offset = data[2][11]
+    conversionsdict={}
+    if slope and offset:
+        if offset < 0.0:
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T-m'}
+        else:
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input + %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T-m'}
+    if conversionsdict:
+        jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                           'algorithms': conversionsdict,
+                                           'description': 'LBT dipole measurement data',
+                                           'defaultEnergy': 0.2}})
+    else:
+        jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                           'description': 'LBT dipole measurement data',
+                                           'defaultEnergy': 0.2}})
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
@@ -714,7 +707,7 @@ def savequad1340(fpath):
     # refer to "magnet SN assignments.xlsx"
     devsn = [2, 1]
     devname = ['LB-Q5', 'LB-Q6']
-    designlen = [0.25, 0.25]
+    #designlen = [0.25, 0.25]
 
     # use which measure data set 
     # dictionary device name: [reference draw, serial #]
@@ -724,7 +717,7 @@ def savequad1340(fpath):
 #                    'LB-B4': ['LBT-MG-DPL-4800', 3]
 #                   }
     length = len(devsn)
-    if length != len(devname) or length != len(designlen):
+    if length != len(devname):
         raise ValueError('data length does not match each other.')
     
     section="LBT"
@@ -779,41 +772,19 @@ def savequad1340(fpath):
     ####################################
     # Create a parameter dictionary
     ####################################
-    paramdict = {'elem_name': devname[idx],
-                 'device_name': devname[idx],
-                 'serial': serial,
-                 'energy_default': 0.2,
-                 'current_unit': 'A',
-                 'field_unit': 'T',
-                 'magnetic_len_design': designlen[idx]
-                 }
-    slope = None
-    if data[0][10] == 'slope' and data[0][11] != '':
-        slope = data[0][11]
-    offset = None
-    if data[2][10] == 'offset' and data[2][11] != '':
-        offset = data[2][11]
-
-#    #print(slope, offset)
-    if slope and offset:
-        if offset < 0.0:
-            paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
-        else:
-            paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
-
+    measurementdatadict = {'serialNumber': serial,
+                           'currentUnit': 'A',
+                           'fieldUnit': 'T'
+                           }
     if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
-        paramdict['magnetic_len_meas'] = data[4][11]
+        measurementdatadict['averageLength'] = data[4][11]
     
     if data[0][1] != "" and data[0][0] == 'Magnet Type':
-        paramdict['ref_draw'] = data[0][1] 
+        measurementdatadict['referenceDraw'] = data[0][1] 
     
     if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-        paramdict['ref_radius'] = data[5][1]
+        measurementdatadict['referenceRadius'] = data[5][1]
 
-    # need to confirm this function.
-    # format: algorithm id, algorithm expression, field order (1: dipole; 2: Quad, K1; 3: Sext, K2)
-    paramdict['b2k'] = [0, "input/(3.335646*energy)", 2]
-    
     current=[]
     sig_current=[]
     field=[]
@@ -828,14 +799,47 @@ def savequad1340(fpath):
         sig_field.append(vals[9])
         mag_len.append(vals[13])
 
-    paramdict['current'] = current
-    paramdict['sig_current'] = sig_current
-    paramdict['field'] = field
-    paramdict['sig_field'] = sig_field
-    paramdict['direction'] = direction
-    paramdict['magnetic_len'] = mag_len
+    measurementdatadict['current'] = current
+    measurementdatadict['currentErrro'] = sig_current
+    measurementdatadict['field'] = field
+    measurementdatadict['fieldError'] = sig_field
+    measurementdatadict['direction'] = direction
+    measurementdatadict['magneticLength'] = mag_len
 
-    jsondump = json.dumps({'standard':paramdict})
+    slope = None
+    if data[0][10] == 'slope' and data[0][11] != '':
+        slope = data[0][11]
+    offset = None
+    if data[2][10] == 'offset' and data[2][11] != '':
+        offset = data[2][11]
+    conversionsdict={}
+    if slope and offset:
+        if offset < 0.0:
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T'}
+        else:
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input + %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T'}
+    # need to confirm this function.
+    # format: algorithm id, algorithm expression, field order (1: dipole; 2: Quad, K1; 3: Sext, K2)
+    conversionsdict['b2k'] = {'algorithmId': 0, 
+                              'auxInfo': 2,
+                              'function': "input/(3.335646*energy)", 
+                              'initialUnit': 'T',
+                              'resultUnit': '1/m2'
+                              }
+    
+
+    jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                       'algorithms': conversionsdict,
+                                       'description': 'LBT quadrupole with 134mm aperture measurement data',
+                                       'defaultEnergy': 0.2}})
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
@@ -912,11 +916,11 @@ def savequad5200(fpath, section):
                    'BS-Q9', 'BS-Q10','BS-Q11','BS-Q12',
                    'BS-Q13', 'BS-Q14',
                    'BS-Q1BD1', 'BS-Q2BD1']
-        designlen = [0.35, 0.35, 0.35, 0.35,
-                     0.35, 0.35, 0.35, 0.35,
-                     0.35, 0.35, 0.35, 0.35,
-                     0.35, 0.35,
-                     0.35, 0.35]
+#        designlen = [0.35, 0.35, 0.35, 0.35,
+#                     0.35, 0.35, 0.35, 0.35,
+#                     0.35, 0.35, 0.35, 0.35,
+#                     0.35, 0.35,
+#                     0.35, 0.35]
         # the following mapping need to be update.
         # It is for development purpose only.
         # dict format: dev name: [reference draw, serial, run #
@@ -950,10 +954,10 @@ def savequad5200(fpath, section):
                    'LB-Q7', 'LB-Q8', 'LB-Q9', 'LB-Q10',
                    'LB-Q11', 'LB-Q12', 'LB-Q13', 'LB-Q14', 'LB-Q15',
                    'LB-Q1BD1', 'LB-Q2BD1']
-        designlen = [0.15, 0.15, 0.15, 0.15,
-                     0.15, 0.15, 0.15, 0.15,
-                     0.15, 0.15, 0.15, 0.15,
-                     0.15, 0.15, 0.15]
+#        designlen = [0.15, 0.15, 0.15, 0.15,
+#                     0.15, 0.15, 0.15, 0.15,
+#                     0.15, 0.15, 0.15, 0.15,
+#                     0.15, 0.15, 0.15]
         # the following mapping need to be update.
         # It is for development purpose only.
         # dict format: dev name: [reference draw, serial, run #
@@ -1007,7 +1011,7 @@ def savequad5200(fpath, section):
     # deal with data
     ####################################
     length = len(use_meas_set)
-    if length != len(devsn) or length != len(devname) or length != len(designlen):
+    if length != len(devsn) or length != len(devname):
         raise ValueError('data length does not match each other.')
     for i in range(length):
         data_set = use_meas_set[devname[i]]
@@ -1075,14 +1079,43 @@ def savequad5200(fpath, section):
         ####################################
         # Create a parameter dictionary
         ####################################
-        paramdict = {'elem_name': devname[i],
-                     'device_name': devname[i],
-                     'serial': devsn[i],
-                     'energy_default': default_energy,
-                     'magnetic_len_design': designlen[i],
-                     'current_unit': 'A',
-                     'field_unit': 'T-m'
-                     }
+        measurementdatadict = {'serialNumber': devsn[i],
+                               'currentUnit': 'A',
+                               'fieldUnit': 'T-m'
+                               }
+
+        if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
+            measurementdatadict['averageLength'] = data[4][11]
+
+        if data[0][1] != "" and data[0][0] == 'Magnet Type':
+            measurementdatadict['referenceDraw'] = data[0][1] 
+        
+        conversionsdict={}
+        if data[5][1] != "" and data[5][0] == 'Reference_Radius':
+            measurementdatadict['referenceRadius'] = float(data[5][1])/1000.0
+            conversionsdict['b2k'] = {'algorithmId': 0,
+                                          'auxInfo': 2,
+                                          'function': "input/(%s*3.335646*energy)"%(measurementdatadict['referenceRadius']),
+                                          'initialUnit': 'T-m',
+                                          'resultUnit': '1/m2'}
+        
+        current=[]
+        field=[]
+        direction=[]
+        run = []
+        for vals in data[11:]:
+            if vals[3] == "":
+                break
+            run.append(vals[1])
+            current.append(vals[3])
+            direction.append(vals[6])
+            field.append(vals[13])
+
+        measurementdatadict['runNumber'] = run
+        measurementdatadict['current'] = current
+        measurementdatadict['field'] = field
+        measurementdatadict['direction'] = direction
+
         if section == "LBT":
             slope = None
             if data[0][10] == 'slope' and data[0][11] != '':
@@ -1090,13 +1123,20 @@ def savequad5200(fpath, section):
             offset = None
             if data[2][10] == 'offset' and data[2][11] != '':
                 offset = data[2][11]
-    
-            #print(slope, offset)
+
             if slope and offset:
                 if offset < 0.0:
-                    paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
+                    conversionsdict['i2b'] = {'algorithmId': 0,
+                                              'auxInfo': 0,
+                                              'function': '%s*input %s' %(slope, offset),
+                                              'initialUnit': 'A',
+                                              'resultUnit': 'T-m'}
                 else:
-                    paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
+                    conversionsdict['i2b'] = {'algorithmId': 0,
+                                              'auxInfo': 0,
+                                              'function': '%s*input + %s' %(slope, offset),
+                                              'initialUnit': 'A',
+                                              'resultUnit': 'T-m'}
         elif section == "BST":
             secondary = None
             if data[0][12] == '2nd order' and data[0][13] != '':
@@ -1123,57 +1163,27 @@ def savequad5200(fpath, section):
                     function += " + %s " %offset
             if function == "":
                 raise ValueError("Cannot identofy function.")
-            paramdict['i2b'] = [1, function]
+            conversionsdict['i2b'] = {'algorithmId': 1,
+                                      'auxInfo': 0,
+                                      'function': function,
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T-m'}
         else:
             raise ValueError("QDP 5200 only available in section LBT/BST.")
 
-        if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
-            paramdict['magnetic_len_meas'] = data[4][11]
-
-        if data[0][1] != "" and data[0][0] == 'Magnet Type':
-            paramdict['ref_draw'] = data[0][1] 
-        
-        if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-            paramdict['ref_radius'] = float(data[5][1])/1000.0
-            paramdict['b2k'] = [0, "input/(%s*3.335646*energy)"%(paramdict['ref_radius']), 2]
-        
-        current=[]
-        field=[]
-        direction=[]
-        run = []
-        for vals in data[11:]:
-            if vals[3] == "":
-                break
-            run.append(vals[1])
-            current.append(vals[3])
-            direction.append(vals[6])
-            field.append(vals[13])
-
-        paramdict['run_number'] = run
-        paramdict['current'] = current
-        paramdict['field'] = field
-        paramdict['direction'] = direction
-
-        jsondump = json.dumps({'standard':paramdict})
+        if conversionsdict:
+            jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                               'algorithms': conversionsdict,
+                                               'description': '%s quadrupole measurement data'%section,
+                                               'defaultEnergy': default_energy}})
+        else:
+            jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                               'description': '%s quadrupole measurement data'%section,
+                                               'defaultEnergy': default_energy}})
         try:
             municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
         except:
             municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
-
-#    retrievedata = municonv.retrieveinventoryprop(invid, invproptmpltid)
-#    if len(retrievedata) == 1:
-##        print (retrievedata[0][0], retrievedata[0][2], retrievedata[0][3])
-#        dump = retrievedata[0][1]
-##        import pprint
-##        pprint.pprint (dump)
-##        print (type(dump))
-#        restoredata = json.loads(dump)
-#        import pprint
-#        pprint.pprint (restoredata)
-##        print (type(restoredata))
-#        print (restoredata['i2b'])
-#    else:
-#        raise ValueError('More than one entry found in inventory property table for municonv.')
 
 def savedpl9035(fpath):
     '''save booster to storage ring transport line dipole data
@@ -1193,10 +1203,10 @@ def savedpl9035(fpath):
     # refer to "magnet SN assignments.xlsx"
     devsn = [2, 1, 3, 4]
     devname = ['BS-B1', 'BS-B2', 'BS-B3', 'BS-B4']
-    designlen = [1.40, 1.40, 1.40, 1.40]
+    #designlen = [1.40, 1.40, 1.40, 1.40]
 
     length = len(devsn)
-    if length != len(devname) or length != len(designlen):
+    if length != len(devname):
         raise ValueError('data length does not match each other.')
     
     section="BST"
@@ -1251,42 +1261,24 @@ def savedpl9035(fpath):
     ####################################
     # Create a parameter dictionary
     ####################################
-    paramdict = {'elem_name': devname[idx],
-                 'device_name': devname[idx],
-                 'serial': serial,
-                 'energy_default': 3.0,
-                 'current_unit': 'A',
-                 'field_unit': 'T-m',
-                 'magnetic_len_design': designlen[i]
-                 }
-    slope = None
-    if data[0][10] == 'slope' and data[0][11] != '':
-        slope = data[0][11]
-    offset = None
-    if data[2][10] == 'offset' and data[2][11] != '':
-        offset = data[2][11]
-
-    #print(slope, offset)
-    if slope and offset:
-        if offset < 0.0:
-            paramdict['i2b'] = [0, '%s*input %s' %(slope, offset)]
-        else:
-            paramdict['i2b'] = [0, '%s*input + %s' %(slope, offset)]
-
+    measurementdatadict = {'serialNumber': serial,
+                           'currentUnit': 'A',
+                           'fieldUnit': 'T-m',
+                           }
     if data[4][10] == 'magnetic_len_meas' and data[4][11] != '':
-        paramdict['magnetic_len_meas'] = data[4][11]
+        measurementdatadict['averageLength'] = data[4][11]
     
     if data[0][1] != "" and data[0][0] == 'Magnet Type':
-        paramdict['ref_draw'] = data[0][1] 
+        measurementdatadict['referenceDraw'] = data[0][1] 
     
     if data[5][1] != "" and data[5][0] == 'Reference_Radius':
-        paramdict['ref_radius'] = data[5][1]
+        measurementdatadict['referenceRadius'] = data[5][1]
     
     if data[5][10] == 'brho' and data[5][11] != '':
-        paramdict['brho'] = data[5][11]
+        measurementdatadict['magneticRigidity'] = data[5][11]
     
     if data[6][10] == 'brho_unit' and data[6][11] != '':
-        paramdict['brho_unit'] = data[6][11]
+        measurementdatadict['magneticRigidityUnit'] = data[6][11]
 
     current=[]
     field=[]
@@ -1294,10 +1286,39 @@ def savedpl9035(fpath):
         current.append(vals[3])
         field.append(vals[8])
     
-    paramdict['current'] = current
-    paramdict['field'] = field
+    measurementdatadict['current'] = current
+    measurementdatadict['field'] = field
 
-    jsondump = json.dumps({'standard':paramdict})
+    slope = None
+    if data[0][10] == 'slope' and data[0][11] != '':
+        slope = data[0][11]
+    offset = None
+    if data[2][10] == 'offset' and data[2][11] != '':
+        offset = data[2][11]
+    conversionsdict={}
+    if slope and offset:
+        if offset < 0.0:
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T-m'}
+        else:
+            conversionsdict['i2b'] = {'algorithmId': 0,
+                                      'auxInfo': 0,
+                                      'function': '%s*input + %s' %(slope, offset),
+                                      'initialUnit': 'A',
+                                      'resultUnit': 'T-m'}
+
+    if conversionsdict:
+        jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                           'algorithms': conversionsdict,
+                                           'description': 'BST dipole measurement data',
+                                           'defaultEnergy': 3.0}})
+    else:
+        jsondump = json.dumps({'standard':{'measurementData': measurementdatadict,
+                                           'description': 'BST dipole measurement data',
+                                           'defaultEnergy': 3.0}})
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
     except:
@@ -1348,11 +1369,11 @@ def savedpl9035(fpath):
         ####################################
         municonv.inventory2install(instid, invid)
 
-def saveboosterdata(devname, devsn, designlen, devtype, dtypedesc, paramdict):
+def saveboosterdata(devname, devsn, devtype, dtypedesc, paramdict):
     '''
     '''
     length = len(devsn)
-    if length != len(devname) or length != len(designlen):
+    if length != len(devname):
         raise ValueError('data length does not match each other.')
     
     section="Booster"
@@ -1381,8 +1402,7 @@ def saveboosterdata(devname, devsn, designlen, devtype, dtypedesc, paramdict):
         ctypeproptypeid = ctypeproptype[0][0]
     else:
         ctypeproptypeid = municonv.savecmpnttypeproptype(proptmplt, desc=proptmpltdesc)
-#    print (ctypeproptypeid)
-    
+
     jsondump = json.dumps(paramdict)
     try:
         municonv.savecmpnttypeprop(jsondump, ctid, ctypeproptypeid)
@@ -1479,45 +1499,50 @@ def savebooster(fpath):
     # device type
     devtype1 = 'BS Dipole BD1'
     # design length
-    bd1len = [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 
-              1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
+#    bd1len = [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 
+#              1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
     desc1 = 'Dipole type BD1 for booster ring'
-    paramstandard = {}
-    paramcomplex = {}
     paramdict={}
     idx = 2
     for i in range(4):
-        subparam = {'current_unit': 'A'}
         k = []
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 0:
-            subparam['field_unit'] = 'T'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Dipole field component for a combined funbction magnet'
-            paramcomplex['1'] = subparam
+            paramdict['complex:1'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T'
+                                                        }},
+                                         'description': 'Dipole field component for a combined funbction magnet'
+                                         }
         elif i ==1:
-            subparam['field_unit'] = 'T/m'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Quadrupole field component for a combined funbction magnet'
-            paramcomplex['2'] = subparam
+            paramdict['complex:2'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T/m'
+                                                        }},
+                                         'description': 'Quadrupole field component for a combined funbction magnet'
+                                         }
         elif i ==2:
-            subparam['field_unit'] = 'T/m^2'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Sextupole field component for a combined funbction magnet'
-            paramcomplex['3'] = subparam
+            paramdict['complex:3'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T/m2'
+                                                        }},
+                                         'description': 'Sextupole field component for a combined funbction magnet'
+                                         }
         elif i ==3:
-            paramstandard['current_unit'] = 'A'
-            paramstandard['field_unit'] = 'T'
-            paramstandard['b2i'] = [1, createfit(k)]
-    if paramstandard:
-        paramdict['standard'] = paramstandard
-    if paramcomplex:
-        paramdict['complex']=paramcomplex
-            
-#    import pprint
-#    pprint.pprint (paramdict)
-    saveboosterdata(devbd1, devbd1sn, bd1len, devtype1, desc1, paramdict)
+            paramdict['complex:1']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'T',
+                                                           'resultUnit': 'A'
+                                                           }
+    saveboosterdata(devbd1, devbd1sn, devtype1, desc1, paramdict)
     idx += 1
 
     #device name
@@ -1529,41 +1554,49 @@ def savebooster(fpath):
     # device type
     devtype2 = 'BS Dipole BD2'
     # design length
-    bd2len = [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 
-              1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
+#    bd2len = [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 
+#              1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
     desc2 = 'Dipole type BD2 for booster ring'
-    paramstandard.clear()
-    paramcomplex.clear()
     paramdict.clear()
     for i in range(4):
-        subparam = {'current_unit': 'A'}
         k = []
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 0:
-            subparam['field_unit'] = 'T'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Dipole field component for a combined funbction magnet'
-            paramcomplex['1'] = subparam
+            paramdict['complex:1'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T'
+                                                        }},
+                                         'description': 'Dipole field component for a combined funbction magnet'
+                                         }
         elif i ==1:
-            subparam['field_unit'] = 'T/m'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Quadrupole field component for a combined funbction magnet'
-            paramcomplex['2'] = subparam
+            paramdict['complex:2'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T/m'
+                                                        }},
+                                         'description': 'Quadrupole field component for a combined funbction magnet'
+                                         }
         elif i ==2:
-            subparam['field_unit'] = 'T/m^2'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Sextupole field component for a combined funbction magnet'
-            paramcomplex['3'] = subparam
+            paramdict['complex:3'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T/m2'
+                                                        }},
+                                         'description': 'Sextupole field component for a combined funbction magnet'
+                                         }
         elif i ==3:
-            paramstandard['current_unit'] = 'A'
-            paramstandard['field_unit'] = 'T'
-            paramstandard['b2i'] = [1, createfit(k)]
-    if paramstandard:
-        paramdict['standard'] = paramstandard
-    if paramcomplex:
-        paramdict['complex']=paramcomplex
-    saveboosterdata(devbd2, devbd2sn, bd2len, devtype2, desc2, paramdict)
+            paramdict['complex:1']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'T',
+                                                           'resultUnit': 'A'
+                                                           }
+    saveboosterdata(devbd2, devbd2sn, devtype2, desc2, paramdict)
     idx += 1
     
     #device name
@@ -1579,44 +1612,51 @@ def savebooster(fpath):
     # device type
     devtype3 = 'BS Dipole BF'
     # design length
-    bflen = [1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,  
-             1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,
-             1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,
-             1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24]
+#    bflen = [1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,  
+#             1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,
+#             1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24,
+#             1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24]
     desc3 = 'Dipole type BF for booster ring'
-    paramstandard.clear()
-    paramcomplex.clear()
     paramdict.clear()
     for i in range(4):
-        subparam = {'current_unit': 'A'}
         k = []
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 0:
-            subparam['field_unit'] = 'T'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Dipole field component for a combined funbction magnet'
-            paramcomplex['1'] = subparam
+            paramdict['complex:1'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T'
+                                                        }},
+                                         'description': 'Dipole field component for a combined funbction magnet'
+                                         }
         elif i ==1:
-            subparam['field_unit'] = 'T/m'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Quadrupole field component for a combined funbction magnet'
-            paramcomplex['2'] = subparam
+            paramdict['complex:2'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T/m'
+                                                        }},
+                                         'description': 'Quadrupole field component for a combined funbction magnet'
+                                         }
         elif i ==2:
-            subparam['field_unit'] = 'T/m^2'
-            subparam['i2b'] = [1, createfit(k)]
-            subparam['description'] = 'Sextupole field component for a combined funbction magnet'
-            paramcomplex['3'] = subparam
+            paramdict['complex:3'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                               'auxInfo': 0,
+                                                               'function': createfit(k),
+                                                               'initialUnit': 'A',
+                                                               'resultUnit': 'T/m2'
+                                                        }},
+                                         'description': 'Sextupole field component for a combined funbction magnet'
+                                         }
         elif i ==3:
-            paramstandard['current_unit'] = 'A'
-            paramstandard['field_unit'] = 'T'
-            paramstandard['b2i'] = [1, createfit(k)]
-    if paramstandard:
-        paramdict['standard'] = paramstandard
-    if paramcomplex:
-        paramdict['complex']=paramcomplex
-#    pprint.pprint (paramdict)
-    saveboosterdata(devbf, devbfsn, bflen, devtype3, desc3, paramdict)
+            paramdict['complex:1']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'T',
+                                                           'resultUnit': 'A'
+                                                           }
+    saveboosterdata(devbf, devbfsn, devtype3, desc3, paramdict)
     idx += 2
     
     ####################################
@@ -1633,22 +1673,31 @@ def savebooster(fpath):
     # device type
     devtypeqf = 'BS Quadrupole QF'
     # design length
-    qflen = [0.3, 0.3, 0.3, 0.3, 
-             0.3, 0.3, 0.3, 0.3]
+#    qflen = [0.3, 0.3, 0.3, 0.3, 
+#             0.3, 0.3, 0.3, 0.3]
     descqf = 'Quadrupole type QF for booster ring'
     paramdict.clear()
-    paramdict['current_unit'] = 'A'
-    paramdict['field_unit'] = 'T/m'
     for i in [1, 3]:
         k=[]
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 1:
-            paramdict['i2b'] = [1, createfit(k)]
+            paramdict['standard'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'A',
+                                                           'resultUnit': 'T/m'
+                                                           }},
+                                     'description': 'Quadrupole type QF for booster ring'
+                                     }
         elif i == 3:
-            paramdict['b2i'] = [1, createfit(k)]
-#    pprint.pprint (paramdict)
-    saveboosterdata(devqf, devqfsn, qflen, devtypeqf, descqf, {'standard':paramdict})
+            paramdict['standard']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                          'auxInfo': 0,
+                                                          'function': createfit(k),
+                                                          'initialUnit': 'T/m',
+                                                          'resultUnit': 'A'
+            }
+    saveboosterdata(devqf, devqfsn, devtypeqf, descqf, paramdict)
     idx += 1
     
     #device name
@@ -1662,22 +1711,31 @@ def savebooster(fpath):
     # device type
     devtypeqd = 'BS Quadrupole QD'
     # design length
-    qdlen = [0.3, 0.3, 0.3, 0.3, 
-             0.3, 0.3, 0.3, 0.3]
+#    qdlen = [0.3, 0.3, 0.3, 0.3, 
+#             0.3, 0.3, 0.3, 0.3]
     descqd = 'Quadrupole type QD for booster ring'
     paramdict.clear()
-    paramdict['current_unit'] = 'A'
-    paramdict['field_unit'] = 'T/m'
     for i in [1, 3]:
         k=[]
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 1:
-            paramdict['i2b'] = [1, createfit(k)]
+            paramdict['standard'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'A',
+                                                           'resultUnit': 'T/m'
+                                                           }},
+                                     'description': 'Quadrupole type QD for booster ring'
+                                     }
         elif i == 3:
-            paramdict['b2i'] = [1, createfit(k)]
-#    pprint.pprint (paramdict)
-    saveboosterdata(devqd, devqdsn, qdlen, devtypeqd, descqd, {'standard':paramdict})
+            paramdict['standard']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                          'auxInfo': 0,
+                                                          'function': createfit(k),
+                                                          'initialUnit': 'T/m',
+                                                          'resultUnit': 'A'
+            }
+    saveboosterdata(devqd, devqdsn, devtypeqd, descqd, paramdict)
     idx += 1
 
     #device name
@@ -1691,22 +1749,31 @@ def savebooster(fpath):
     # device type
     devtypeqg = 'BS Quadrupole QG'
     # design length
-    qglen = [0.3, 0.3, 0.3, 0.3, 
-             0.3, 0.3, 0.3, 0.3]
+#    qglen = [0.3, 0.3, 0.3, 0.3, 
+#             0.3, 0.3, 0.3, 0.3]
     descqg = 'Quadrupole type QG for booster ring'
     paramdict.clear()
-    paramdict['current_unit'] = 'A'
-    paramdict['field_unit'] = 'T/m'
     for i in [1, 3]:
         k=[]
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 1:
-            paramdict['i2b'] = [1, createfit(k)]
+            paramdict['standard'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'A',
+                                                           'resultUnit': 'T/m'
+                                                           }},
+                                     'description': 'Quadrupole type QG for booster ring'
+                                     }
         elif i == 3:
-            paramdict['b2i'] = [1, createfit(k)]
-#    pprint.pprint (paramdict)
-    saveboosterdata(devqg, devqgsn, qglen, devtypeqg, descqg, {'standard':paramdict})
+            paramdict['standard']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                          'auxInfo': 0,
+                                                          'function': createfit(k),
+                                                          'initialUnit': 'T/m',
+                                                          'resultUnit': 'A'
+            }
+    saveboosterdata(devqg, devqgsn, devtypeqg, descqg, paramdict)
     idx += 2
 
     ####################################
@@ -1723,22 +1790,31 @@ def savebooster(fpath):
     # device type
     devtypesf = 'BS Sextupole SF'
     # design length
-    sflen = [0.12, 0.12, 0.12, 0.12, 
-             0.12, 0.12, 0.12, 0.12]
+#    sflen = [0.12, 0.12, 0.12, 0.12, 
+#             0.12, 0.12, 0.12, 0.12]
     descsf = 'Sextupole type SF for booster ring'
     paramdict.clear()
-    paramdict['current_unit'] = 'A'
-    paramdict['field_unit'] = 'T/m^2'
     for i in [2, 3]:
         k=[]
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 2:
-            paramdict['i2b'] = [1, createfit(k)]
+            paramdict['standard'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'A',
+                                                           'resultUnit': 'T/m2'
+                                                           }},
+                                     'description': descsf
+                                     }
         elif i == 3:
-            paramdict['b2i'] = [1, createfit(k)]
-#    pprint.pprint (paramdict)
-    saveboosterdata(devsf, devsfsn, sflen, devtypesf, descsf, {'standard':paramdict})
+            paramdict['standard']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                          'auxInfo': 0,
+                                                          'function': createfit(k),
+                                                          'initialUnit': 'T/m2',
+                                                          'resultUnit': 'A'
+            }
+    saveboosterdata(devsf, devsfsn, devtypesf, descsf, paramdict)
     idx += 1
 
     #device name
@@ -1752,22 +1828,31 @@ def savebooster(fpath):
     # device type
     devtypesd = 'BS Sextupole SD'
     # design length
-    sdlen = [0.12, 0.12, 0.12, 0.12, 
-             0.12, 0.12, 0.12, 0.12]
+#    sdlen = [0.12, 0.12, 0.12, 0.12, 
+#             0.12, 0.12, 0.12, 0.12]
     descsd = 'Sextupole type SF for booster ring'
     paramdict.clear()
-    paramdict['current_unit'] = 'A'
-    paramdict['field_unit'] = 'T/m^2'
     for i in [2, 3]:
         k=[]
         for j in range(5):
             k.append(data[idx][5*i+j+1])
         if i == 2:
-            paramdict['i2b'] = [1, createfit(k)]
+            paramdict['standard'] = {'algorithms': {'i2b':{'algorithmId': 1,
+                                                           'auxInfo': 0,
+                                                           'function': createfit(k),
+                                                           'initialUnit': 'A',
+                                                           'resultUnit': 'T/m2'
+                                                           }},
+                                     'description': descsd
+                                     }
         elif i == 3:
-            paramdict['b2i'] = [1, createfit(k)]
-#    pprint.pprint (paramdict)
-    saveboosterdata(devsd, devsdsn, sdlen, devtypesd, descsd, {'standard':paramdict})
+            paramdict['standard']['algorithms']['b2i'] = {'algorithmId': 1,
+                                                          'auxInfo': 0,
+                                                          'function': createfit(k),
+                                                          'initialUnit': 'T/m2',
+                                                          'resultUnit': 'A'
+            }
+    saveboosterdata(devsd, devsdsn, devtypesd, descsd, paramdict)
     idx += 1
     
 def main(fpath):
@@ -1807,12 +1892,13 @@ if __name__ == '__main__':
     municonv = municonvdata()
     municonv.connectdb(host=host, user=user, pwd=pw, db=db)
 
-    #/Users/shengb/Documents/Work/Magnetic.Measurement/NSLS2/MagnetMeasurements/injector/NewFormat
-    rootpath = None
-    if sys.version_info[:2] > (3,0):
-        rootpath = input ('Please specify the path to the data file directory:')
+    if len(sys.argv) > 1:
+        rootpath = sys.argv[1]
     else:
-        rootpath = raw_input('Please specify the path to the data file directory:')
+        if sys.version_info[:2] > (3,0):
+            rootpath = input ('Please specify the path to the data file directory:')
+        else:
+            rootpath = raw_input('Please specify the path to the data file directory:')
 
     main (rootpath)
     print('Finish saving magnet measurement data.')
