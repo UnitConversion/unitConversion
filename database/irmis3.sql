@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 3/15/2013 4:16:17 PM
--- Diagram Version: 458
+-- Created on: 3/28/2013 12:01:26 PM
+-- Diagram Version: 466
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -1739,6 +1739,13 @@ CREATE TABLE `element` (
   `created_by` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `s` double,
   `length` double,
+  `k1` double,
+  `k1_unit` varchar(50) DEFAULT '1/m2',
+  `k2` double,
+  `k2_unit` varchar(50) DEFAULT '1/m3',
+  `angle` double,
+  `angle_unit` varchar(50) DEFAULT 'rad',
+  `map` varchar(50),
   `dx` double,
   `dy` double,
   `dz` double,
