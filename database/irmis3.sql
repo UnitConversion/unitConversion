@@ -235,7 +235,7 @@ DROP TABLE IF EXISTS `lattice_type`;
 CREATE TABLE `lattice_type` (
   `lattice_type_id` int(11) NOT NULL AUTO_INCREMENT,
   `lattice_type_name` varchar(255),
-  `lattice_type_suffix` varchar(10),
+  `lattice_type_format` varchar(10),
   PRIMARY KEY(`lattice_type_id`)
 )
 ENGINE=INNODB;
