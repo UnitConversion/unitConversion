@@ -23,7 +23,9 @@
 
 -- municonv/municonvChain Structure 
 # auxInfo: an additional information, could be used for example the fitting order of polynominal fitting,
-#          or the order of fitting result,  for example 1: Dipole, 1: K1, 2: K2.
+#                   0: not use; 1: linear fit; 2: 2nd order poly fit; ...
+#          or the order of fitting result,  for example 
+#                   1: kick angle, rad/degree; 2: K1, 1/m2; 3: K2, 1/m3; 4: K3, 1/m4; ...
 {'conversionResult': {'message': '', 'unit': '', 'value': ''},
  'algorithms': {'i2b': {'auxInfo': 1,
                         'function': '',
