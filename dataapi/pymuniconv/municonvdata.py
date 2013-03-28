@@ -564,30 +564,11 @@ class municonvdata(object):
         
         vals, sql = _assemblesql(sql, name, " field_name ", vals)
 
-#        name = _wildcardformat(name)
-#        if '%' in name or '_' in name:
-#            sql += " field_name like %s "
-#        else:
-#            sql += " field_name = %s "
-#        vals = [name]
-
         if ctypename:
             vals, sql = _assemblesql(sql, ctypename, " cmpnt_type_name ", vals, connector="and")
-#            ctypename = _wildcardformat(ctypename)
-#            if "%" in ctypename or "_" in ctypename:
-#                sql += " and cmpnt_type_name like %s "
-#            else:
-#                sql += " and cmpnt_type_name = %s "
-#            vals.append(ctypename)
 
         if location:
             vals, sql = _assemblesql(sql, location, " location ", vals, connector="and")
-#            location = _wildcardformat(location)
-#            if "%" in location or "_" in location:
-#                sql += " and location like %s "
-#            else:
-#                sql += " and location = %s "
-#            vals.append(location)
 
         try:
             cur = self.conn.cursor()
@@ -688,44 +669,12 @@ class municonvdata(object):
         vals = []
         try:
             vals, sql = _assemblesql(sql, serial, " inv.serial_no ", vals)
-#            if isinstance(serial, (tuple, list)):
-#                sql += " ( "
-#                for s in serial:
-#                    sql += " inv.serial_no like %s or"
-#                    vals.appaned(_wildcardformat(s))
-#                sql = sql[:-2]
-#                sql += " ) "
-#            else:
-#                sql += " inv.serial_no like %s "
-#                vals.appaned(_wildcardformat(serial))
 
             if ctypename:
                 vals, sql = _assemblesql(sql, ctypename, " ctype.cmpnt_type_name ", vals, connector="and")
-#                if isinstance(ctypename, (tuple, list)):
-#                    sql += " ( "
-#                    for s in ctypename:
-#                        sql += " and ctype.cmpnt_type_name like %s or"
-#                        vals.appaned(_wildcardformat(s))
-#                    sql = sql[:-2]
-#                    sql += " ) "
-#                else:
-#                    sql += ' and ctype.cmpnt_type_name like %s '
-#                    ctypename = _wildcardformat(ctypename)
-#                    vals.append(ctypename)
 
             if vendor:
                 vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
-#                if isinstance(vendor, (tuple, list)):
-#                    sql += " ( "
-#                    for s in vendor:
-#                        sql += " and vendor.vendor_name like %s or"
-#                        vals.appaned(_wildcardformat(s))
-#                    sql = sql[:-2]
-#                    sql += " ) "
-#                else:
-#                    sql += ' and vendor.vendor_name like %s '
-#                    vendor = _wildcardformat(vendor)
-#                    vals.append(vendor)
 
             cur=self.conn.cursor()
             cur.execute(sql, vals)
@@ -820,46 +769,15 @@ class municonvdata(object):
         
         vals, sql = _assemblesql(sql, name, " install.field_name ", vals)
 
-#        name = _wildcardformat(name)
-#        if "%" in name or "_" in name:
-#            sql += ' where install.field_name like %s '
-#        else:
-#            sql += ' where install.field_name = %s '
-#        vals = [name]
-        
         vals, sql = _assemblesql(sql, serial, " inventory.serial_no ", vals, connector="and")
-#        serial = _wildcardformat(serial)
-#        if "%" in serial or "_" in serial:
-#            sql += ' and inventory.serial_no like %s '
-#        else:
-#            sql += ' and inventory.serial_no = %s '
-#        vals.append(serial)
         
         if ctypename:
             vals, sql = _assemblesql(sql, ctypename, " cmpnt_type.cmpnt_type_name ", vals, connector="and")
-#            ctypename=_wildcardformat(ctypename)
-#            if "%" in ctypename or "_" in ctypename:
-#                sql += ' and cmpnt_type.cmpnt_type_name like %s '
-#            else:
-#                sql += ' and cmpnt_type.cmpnt_type_name = %s '
-#            vals.append(ctypename)
         
         if vendor:
             vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
-#            vendor = _wildcardformat(vendor)
-#            if "%" in vendor or "_" in vendor:
-#                sql += ' and vendor.vendor_name like %s '
-#            else:
-#                sql += ' and vendor.vendor_name = %s '
-#            vals.append(vendor)
         if location:
             vals, sql = _assemblesql(sql, location, " install.location ", vals, connector="and")
-#            location = _wildcardformat(location)
-#            if "%" in location or "_" in location:
-#                sql += ' and install.location like %s '
-#            else:
-#                sql += ' and install.location = %s '
-#            vals.append(location)
 
         try:
             cur = self.conn.cursor()
@@ -881,12 +799,6 @@ class municonvdata(object):
         sqlinv = '''select 1 from inventory where inventory_id = %s'''
         
         cur=self.conn.cursor()
-#        DEBUG = 1
-#        if DEBUG:
-#            res = cur.execute(sqlinst, (installid,))
-#            print(res)
-#            res = cur.execute(sqlinv, (inventoryid, ))
-#            print(res, inventoryid)
         
         if not cur.execute(sqlinst, (installid,)) or not cur.execute(sqlinv, (inventoryid,)):
             raise ValueError('Given install id (%s) or inventory id (%s) does not exist. Can not link them together.' 
@@ -963,11 +875,6 @@ class municonvdata(object):
         else:
             val = []
             val, sql = _assemblesql(sql, location, " location ", val)
-#            val = _wildcardformat(location)
-#            if "%" in val or "_" in val:
-#                sql = sql%("like %s")
-#            else:
-#                sql = sql %(' = %s')
         try:
             cur = self.conn.cursor()
             if isinstance(val, (list, tuple)):
@@ -1052,7 +959,6 @@ class municonvdata(object):
         Get magnet unit conversion information for given field name with component type property template name and its description.
         This method retrieve a common information for given magnet type.
         '''
-        #select field_name, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
         sql = '''
         select install.field_name, install.location, inventory.serial_no, cmpnt_type.cmpnt_type_name, cmpnt_type_prop.cmpnt_type_prop_value
         from install

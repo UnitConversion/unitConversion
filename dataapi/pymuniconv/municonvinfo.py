@@ -91,7 +91,6 @@ def retrievemagnetinfo(params):
             tmps = municonv.retrieveinventory("*", ctypename=cmpnt_type)
         else:
             tmps = municonv.retrieveinventory(serialno, ctypename=cmpnt_type)
-        #key = ['inventory_id', 'serial_no', 'cmpnt_type_name', 'type_description', 'vendor']
         key = ['installId', 'inventoryId', 'name', 'system', 'serialNumber', 'componentType', 'typeDescription', 'vendor']
         res = []
         for tmp in tmps:
@@ -124,11 +123,7 @@ def retrievemagnetinfo(params):
 def _updateconversioninfo(res4magenticlen, localdict):
     ''''''
     if res4magenticlen != None:
-        tempdict = {'name': res4magenticlen[0],
-                    'system': res4magenticlen[1],
-                    'serialNumber': res4magenticlen[2],
-                    'componentType': res4magenticlen[3],
-                    'designLength': res4magenticlen[4]
+        tempdict = {'designLength': res4magenticlen[4]
                     }
         for k, v in localdict.iteritems():
             for subk, subv in v.iteritems():
