@@ -424,6 +424,7 @@ def saverotcoildata(files):
                     # do not add function for b2k since reference radius is not available.
                     pass
                 description = "pure sextupole component"
+            measurementDatadict.update(paramdict)
             resdict['standard'] = {'measurementData': measurementDatadict,
                                    'algorithms': conversionsdict,
                                    'description': description,
