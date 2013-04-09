@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 4/8/2013 12:23:47 PM
--- Diagram Version: 475
+-- Created on: 4/9/2013 4:41:12 PM
+-- Diagram Version: 477
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -38,7 +38,8 @@ CREATE TABLE `element_type` (
   `element_type_id` int(11) NOT NULL AUTO_INCREMENT,
   `element_type_name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `element_type_description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
-  PRIMARY KEY(`element_type_id`)
+  PRIMARY KEY(`element_type_id`),
+  UNIQUE INDEX `element_type_name`(`element_type_name`)
 )
 ENGINE=INNODB;
 
