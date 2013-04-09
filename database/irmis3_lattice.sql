@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 4/4/2013 10:18:54 AM
--- Diagram Version: 472
+-- Created on: 4/8/2013 12:23:47 PM
+-- Diagram Version: 475
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -102,7 +102,6 @@ CREATE TABLE `element_type_prop` (
   `element_type_prop_description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `element_type_prop_default` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `element_type_prop_unit` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
-  `element_type_prop_datatype` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   PRIMARY KEY(`element_type_prop_id`),
   CONSTRAINT `Ref_230` FOREIGN KEY (`element_type_id`)
     REFERENCES `element_type`(`element_type_id`)
@@ -330,9 +329,8 @@ CREATE TABLE `element_prop` (
   `element_prop_id` int(11) NOT NULL AUTO_INCREMENT,
   `element_id` int(11),
   `element_type_prop_id` int(11),
-  `element_prop_string` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
-  `element_prop_int` int(11),
-  `element_prop_double` double,
+  `element_prop_value` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  `element_prop_unit` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `element_prop_index` int(11),
   PRIMARY KEY(`element_prop_id`),
   CONSTRAINT `Ref_17` FOREIGN KEY (`element_type_prop_id`)
