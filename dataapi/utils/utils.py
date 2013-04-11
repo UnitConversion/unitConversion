@@ -19,7 +19,10 @@ def _wildcardformat(regxval):
     >>> _wildcardformat("a*b?c*d*e?f")
     u'a%b_c%d%e_f'
     """
-    return regxval.replace("*","%").replace("?","_")
+    if regxval == None:
+        return None
+    else:
+        return regxval.replace("*","%").replace("?","_")
 
 def _assemblesql(sql, data, strpattern, res, connector=""):
     ''''''
