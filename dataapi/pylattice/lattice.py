@@ -29,11 +29,31 @@ class lattice(object):
         self.conn = conn
 
     def retrievelatticelist(self, name, version=None, branch=None, description=None):
-        '''retrieve lattice header information. It gives lattice name, description, version, branch, create info (by & when), update info (by & when)
+        '''
+        retrieve lattice header information. It gives lattice name, description, version, branch, 
+        created info (by who & when), updated info (by who & when)
         according given information.
         Real lattice data (geometric layout and strength can be retrieved thru retrievelattice())
         
-        return list of tuple (lattice_id, lattice_name, lattice_version, lattice_branch, lattice_description, create_by, create_date, update_by, update_date)
+        return: dictionary with format
+                {'lattice name': {'id': ,                      # identifier of this lattice
+                                  'version': ,                 # version of this lattice
+                                  'branch': ,                  # branch this lattice belongs to
+                                  'description': [optional],   # lattice description
+                                  'creator': [optional],       # who created this lattice first time
+                                  'originalDate': [optional],  # when this lattice was create first time
+                                  'updated': [optional],       # who updated last time
+                                  'lastModified': [optional],  # when this lattice was updated last time
+                                  'typeName': [optional],      # lattice type name
+                                  'typeFormat': [optional],    # lattice type format
+                                 } 
+            supported lattice type name and format is as below:
+            [{'name': 'tab flat', 'format': 'txt'},
+             {'name': 'tracy3',  'format': 'lat'},
+             {'name': 'tracy4',  'format': 'lat'},
+             {'name': 'elegant', 'format': 'lte'},
+             {'name': 'xal',     'format': 'xdxf'}
+            ]
         '''
         sql = '''
         select lattice.lattice_id, lattice_name, lattice_version, lattice_branch, lattice_description, created_by, create_date, updated_by, update_date, lattice_type_name, lattice_type_format
@@ -70,7 +90,27 @@ class lattice(object):
             self.logger.info('Error when fetching lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
         
-        return res
+        resdict = {}
+        for r in res:
+            tempdict = {'id': r[0],
+                        'version': r[2],
+                        'branch': r[3]}
+            if r[4] != None:
+                tempdict['description'] = r[4]
+            if r[5] != None:
+                tempdict['creator'] = r[5]
+            if r[6] != None:
+                tempdict['originalDate'] = r[6].isoformat()
+            if r[7] != None:
+                tempdict['update'] = r[7]
+            if r[8] != None:
+                tempdict['lastModified'] =  r[8].isoformat()
+            if r[9] != None:
+                tempdict['typeName'] = r[9]
+            if r[10] != None:
+                tempdict['typeFormat'] = r[10]
+            resdict[r[1]] = tempdict
+        return resdict
 
     def retrievelatticetype(self, name, typeformat=None):
         '''
@@ -397,7 +437,6 @@ class lattice(object):
                 elementid = elementiddict[k][0]
                 
                 for etypeprop in etypeprops:
-                    print v[etypeprop]
                     etypeproptidunit = typedict[etypename][etypeprop]
                     if len(etypeproptidunit) == 2:
                         if etypeproptidunit[1] != unitdict[etypeprop]:
@@ -514,7 +553,9 @@ class lattice(object):
             elif len(res) == 1:
                 # a unique lattice entry founded
                 # ensure there is no any element associated with this lattice
-                latticeid = res[0][0]
+                lattice=res.itervalues().next()
+                
+                latticeid = lattice['id']
                 sql = '''
                 select element_id from element where lattice_id = %s limit 1;
                 '''
@@ -556,15 +597,147 @@ class lattice(object):
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         return latticeid
 
-    def retrievelattice(self, name, version, branch, description=None, withdata=False):
+    def retrievelattice(self, name, version, branch, description=None, latticetype=None, withdata=False):
         '''
         Retrieve lattice geometric layout with magnetic strength. All information are provided here, which is able to construct a desired lattice deck.
-        
-        By default, a tab formatted table is provided. Other format to be implemented later.
+        Parameters:
+            name:        lattice name
+            version:     lattice version
+            branch:      lattice branch
+            description: lattice description
+            latticetype: a dictionary to identify lattice type {'name': , 'format': }
+                         By default, a tab formatted table is provided. 
+                         Other format to be implemented later.
+            withdata:    flag to identify to get real lattice data with head or not.
+                         True  -- get the lattice geometric and strength
+                         False -- get lattice header description only
+                         False by default.
         
         return: a lattice table
+            {'lattice name': {'id': ,                      # identifier of this lattice
+                              'version': ,                 # version of this lattice
+                              'branch': ,                  # branch this lattice belongs to
+                              'description':  [optional],  # lattice description
+                              'creator':      [optional],  # who created this lattice first time
+                              'originalDate': [optional],  # when this lattice was create first time
+                              'updated':      [optional],  # who updated last time
+                              'lastModified': [optional],  # when this lattice was updated last time
+                              'typeName':     [optional],  # lattice type name
+                              'typeFormat':   [optional],  # lattice type format
+                              'lattice':      [optional]   # real lattice data
+                             } 
+             }
         '''
+        lattices = self.retrievelatticelist(name, version, branch, description=description)
+        # get a dictionary
+        #{'lattice name': {'id': ,                      # identifier of this lattice
+        #                  'version': ,                 # version of this lattice
+        #                  'branch': ,                  # branch this lattice belongs to
+        #                  'description': [optional],   # lattice description
+        #                  'creator': [optional],       # who created this lattice first time
+        #                  'originalDate': [optional],  # when this lattice was create first time
+        #                  'updated': [optional],       # who updated last time
+        #                  'lastModified': [optional],  # when this lattice was updated last time
+        #                  'typeName': [optional],      # lattice type name
+        #                  'typeFormat': [optional],    # lattice type format
+        #                 } 
+        # }
+        if len(lattices) == 0:
+            return {}
+            #raise ValueError('Cannot find lattice (name: %s, version: %s, branch: %s)'%(name, version, branch))
 
+        if withdata:
+            sql = '''
+            select e.element_order, e.element_name, e.element_id, e.s, e.length, e.dx, e.dy, e.dz, e.pitch, e.yaw, e.roll,
+            et.element_type_name,
+            ep.element_prop_value, ep.element_prop_unit,
+            etp.element_type_prop_name, etp.element_type_prop_unit 
+            from element e
+            left join element_type et on e.element_type_id = et.element_type_id
+            left join element_prop ep on ep.element_id = e.element_id
+            left join element_type_prop etp on etp.element_type_id = et.element_type_id
+            where 
+            e.lattice_id = %s
+            order by element_order
+            '''
+            for k, v in lattices.iteritems():
+                latticeid = v['id']
+                cur=self.conn.cursor()
+                cur.execute(sql, (latticeid, ))
+                results = cur.fetchall()
+                tempdict = {}
+                columns = []
+                typepropunits={}
+                for res in results:
+                    innerdict = {}
+                    typeproplist = []
+                    if tempdict.has_key(res[0]):
+                        innerdict = tempdict[res[0]]
+                        if tempdict.has_key('columns'):
+                            columns = tempdict['columns'] 
+                        if tempdict.has_key('typeunit'):
+                            typepropunits = tempdict['typeunit']
+                        if res[14] != None and res[12] != None:
+                            if innerdict.has_key('typeprops'):
+                                typeproplist = innerdict['typeprops']
+                            if res[14] not in columns:
+                                columns.append(res[14])
+                            if res[14] not in typeproplist:
+                                typeproplist.append(res[14])
+                                innerdict['typeprops'] = typeproplist
+                            if res[13] != None:
+                                innerdict[res[14]] = [res[12], res[13]]
+                            else:
+                                innerdict[res[14]] = [res[12]]
+                            if res[15] != None:
+                                typepropunits[res[14]] = res[15]
+                    else:
+                        innerdict.update({'name': res[1],
+                                         'id': res[2],
+                                         'position': res[3],
+                                         'length': res[4],
+                                         'type': res[11]
+                                         })
+                        if res[5] != None:
+                            innerdict['dx'] = res[5]
+                            columns.append('dx')
+                        if res[6] != None:
+                            innerdict['dy'] = res[6]
+                            columns.append('dy')
+                        if res[7] != None:
+                            innerdict['dz'] = res[7]
+                            columns.append('dz')
+                        if res[8] != None:
+                            innerdict['pitch'] = res[8]
+                            columns.append('pitch')
+                        if res[9] != None:
+                            innerdict['yaw'] = res[9]
+                            columns.append('yaw')
+                        if res[10] != None:
+                            innerdict['roll'] = res[10]
+                            columns.append('roll')
+                        
+                        if res[14] != None and res[12] != None:
+                            if res[14] not in columns:
+                                columns.append(res[14])
+                            if res[14] not in typeproplist:
+                                typeproplist.append(res[14])
+                                innerdict['typeprops'] = typeproplist                            
+                            if res[13] != None:
+                                innerdict[res[14]] = [res[12], res[13]]
+                            else:
+                                innerdict[res[14]] = [res[12]]
+                            if res[15] != None:
+                                typepropunits[res[14]] = res[15]
+                    if innerdict:
+                        tempdict.update ({res[0]: innerdict})
+                    if len(columns) > 0:
+                        tempdict['columns'] = columns
+                    if typepropunits:
+                        tempdict['typeunit'] = typepropunits                
+                lattices.update({k:tempdict})
+        return lattices
+        
     def retrieveelemtype(self, etypename):
         '''
         Retrieve element type information with given element type name.
