@@ -877,4 +877,112 @@ class lattice(object):
                             %(etypename, etypeprop, e.args[1], e.args[0]))
         return etypepropid
     
+    def retrievegoldlattice(self, name, version, branch, **params):
+        '''
+        Get golden lattice with given name, version, branch, and other conditions
+        parameters:
+            name:    lattice name
+            version: lattice version
+            branch:  lattice branch
+            status:  0: used to be a golden lattice, but not any more
+                     1: alternative golden lattice
+                     2: current golden lattice
+        '''
+        name = _wildcardformat(name)
+        branch = _wildcardformat(branch)
+        if isinstance(version, (str, unicode)):
+            version = _wildcardformat(version)
+        status = "%"
+        if params.has_key('status'):
+            status = params['status']
+            if isinstance(status, (str, unicode)):
+                status = _wildcardformat(params['status'])
+        sql = '''
+        select gold_lattice_id, lattice_name, lattice_version, lattice_branch, 
+               gl.created_by, gl.create_date,
+               gl.updated_by, gl.update_date,
+               gl.gold_status_ind
+        from gold_lattice gl
+        left join lattice on lattice.lattice_id = gl.lattice_id
+        where
+        lattice.lattice_name like %s and lattice.lattice_version like %s and lattice.lattice_branch like %s
+        and gl.gold_status_ind like %s
+        '''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, (name, version, branch, status))
+            res = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving golden lattice:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving golden lattice:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+        
+        return res
     
+    def savegoldlattice(self, name, version, branch, **params):
+        '''
+        Set a lattice to a golden lattice
+        Parameters:
+            name:    lattice name
+            version: lattice version
+            branch:  lattice branch
+            creator: who craeted it, or changed the status last time
+            status:  0: used to be a golden lattice, but not any more
+                     1: alternative golden lattice
+                     2: current golden lattice
+        
+        return: True if saving gold lattice successfully, otherwise, raise an exception
+        '''
+        creator = None
+        if params.has_key('creator'):
+            creator=params['creator']
+        status = 2
+        if params.has_key('status'):
+            status=params['status']
+        _, lattices = self.retrievelatticelist(name, version, branch)
+        for _, lattice in lattices.iteritems():
+            latticeid = lattice['id']
+        res = self.retrievegoldlattice(name, version, branch)
+        if len(res) == 0:
+            if creator == None:
+                sql = '''
+                insert into gold_lattice
+                (lattice_id, created_by, create_date, gold_status_ind)
+                values
+                (%s, NULL, now(), %s)
+                '''
+                vals=(latticeid, status)
+            else:
+                sql = '''
+                insert into gold_lattice
+                (lattice_id, created_by, create_date, gold_status_ind)
+                values
+                (%s, %s, now(), %s)
+                '''
+                vals=(latticeid, creator, status)
+        else:
+            if creator == None:
+                sql = '''
+                update gold_lattice
+                set gold_status_ind = %s, update_date = now() 
+                '''
+                vals = (status)
+            else:
+                sql = '''
+                update gold_lattice
+                set gold_status_ind = %s, updated_by = %s, update_date = now() 
+                '''
+                vals = (status, creator)
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, vals)
+            self.conn.commit()
+        except MySQLdb.Error as e:
+            self.conn.rollback()
+            self.logger.info('Error when saving golden lattice:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when saving golden lattice:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+
+        return True
