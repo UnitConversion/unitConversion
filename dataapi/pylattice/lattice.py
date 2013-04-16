@@ -46,7 +46,9 @@ class lattice(object):
                                   'lastModified': [optional],  # when this lattice was updated last time
                                   'latticeType':  [optional],  # lattice type name
                                   'latticeFormat':[optional],  # lattice type format
-                                 } 
+                                 }
+                 ...
+                } 
             supported lattice type name and format is as below:
             [{'name': 'tab flat', 'format': 'txt'},
              {'name': 'tracy3',  'format': 'lat'},
@@ -302,6 +304,20 @@ class lattice(object):
             pass
         return res
 
+    def _retrieveelementbylatticeid(self, latticeid, cursor):
+        '''
+        Retrieve all about element ids, names, and their orders belongs to given lattice id 
+        '''
+        elementidsql = '''
+        select element_id, element_name, element_order
+        from element
+        where lattice_id = %s
+        order by element_order
+        ''' 
+        
+        cursor.execute(elementidsql, (latticeid, ))
+        return cursor.fetchall()
+
     def _savetabformattedlattice(self, cur, latticeid, lattice):
         '''
         save real lattice data information
@@ -428,14 +444,8 @@ class lattice(object):
             values
             '''
             
-            elementidsql = '''
-            select element_id, element_name, element_order
-            from element
-            where lattice_id = %s
-            order by element_order
-            ''' 
-            cur.execute(elementidsql, (latticeid))
-            elementidres = cur.fetchall()
+            elementidres = self._retrieveelementbylatticeid(latticeid, cur)
+            
             elementiddict = {}
             for elementid in elementidres:
                 elementiddict[str(elementid[2])] = elementid
