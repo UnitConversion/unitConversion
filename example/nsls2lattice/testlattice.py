@@ -35,7 +35,6 @@ Created on Mar 19, 2013
 import MySQLdb
 from pylattice import lattice
 
-#host = 'vioc01.nsls2.bnl.gov'
 host=''
 user = ''
 pw = ''
@@ -58,7 +57,7 @@ if __name__ == "__main__":
                             {'name': 'elegant', 'format': 'lte'},
                             {'name': 'xal',     'format': 'xdxf'}]
 
-    savelattice = True
+    savelattice = False
     if savelattice:
         sql = '''
         delete from element_prop;
@@ -96,13 +95,16 @@ if __name__ == "__main__":
                                         description="CD3 lattice released on Oct 13, 2012",
                                         creator='Guobao Shen')
     
-    retrievelattice = True
+    retrievelattice = False
     if retrievelattice:
-        lattice = lat.retrievelattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'design', withdata=True)
-#        import pprint
-#        pprint.pprint (lattice)
+        lattices = lat.retrievelattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'design', withdata=True, rawdata=False)
+        print "costed time: %s seconds" %(time.time()-start)
+        print lattices
     
     #CD3-Oct3-12-30Cell-addID-par
     #print lat.retrievelattice("*", "*", "*")
+    
+    lat.savegoldlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'design', creator='Guobao', status=2)
+    lat.savegoldlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'design', status=3)
+    print lat.retrievegoldlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'design')
 
-    print "costed time: %s seconds" %(time.time()-start)

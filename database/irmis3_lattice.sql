@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 4/9/2013 4:41:12 PM
--- Diagram Version: 477
+-- Created on: 4/18/2013 11:27:38 AM
+-- Diagram Version: 480
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -50,9 +50,8 @@ CREATE TABLE `model_code` (
   `model_code_id` int(11) NOT NULL AUTO_INCREMENT,
   `code_name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
   `algorithm` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
-  `config_file_content` mediumtext,
-  `config_file_name` varchar(255),
-  PRIMARY KEY(`model_code_id`)
+  PRIMARY KEY(`model_code_id`),
+  UNIQUE INDEX `code_name_algorithm`(`code_name`, `algorithm`)
 )
 ENGINE=INNODB;
 
@@ -191,7 +190,10 @@ CREATE TABLE `model` (
   `chrome_y_1` double,
   `chrome_y_2` double,
   `final_beam_energy` double,
+  `model_control` mediumtext,
+  `model_control_url` varchar(255),
   PRIMARY KEY(`model_id`),
+  UNIQUE INDEX `model_name`(`model_name`),
   CONSTRAINT `FK_model_code` FOREIGN KEY (`model_code_id`)
     REFERENCES `model_code`(`model_code_id`)
     ON DELETE NO ACTION
@@ -277,7 +279,7 @@ ENGINE=INNODB;
 DROP TABLE IF EXISTS `beam_parameter`;
 
 CREATE TABLE `beam_parameter` (
-  `twiss_id` int(11) NOT NULL AUTO_INCREMENT,
+  `beam_parameter_id` int(11) NOT NULL AUTO_INCREMENT,
   `element_id` int(11),
   `model_id` int(11),
   `pos` double,
@@ -311,7 +313,7 @@ CREATE TABLE `beam_parameter` (
   `emit_x` double,
   `emit_y` double,
   `emit_z` double,
-  PRIMARY KEY(`twiss_id`),
+  PRIMARY KEY(`beam_parameter_id`),
   CONSTRAINT `FK_element` FOREIGN KEY (`element_id`)
     REFERENCES `element`(`element_id`)
     ON DELETE NO ACTION
