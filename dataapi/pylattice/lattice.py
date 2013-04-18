@@ -951,6 +951,8 @@ class lattice(object):
         if params.has_key('status'):
             status=params['status']
         _, lattices = self.retrievelatticelist(name, version, branch)
+        if len(lattices) == 0:
+            raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s)"%(name, version, branch))
         for _, lattice in lattices.iteritems():
             latticeid = lattice['id']
         res = self.retrievegoldlattice(name, version, branch)

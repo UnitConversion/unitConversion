@@ -50,7 +50,7 @@ if __name__ == "__main__":
     else:
         conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=port)
 
-    lat = lattice.lattice(conn)
+    lat = lattice(conn)
     supportedlatticetype = [{'name': 'tab flat', 'format': 'txt'},
                             {'name': 'tracy3',  'format': 'lat'},
                             {'name': 'tracy4',  'format': 'lat'},
