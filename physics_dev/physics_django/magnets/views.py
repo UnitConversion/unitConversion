@@ -36,13 +36,29 @@ def _gettreexml(data):
 
 def magnets_help(request):
     return render_to_response("magnets/magnets_help.html")
+
+def _checkkeys(keys, expectedkeys):
+    illegalkey = [] 
+    for key in keys:
+        if key not in expectedkeys:
+            illegalkey.append(key)
+    if len(illegalkey) != 0:
+        raise ValueError ("argument (%s) are not supported."%(",".join(illegalkey)))
+    else:
+        return True
     
 def systemlistweb(request):
-    res = retrievesystemdata(_getcmddict(request))
+    params = _getcmddict(request)
+    _checkkeys(params.keys(), ['name'])
+
+    res = retrievesystemdata(params)
     return render_to_response("magnets/magnets.html", res)
 
 def systemlist(request):
-    res = retrievesystemdata(_getcmddict(request))
+    params = _getcmddict(request)
+    _checkkeys(params.keys(), ['name'])
+
+    res = retrievesystemdata(params)
     return HttpResponse(json.dumps(res), mimetype="application/json")
 #    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
@@ -50,11 +66,17 @@ def systemlist(request):
 #        return HttpResponse(json.dumps({ "system": res}), mimetype="application/json")
 
 def magnetdevicesweb(request):
-    res = retrievemagnetinfo(_getcmddict(request))
+    params = _getcmddict(request)
+    _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
+
+    res = retrievemagnetinfo(params)
     return render_to_response("magnets/magnets.html", res)
 
 def magnetdevices(request):
-    res = retrievemagnetinfo(_getcmddict(request))
+    params = _getcmddict(request)
+    _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
+
+    res = retrievemagnetinfo(params)
     return HttpResponse(json.dumps(res), mimetype="application/json")
 #    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
@@ -62,11 +84,17 @@ def magnetdevices(request):
 #        return HttpResponse(json.dumps(res), mimetype="application/json")
 
 def conversionweb(request):
-    res = retrieveconversioninfo(_getcmddict(request))
+    params = _getcmddict(request)
+    _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
+
+    res = retrieveconversioninfo()
     return render_to_response("magnets/magnets.html", res)
     
 def conversion(request):
-    res = retrieveconversioninfo(_getcmddict(request))
+    params = _getcmddict(request)
+    _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
+
+    res = retrieveconversioninfo(params)
     return HttpResponse(json.dumps(res), mimetype="application/json")
 #    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])

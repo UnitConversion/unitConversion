@@ -58,8 +58,17 @@ def retrievemagnetinfo(params):
      -- system
      -- serialno
     
-    return: a 2-D array with format 
-            [[install_id, inventory_id, field_name, location, serial_no, cmpnt_type_name, description, vendor_name], ...]
+    return: list of dictionary
+            [{'installId': , 
+              'inventoryId': , 
+              'name': , 
+              'system': , 
+              'serialNumber': , 
+              'componentType': , 
+              'typeDescription': , 
+              'vendor': },
+             ...
+            ]
     '''
     if params.has_key('name'):
         name = params['name']

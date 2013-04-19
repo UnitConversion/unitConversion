@@ -3,6 +3,8 @@ Created on Mar 5, 2013
 
 @author: shengb
 '''
+import collections
+
 def _wildcardformat(regxval):
     """
     The LIKE condition allows user to use wildcards in the where clause of an SQL statement.
@@ -22,7 +24,10 @@ def _wildcardformat(regxval):
     if regxval == None:
         return None
     else:
-        return regxval.replace("*","%").replace("?","_")
+        try:
+            return regxval.replace("*","%").replace("?","_")
+        except AttributeError:
+            return regxval
 
 def _assemblesql(sql, data, strpattern, res, connector=""):
     ''''''
@@ -35,23 +40,34 @@ def _assemblesql(sql, data, strpattern, res, connector=""):
     if isinstance(data, (tuple, list)):
         sql += " ( "
         for s in data:
-            s = _wildcardformat(s)
-            if "%" in s or "_" in s:
-                sql += strpattern1
-            elif s == "":
-                pass
+            if isinstance(data, collections.Iterable):
+                s = _wildcardformat(s)
+                if "%" in s or "_" in s:
+                    sql += strpattern1
+                elif s == "":
+                    pass
+                else:
+                    sql += strpattern3
+                res.append(s)
             else:
-                sql += strpattern3
-            res.append(s)
+                if s != None:
+                    sql += strpattern3
+                    res.append(s)
         sql = sql[:-2]
         sql += " ) "
     else:
-        data = _wildcardformat(data)
-        if "%" in data or "_" in data:
-            sql += strpattern2
-        elif data == "":
-            pass
+        if isinstance(data, collections.Iterable):
+            data = _wildcardformat(data)
+            if "%" in data or "_" in data:
+                sql += strpattern2
+                res.append(data)
+            elif data == "":
+                pass
+            else:
+                sql += strpattern4
+                res.append(data)
         else:
-            sql += strpattern4
-        res.append(data)
+            if data != None:
+                sql += strpattern4
+                res.append(data)
     return res, sql
