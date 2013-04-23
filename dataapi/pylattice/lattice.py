@@ -260,7 +260,7 @@ class lattice(object):
                 attrs = body.split()
                 
                 # the line is not empty and not commented out by "#" or "!"
-                if not attrs[0].startswith('#') and not attrs[0].startswith('!') and len(attrs) > 0:
+                if  len(attrs) > 0 and not attrs[0].startswith('#') and not attrs[0].startswith('!'):
                     tmpdict = {}
                     typeprop = []
                     for j in range(len(attrs)):
@@ -350,7 +350,7 @@ class lattice(object):
         dx, dy, dz, pitch, yaw, roll)
         values
         '''
-        
+
         if elemdict:
             for k, v in elemdict.iteritems():
                 etypeprops = v['typeprop']
@@ -359,9 +359,16 @@ class lattice(object):
                 if typedict.has_key(etypename):
                     tempdict = typedict[etypename]
                     elemtypeid = tempdict['id']
+                    etypepropres = self.retrieveelemtype(etypename)
                     for etypeprop in etypeprops:
                         if not tempdict.has_key(etypeprop):
-                            etypepropid = self.updateelemtypeprop(etypename, etypeprop, unitdict)
+                            etypepropid = None
+                            for etypepropresinst in etypepropres:
+                                if etypeprop == etypepropresinst[3]:
+                                    etypepropid = etypepropresinst[1]
+                                    break
+                            if etypepropid == None:
+                                etypepropid = self.updateelemtypeprop(etypename, etypeprop, unitdict)
                             try:
                                 tempdict[etypeprop] = [etypepropid, unitdict[etypeprop]]
                             except KeyError:
@@ -372,15 +379,19 @@ class lattice(object):
                     if len(res) == 0:
                         elemtypeid= self.saveelemtype(etypename, etypeprops, unitdict)
                         results = self.retrieveelemtype(etypename)
+                        
                         tempdict = {}
                         for res in results:
-                            tempdict = {'id': res[0]}
-                            if res[4] == None:
-                                tempdict[res[3]] = [res[1]]
-                            else:
-                                tempdict[res[3]] = [res[1], res[4]]
-                        typedict.update({etypename: tempdict})
+                            if not tempdict.has_key('id'):
+                                tempdict = {'id': res[0]}
+                            if not tempdict.has_key(res[3]):
+                                if res[4] == None:
+                                    tempdict[res[3]] = [res[1]]
+                                else:
+                                    tempdict[res[3]] = [res[1], res[4]]
+                        typedict[etypename] = tempdict
                     else:
+                        etypepropstemps = []
                         for typeins in res:
                             if typedict.has_key(typeins[2]):
                                 tempdict = typedict[typeins[2]]
@@ -391,14 +402,30 @@ class lattice(object):
                             if elemtypeid == None:
                                 elemtypeid = typeins[0]
                             if typeins[3] != None and not tempdict.has_key(typeins[3]):
+                                etypepropstemps.append(typeins[3])
                                 if typeins[1] == None:
                                     raise ValueError ('type (%s) property (%s) id is empty'%(typeins[2], typeins[3]))
                                 elif typeins[4] == None:
                                     tempdict[typeins[3]] = [typeins[1]]
                                 else:
                                     tempdict[typeins[3]] = [typeins[1], typeins[4]]
-                        typedict.update({etypename: tempdict})
-                 
+                            typedict[etypename] = tempdict
+                        if len(etypeprops) > 0:
+                            etypepropscopies = etypeprops[:]
+                            for etypepropscopy in etypepropscopies:
+                                if etypepropscopy not in etypepropstemps:
+                                    # some new properties
+                                    etypepropid = self.updateelemtypeprop(etypename, etypepropscopy, unitdict)
+                                    if typedict.has_key(etypename):
+                                        tempdict = typedict[etypename]
+                                    else:
+                                        tempdict = {'id': typeins[0]}
+                                    try:
+                                        tempdict[etypepropscopy] = [etypepropid, unitdict[etypepropscopy]]
+                                    except KeyError:
+                                        tempdict[etypepropscopy] = [etypepropid]
+                                    typedict[etypename] = tempdict
+
                 sql += '''(%s, %s, '%s', %s, now(), %s, %s, '''%(latticeid, elemtypeid, v['name'], k, v['position'], v['length'])
                 dx = self._getelemprop(v, 'dx')
                 if dx == None:
@@ -479,7 +506,7 @@ class lattice(object):
             # get rid of last comma from SQL statement.
             # save element type property value
             cur.execute(elempropsql[:-1])
-
+        
     def _savetracy3lattice(self, cur, latticeid, params):
         '''
         '''
@@ -867,11 +894,21 @@ class lattice(object):
     
         try:
             sql = '''
+            select element_type_id 
+            from element_type_prop
+            where element_type_id = %s and element_type_prop_name = %s
+            '''
+            cur=self.conn.cursor()
+            cur.execute(sql, (elementtypeid, etypeprop, ))
+            results = cur.fetchone()
+            if results != None:
+                raise ValueError('property for given element type exist already.')
+            
+            sql = '''
             insert into element_type_prop
             (element_type_id, element_type_prop_name, element_type_prop_unit)
             values
             '''
-            cur=self.conn.cursor()
             try:
                 sql += "(%s, %s, %s)"
                 cur.execute(sql, (elementtypeid, etypeprop, etypepropunits[etypeprop]))
