@@ -1,6 +1,6 @@
 # Create your views here.
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 try:
     from django.utils import simplejson as json
@@ -49,16 +49,20 @@ def _checkkeys(keys, expectedkeys):
     
 def systemlistweb(request):
     params = _getcmddict(request)
-    _checkkeys(params.keys(), ['name'])
-
-    res = retrievesystemdata(params)
+    try:
+        _checkkeys(params.keys(), ['name'])
+        res = retrievesystemdata(params)
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
     return render_to_response("magnets/magnets.html", res)
 
 def systemlist(request):
     params = _getcmddict(request)
-    _checkkeys(params.keys(), ['name'])
-
-    res = retrievesystemdata(params)
+    try:
+        _checkkeys(params.keys(), ['name'])
+        res = retrievesystemdata(params)
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
     return HttpResponse(json.dumps(res), mimetype="application/json")
 #    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
@@ -67,16 +71,22 @@ def systemlist(request):
 
 def magnetdevicesweb(request):
     params = _getcmddict(request)
-    _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
+    try:
+        _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
+        res = retrievemagnetinfo(params)
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
 
-    res = retrievemagnetinfo(params)
     return render_to_response("magnets/magnets.html", res)
 
 def magnetdevices(request):
     params = _getcmddict(request)
-    _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
+    try:
+        _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
+        res = retrievemagnetinfo(params)
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
 
-    res = retrievemagnetinfo(params)
     return HttpResponse(json.dumps(res), mimetype="application/json")
 #    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
@@ -85,16 +95,21 @@ def magnetdevices(request):
 
 def conversionweb(request):
     params = _getcmddict(request)
-    _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
+    try:
+        _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
+        res = retrieveconversioninfo()
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
 
-    res = retrieveconversioninfo()
     return render_to_response("magnets/magnets.html", res)
     
 def conversion(request):
     params = _getcmddict(request)
-    _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
-
-    res = retrieveconversioninfo(params)
+    try:
+        _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
+        res = retrieveconversioninfo(params)
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
     return HttpResponse(json.dumps(res), mimetype="application/json")
 #    if 'application/xml' in request.META['CONTENT_TYPE'] or 'text/xml' in request.META['CONTENT_TYPE']:
 #        return HttpResponse(_getxmlheader()+_gettreexml(res), mimetype=request.META['CONTENT_TYPE'])
