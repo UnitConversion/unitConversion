@@ -266,22 +266,24 @@ class lattice(object):
                     typeprop = []
                     for j in range(len(attrs)):
                         temp = str.lower(cols[j])
+                        # get rid of " or '
+                        attr = attrs[j].replace("'", '').replace('"', '')
                         if temp in ['elementname', 'name']:
-                            tmpdict['name'] = attrs[j]
+                            tmpdict['name'] = attr
                         elif temp in ['elementtype', 'type']:
-                            tmpdict['type'] = attrs[j]
+                            tmpdict['type'] = attr
                         elif temp in ['l', 'length']:
-                            tmpdict['length'] = attrs[j]
+                            tmpdict['length'] = attr
                         elif temp in ['s', 'position']:
-                            tmpdict['position'] = attrs[j]
+                            tmpdict['position'] = attr
                         elif temp in ['map', 'kickmap', 'fieldmap']:
-                            tmpdict[cols[j]] = attrs[j]
+                            tmpdict[cols[j]] = attr
                             typeprop.append(cols[j])
                         else:
                             if float(attrs[j]) != 0.0:
                                 if cols[j].lower() not in ['dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
                                     typeprop.append(cols[j])
-                                tmpdict[cols[j]] = attrs[j]
+                                tmpdict[cols[j]] = attr
                     tmpdict['typeprop'] = typeprop
                     elemdict[str(i)] = tmpdict
         elif latticetypeid == 1:
@@ -491,17 +493,17 @@ class lattice(object):
                     etypeproptidunit = typedict[etypename][etypeprop]
                     if len(etypeproptidunit) == 2:
                         if etypeproptidunit[1] != unitdict[etypeprop]:
-                            elempropsql += '''(%s, %s, %s, %s),'''%(elementid, 
+                            elempropsql += '''('%s', '%s', '%s', '%s'),'''%(elementid, 
                                                                     typedict[etypename][etypeprop][0],
                                                                     v[etypeprop],
                                                                     unitdict[etypeprop])
                         else:
-                            elempropsql += '''(%s, %s, %s, NULL),'''%(elementid, 
+                            elempropsql += '''('%s', '%s', '%s', NULL),'''%(elementid, 
                                                                       typedict[etypename][etypeprop][0],
                                                                       v[etypeprop])
                     elif len(etypeproptidunit) == 1:
                         # no unit
-                        elempropsql += '''(%s, %s, %s, NULL),'''%(elementid, 
+                        elempropsql += '''('%s', '%s', '%s', NULL),'''%(elementid, 
                                                                   typedict[etypename][etypeprop][0],
                                                                   v[etypeprop])
                     else:
@@ -1015,11 +1017,9 @@ class lattice(object):
             values
             '''
             try:
-                sql += "(%s, %s, %s)"
-                cur.execute(sql, (elementtypeid, etypeprop, etypepropunits[etypeprop]))
-            except:
-                sql += "(%s, %s, NULL)"
-                cur.execute(sql, (elementtypeid, etypeprop,))
+                cur.execute(sql + "(%s, %s, %s)", (elementtypeid, etypeprop, etypepropunits[etypeprop]))
+            except KeyError:
+                cur.execute(sql + "(%s, %s, NULL)", (elementtypeid, etypeprop,))
             etypepropid = cur.lastrowid
         except MySQLdb.Error as e:
             self.conn.rollback()
