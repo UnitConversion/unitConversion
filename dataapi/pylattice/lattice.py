@@ -16,6 +16,8 @@ import MySQLdb
 
 from utils import (_assemblesql, _wildcardformat)
 
+from .tracyunit import elementpropunits as tracypropunits
+
 class lattice(object):
     def __init__(self, conn):
         ''''''
@@ -252,7 +254,6 @@ class lattice(object):
                     skipcount += 1
                 else:
                     unitdict[cols[i]] = units[i-skipcount]
-                
 
             latticebody = latticedata[3:]
             for i in range(len(latticebody)):
@@ -275,9 +276,11 @@ class lattice(object):
                             tmpdict['position'] = attrs[j]
                         elif temp in ['map', 'kickmap', 'fieldmap']:
                             tmpdict['map'] = attrs[j]
+                            typeprop.append(cols[j])
                         else:
                             if float(attrs[j]) != 0.0:
-                                typeprop.append(cols[j])
+                                if cols[j].lower() not in ['dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
+                                    typeprop.append(cols[j])
                                 tmpdict[cols[j]] = attrs[j]
                     tmpdict['typeprop'] = typeprop
                     elemdict[str(i)] = tmpdict
@@ -507,14 +510,116 @@ class lattice(object):
             # save element type property value
             cur.execute(elempropsql[:-1])
         
-    def _savetracy3lattice(self, cur, latticeid, params):
+    def _savetracylattice(self, cur, latticeid, params):
         '''
+        
         '''
-        print("To be implemented later")
-    def _savetracy4lattice(self, cur, latticeid, params):
+        sql = '''
+        insert into element
+        (lattice_id, element_type_id, element_name, element_order, insert_date, s, length, 
+        dx, dy, dz, pitch, yaw, roll)
+        values
         '''
-        '''
-        print("To be implemented later")
+        typedict = {}
+        for k, v in params['data'].iteritems():
+            if v.has_key('type'):
+                etypename = v['type']
+                
+                # get all properties for given element type
+                # key word in ['name', 'position', 'length', 'type'] is not a type property
+                #etypeprops = [etypeprop for etypeprop in v.keys() if etypeprop not in ['name', 'position', 'length', 'type'] ]
+                etypeprops = []
+                etypepropunits = {}
+                for etypeprop in v.keys():
+                    if etypeprop not in ['name', 'position', 'length', 'type']:
+                        etypeprops.append(etypeprop)
+                        tmp = etypeprop.upper()
+                        if tmp == 'K':
+                            if etypename.upper() in ['BENDING','QUADRUPOLE']:
+                                etypepropunits[etypeprop] = tracypropunits['K1']
+                            elif etypename.upper() == 'SEXTUPOLE':
+                                etypepropunits[etypeprop] = tracypropunits['K2']
+                            else:
+                                etypepropunits[etypeprop] = tracypropunits['K1']
+                        if tracypropunits.has_key(tmp):
+                            etypepropunits[etypeprop] = tracypropunits[tmp]
+                # retrieve element type information, which includes also all properties belonging to this type
+                etypepropsres = self.retrieveelemtype(etypename)
+
+                # create type dictionary
+                # type dictionary format: 
+                # {'type name': {'id': , 
+                #                'type property': [type property id],
+                #                'type property': [type property id, type property unit],
+                #                'type property': [type property id, type property unit],
+                #                ...
+                #               }
+                # }
+                if typedict.has_key(etypename):
+                    tmptypedict = typedict[etypename]
+                else:
+                    tmptypedict = {}
+#                    return: a tuple of (element type id, element type property id, 
+#                    element type name, element type property name,
+#                    element type property unit)
+
+                    
+                    if len(etypepropsres) == 0:
+                        # element type does not exist yet.
+                        # insert a new one
+                        self.saveelemtype(etypename, etypeprops, etypepropunits)
+                        etypepropsres = self.retrieveelemtype(etypename)
+                    
+                    #print etypepropsres
+                    ###
+                typedict[etypename]= etypeprops
+                
+            else:
+                raise ValueError('Unknown element type for %s'%(v['name']))
+#            if v.has_key('length'):
+#                sql += '''(%s, %s, '%s', %s, now(), %s, %s, '''%(latticeid, elemtypeid, v['name'], k, v['position'], v['length'])
+#            else:
+#                sql += '''(%s, %s, '%s', %s, now(), %s, NULL, '''%(latticeid, elemtypeid, v['name'], k, v['position'])
+            dx = self._getelemprop(v, 'dx')
+            if dx == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%dx
+            dy = self._getelemprop(v, 'dy')
+            if dy == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%dy
+            dz = self._getelemprop(v, 'dz')
+            if dz == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%dz
+            pitch = self._getelemprop(v, 'pitch')
+            if pitch == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%pitch
+            yaw= self._getelemprop(v, 'yaw')
+            if yaw == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%yaw
+            roll = self._getelemprop(v, 'roll')
+            if roll == None:
+                sql += 'NULL '
+            else:
+                sql += '%s '%roll
+            
+            sql += '),'
+#            print k, v
+        
+        for k, v in typedict.iteritems():
+            print k, v
+
+#        print params['name']
+#        print latticeid
+        
     def _saveelegantlattice(self, cur, latticeid, params):
         '''
         '''
@@ -630,10 +735,10 @@ class lattice(object):
                 # save lattice data
                 if latticetypename == 'tab flat':
                     latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
-                elif latticetypename == 'tracy3':
-                    latticeid = self._savetracy3lattice(cur, latticeid, params['lattice'])
-                elif latticetypename == 'tracy4':
-                    latticeid = self._savetracy4lattice(cur, latticeid, params['lattice'])
+                elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
+                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
+#                elif latticetypename == 'tracy4':
+#                    latticeid = self._savetracy4lattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
                     latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
