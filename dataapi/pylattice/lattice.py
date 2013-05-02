@@ -275,7 +275,7 @@ class lattice(object):
                         elif temp in ['s', 'position']:
                             tmpdict['position'] = attrs[j]
                         elif temp in ['map', 'kickmap', 'fieldmap']:
-                            tmpdict['map'] = attrs[j]
+                            tmpdict[cols[j]] = attrs[j]
                             typeprop.append(cols[j])
                         else:
                             if float(attrs[j]) != 0.0:
