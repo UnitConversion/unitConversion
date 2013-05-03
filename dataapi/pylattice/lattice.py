@@ -286,17 +286,19 @@ class lattice(object):
                                 tmpdict[cols[j]] = attr
                     tmpdict['typeprop'] = typeprop
                     elemdict[str(i)] = tmpdict
-        elif latticetypeid == 1:
-            # tracy-3 format
-            raise TypeError("tracy-3 lattice format is not supported yet.")
-        elif latticetypeid == 2:
-            # tracy-4 format
-            raise TypeError("tracy-4 lattice format is not supported yet.")
-        elif latticetypeid == 3:
-            # elegant format
-            raise TypeError("elegant lattice format is not supported yet.")
         else:
-            raise TypeError("unknown lattice format.")
+            raise TypeError('Wrong lattice format. Expecting a tab-formatted lattice.')
+#        elif latticetypeid == 1:
+#            # tracy-3 format
+#            raise TypeError("tracy-3 lattice format is not supported yet.")
+#        elif latticetypeid == 2:
+#            # tracy-4 format
+#            raise TypeError("tracy-4 lattice format is not supported yet.")
+#        elif latticetypeid == 3:
+#            # elegant format
+#            raise TypeError("elegant lattice format is not supported yet.")
+#        else:
+#            raise TypeError("unknown lattice format.")
         
         # remove duplicates in typelist, not order preserving since it does not matter
         return url, elemdict, unitdict
@@ -516,12 +518,23 @@ class lattice(object):
         '''
         
         '''
+        # save element statement
         sql = '''
         insert into element
         (lattice_id, element_type_id, element_name, element_order, insert_date, s, length, 
         dx, dy, dz, pitch, yaw, roll)
         values
         '''
+
+        # prepare type dictionary
+        # type dictionary format: 
+        # {'type name': {'id': , 
+        #                'type property': [type property id],
+        #                'type property': [type property id, type property unit],
+        #                'type property': [type property id, type property unit],
+        #                ...
+        #               }
+        # }
         typedict = {}
         for k, v in params['data'].iteritems():
             if v.has_key('type'):
@@ -529,11 +542,11 @@ class lattice(object):
                 
                 # get all properties for given element type
                 # key word in ['name', 'position', 'length', 'type'] is not a type property
-                #etypeprops = [etypeprop for etypeprop in v.keys() if etypeprop not in ['name', 'position', 'length', 'type'] ]
                 etypeprops = []
                 etypepropunits = {}
                 for etypeprop in v.keys():
-                    if etypeprop not in ['name', 'position', 'length', 'type']:
+                    if etypeprop not in ['name', 'position', 'length', 'type', 
+                                         'dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
                         etypeprops.append(etypeprop)
                         tmp = etypeprop.upper()
                         if tmp == 'K':
@@ -542,46 +555,69 @@ class lattice(object):
                             elif etypename.upper() == 'SEXTUPOLE':
                                 etypepropunits[etypeprop] = tracypropunits['K2']
                             else:
-                                etypepropunits[etypeprop] = tracypropunits['K1']
+                                raise TypeError('Unknown element type (%s)'%(etypename))
                         if tracypropunits.has_key(tmp):
                             etypepropunits[etypeprop] = tracypropunits[tmp]
-                # retrieve element type information, which includes also all properties belonging to this type
-                etypepropsres = self.retrieveelemtype(etypename)
 
-                # create type dictionary
-                # type dictionary format: 
-                # {'type name': {'id': , 
-                #                'type property': [type property id],
-                #                'type property': [type property id, type property unit],
-                #                'type property': [type property id, type property unit],
-                #                ...
-                #               }
-                # }
+                # cache type dictionary
                 if typedict.has_key(etypename):
                     tmptypedict = typedict[etypename]
                 else:
                     tmptypedict = {}
-#                    return: a tuple of (element type id, element type property id, 
-#                    element type name, element type property name,
-#                    element type property unit)
 
+                # retrieve element type information, which includes also all properties belonging to this type
+                etypepropsres = self.retrieveelemtype(etypename)
+                if len(etypepropsres) == 0:
+                    # element type does not exist yet.
+                    # insert a new entry
+                    elemtypeid = self.saveelemtype(etypename, etypeprops, etypepropunits)
                     
-                    if len(etypepropsres) == 0:
-                        # element type does not exist yet.
-                        # insert a new one
-                        self.saveelemtype(etypename, etypeprops, etypepropunits)
-                        etypepropsres = self.retrieveelemtype(etypename)
+                    # add a new entry, 'id',  into type dictionary
+                    tmptypedict['id'] = elemtypeid
+                    etypepropsres = self.retrieveelemtype(etypename)
+                    for etypepropres in etypepropsres:
+                        if etypepropres[3] != None:
+                            if etypepropres[4] == None:
+                                tmptypedict[etypepropres[3]] = [etypepropres[1]]
+                            else:
+                                tmptypedict[etypepropres[3]] = [etypepropres[1], etypepropres[4]]
+                else:
+                    elemtypeid = etypepropsres[0][0]
+                    if not tmptypedict:
+                        # check whether type dictionary is empty
+                        tmptypedict['id'] = elemtypeid
+                        for etypepropres in etypepropsres:
+                            if etypepropres[3] != None:
+                                if etypepropres[4] == None:
+                                    tmptypedict[etypepropres[3]] = [etypepropres[1]]
+                                else:
+                                    tmptypedict[etypepropres[3]] = [etypepropres[1], etypepropres[4]]
+                    else:
+                        # not empty, therefore the element type id has to be same
+                        assert tmptypedict['id'] == elemtypeid, 'element type id does not match'
                     
-                    #print etypepropsres
-                    ###
-                typedict[etypename]= etypeprops
-                
+                    # check whether all properties are in database
+                    if len(etypeprops) > 0:
+                        for etypeprop in etypeprops:
+                            if not tmptypedict.has_key(etypeprop):
+                                print etypeprop
+                                etypepropid = self.updateelemtypeprop(etypename, etypeprop, etypepropunits)
+                                try:
+                                    # element type property has unit
+                                    tmptypedict[etypeprop] = [etypepropid, etypepropunits[etypeprop]]
+                                except KeyError:
+                                    # element type property does not have unit
+                                    tmptypedict[etypeprop] = [etypepropid]
+
+                typedict[etypename] = tmptypedict
             else:
                 raise ValueError('Unknown element type for %s'%(v['name']))
-#            if v.has_key('length'):
-#                sql += '''(%s, %s, '%s', %s, now(), %s, %s, '''%(latticeid, elemtypeid, v['name'], k, v['position'], v['length'])
-#            else:
-#                sql += '''(%s, %s, '%s', %s, now(), %s, NULL, '''%(latticeid, elemtypeid, v['name'], k, v['position'])
+
+            # start to prepare insert statement
+            if v.has_key('length'):
+                sql += '''(%s, %s, '%s', %s, now(), %s, %s, '''%(latticeid, elemtypeid, v['name'], k, v['position'], v['length'])
+            else:
+                sql += '''(%s, %s, '%s', %s, now(), %s, NULL, '''%(latticeid, elemtypeid, v['name'], k, v['position'])
             dx = self._getelemprop(v, 'dx')
             if dx == None:
                 sql += 'NULL, '
@@ -614,13 +650,44 @@ class lattice(object):
                 sql += '%s '%roll
             
             sql += '),'
-#            print k, v
         
-        for k, v in typedict.iteritems():
-            print k, v
+        # get rid of last comma from SQL statement.
+        # save element geometric value
+        cur.execute(sql[:-1])
+        
+        elementidres = self._retrieveelementbylatticeid(latticeid, cur)
 
-#        print params['name']
-#        print latticeid
+        # save element property value statement
+        elempropsql = '''
+        insert into element_prop
+        (element_id, element_type_prop_id, element_prop_value, element_prop_unit)
+        values
+        '''
+        
+        elementiddict = {}
+        for elementid in elementidres:
+            elementiddict[str(elementid[2])] = elementid
+        for k, v in params['data'].iteritems():
+            if k != str(elementiddict[k][2]):
+                # check the element order to ensure same element
+                raise ValueError("Element not same")
+            elementid = elementiddict[k][0]
+            etypename=v['type']
+            for etypeprop in v.keys():
+                if etypeprop not in  ['name', 'position', 'length', 'type', 
+                                         'dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
+                    etypeprops.append(etypeprop)
+                    etypeproptidunit = typedict[etypename][etypeprop]
+
+                    if len(etypeproptidunit) > 0:
+                            elempropsql += '''('%s', '%s', '%s', NULL),'''%(elementid, 
+                                                                      typedict[etypename][etypeprop][0],
+                                                                      v[etypeprop])
+                    else:
+                        raise TypeError("Unknown structure for element type property value and unit.")
+        # get rid of last comma from SQL statement.
+        # save element type property value
+        cur.execute(elempropsql[:-1])
         
     def _saveelegantlattice(self, cur, latticeid, params):
         '''
