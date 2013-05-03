@@ -516,8 +516,27 @@ class lattice(object):
         
     def _savetracylattice(self, cur, latticeid, params):
         '''
+        save real lattice data information
         
+        cur: database connection cursor
+        latticeid: lattice id to identify which lattice the data belongs to.
+        lattice:   lattice data dictionary:
+                     {'name': ,
+                      'data': ,
+                      'raw': 
+                     }        
         '''
+        # save raw lattice file
+        if params.has_key('raw'):
+            sql = '''update lattice SET url = %s '''
+            now = datetime.datetime.now()
+            dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
+            with os.fdopen(fd,'w') as f:
+                for data in params['raw']:
+                    f.write(data)
+            cur.execute(sql,(url,))
+
         # save element statement
         sql = '''
         insert into element
@@ -525,7 +544,6 @@ class lattice(object):
         dx, dy, dz, pitch, yaw, roll)
         values
         '''
-
         # prepare type dictionary
         # type dictionary format: 
         # {'type name': {'id': , 
