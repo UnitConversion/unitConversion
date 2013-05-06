@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 4/18/2013 11:27:38 AM
--- Diagram Version: 480
+-- Created on: 5/6/2013 10:52:34 AM
+-- Diagram Version: 482
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -299,9 +299,9 @@ CREATE TABLE `beam_parameter` (
   `index_slice_chk` int(11),
   `s` double,
   `energy` double,
-  `particel_species` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
-  `particle mass` double,
-  `particle charge` int(11),
+  `particle_species` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  `particle_mass` double,
+  `particle_charge` int(11),
   `beam_charge_density` double,
   `beam_current` double,
   `x` double,
