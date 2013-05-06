@@ -534,8 +534,8 @@ class lattice(object):
         
             for mapname, mapvalue in fieldmaps.iteritems():
                 with file(url+'_map/'+mapname, 'w') as f:
-                    f.write(mapvalue)
-
+                    for data in mapvalue:
+                        f.write(data)
 
     def _savetracylattice(self, cur, latticeid, params):
         '''
