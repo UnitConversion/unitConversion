@@ -520,7 +520,7 @@ class lattice(object):
         
         cur: database connection cursor
         latticeid: lattice id to identify which lattice the data belongs to.
-        lattice:   lattice data dictionary:
+        params:   lattice data dictionary:
                      {'name': ,
                       'data': ,
                       'raw': 

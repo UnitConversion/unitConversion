@@ -5,9 +5,14 @@ Created on Apr 15, 2013
 '''
 
 import logging
+import MySQLdb
+
+from .lattice import lattice
+
+from utils import _wildcardformat
 
 class model(object):
-    def __init__(self, conn):
+    def __init__(self, conn, lat=None):
         '''
         Constructor
         '''
@@ -19,21 +24,624 @@ class model(object):
         self.logger.setLevel(logging.WARNING)
 
         self.conn = conn
+        self.lat=lat
+        if self.lat == None:
+            self.lat=lattice(self.conn)
+
+    def savemodelcodeinfo(self, codename, algorithm):
+        '''
+        save simulation code which could be used to carry out one particular run with given lattice.
+        The code name, and its algorithm are capture.
+        parameter:
+            codename: simulation code name, elegant or tracy for example
+            algorithm: algorithm to be use to generate the beam parameters such as TWISS, and close orbit.
         
-    def retrievemodel(self):
+        Return: model code id if success, other raise an exception.
         '''
+        res = self.retrievemodelcodeinfo(codename, algorithm)
+        if len(res) != 0:
+            raise ValueError ('Entry exists already for model code (%s) with algorithm (%s)'%(codename, algorithm))
+        sql = '''
+        insert into model_code
+        (code_name, algorithm)
+        value
+        (%s, %s)
+        '''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, (codename, algorithm))
+            modelcodeid = cur.lastrowid
+            self.conn.commit()
+        except MySQLdb.Error as e:
+            self.conn.rollback()
+            self.logger.info('Error when saving a new model code info:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving a new model code info:\n%s (%d)' %(e.args[1], e.args[0]))
+        return modelcodeid
+        
+    def retrievemodelcodeinfo(self, codename, algorithm):
+        '''
+        retrieve model code information with given name and algorithm
+        Wildcasts are supported for search in code name and algorithm.
+            * for multiple characters matching
+            ? for single character matching
+            
+        return tuple of model code id, model code name, and algorithm
+        '''
+        sql = '''
+        select model_code_id, code_name, algorithm
+        from model_code
+        where
+        '''
+        if  "*" in codename or "?" in codename:
+            sql += 'code_name like %s '
+            codename = _wildcardformat(codename)
+        else:
+            sql += 'code_name = %s '
+        if algorithm:
+            if "*" in algorithm or "?" in algorithm:
+                sql += 'and algorithm like %s'
+                algorithm = _wildcardformat(algorithm)
+            else:
+                sql += 'and algorithm = %s'
+        else:
+            sql += ' and algorithm is %s'
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (codename, algorithm))
+            res = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
+        return res
+    
+    def retrievemodel(self, latticename, latticeversion, latticebranch, modelname):
+        '''
+        Retrieve a model list that satisfies given constrains.
+        parameters:
+            latticename:    lattice name that this model belongs to
+            latticeversion: the version of lattice
+            latticebranch:  the branch of lattice
+            modelname:      the name shows that which model this API will deal with
+        
+        return: a dictionary
+                {'model name':                            # model name
+                               {'id': ,                   # model id number
+                                'latticeId': ,            # id of the lattice which given model belongs to
+                                'description': ,          # description of this model
+                                'creator': ,              # name who create this model first time
+                                'originalDate': ,         # date when this model was created
+                                'updated': ,              # name who modified last time
+                                'lastModified': ,         # the date this model was modified last time
+                                'tunex': ,                # horizontal tune
+                                'tuney': ,                # vertical tune
+                                'chromex0': ,             # linear horizontal chromaticity
+                                'chromex1': ,             # non-linear horizontal chromaticity
+                                'chromex2': ,             # high order non-linear horizontal chromaticity
+                                'chromey0': ,             # linear vertical chromaticity
+                                'chromey1': ,             # non-linear vertical chromaticity
+                                'chromey2': ,             # high order non-linear vertical chromaticity
+                                'finalEnergy': ,          # the final beam energy in GeV
+                                'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
+                                'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
+                                                          # and SI, or SI/PTC for Tracy code
+                                'simulationControl': ,    # various control constrains such as initial condition, beam distribution, 
+                                                          # and output controls
+                                'simulationControlFile':  # file name that control the simulation conditions, like a .ele file for elegant
+                               }
+                 ...
+                }
+        '''
+        _, lattices = self.lat.retrievelatticelist(latticename, version=latticeversion, branch=latticebranch)
+        sql = '''
+        select model_id, lattice_id, 
+               model_name, model_desc, 
+               created_by, create_date,
+               updated_by, update_date,
+               tune_x, tune_y,
+               chrome_x_0, chrome_x_1, chrome_x_2,
+               chrome_y_0, chrome_y_1, chrome_y_2,
+               final_beam_energy,
+               code_name, algorithm, 
+               model_control, model_control_url
+        from model
+        left join model_code on model_code.model_code_id = model.model_code_id
+        where
+        lattice_id = %s and
+        '''
+        if "*" in modelname or "?" in modelname:
+            sql += ' model_name like %s'
+        else:
+            sql += ' model_name = %s'
+        modelname = _wildcardformat(modelname)
+        modelres = {}
+        for _, v in lattices.iteritems():
+            latticeid = v['id']
+            try:
+                cur=self.conn.cursor()
+                cur.execute(sql, (latticeid, modelname))
+                results = cur.fetchall()
+                for res in results:
+                    tempdict = {'id': res[0],
+                                'latticeId': res[1]}
+                    keys=['description', 'creator', 'originalDate',
+                          'updated', 'lastModified',
+                          'tunex', 'tuney',
+                          'chromex0', 'chromex1', 'chromex2',
+                          'chromey0', 'chromey1', 'chromey2',
+                          'finalEnergy', 
+                          'simulationCode', 'sumulationAlgorithm',
+                          'simulationControl', 'simulationControlFile'
+                          ]
+                    for i in range(3, len(res)):
+                        if res[i] != None:
+                            tempdict[keys[i-3]] = res[i]
+                    
+                    modelres[res[2]]=tempdict
+            except MySQLdb.Error as e:
+                self.logger.info('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
+                raise Exception('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
+        return modelres
+
+    def _elementslist2dict(self, elements):
+        elementinfo = {}
+        for element in elements:
+            elementinfo[str(element[2])] = {'id': element[0], 'name': element[1]}
+        return elementinfo
+    
+    def _savebeamparameters(self, cursor, latticeid, modelid, beamparameter):
+        '''
+        beamparameter is a dictionary which hosts all beam simulation results.
+            { element_order: #element_order starts with 0, which is the begin of simulation with s=0.
+                { 'name': ,
+                  'position': ,
+                  'alphax': ,
+                  'alphay': ,
+                  'betax': ,
+                  'betay': ,
+                  'etax': ,
+                  'etay': ,
+                  'etapx': ,
+                  'etapy': ,
+                  'phasex': ,
+                  'phasey': ,
+                  'cox': ,
+                  'coy': ,
+                  'transferMatrix': ,
+                  'indexSliceCheck': ,
+                  's': ,
+                  'energy': ,
+                  'particleSpecies': ,
+                  'particleMass': ,
+                  'particleCharge': ,
+                  'beamChargeDensity': ,
+                  'beamCurrent': ,
+                  'x': ,
+                  'xp': ,
+                  'y': ,
+                  'yp': ,
+                  'z': ,
+                  'zp': ,
+                  'emittancex': ,
+                  'emittancey': ,
+                  'emittancexz':  
+                }
+            }
+        '''
+        if len(beamparameter) == 0:
+            # nothing to do with empty data
+            return
+        elements = self.lat._retrieveelementbylatticeid(latticeid, cursor)
+        elementinfo = self._elementslist2dict(elements)
+
+        sql = '''insert into beam_parameter
+        (model_id, element_id, 
+        pos, 
+        alpha_x, alpha_y, 
+        beta_x, beta_y, 
+        eta_x, eta_y,
+        etap_x, etap_y,
+        nu_x, nu_y,
+        co_x, co_y,
+        index_slice_chk,
+        s,
+        energy, 
+        particle_species,
+        particle_mass,
+        particle_charge,
+        beam_charge_density,
+        beam_current,
+        x, xp,
+        y, yp,
+        z, zp,
+        emit_x, emit_y, emit_z,
+        transfer_matrix)
+        values
         '''
         
-    def savemodel(self):
+        for bpkey, bpval in beamparameter.iteritems():
+            # bpkey is element order
+            # bpval is element beam parameter result
+            if elementinfo.has_key(bpkey):
+                elementid = elementinfo[bpkey]['id']
+                elementname = elementinfo[bpkey]['name']
+                
+                # check whether the element name matches that in element
+                if elementname.upper() != bpval['name'].upper() and bpkey != 0:
+                    raise ValueError('Element name (%s) does not match that in lattice (%s).'
+                                     %(bpval['name'], elementname))
+                sql += '(%s, %s, '%(modelid, elementid)
+                
+                for key in ['position', 
+                            'alphax', 'alphay', 'betax', 'betay', 'etax', 'etay', 'etapx', 'etapy', 'phasex', 'phasey',
+                            'cox', 'coy',
+                            'indexSliceCheck',
+                            's',
+                            'energy',
+                            'particleSpecies',
+                            'particleMass',
+                            'particleCharge',
+                            'beamChargeDensity',
+                            'beamCurrent',
+                            'x', 'xp', 'y', 'yp', 'z', 'zp',
+                            'emittancex', 'emittancey', 'emittancexz',
+                            'transferMatrix']:
+                    if bpval.has_key(key):
+                        sql += '%s, '%(bpval[key])
+                    else:
+                        sql += 'NULL, '
+                sql= sql[:-2]+'),'
+            else:
+                raise ValueError('elements in lattice do not match that in model')
+        cursor.execute(sql[:-1])
+
+    def _updatebeamparameters(self, cursor, latticeid, modelid, beamparameter):
         '''
+        beamparameter is a dictionary which hosts all beam simulation results.
+            { element_order: 
+                { 'name': ,
+                  'pos': ,
+                  'alphax': ,
+                  'alphay': ,
+                  'betax': ,
+                  'betay': ,
+                  'etax': ,
+                  'etay': ,
+                  'etapx': ,
+                  'etapy': ,
+                  'phasex': ,
+                  'phasey': ,
+                  'cox': ,
+                  'coy': ,
+                  'transferMatrix': ,
+                  'indexSliceCheck': ,
+                  's': ,
+                  'energy': ,
+                  'particleSpecies': ,
+                  'particleMass': ,
+                  'particleCharge': ,
+                  'beamChargeDensity': ,
+                  'beamCurrent': ,
+                  'x': ,
+                  'xp': ,
+                  'y': ,
+                  'yp': ,
+                  'z': ,
+                  'zp': ,
+                  'emittancex': ,
+                  'emittancey': ,
+                  'emittancexz':  
+                }
+            }
         '''
+        if len(beamparameter) == 0:
+            # nothing to do with empty data
+            return
+        elements = self.lat._retrieveelementbylatticeid(latticeid, cursor)
+        elementinfo = self._elementslist2dict(elements)
         
-    def updatemodel(self):
+        for bpkey, bpval in beamparameter.iteritems():
+            sql = '''update beam_parameter set '''
+            # bpkey is element order
+            # bpval is element beam parameter result
+            
+            if elementinfo.has_key(bpkey):
+                elementid = elementinfo[bpkey]['id']
+                elementname = elementinfo[bpkey]['name']
+                
+                # check whether the element name matches that in element
+                if elementname.upper() != bpval['name'].upper() and bpkey != 0:
+                    raise ValueError('Element name (%s) does not match that in lattice (%s).'
+                                     %(bpval['name'], elementname))
+                # map key to database table column names
+                keyvals = {'pos': 'pos',
+                           'alphax': 'alpha_x',
+                           'alphay': 'alpha_y',
+                           'betax': 'beta_x',
+                           'betay': 'beta_y',
+                           'etax': 'eta_x',
+                           'etay': 'eta_y',
+                           'etapx': 'etap_x',
+                           'etapy': 'etap_y',
+                           'phasex': 'nu_x',
+                           'phasey': 'nu_y',
+                           'cox': 'co_x',
+                           'coy': 'co_y',
+                           'transferMatrix': 'transfer_matrix',
+                           'indexSliceCheck': 'index_slice_chk',
+                           's': 's',
+                           'energy': 'energy',
+                           'particleSpecies': 'particle_cpecies',
+                           'particleMass': 'particle_mass',
+                           'particleCharge': 'particle_charge',
+                           'beamChargeDensity': 'beam_charge_density',
+                           'beamCurrent': 'beam_current',
+                           'x': 'x',
+                           'xp': 'xp',
+                           'y': 'y',
+                           'yp': 'yp',
+                           'z': 'z',
+                           'zp': 'zp',
+                           'emittancex': 'emit_x',
+                           'emittancey': 'emit_y',
+                           'emittancexz': 'emit_z'
+                }  
+            else:
+                raise ValueError('elements in lattice do not match that in model')
+            sql += sql[:-1] +') where element_id = %s'%elementid
+
+    def savemodel(self, latticename, latticeversion, latticebranch, model):
         '''
-        '''
+        Save a model.
+        parameters:
+            latticename:    lattice name that this model belongs to
+            latticeversion: the version of lattice
+            latticebranch:  the branch of lattice
+            modelname:      the name shows that which model this API will deal with
+            
+            model:          a dictionary which holds all data 
+                {'model name':                            # model name
+                               { # header information
+                                'description': ,          # description of this model
+                                'creator': ,              # name who create this model first time
+                                'updated': ,              # name who modified last time
+                                'tunex': ,                # horizontal tune
+                                'tuney': ,                # vertical tune
+                                'chromex0': ,             # linear horizontal chromaticity
+                                'chromex1': ,             # non-linear horizontal chromaticity
+                                'chromex2': ,             # high order non-linear horizontal chromaticity
+                                'chromey0': ,             # linear vertical chromaticity
+                                'chromey1': ,             # non-linear vertical chromaticity
+                                'chromey2': ,             # high order non-linear vertical chromaticity
+                                'finalEnergy': ,          # the final beam energy in GeV
+                                'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
+                                'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
+                                                          # and SI, or SI/PTC for Tracy code
+                                'simulationControl': ,    # various control constrains such as initial condition, beam distribution, 
+                                                          # and output controls
+                                'simulationControlFile':  # file name that control the simulation conditions, like a .ele file for elegant
+                                
+                                # simulation data
+                                'beamParameter':          # a dictionary consists of twiss, close orbit, transfer matrix and others
+                               }
+                 ...
+                }
         
-    def retrievegoldmodel(self):
+        Use updatemodel() instead if a model exists already.
+        Simulation info (simulationCode, simulationAlgorithm) has to been provided to enable updatemodel() later.
+        
+        return: model id if success, otherwise raise a ValueError exception
         '''
+        for modelname, modeldata in model.iteritems():
+            # check whether a model exists already.
+            results = self.retrievemodel(latticename, latticeversion, latticebranch, modelname)
+            if len(results) != 0:
+                raise ValueError('Model (%s) for given lattice (name: %s, version: %s, branch: %s) exists already.'
+                                 %(modelname, latticename, latticeversion, latticebranch))
+            _, lattices = self.lat.retrievelatticelist(latticename, version=latticeversion, branch=latticebranch)
+            
+            if len(lattices) == 0:
+                raise ValueError('lattice (name: %s, version: %s, branch: %s) does not exist yet.'
+                                 %(latticename, latticeversion, latticebranch))
+            for _, v in lattices.iteritems():
+                latticeid = v['id']
+                if modeldata.has_key('simulationCode'):
+                    simulationcode = modeldata['simulationCode']
+                else:
+                    simulationcode = None
+                if modeldata.has_key('sumulationAlgorithm'):
+                    simulationalgorithm = modeldata['sumulationAlgorithm']
+                else:
+                    simulationalgorithm = None
+                
+                sql = 'insert into model (lattice_id, model_name, '
+                sqlval = 'values (%s, %s, '
+                vals = [latticeid, modelname]
+                # check whether simulation code info is provided
+                if simulationcode != None:
+                    # has simulation code info, get the ID
+                    modelcode = self.retrievemodelcodeinfo(simulationcode, simulationalgorithm)
+                    if len(modelcode) == 0:
+                        # simulation code info does not exist. Save a new entry
+                        modelcodeid = self.savemodelcodeinfo(simulationcode, simulationalgorithm)
+                    else:
+                        # find simulation code info.
+                        # since it should be unique, get the first as ID.
+                        # Save a new entry
+                        modelcodeid = modelcode[0][0]
+                    sql += ' model_code_id,'
+                    vals.append(modelcodeid)
+                    sqlval += '%s, '
+
+                # save other attributes
+                keys = {'description': 'model_desc',
+                        'tunex': 'tune_x',
+                        'tuney': 'tune_y',
+                        'chromex0': 'chromme_x_0',
+                        'chromex1': 'chromme_x_1',
+                        'chromex2': 'chromme_x_2',
+                        'chromey0': 'chromme_y_0',
+                        'chromey1': 'chromme_y_1',
+                        'chromey2': 'chromme_y_2',
+                        'finalEnergy': 'final_beam_energy',
+                        'simulationControl': 'model_control',
+                        'simulationControlFile': 'model_control_url',
+                        'creator': 'created_by'
+                
+                }
+                for k, v in keys.iteritems():
+                    if modeldata.has_key(k):
+                        sql += ' %s,' %v
+                        vals.append(modeldata[k])
+                        sqlval += ' %s, '
+                sql += ' create_date) '
+                sqlval += ' now() )'
+                sql += sqlval
+                try:
+                    cur=self.conn.cursor()
+                    cur.execute(sql, vals)
+                    
+                    modelid=cur.lastrowid
+                    if modeldata.has_key('beamParameter'):
+                        self._savebeamparameters(cur, latticeid, modelid, modeldata['beamParameter'])
+                    self.conn.commit()
+                except MySQLdb.Error as e:
+                    self.conn.rollback()
+                    self.logger.info('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
+                    raise Exception('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
+        return modelid
+
+    def updatemodel(self, latticename, latticeversion, latticebranch, model):
+        '''
+        update an existing model.
+        parameters:
+            latticename:    lattice name that this model belongs to
+            latticeversion: the version of lattice
+            latticebranch:  the branch of lattice
+            modelname:      the name shows that which model this API will deal with
+            
+            model:          a dictionary which holds all data 
+                {'model name':                            # model name
+                               { # header information
+                                'description': ,          # description of this model
+                                'tunex': ,                # horizontal tune
+                                'tuney': ,                # vertical tune
+                                'chromex0': ,             # linear horizontal chromaticity
+                                'chromex1': ,             # non-linear horizontal chromaticity
+                                'chromex2': ,             # high order non-linear horizontal chromaticity
+                                'chromey0': ,             # linear vertical chromaticity
+                                'chromey1': ,             # non-linear vertical chromaticity
+                                'chromey2': ,             # high order non-linear vertical chromaticity
+                                'finalEnergy': ,          # the final beam energy in GeV
+                                'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
+                                'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
+                                                          # and SI, or SI/PTC for Tracy code
+                                'simulationControl': ,    # various control constrains such as initial condition, beam distribution, 
+                                                          # and output controls
+                                'simulationControlFile':  # file name that control the simulation conditions, like a .ele file for elegant
+                                
+                                # simulation data
+                                'beamParameter':          # a dictionary consists of twiss, close orbit, transfer matrix and others
+                               }
+                 ...
+                }
+        
+        Use savemodel() instead if a model does not exist yet.
+        Simulation info has to be provided and matches those inside the existing model.
+        Otherwise, raise an exception.
+        
+        return: model id if success, otherwise raise a ValueError exception
+        '''
+        for modelname, modeldata in model.iteritems():
+            # check whether a model exists already.
+            results = self.retrievemodel(latticename, latticeversion, latticebranch, modelname)
+            if len(results) != 1:
+                raise ValueError('Cannot find model (%s) for given lattice (name: %s, version: %s, branch: %s), or more than one found.'
+                                 %(modelname, latticename, latticeversion, latticebranch))
+            results = results[modelname]
+            modelid = results['id']
+            latticeid = results['latticeId']
+            if modeldata.has_key('simulationCode'):
+                simulationcode = modeldata['simulationCode']
+            else:
+                simulationcode = None
+            if modeldata.has_key('sumulationAlgorithm'):
+                simulationalgorithm = modeldata['sumulationAlgorithm']
+            else:
+                simulationalgorithm = None
+            
+            # check whether model info (code and algorithm) matches with those of existing model
+            if simulationcode == None or simulationalgorithm == None:
+                raise ValueError('Unknown simulation code or algorithm. Cannnot update a existing model.')
+            else:
+                modelinfo = self.retrievemodelcodeinfo(simulationcode, simulationalgorithm)
+                if len(modelinfo) == 1:
+                    modelinfo = modelinfo[0]
+                    
+                    if modelinfo[1] != simulationcode:
+                        # the results are from different simulation code. 
+                        # can not update
+                        raise ValueError('Simulation code (code: %s) does not match with a existing model (code: %s).'
+                                         %(simulationcode, modelinfo[1]))
+                    elif modelinfo[2]:
+                        # simulation algorithm is not empty
+                        if simulationalgorithm != modelinfo[2]:
+                            # algorithm does not match each other
+                            # results were from different algorithms
+                            raise ValueError('Simulation algorithm (algorithm: %s) does not match with a existing model (algorithm: %s).'
+                                             %(simulationalgorithm, modelinfo[2]))
+                    else:
+                        # simulation algorithm is not available. Can not update.
+                        raise ValueError('Simulation algorithm (algorithm: %s) does not match with a existing model (algorithm: %s).'
+                                         %(simulationalgorithm, modelinfo[2]))
+                elif len(modelinfo) == 0:
+                    # simulation code info does not exist.
+                    # Cannot update an existing model.
+                    raise ValueError('Cannot find model info (code: %s, algorithm: %s). Failed to update a model.'
+                                     %(simulationcode, simulationalgorithm))
+                else:
+                    # more than one entry found for given simulation code with its algorithm
+                    raise ValueError('Given model info is not unique (code: %s, algorithm: %s).'
+                                     %(simulationcode, simulationalgorithm))
+            
+            sql = 'update model SET '
+            keys = {'description': 'model_desc',
+                    'tunex': 'tune_x',
+                    'tuney': 'tune_y',
+                    'chromex0': 'chromme_x_0',
+                    'chromex1': 'chromme_x_1',
+                    'chromex2': 'chromme_x_2',
+                    'chromey0': 'chromme_y_0',
+                    'chromey1': 'chromme_y_1',
+                    'chromey2': 'chromme_y_2',
+                    'finalEnergy': 'final_beam_energy',
+                    'simulationControl': 'model_control',
+                    'simulationControlFile': 'model_control_url',
+                    'creator': 'updated_by'
+            }
+
+            for k, v in keys.iteritems():
+                if modeldata.has_key(k):
+                    sql += ' %s = "%s",' %(v, modeldata[k])
+            sql += ' update_date = now() where model_id = %s'%modelid
+            try:
+                cur=self.conn.cursor()
+                cur.execute(sql)
+                if modeldata.has_key('beamParameter'):
+                    self._updatebeamparameters(cur, 
+                                               latticeid, 
+                                               modelid, 
+                                               modeldata['beamParameter'])
+                self.conn.commit()
+            except MySQLdb.Error as e:
+                self.conn.rollback()
+                self.logger.info('Error when updating a model:\n%s (%d)' %(e.args[1], e.args[0]))
+                raise Exception('Error when updating a model:\n%s (%d)' %(e.args[1], e.args[0]))
+        return True
+        
+    def retrievegoldmodel(self, latticename, latticeversion, latticebranch, modelname):
+        '''
+        Retrieve a model list that satisfies given constrains.
         '''
         
     def savegoldmodel(self):

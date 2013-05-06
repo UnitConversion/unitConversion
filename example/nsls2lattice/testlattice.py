@@ -3,16 +3,13 @@ Created on Mar 19, 2013
 
 @author: shengb
 '''
+
 from collections import OrderedDict
 
 import MySQLdb
 from pylattice import lattice
 
-host=''
-user = ''
-pw = ''
-db = ''
-port = 3306
+from .rdbinbfo import host, user, pw, db, port
 
 supportedlatticetype = [{'name': 'tab flat', 'format': 'txt'},
                         {'name': 'tracy3',  'format': 'lat'},
@@ -69,8 +66,8 @@ def test_retrievelattice(lat, name, version, branch):
     lattices = lat.retrievelattice(name, version, branch, withdata=True, rawdata=False)
     return lattices
     
-def test_savegoldlattice(lat, name, version, branch, status):
-    return lat.savegoldlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'design', creator='Guobao', status=2)
+def test_savegoldlattice(lat):
+    return lat.savegoldlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', creator='Guobao', status=2)
 
 def test_retrievegoldlattice(lat, name, version, branch, status):
     return lat.retrievegoldlattice(name, version, branch)
@@ -105,8 +102,6 @@ def preparetracy3lattice(latfile, twissfile):
                 lineparts = line.split()
                 twissdict[lineparts[0]] = {'name': lineparts[1].upper(),
                                            'position': lineparts[2]}
-#    typedict = {}
-#    unitdict = {}
     for k, v in twissdict.iteritems():
         if k != '0':
             # twiss file includes element 'BEGIN'
@@ -120,10 +115,6 @@ def preparetracy3lattice(latfile, twissfile):
             else:
                 etype = props[0]
             v['type'] = etype
-#            if typedict.has_key(etype):
-#                etypeproptemp = typedict[etype]
-#            else:
-#                etypeproptemp = []
             for tmp in props:
                 if '=' in tmp:
                     tmpparts = [x.strip() for x in tmp.split('=')]
@@ -133,34 +124,6 @@ def preparetracy3lattice(latfile, twissfile):
                     else:
                         v[tmpparts[0]] = tmpparts[1]
                     
-                    # update type and unit
-#                    if tmpparts[0].upper() in ['T', 'T1', 'T2'] and tmpparts[0] not in etypeproptemp:
-#                        etypeproptemp.append(tmpparts[0])
-#                        unitdict[tmpparts[0]] = 'Degree'
-#                    elif tmpparts[0].upper()  == 'K':
-#                        if etype.upper() == 'QUADRUPOLE' and 'K1' not in etypeproptemp:
-#                            etypeproptemp.append('K1')
-#                            unitdict['K1'] = '1/m2'
-#                        elif etype.upper() == 'SEXTUPOLE' and 'K2' not in etypeproptemp:
-#                            etypeproptemp.append('K2')
-#                            unitdict['K2'] = '1/m3'
-#                        elif etype.upper() == 'BENDING' and 'K1' not in etypeproptemp:
-#                            etypeproptemp.append('K1')
-#                            unitdict['K1'] = '1/m2'
-#                    elif tmpparts[0].upper() == 'FREQUENCY' and  tmpparts[0] not in etypeproptemp:
-#                        etypeproptemp.append(tmpparts[0])
-#                        unitdict[tmpparts[0]] = 'Hz'
-#                    elif tmpparts[0].upper() == 'VOLTAGE' and  tmpparts[0] not in etypeproptemp:
-#                        etypeproptemp.append(tmpparts[0])
-#                        unitdict[tmpparts[0]] = 'Volt'
-#                    elif tmpparts[0].upper() == 'PHASE' and  tmpparts[0] not in etypeproptemp:
-#                        etypeproptemp.append(tmpparts[0])
-#                        unitdict[tmpparts[0]] = 'Degree'
-#                    elif tmpparts[0].upper() == 'L':
-#                        pass
-#                    elif tmpparts[0] not in etypeproptemp:
-#                        etypeproptemp.append(tmpparts[0])
-#            typedict[etype] = etypeproptemp
             twissdict[k] = v
         else:
             v['type'] = 'Marker'
@@ -192,6 +155,9 @@ if __name__ == "__main__":
     
     cleanrdb(conn)
 
+    # save predefined lattice type
+    savelattype(conn, lat)
+
     print 'test case 0'
     latticefile = 'CD3-Oct3-12-30Cell-addID-par.txt'
     latticename = 'CD3-Oct3-12-30Cell-addID-par'
@@ -219,3 +185,5 @@ if __name__ == "__main__":
     test_savetracylat(latfile, twissfile, latticename)
     print "costed time: %s seconds" %(time.time()-start)    
     
+    print 'saving golden lattice: ', test_savegoldlattice(lat)
+    print 'retrieving golden lattice: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', 2)
