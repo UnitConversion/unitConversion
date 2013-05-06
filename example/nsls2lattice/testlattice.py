@@ -9,7 +9,7 @@ from collections import OrderedDict
 import MySQLdb
 from pylattice import lattice
 
-from .rdbinbfo import host, user, pw, db, port
+from rdbinfo import (host, user, pw, db, port)
 
 supportedlatticetype = [{'name': 'tab flat', 'format': 'txt'},
                         {'name': 'tracy3',  'format': 'lat'},
@@ -35,6 +35,9 @@ def savelattype(conn, lat):
 
 def cleanrdb(conn):
     sql = '''
+    delete from beam_parameter;
+    delete from gold_model;
+    delete from model;
     delete from element_prop;
     delete from element;
     delete from element_type_prop;
@@ -67,10 +70,10 @@ def test_retrievelattice(lat, name, version, branch):
     return lattices
     
 def test_savegoldlattice(lat):
-    return lat.savegoldlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', creator='Guobao', status=2)
+    return lat.savegoldenlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', creator='Guobao', status=2)
 
 def test_retrievegoldlattice(lat, name, version, branch, status):
-    return lat.retrievegoldlattice(name, version, branch)
+    return lat.retrievegoldenlattice(name, version, branch)
 
 def preparetracy3lattice(latfile, twissfile):
     '''

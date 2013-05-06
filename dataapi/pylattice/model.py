@@ -385,11 +385,15 @@ class model(object):
                            'emittancex': 'emit_x',
                            'emittancey': 'emit_y',
                            'emittancexz': 'emit_z'
-                }  
+                }
+                for k, v in keyvals.iteritems():
+                    if bpval.has_key(k):
+                        sql += '%s = %s,'%(v, bpval[k])
             else:
                 raise ValueError('elements in lattice do not match that in model')
-            sql += sql[:-1] +') where element_id = %s'%elementid
-
+            sql = sql[:-1] +' where element_id = %s'%elementid
+            cursor.execute(sql)
+        
     def savemodel(self, latticename, latticeversion, latticebranch, model):
         '''
         Save a model.
@@ -639,19 +643,138 @@ class model(object):
                 raise Exception('Error when updating a model:\n%s (%d)' %(e.args[1], e.args[0]))
         return True
         
-    def retrievegoldmodel(self, latticename, latticeversion, latticebranch, modelname):
+    def retrievegoldenmodel(self, name, status):
         '''
-        Retrieve a model list that satisfies given constrains.
+        Retrieve golden model with given name and other conditions
+        parameters:
+            name:    model name
+            status:  0: current golden model
+                     1: alternative golden model
+                     2: previous golden models, but not any more
         '''
+        name = _wildcardformat(name)
+        sql = '''
+        select gold_model_id, model_name, 
+               gm.created_by, gm.create_date,
+               gm.updated_by, gm.update_date,
+               gm.gold_status_ind
+        from gold_model gm
+        left join model on model.model_id = gm.model_id
+        where
+        model.model_name like %s
+        and gm.gold_status_ind like %s
+        '''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, (name, status))
+            res = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving golden model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving golden model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
         
-    def savegoldmodel(self):
+        return res
+    
+    def savegoldenmodel(self, name, status, creator=None):
         '''
-        '''
+        Save a model to a golden model
+        Parameters:
+            name:    model name
+            creator: who craeted it, or changed the status last time
+            status:  0: current golden model
+                     1: alternative golden model
+                     2: previous golden models, but not any more
+                     other number can be defined by user
         
-    def updategoldmodel(self):
+        return: True if saving gold model successfully, otherwise, raise an exception
         '''
+        creator = _wildcardformat(creator)
+        sql = '''select model_id from model where model_name = %s'''
+        cur=self.conn.cursor()
+        try:
+            cur.execute(sql, (_wildcardformat(name),))
+            res=cur.fetchall()
+            if len(res) != 1:
+                raise ValueError('Error when retrieving model id for model (%s).'%name)
+            else:
+                modelid = res[0][0]
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+        try:
+            if creator == None:
+                sql = '''update gold_model set gold_status_ind = 2, update_date=now() where gold_status_ind=0 and model_id = %s;'''
+                cur.execute(sql, (creator, modelid))
+                sql = '''insert into gold_model (model_id, create_date, gold_status_ind) values(%s, now(), %s)'''
+                cur.execute(sql, (modelid, status))
+            else:
+                sql = '''update gold_model set gold_status_ind = 2, updated_by = %s, update_date=now() where gold_status_ind=0 and model_id = %s;'''
+                cur.execute(sql, (modelid, ))
+                sql = '''insert into gold_model (model_id, created_by, create_date, gold_status_ind) values(%s, %s, now(), %s)'''
+                cur.execute(sql, (modelid, creator, status))
+
+            self.conn.commit()
+        except MySQLdb.Error as e:
+            self.conn.rollback()
+            self.logger.info('Error when saving golden model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when saving golden model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+
+        return True
+
+    def updategoldenmodel(self, name, statusfrom, statusto, creator=None):
         '''
+        Update a model status
+        Parameters:
+            name:    model name
+            creator: who craeted it, or changed the status last time
+            statusfrom: status indicator
+            statusto:   status indicator
+            status:  0: current golden model
+                     1: alternative golden model
+                     2: previous golden models, but not any more
+                     other number can be defined by user
         
+        return: True if saving gold model successfully, otherwise, raise an exception
+        '''
+        creator = _wildcardformat(creator)
+        sql = '''select gold_model_id from gold_model left join model on gold_model.model_id = model.model_id where model.model_name = %s'''
+        cur=self.conn.cursor()
+        try:
+            cur.execute(sql, (_wildcardformat(name),))
+            res=cur.fetchall()
+            if len(res) != 1:
+                raise ValueError('Error when retrieving model id for model (%s).'%name)
+            else:
+                goldmodelid = res[0][0]
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+        try:
+            if creator == None:
+                sql = '''update gold_model set gold_status_ind = %s, update_date=now() where gold_status_ind=%s and model_id = %s;'''
+                cur.execute(sql, (statusto, statusto, goldmodelid))
+            else:
+                sql = '''update gold_model set gold_status_ind = %s, updated_by=%s, update_date=now() where gold_status_ind=%s and model_id = %s;'''
+                cur.execute(sql, (statusto, creator, statusto, goldmodelid))
+
+            self.conn.commit()
+        except MySQLdb.Error as e:
+            self.conn.rollback()
+            self.logger.info('Error when updating golden model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when updating golden model:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+
+        return True
+
+    
     def retrievebeamparameters(self):
         '''
         '''

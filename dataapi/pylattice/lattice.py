@@ -192,7 +192,7 @@ class lattice(object):
             if exc.errno == errno.EEXIST and os.path.isdir(dirname):
                 pass
             else: 
-                raise
+                raise Exception("Could not create a directory to save lattice file")
     
         fd, filename = tempfile.mkstemp(suffix, prefix+"_", dirname)
         return fd, filename
@@ -333,7 +333,8 @@ class lattice(object):
         latticeid: lattice id to identify which lattice the data belongs to.
         lattice:   lattice data dictionary:
                      {'name': ,
-                      'data':
+                      'data': ,
+                      'map': {}
                      }
         '''
         if not isinstance(lattice, dict) or not lattice.has_key('name') or not lattice.has_key('data'):
@@ -346,6 +347,9 @@ class lattice(object):
                                                            latticedata,
                                                            latticetypeid=0)
         if url != None:
+            if lattice.has_key('map'):
+                self._savemapfile(url, lattice['map'])
+
             sql = '''update lattice SET url = %s '''
             cur.execute(sql,(url, ))
 
@@ -513,7 +517,26 @@ class lattice(object):
             # get rid of last comma from SQL statement.
             # save element type property value
             cur.execute(elempropsql[:-1])
+    
+    def _savemapfile(self, url, fieldmaps):
+        '''
+        '''
+        # save field map files
+        if len(fieldmaps) > 0:
+            try:
+                # create a sub directory to store field map
+                os.makedirs(url+"_map")
+            except OSError as exc:
+                if exc.errno == errno.EEXIST and os.path.isdir(url+"_map"):
+                    pass
+                else: 
+                    raise Exception("Can not create a sub directory to store map")
         
+            for mapname, mapvalue in fieldmaps.iteritems():
+                with file(url+'_map/'+mapname, 'w') as f:
+                    f.write(mapvalue)
+
+
     def _savetracylattice(self, cur, latticeid, params):
         '''
         save real lattice data information
@@ -523,7 +546,8 @@ class lattice(object):
         params:   lattice data dictionary:
                      {'name': ,
                       'data': ,
-                      'raw': 
+                      'raw': ,
+                      'map': 
                      }        
         '''
         # save raw lattice file
@@ -535,6 +559,10 @@ class lattice(object):
             with os.fdopen(fd,'w') as f:
                 for data in params['raw']:
                     f.write(data)
+            
+            if lattice.has_key('map'):
+                self._savemapfile(url, lattice['map'])
+
             cur.execute(sql,(url,))
 
         # save element statement
@@ -736,10 +764,13 @@ class lattice(object):
             creator:     original creator
             lattice:     lattice data, a dictionary:
                          {'name': ,
-                          'data':
+                          'data': ,
+                          'map': {'name': 'value'},
                          }
                          name: file name to be saved into disk, it is same with lattice name by default
                          data: lattice geometric and strength with predefined format
+                         raw:  raw data that is same with data but in original lattice format
+                         map:  name-value pair dictionary
         
         return: lattice id if success, otherwise, raise an exception
         '''
@@ -824,8 +855,6 @@ class lattice(object):
                     latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
                     latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
-#                elif latticetypename == 'tracy4':
-#                    latticeid = self._savetracy4lattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
                     latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
@@ -868,7 +897,8 @@ class lattice(object):
                               'latticeType':  [optional],  # lattice type name
                               'latticeFormat':[optional],  # lattice type format
                               'lattice':      [optional],  # real lattice data
-                              'rawlattice':   [optional]   # raw lattice data the server received
+                              'rawlattice':   [optional],  # raw lattice data the server received
+                              'map':          [optional]   # file map. A dictionary which has name-value pair
                              } 
              }
         '''
@@ -962,21 +992,29 @@ class lattice(object):
                     tempdict['typeunit'] = typepropunits
                 v['lattice'] = tempdict
                 lattices[k] = v
-        if rawdata and urls:
+        if urls:
             for k, v in urls.iteritems():
-                temp=lattices[k]
-                try:
-                    with file(v, 'r') as f:
-                        data = f.readlines()
-                    basefile=os.path.basename(v)
-                    basefile=os.path.splitext(basefile)
-                    v=basefile[0][:-7]+basefile[1]
-                except IOError:
-                    data = 'No raw lattice file found.'
-                
-                temp['rawlattice'] = {'name': v, 'data': data}
-                lattices[k]=temp
-
+                if rawdata:
+                    temp=lattices[k]
+                    try:
+                        with file(v, 'r') as f:
+                            data = f.readlines()
+                        basefile=os.path.basename(v)
+                        basefile=os.path.splitext(basefile)
+                        v=basefile[0][:-7]+basefile[1]
+                    except IOError:
+                        data = 'No raw lattice file found.'
+                    
+                    temp['rawlattice'] = {'name': v, 'data': data}
+                    lattices[k]=temp
+                if os.path.isdir(v+'_map'):
+                    maps = {}
+                    for path, _, files in os.walk(v+'_map'):
+                        for name in files:
+                            with file(os.path.join(path, name), 'r') as f:
+                                maps[name] = f.readlines()
+                    if len(maps) > 0:
+                        lattices[k] = {'map': maps}
         return lattices
         
     def retrieveelemtype(self, etypename):
@@ -1114,26 +1152,24 @@ class lattice(object):
                             %(etypename, etypeprop, e.args[1], e.args[0]))
         return etypepropid
     
-    def retrievegoldlattice(self, name, version, branch, **params):
+    def retrievegoldenlattice(self, name, version, branch, status=0):
         '''
         Get golden lattice with given name, version, branch, and other conditions
         parameters:
             name:    lattice name
             version: lattice version
             branch:  lattice branch
-            status:  0: used to be a golden lattice, but not any more
+            status:  0: current golden lattice
                      1: alternative golden lattice
-                     2: current golden lattice
+                     2: previous golden lattice, but not any more
+                     other number can be defined by a user
         '''
         name = _wildcardformat(name)
         branch = _wildcardformat(branch)
         if isinstance(version, (str, unicode)):
             version = _wildcardformat(version)
-        status = "%"
-        if params.has_key('status'):
-            status = params['status']
-            if isinstance(status, (str, unicode)):
-                status = _wildcardformat(params['status'])
+        if isinstance(status, (str, unicode)):
+            status = _wildcardformat(status)
         sql = '''
         select gold_lattice_id, lattice_name, lattice_version, lattice_branch, 
                gl.created_by, gl.create_date,
@@ -1157,7 +1193,7 @@ class lattice(object):
         
         return res
     
-    def savegoldlattice(self, name, version, branch, **params):
+    def savegoldenlattice(self, name, version, branch, **params):
         '''
         Set a lattice to a golden lattice
         Parameters:
@@ -1165,9 +1201,10 @@ class lattice(object):
             version: lattice version
             branch:  lattice branch
             creator: who craeted it, or changed the status last time
-            status:  0: used to be a golden lattice, but not any more
+            status:  0: current golden lattice
                      1: alternative golden lattice
-                     2: current golden lattice
+                     2: previous golden lattice, but not any more
+                     other number can be defined by a user
         
         return: True if saving gold lattice successfully, otherwise, raise an exception
         '''
@@ -1182,7 +1219,7 @@ class lattice(object):
             raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s)"%(name, version, branch))
         for _, lattice in lattices.iteritems():
             latticeid = lattice['id']
-        res = self.retrievegoldlattice(name, version, branch)
+        res = self.retrievegoldenlattice(name, version, branch)
         if len(res) == 0:
             if creator == None:
                 sql = '''
@@ -1225,3 +1262,46 @@ class lattice(object):
                              %(e.args[1], e.args[0]))
 
         return True
+
+    def updategoldenlattice(self, name, version, branch, statusfrom, statusto, **params):
+        '''
+        Update a golden lattice status
+        Parameters:
+            name:    lattice name
+            version: lattice version
+            branch:  lattice branch
+            creator: who craeted it, or changed the status last time
+            statusfrom: status indicator
+            statusto:   status indicator
+            status:  0: current golden lattice
+                     1: alternative golden lattice
+                     2: previous golden lattice, but not any more
+                     other number can be defined by a user
+        
+        return: True if updating gold lattice successfully, otherwise, raise an exception
+        '''
+        creator = None
+        if params.has_key('creator'):
+            creator=params['creator']
+        _, lattices = self.retrievelatticelist(name, version, branch)
+        if len(lattices) == 0:
+            raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s)"%(name, version, branch))
+        for _, lattice in lattices.iteritems():
+            latticeid = lattice['id']
+        try:
+            cur=self.conn.cursor()
+            if creator == None:
+                sql = '''update gold_lattice set gold_status_ind = %s, update_date=now() where lattice_id=%s and gold_status_ind=%s'''
+                cur.execute(sql, (statusfrom, latticeid, statusto))
+            else:
+                sql = '''update gold_lattice set gold_status_ind = %s, updated_by=%s, update_date=now() where lattice_id=%s and gold_status_ind=%s'''
+                cur.execute(sql, (statusfrom, creator, latticeid, statusto))
+        except MySQLdb.Error as e:
+            self.conn.rollback()
+            self.logger.info('Error when updating golden lattice:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when updating golden lattice:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+
+        return True
+    

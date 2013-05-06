@@ -8,7 +8,7 @@ import MySQLdb
 
 from pylattice import model
 
-from .rdbinbfo import host, user, pw, db, port
+from rdbinfo import (host, user, pw, db, port)
 
 tracyhead = '''
 define lattice; ringtype = 0;
