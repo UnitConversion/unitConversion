@@ -1152,7 +1152,7 @@ class lattice(object):
                             %(etypename, etypeprop, e.args[1], e.args[0]))
         return etypepropid
     
-    def retrievegoldenlattice(self, name, version, branch, status=0):
+    def retrievegoldenlattice(self, name, version, branch, status=0, ignorestatus=False):
         '''
         Get golden lattice with given name, version, branch, and other conditions
         parameters:
@@ -1163,6 +1163,7 @@ class lattice(object):
                      1: alternative golden lattice
                      2: previous golden lattice, but not any more
                      other number can be defined by a user
+            ignorestatus: get all golden lattice no matter whatever its status is.
         '''
         name = _wildcardformat(name)
         branch = _wildcardformat(branch)
@@ -1179,11 +1180,13 @@ class lattice(object):
         left join lattice on lattice.lattice_id = gl.lattice_id
         where
         lattice.lattice_name like %s and lattice.lattice_version like %s and lattice.lattice_branch like %s
-        and gl.gold_status_ind like %s
         '''
         try:
             cur=self.conn.cursor()
-            cur.execute(sql, (name, version, branch, status))
+            if ignorestatus:
+                cur.execute(sql, (name, version, branch))
+            else:
+                cur.execute(sql+''' and gl.gold_status_ind like %s''', (name, version, branch, status))
             res = cur.fetchall()
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving golden lattice:\n%s (%d)' 
@@ -1201,7 +1204,7 @@ class lattice(object):
             version: lattice version
             branch:  lattice branch
             creator: who craeted it, or changed the status last time
-            status:  0: current golden lattice
+            status:  0: current golden lattice [by default]
                      1: alternative golden lattice
                      2: previous golden lattice, but not any more
                      other number can be defined by a user
@@ -1211,16 +1214,20 @@ class lattice(object):
         creator = None
         if params.has_key('creator'):
             creator=params['creator']
-        status = 2
+        status = 0
         if params.has_key('status'):
             status=params['status']
         _, lattices = self.retrievelatticelist(name, version, branch)
-        if len(lattices) == 0:
-            raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s)"%(name, version, branch))
+        if len(lattices) != 1:
+            raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s), or more than one found."%(name, version, branch))
         for _, lattice in lattices.iteritems():
             latticeid = lattice['id']
-        res = self.retrievegoldenlattice(name, version, branch)
+        # get all lattice no matter its status.
+        res = self.retrievegoldenlattice(name, version, branch, ignorestatus=True)
+        
         if len(res) == 0:
+            # if not found, flag lattice with given status.
+            # by default, flag it as current golden lattice
             if creator == None:
                 sql = '''
                 insert into gold_lattice
@@ -1237,19 +1244,24 @@ class lattice(object):
                 (%s, %s, now(), %s)
                 '''
                 vals=(latticeid, creator, status)
-        else:
+        elif len(res) == 1:
             if creator == None:
                 sql = '''
                 update gold_lattice
-                set gold_status_ind = %s, update_date = now() 
+                set gold_status_ind = %s, updated_by=NULL, update_date = now()
+                where gold_lattice_id = %s 
                 '''
-                vals = (status)
+                vals = (status, res[0][0])
             else:
                 sql = '''
                 update gold_lattice
-                set gold_status_ind = %s, updated_by = %s, update_date = now() 
+                set gold_status_ind = %s, updated_by = %s, update_date = now()
+                where gold_lattice_id = %s 
                 '''
-                vals = (status, creator)
+                vals = (status, creator, res[0][0])
+        else:
+            raise ValueError('More than one golden lattice found for given lattice (name: %s, version: %s, beanch: %s)'
+                             %(name, version, branch))
         try:
             cur=self.conn.cursor()
             cur.execute(sql, vals)
@@ -1263,45 +1275,3 @@ class lattice(object):
 
         return True
 
-    def updategoldenlattice(self, name, version, branch, statusfrom, statusto, **params):
-        '''
-        Update a golden lattice status
-        Parameters:
-            name:    lattice name
-            version: lattice version
-            branch:  lattice branch
-            creator: who craeted it, or changed the status last time
-            statusfrom: status indicator
-            statusto:   status indicator
-            status:  0: current golden lattice
-                     1: alternative golden lattice
-                     2: previous golden lattice, but not any more
-                     other number can be defined by a user
-        
-        return: True if updating gold lattice successfully, otherwise, raise an exception
-        '''
-        creator = None
-        if params.has_key('creator'):
-            creator=params['creator']
-        _, lattices = self.retrievelatticelist(name, version, branch)
-        if len(lattices) == 0:
-            raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s)"%(name, version, branch))
-        for _, lattice in lattices.iteritems():
-            latticeid = lattice['id']
-        try:
-            cur=self.conn.cursor()
-            if creator == None:
-                sql = '''update gold_lattice set gold_status_ind = %s, update_date=now() where lattice_id=%s and gold_status_ind=%s'''
-                cur.execute(sql, (statusfrom, latticeid, statusto))
-            else:
-                sql = '''update gold_lattice set gold_status_ind = %s, updated_by=%s, update_date=now() where lattice_id=%s and gold_status_ind=%s'''
-                cur.execute(sql, (statusfrom, creator, latticeid, statusto))
-        except MySQLdb.Error as e:
-            self.conn.rollback()
-            self.logger.info('Error when updating golden lattice:\n%s (%d)' 
-                             %(e.args[1], e.args[0]))
-            raise Exception('Error when updating golden lattice:\n%s (%d)' 
-                             %(e.args[1], e.args[0]))
-
-        return True
-    

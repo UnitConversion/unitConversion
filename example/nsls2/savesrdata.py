@@ -39,9 +39,9 @@ def __readdata(xlname, sheetno=0, sheetname=None):
         raw_data.append(sh.row_values(rownum))
     return raw_data
 
-def crowfiles(root):
+def filecrawler(root):
     '''
-    crow all data files under root.
+    search all data files under root directory.
     Assume the directory has structure like as below:
         /root
             |-- Hall_Maps
@@ -447,7 +447,7 @@ def linkinventoryinstall():
 def main(root):
     rotcoils = []
     hallmaps = []
-    for f in crowfiles(root):
+    for f in filecrawler(root):
         if "LBT" not in f and "BST" not in f:
             ext = os.path.splitext(f)[-1].lower()
         

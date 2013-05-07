@@ -95,14 +95,16 @@ class model(object):
             raise Exception('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
         return res
     
-    def retrievemodel(self, latticename, latticeversion, latticebranch, modelname):
+    def retrievemodel(self, modelname, latticename=None, latticeversion=None, latticebranch=None):
         '''
         Retrieve a model list that satisfies given constrains.
         parameters:
+            modelname:      the name shows that which model this API will deal with
+            
             latticename:    lattice name that this model belongs to
             latticeversion: the version of lattice
             latticebranch:  the branch of lattice
-            modelname:      the name shows that which model this API will deal with
+            
         
         return: a dictionary
                 {'model name':                            # model name
@@ -132,6 +134,19 @@ class model(object):
                  ...
                 }
         '''
+        if latticename == None:
+            latticename="%"
+        else:
+            latticename=_wildcardformat(latticename)
+        if latticeversion == None:
+            latticeversion="%"
+        else:
+            latticeversion=_wildcardformat(latticeversion)
+        if latticebranch == None:
+            latticebranch="%"
+        else:
+            latticebranch=_wildcardformat(latticebranch)
+
         _, lattices = self.lat.retrievelatticelist(latticename, version=latticeversion, branch=latticebranch)
         sql = '''
         select model_id, lattice_id, 
@@ -394,7 +409,7 @@ class model(object):
             sql = sql[:-1] +' where element_id = %s'%elementid
             cursor.execute(sql)
         
-    def savemodel(self, latticename, latticeversion, latticebranch, model):
+    def savemodel(self, model, latticename, latticeversion, latticebranch):
         '''
         Save a model.
         parameters:
@@ -438,7 +453,7 @@ class model(object):
         '''
         for modelname, modeldata in model.iteritems():
             # check whether a model exists already.
-            results = self.retrievemodel(latticename, latticeversion, latticebranch, modelname)
+            results = self.retrievemodel(modelname, latticename=latticename, latticeversion=latticeversion, latticebranch=latticebranch)
             if len(results) != 0:
                 raise ValueError('Model (%s) for given lattice (name: %s, version: %s, branch: %s) exists already.'
                                  %(modelname, latticename, latticeversion, latticebranch))
@@ -515,15 +530,10 @@ class model(object):
                     raise Exception('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
         return modelid
 
-    def updatemodel(self, latticename, latticeversion, latticebranch, model):
+    def updatemodel(self, model, latticename, latticeversion, latticebranch):
         '''
         update an existing model.
         parameters:
-            latticename:    lattice name that this model belongs to
-            latticeversion: the version of lattice
-            latticebranch:  the branch of lattice
-            modelname:      the name shows that which model this API will deal with
-            
             model:          a dictionary which holds all data 
                 {'model name':                            # model name
                                { # header information
@@ -549,6 +559,9 @@ class model(object):
                                }
                  ...
                 }
+            latticename:    lattice name that this model belongs to
+            latticeversion: the version of lattice
+            latticebranch:  the branch of lattice
         
         Use savemodel() instead if a model does not exist yet.
         Simulation info has to be provided and matches those inside the existing model.
@@ -558,7 +571,7 @@ class model(object):
         '''
         for modelname, modeldata in model.iteritems():
             # check whether a model exists already.
-            results = self.retrievemodel(latticename, latticeversion, latticebranch, modelname)
+            results = self.retrievemodel(modelname, latticename=latticename, latticeversion=latticeversion, latticebranch=latticebranch)
             if len(results) != 1:
                 raise ValueError('Cannot find model (%s) for given lattice (name: %s, version: %s, branch: %s), or more than one found.'
                                  %(modelname, latticename, latticeversion, latticebranch))
@@ -643,14 +656,15 @@ class model(object):
                 raise Exception('Error when updating a model:\n%s (%d)' %(e.args[1], e.args[0]))
         return True
         
-    def retrievegoldenmodel(self, name, status):
+    def retrievegoldenmodel(self, name, status=0, ignorestatus=False):
         '''
         Retrieve golden model with given name and other conditions
         parameters:
             name:    model name
-            status:  0: current golden model
+            status:  0: current golden model [by default]
                      1: alternative golden model
                      2: previous golden models, but not any more
+            ignorestatus: get golden model no matter its status
         '''
         name = _wildcardformat(name)
         sql = '''
@@ -662,11 +676,13 @@ class model(object):
         left join model on model.model_id = gm.model_id
         where
         model.model_name like %s
-        and gm.gold_status_ind like %s
         '''
         try:
             cur=self.conn.cursor()
-            cur.execute(sql, (name, status))
+            if ignorestatus:
+                cur.execute(sql, (name, ))
+            else:
+                cur.execute(sql+''' and gm.gold_status_ind like %s''', (name, status))
             res = cur.fetchall()
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving golden model:\n%s (%d)' 
@@ -676,13 +692,13 @@ class model(object):
         
         return res
     
-    def savegoldenmodel(self, name, status, creator=None):
+    def savegoldenmodel(self, name, status=0, creator=None):
         '''
         Save a model to a golden model
         Parameters:
             name:    model name
             creator: who craeted it, or changed the status last time
-            status:  0: current golden model
+            status:  0: current golden model [by default]
                      1: alternative golden model
                      2: previous golden models, but not any more
                      other number can be defined by user
@@ -692,7 +708,9 @@ class model(object):
         creator = _wildcardformat(creator)
         sql = '''select model_id from model where model_name = %s'''
         cur=self.conn.cursor()
+        
         try:
+            # get model id with given model name
             cur.execute(sql, (_wildcardformat(name),))
             res=cur.fetchall()
             if len(res) != 1:
@@ -704,18 +722,47 @@ class model(object):
                              %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving model:\n%s (%d)' 
                              %(e.args[1], e.args[0]))
-        try:
-            if creator == None:
-                sql = '''update gold_model set gold_status_ind = 2, update_date=now() where gold_status_ind=0 and model_id = %s;'''
-                cur.execute(sql, (creator, modelid))
-                sql = '''insert into gold_model (model_id, create_date, gold_status_ind) values(%s, now(), %s)'''
-                cur.execute(sql, (modelid, status))
-            else:
-                sql = '''update gold_model set gold_status_ind = 2, updated_by = %s, update_date=now() where gold_status_ind=0 and model_id = %s;'''
-                cur.execute(sql, (modelid, ))
-                sql = '''insert into gold_model (model_id, created_by, create_date, gold_status_ind) values(%s, %s, now(), %s)'''
-                cur.execute(sql, (modelid, creator, status))
 
+        res = self.retrievegoldenmodel(name, ignorestatus=True)
+        if len(res) == 0:
+            # if not found, flag model with given status.
+            # by default, flag it as current golden model
+            if creator == None:
+                sql = '''
+                insert into gold_model
+                (model_id, created_by, create_date, gold_status_ind)
+                values
+                (%s, NULL, now(), %s)
+                '''
+                vals=(modelid, status)
+            else:
+                sql = '''
+                insert into gold_model
+                (model_id, created_by, create_date, gold_status_ind)
+                values
+                (%s, %s, now(), %s)
+                '''
+                vals=(modelid, creator, status)
+        elif len(res) == 1:
+            if creator == None:
+                sql = '''
+                update gold_model
+                set gold_status_ind = %s, updated_by=NULL, update_date = now()
+                where gold_model_id = %s 
+                '''
+                vals = (status, res[0][0])
+            else:
+                sql = '''
+                update gold_model
+                set gold_status_ind = %s, updated_by = %s, update_date = now()
+                where gold_model_id = %s 
+                '''
+                vals = (status, creator, res[0][0])
+        else:
+            raise ValueError('More than one golden model found for given model (name: %s)'
+                             %(name))
+        try:
+            cur.execute(sql, vals)
             self.conn.commit()
         except MySQLdb.Error as e:
             self.conn.rollback()
@@ -725,55 +772,6 @@ class model(object):
                              %(e.args[1], e.args[0]))
 
         return True
-
-    def updategoldenmodel(self, name, statusfrom, statusto, creator=None):
-        '''
-        Update a model status
-        Parameters:
-            name:    model name
-            creator: who craeted it, or changed the status last time
-            statusfrom: status indicator
-            statusto:   status indicator
-            status:  0: current golden model
-                     1: alternative golden model
-                     2: previous golden models, but not any more
-                     other number can be defined by user
-        
-        return: True if saving gold model successfully, otherwise, raise an exception
-        '''
-        creator = _wildcardformat(creator)
-        sql = '''select gold_model_id from gold_model left join model on gold_model.model_id = model.model_id where model.model_name = %s'''
-        cur=self.conn.cursor()
-        try:
-            cur.execute(sql, (_wildcardformat(name),))
-            res=cur.fetchall()
-            if len(res) != 1:
-                raise ValueError('Error when retrieving model id for model (%s).'%name)
-            else:
-                goldmodelid = res[0][0]
-        except MySQLdb.Error as e:
-            self.logger.info('Error when retrieving model:\n%s (%d)' 
-                             %(e.args[1], e.args[0]))
-            raise Exception('Error when retrieving model:\n%s (%d)' 
-                             %(e.args[1], e.args[0]))
-        try:
-            if creator == None:
-                sql = '''update gold_model set gold_status_ind = %s, update_date=now() where gold_status_ind=%s and model_id = %s;'''
-                cur.execute(sql, (statusto, statusto, goldmodelid))
-            else:
-                sql = '''update gold_model set gold_status_ind = %s, updated_by=%s, update_date=now() where gold_status_ind=%s and model_id = %s;'''
-                cur.execute(sql, (statusto, creator, statusto, goldmodelid))
-
-            self.conn.commit()
-        except MySQLdb.Error as e:
-            self.conn.rollback()
-            self.logger.info('Error when updating golden model:\n%s (%d)' 
-                             %(e.args[1], e.args[0]))
-            raise Exception('Error when updating golden model:\n%s (%d)' 
-                             %(e.args[1], e.args[0]))
-
-        return True
-
     
     def retrievebeamparameters(self):
         '''

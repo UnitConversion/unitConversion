@@ -9,7 +9,7 @@ from collections import OrderedDict
 import MySQLdb
 from pylattice import lattice
 
-from rdbinfo import (host, user, pw, db, port)
+from rdbinfo import (host, user, pw, db)
 
 supportedlatticetype = [{'name': 'tab flat', 'format': 'txt'},
                         {'name': 'tracy3',  'format': 'lat'},
@@ -21,7 +21,7 @@ def connect():
     if host.startswith("/"):
         conn = MySQLdb.connect(unix_socket=host, user=user, passwd=pw, db=db)
     else:
-        conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=port)
+        conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=3306)
         
     return conn
 
@@ -69,11 +69,11 @@ def test_retrievelattice(lat, name, version, branch):
     lattices = lat.retrievelattice(name, version, branch, withdata=True, rawdata=False)
     return lattices
     
-def test_savegoldlattice(lat):
-    return lat.savegoldenlattice('CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', creator='Guobao', status=2)
+def test_savegoldlattice(lat, name, version, branch, creator=None, status=0):
+    return lat.savegoldenlattice(name, version, branch, creator=creator, status=status)
 
 def test_retrievegoldlattice(lat, name, version, branch, status):
-    return lat.retrievegoldenlattice(name, version, branch)
+    return lat.retrievegoldenlattice(name, version, branch, status=status)
 
 def preparetracy3lattice(latfile, twissfile):
     '''
@@ -188,5 +188,15 @@ if __name__ == "__main__":
     test_savetracylat(latfile, twissfile, latticename)
     print "costed time: %s seconds" %(time.time()-start)    
     
-    print 'saving golden lattice: ', test_savegoldlattice(lat)
-    print 'retrieving golden lattice: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', 2)
+    print 'save golden lattice. 1st True, 2nd empty'
+    test_savegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', creator='Guobao', status=2)
+    print '  -- 1st: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', status=2)
+    print '  -- 2nd: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', status=0)
+    
+    print 'save golden lattice. 1st empty, 2nd True'
+    test_savegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', creator='Guobao', status=0)
+    print '  -- 1st: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', status=2)
+    print '  -- 2nd: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', status=0)
+
+    test_savegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', status=2)
+    print '  -- no updated_by: ', test_retrievegoldlattice(lat, 'CD3-Oct3-12-30Cell-addID-par', '20121003', 'test', status=2)

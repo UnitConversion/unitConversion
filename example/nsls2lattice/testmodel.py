@@ -8,7 +8,7 @@ import MySQLdb
 
 from pylattice import model
 
-from rdbinfo import (host, user, pw, db, port)
+from rdbinfo import (host, user, pw, db)
 
 tracyhead = '''
 define lattice; ringtype = 0;
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     if host.startswith("/"):
         conn = MySQLdb.connect(unix_socket=host, user=user, passwd=pw, db=db)
     else:
-        conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=port)
+        conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=3306)
 
 #    cleanmodeldb(conn)
     modelinst = model(conn)
@@ -168,13 +168,13 @@ if __name__ == '__main__':
     if savemodel:
         # test with model header only. No really data
         try:
-            modelinst.savemodel(latticename, latticeversion, latticebranch, modelhead1)
-            modelinst.savemodel(latticename, latticeversion, latticebranch, modelhead2)
+            modelinst.savemodel(modelhead1, latticename, latticeversion, latticebranch)
+            modelinst.savemodel(modelhead2, latticename, latticeversion, latticebranch)
             print 'save model'
         except ValueError:
-            modelinst.updatemodel(latticename, latticeversion, latticebranch, modelhead3)
+            modelinst.updatemodel(modelhead3, latticename, latticeversion, latticebranch)
             try:
-                modelinst.updatemodel(latticename, latticeversion, latticebranch, modelhead4)
+                modelinst.updatemodel(modelhead4, latticename, latticeversion, latticebranch)
             except ValueError:
                 print "Yes. It is expected since algorithm is unknown when saving model."
             print 'update model'
@@ -214,16 +214,31 @@ if __name__ == '__main__':
     savemodeldata = True
     if savemodeldata:
         try:
-            modelinst.savemodel(latticename, latticeversion, latticebranch, modeldata1)
+            modelinst.savemodel(modeldata1, latticename, latticeversion, latticebranch)
             print 'save 1st model with twiss'
-            modelinst.savemodel(latticename, latticeversion, latticebranch, modeldata2)
+            modelinst.savemodel(modeldata2, latticename, latticeversion, latticebranch)
+            
             print 'save 2nd model with twiss'
         except ValueError:
-            modelinst.updatemodel(latticename, latticeversion, latticebranch, modeldata1)
+            modelinst.updatemodel(modeldata1, latticename, latticeversion, latticebranch)
             print 'update 1st model with twiss'
             try:
-                modelinst.updatemodel(latticename, latticeversion, latticebranch, modeldata2)
+                modelinst.updatemodel(modeldata2, latticename, latticeversion, latticebranch)
                 print 'update 2nd model with twiss'
             except ValueError:
                 print "Yes. It is expected since algorithm is unknown when saving model data."
             print 'update model with twiss'
+
+    print 'save golden model. 1st True, 2nd empty'
+    modelinst.savegoldenmodel('CD3-Apr07-10-30cell-par', status=2, creator='Guobao')
+    print '  -- 1st: ', modelinst.retrievegoldenmodel('CD3-Apr07-10-30cell-par', status=2)
+    print '  -- 2nd: ', modelinst.retrievegoldenmodel('CD3-Apr07-10-30cell-par', status=0)
+
+    print 'save golden model. 1st empty, 2nd True'
+    modelinst.savegoldenmodel('CD3-Apr07-10-30cell-par', status=0, creator='Guobao')
+    print '  -- 1st: ', modelinst.retrievegoldenmodel('CD3-Apr07-10-30cell-par', status=2)
+    print '  -- 2nd: ', modelinst.retrievegoldenmodel('CD3-Apr07-10-30cell-par', status=0)
+    modelinst.savegoldenmodel('CD3-Apr07-10-30cell-par', status=0)
+    print '  -- no updated_by: ', modelinst.retrievegoldenmodel('CD3-Apr07-10-30cell-par', status=0)
+
+
