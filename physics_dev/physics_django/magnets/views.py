@@ -9,7 +9,7 @@ except ImportError:
 
 from pymuniconv.municonvinfo import (retrievemagnetinfo, retrievesystemdata, retrieveconversioninfo)
 
-def _getcmddict(request):
+def _retrievecmddict(request):
     '''
     Retrieve GET request parameters, lower all keys, and return parameter dictionary.
     '''
@@ -48,7 +48,7 @@ def _checkkeys(keys, expectedkeys):
         return True
     
 def systemlistweb(request):
-    params = _getcmddict(request)
+    params = _retrievecmddict(request)
     try:
         _checkkeys(params.keys(), ['name'])
         res = retrievesystemdata(params)
@@ -57,7 +57,7 @@ def systemlistweb(request):
     return render_to_response("magnets/magnets.html", res)
 
 def systemlist(request):
-    params = _getcmddict(request)
+    params = _retrievecmddict(request)
     try:
         _checkkeys(params.keys(), ['name'])
         res = retrievesystemdata(params)
@@ -70,7 +70,7 @@ def systemlist(request):
 #        return HttpResponse(json.dumps({ "system": res}), mimetype="application/json")
 
 def magnetdevicesweb(request):
-    params = _getcmddict(request)
+    params = _retrievecmddict(request)
     try:
         _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
         res = retrievemagnetinfo(params)
@@ -80,7 +80,7 @@ def magnetdevicesweb(request):
     return render_to_response("magnets/magnets.html", res)
 
 def magnetdevices(request):
-    params = _getcmddict(request)
+    params = _retrievecmddict(request)
     try:
         _checkkeys(params.keys(), ['name', 'cmpnt_type', 'system', 'serialno'])
         res = retrievemagnetinfo(params)
@@ -94,7 +94,7 @@ def magnetdevices(request):
 #        return HttpResponse(json.dumps(res), mimetype="application/json")
 
 def conversionweb(request):
-    params = _getcmddict(request)
+    params = _retrievecmddict(request)
     try:
         _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
         res = retrieveconversioninfo()
@@ -104,7 +104,7 @@ def conversionweb(request):
     return render_to_response("magnets/magnets.html", res)
     
 def conversion(request):
-    params = _getcmddict(request)
+    params = _retrievecmddict(request)
     try:
         _checkkeys(params.keys(), ['id','name','from','to','value','unit','energy','mcdata','cache','direction'])
         res = retrieveconversioninfo(params)
