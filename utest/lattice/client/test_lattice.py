@@ -97,7 +97,8 @@ class TestLattice(unittest.TestCase):
         r=self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
         r.raise_for_status()
         result = r.json()
-        self.assertEqual(len(result), existing + len(self.testlatticetype),'lattice types wrong. Should find 5 different supported lattice types.')
+        self.assertEqual(len(result), existing + len(self.testlatticetype),
+                         'lattice types wrong. Should find %s different supported lattice types.'%(existing + len(self.testlatticetype)))
     
         # get one data entry
         params={'function': 'retrieveLatticeType',
@@ -151,7 +152,17 @@ class TestLattice(unittest.TestCase):
         '''
         # clean test data first
         cleanlatticetype(self.testlatticetype)
-        
+
+        # get existing entries
+        params={'function': 'retrieveLatticeType',
+                'name': '*',
+                'format': '*'}
+        #r=self.client.get(self.__url+'?'+urlencode(params), verify=False, headers=self.__jsonheader)
+        r=self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        existing = len(result)
+
         # test save lattice type
         for testlt in self.testlatticetype:
             payload={'function': 'saveLatticeType',
@@ -160,6 +171,17 @@ class TestLattice(unittest.TestCase):
             r = self.client.post(self.__url, data=payload)
             self.assertEqual(r.status_code, 200, 'Should save successfully.')
         
+        params={'function': 'retrieveLatticeType',
+                'name': '*',
+                'format': '*'}
+        #r=self.client.get(self.__url+'?'+urlencode(params), verify=False, headers=self.__jsonheader)
+        r=self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        self.assertEqual(len(result), existing + len(self.testlatticetype),
+                         'lattice types wrong. Should find %s different supported lattice types.'
+                         %(existing + len(self.testlatticetype)))
+    
         # should fail when insert again
         for testlt in self.testlatticetype:
             payload={'function': 'saveLatticeType',
