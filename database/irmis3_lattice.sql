@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 5/6/2013 10:52:34 AM
--- Diagram Version: 482
+-- Created on: 5/9/2013 11:07:03 AM
+-- Diagram Version: 484
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -77,7 +77,8 @@ CREATE TABLE `lattice_type` (
   `lattice_type_id` int(11) NOT NULL AUTO_INCREMENT,
   `lattice_type_name` varchar(255),
   `lattice_type_format` varchar(10),
-  PRIMARY KEY(`lattice_type_id`)
+  PRIMARY KEY(`lattice_type_id`),
+  UNIQUE INDEX `name_format`(`lattice_type_name`, `lattice_type_format`)
 )
 ENGINE=INNODB;
 
