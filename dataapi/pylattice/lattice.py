@@ -19,7 +19,7 @@ from utils import (_assemblesql, _wildcardformat)
 from .tracyunit import elementpropunits as tracypropunits
 
 class lattice(object):
-    def __init__(self, conn):
+    def __init__(self, conn, transaction=None):
         ''''''
         self.logger = logging.getLogger('lattice')
         hdlr = logging.FileHandler('/var/tmp/lattice.log')
@@ -29,6 +29,8 @@ class lattice(object):
         self.logger.setLevel(logging.WARNING)
 
         self.conn = conn
+        # use django transaction manager
+        self.transaction = transaction
 
     def retrievelatticelist(self, name, version=None, branch=None, description=None):
         '''
@@ -174,10 +176,17 @@ class lattice(object):
         try:
             cur=self.conn.cursor()
             cur.execute(sql, (name, typeformat))
-            self.conn.commit()
+            
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
             res = cur.lastrowid
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
             self.logger.info('Error when saving a new lattice type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving a new lattice type:\n%s (%d)' %(e.args[1], e.args[0]))
         return res
@@ -859,9 +868,15 @@ class lattice(object):
                     latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
-            self.conn.commit()
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         return latticeid
@@ -1096,10 +1111,15 @@ class lattice(object):
                         sql += '''NULL),'''
                 sql = sql[:-1]
                 cur.execute(sql)
-                
-            self.conn.commit()
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         return etypeid
@@ -1265,9 +1285,16 @@ class lattice(object):
         try:
             cur=self.conn.cursor()
             cur.execute(sql, vals)
-            self.conn.commit()
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
+                
             self.logger.info('Error when saving golden lattice:\n%s (%d)' 
                              %(e.args[1], e.args[0]))
             raise Exception('Error when saving golden lattice:\n%s (%d)' 

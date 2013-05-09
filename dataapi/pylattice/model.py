@@ -12,7 +12,7 @@ from .lattice import lattice
 from utils import _wildcardformat
 
 class model(object):
-    def __init__(self, conn, lat=None):
+    def __init__(self, conn, lat=None, transaction=None):
         '''
         Constructor
         '''
@@ -25,8 +25,11 @@ class model(object):
 
         self.conn = conn
         self.lat=lat
+        
+        # use django transaction management
+        self.transaction = transaction
         if self.lat == None:
-            self.lat=lattice(self.conn)
+            self.lat=lattice(self.conn, transaction=self.transaction)
 
     def savemodelcodeinfo(self, codename, algorithm):
         '''
@@ -51,9 +54,15 @@ class model(object):
             cur=self.conn.cursor()
             cur.execute(sql, (codename, algorithm))
             modelcodeid = cur.lastrowid
-            self.conn.commit()
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
             self.logger.info('Error when saving a new model code info:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving a new model code info:\n%s (%d)' %(e.args[1], e.args[0]))
         return modelcodeid
@@ -523,9 +532,15 @@ class model(object):
                     modelid=cur.lastrowid
                     if modeldata.has_key('beamParameter'):
                         self._savebeamparameters(cur, latticeid, modelid, modeldata['beamParameter'])
-                    self.conn.commit()
+                    if self.transaction:
+                        self.transaction.commit_unless_managed()
+                    else:
+                        self.conn.commit()
                 except MySQLdb.Error as e:
-                    self.conn.rollback()
+                    if self.transaction:
+                        self.transaction.rollback_unless_managed()
+                    else:
+                        self.conn.rollback()
                     self.logger.info('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
                     raise Exception('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
         return modelid
@@ -649,9 +664,15 @@ class model(object):
                                                latticeid, 
                                                modelid, 
                                                modeldata['beamParameter'])
-                self.conn.commit()
+                if self.transaction:
+                    self.transaction.commit_unless_managed()
+                else:
+                    self.conn.commit()
             except MySQLdb.Error as e:
-                self.conn.rollback()
+                if self.transaction:
+                    self.transaction.rollback_unless_managed()
+                else:
+                    self.conn.rollback()
                 self.logger.info('Error when updating a model:\n%s (%d)' %(e.args[1], e.args[0]))
                 raise Exception('Error when updating a model:\n%s (%d)' %(e.args[1], e.args[0]))
         return True
@@ -763,9 +784,16 @@ class model(object):
                              %(name))
         try:
             cur.execute(sql, vals)
-            self.conn.commit()
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
+                
             self.logger.info('Error when saving golden model:\n%s (%d)' 
                              %(e.args[1], e.args[0]))
             raise Exception('Error when saving golden model:\n%s (%d)' 
