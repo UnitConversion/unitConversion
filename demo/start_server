@@ -1,5 +1,6 @@
 #!/bin/sh -X
 export DJANGO_MANAGE_LOCATION=physics_dev/physics_django/manage.py
-export PYTHONPATH=${PWD}/../phyirmis/physics_dev:$PYTHONPATH
+export PYTHONPATH=${PWD}/../dataapi:$PYTHONPATH
 cd ../physics_dev/physics_django
-python manage.py runserver --noreload
+#python manage.py runserver --noreload
+python manage.py runserver
