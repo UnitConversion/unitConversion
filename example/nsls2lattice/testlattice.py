@@ -11,7 +11,7 @@ from pylattice import lattice
 
 from rdbinfo import (host, user, pw, db)
 
-supportedlatticetype = [{'name': 'tab flat', 'format': 'txt'},
+supportedlatticetype = [{'name': 'plain', 'format': 'txt'},
                         {'name': 'tracy3',  'format': 'lat'},
                         {'name': 'tracy4',  'format': 'lat'},
                         {'name': 'elegant', 'format': 'lte'},

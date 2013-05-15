@@ -17,6 +17,7 @@ import MySQLdb
 from utils import (_assemblesql, _wildcardformat)
 
 from .tracyunit import elementpropunits as tracypropunits
+from _mysql_exceptions import MySQLError
 
 class lattice(object):
     def __init__(self, conn, transaction=None):
@@ -32,7 +33,7 @@ class lattice(object):
         # use django transaction manager
         self.transaction = transaction
 
-    def retrievelatticelist(self, name, version=None, branch=None, description=None):
+    def retrievelatticeinfo(self, name, version=None, branch=None, description=None, latticetype=None):
         '''
         retrieve lattice header information. It gives lattice name, description, version, branch, 
         created info (by who & when), updated info (by who & when)
@@ -54,7 +55,7 @@ class lattice(object):
                  ...
                 } 
             supported lattice type name and format is as below:
-            [{'name': 'tab flat', 'format': 'txt'},
+            [{'name': 'plain', 'format': 'txt'},
              {'name': 'tracy3',  'format': 'lat'},
              {'name': 'tracy4',  'format': 'lat'},
              {'name': 'elegant', 'format': 'lte'},
@@ -92,6 +93,18 @@ class lattice(object):
             else:
                 vals, sql = _assemblesql(sql, description, "lattice_description", vals, connector="and")
 
+        if latticetype != None and isinstance(latticetype, dict):
+            if latticetype.has_key('name'):
+                if isinstance(latticetype['name'], (list, tuple)) and "" in latticetype['name']:
+                    vals, sql = _assemblesql(sql, "*", "lattice_type_name", vals, connector="and")
+                else:
+                    vals, sql = _assemblesql(sql, latticetype['name'], "lattice_type_name", vals, connector="and")
+            if latticetype.has_key('format'):
+                if isinstance(latticetype['format'], (list, tuple)) and "" in latticetype['format']:
+                    vals, sql = _assemblesql(sql, "*", "lattice_type_format", vals, connector="and")
+                else:
+                    vals, sql = _assemblesql(sql, latticetype['format'], "lattice_type_format", vals, connector="and")
+        
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
@@ -103,7 +116,7 @@ class lattice(object):
         resdict = {}
         urls = {}
         for r in res:
-            tempdict = {'id': r[0],
+            tempdict = {'name': r[1],
                         'version': r[2],
                         'branch': r[3]}
             if r[4] != None:
@@ -113,17 +126,212 @@ class lattice(object):
             if r[6] != None:
                 tempdict['originalDate'] = r[6].isoformat()
             if r[7] != None:
-                tempdict['update'] = r[7]
+                tempdict['updated'] = r[7]
             if r[8] != None:
                 tempdict['lastModified'] =  r[8].isoformat()
             if r[9] != None:
                 tempdict['latticeType'] = r[9]
             if r[10] != None:
                 tempdict['latticeFormat'] = r[10]
-            resdict[r[1]] = tempdict
-            urls[r[1]] = r[11]
+            resdict[r[0]] = tempdict
+            urls[r[0]] = r[11]
         return urls, resdict
 
+    def savelatticeinfo(self, name, version, branch, **params):
+        '''
+        save lattice header information. 
+        Real lattice data (geometric layout and strength) can be saved thru savelatticedata() method.
+        
+        parameters:
+            name:        lattice name
+            version:     version number
+            branch:      branch name
+            latticetype: a dictionary which consists of {'name': , 'format': }
+                         it is a predefined structure: [{'name': 'plain', 'format': 'txt'},
+                                                        {'name': 'tracy3',  'format': 'lat'},
+                                                        {'name': 'tracy4',  'format': 'lat'},
+                                                        {'name': 'elegant', 'format': 'lte'},
+                                                        {'name': 'xal',     'format': 'xdxf'}]
+            
+            description: description for this lattice, allow user put any info here (< 255 characters)
+            creator:     original creator
+        
+        return: lattice id if success, otherwise, raise an exception
+        '''
+        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        if len(lattices) != 0:
+            raise ValueError('lattice (name: %s, version: %s, branch: %s) exists already.'
+                             %(name, version, branch))
+
+        latticetypeid = None
+        latticetypename=None
+        latticetypeformat=None
+        if params.has_key('latticetype') and params['latticetype'] != None:
+            # lattice type has been given.
+            # try to get lattice type id
+            try:
+                latticetypename=params['latticetype']["name"]
+                latticetypeformat=params['latticetype']["format"]
+                latticetypeid = self.retrievelatticetype(latticetypename, latticetypeformat)
+            except KeyError:
+                pass
+            if len(latticetypeid) == 1:
+                # get lattice type id
+                latticetypeid = latticetypeid[0][0]
+            else:
+                # no lattice type found, or more than one found.
+                raise ValueError("Does not support lattice type (%s) with given format (%s)."
+                                 %(latticetypename, latticetypeformat))
+        
+        try:
+            cur = self.conn.cursor()
+
+            desc = None
+            if params.has_key('description'):
+                desc = params['description']
+            creator = None
+            if params.has_key('creator'):
+                creator = params['creator']
+
+            # no lattice entry found.
+            # add a new one
+            if latticetypeid:
+                sql = '''
+                insert into lattice 
+                (lattice_type_id, lattice_name, lattice_version, lattice_branch, lattice_description, created_by, create_date) 
+                values
+                (%s, %s, %s, %s, %s, %s, now())
+                '''
+                cur.execute(sql,(latticetypeid, name, version, branch, desc, creator))
+            else:
+                sql = '''
+                insert into lattice 
+                (lattice_type_id, lattice_name, lattice_version, lattice_branch, lattice_description, created_by, create_date) 
+                values
+                (NULL, %s, %s, %s, %s, %s, now())
+                '''
+                cur.execute(sql,(name, version, branch, desc, creator))
+                
+            # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
+            # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
+            # it is per connection.
+            latticeid = cur.lastrowid
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
+        except MySQLError as e:
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
+            
+            self.logger.info('Error when saving lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
+    
+        return latticeid
+    
+    def updatelatticeinfo(self, name, version, branch, **params):
+        '''
+        update lattice header information. 
+        Real lattice data (geometric layout and strength) can be updated thru updatelatticedata() method.
+        
+        parameters:
+            name:        lattice name
+            version:     version number
+            branch:      branch name
+            latticetype: a dictionary which consists of {'name': , 'format': }
+                         it is a predefined structure: [{'name': 'plain', 'format': 'txt'},
+                                                        {'name': 'tracy3',  'format': 'lat'},
+                                                        {'name': 'tracy4',  'format': 'lat'},
+                                                        {'name': 'elegant', 'format': 'lte'},
+                                                        {'name': 'xal',     'format': 'xdxf'}]
+            
+            description: description for this lattice, allow user put any info here (< 255 characters)
+            creator:     original creator
+        
+        return: True, otherwise, raise an exception
+        '''
+        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        latticeid = None
+        if len(lattices) == 0:
+            raise ValueError('Did not find lattice (name: %s, version: %s, branch: %s).'
+                             %(name, version, branch))
+        elif len(lattices) > 1:
+            # lattice with given name, version, and branch should be unique.
+            raise ValueError('More than one lattice found lattice (name: %s, version: %s, branch: %s).'
+                             %(name, version, branch))
+        else:
+            for k, _ in lattices.iteritems():
+                latticeid = k
+
+        latticetypeid = None
+        latticetypename=None
+        latticetypeformat=None
+        if params.has_key('latticetype') and params['latticetype'] != None:
+            # lattice type has been given.
+            # try to get lattice type id
+            try:
+                latticetypename=params['latticetype']["name"]
+                latticetypeformat=params['latticetype']["format"]
+                latticetypeid = self.retrievelatticetype(latticetypename, latticetypeformat)
+                if len(latticetypeid) == 1:
+                    # get lattice type id
+                    latticetypeid = latticetypeid[0][0]
+                else:
+                    # no lattice type found, or more than one found.
+                    raise ValueError("Does not support lattice with given type (%s) and format (%s)."
+                                     %(latticetypename, latticetypeformat))
+            except:
+                pass
+        if latticeid == None:
+            raise ValueError("Did not find lattice (name: %s, version: %s, branch: %s)."
+                             %(name, version, branch))
+        
+        try:
+            cur = self.conn.cursor()
+            sql = '''UPDATE lattice SET '''
+            vals = []
+            desc = None
+            if params.has_key('description'):
+                desc = params['description']
+            if desc:
+                sql += '''lattice_description=%s,'''
+                vals.append(desc)
+            
+            if latticetypeid:
+                sql += ''' lattice_type_id=%s,'''
+                vals.append(latticetypeid)
+                
+            creator = None
+            if params.has_key('creator'):
+                creator = params['creator']
+            if creator:
+                sql += ''' updated_by=%s,update_date=now()'''
+                vals.append(creator)
+            else:
+                sql += ''' updated_by=NULL,update_date=now()'''
+            
+            sql += ' where lattice_id = %s'
+            vals.append(latticeid)
+            
+            cur.execute(sql, vals)
+
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
+        except MySQLError as e:
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
+            
+            self.logger.info('Error when updating lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
+    
+        return True
+        
     def retrievelatticetype(self, name, typeformat=None):
         '''
         Retrieve supported lattice type information.
@@ -156,7 +364,7 @@ class lattice(object):
         Save a new lattice type.
         
         supported lattice type so far:
-        [{'name': 'tab flat', 'format': 'txt'},
+        [{'name': 'plain', 'format': 'txt'},
          {'name': 'tracy3',  'format': 'lat'},
          {'name': 'tracy4',  'format': 'lat'},
          {'name': 'elegant', 'format': 'lte'},
@@ -213,8 +421,8 @@ class lattice(object):
         
         latticetypeid: identify lattice file format id: 
             0. tab format; 1. tracy-3 format; 2. tracy-4 format; 3. elegant format
-            By default, it is 0, which means a tab-formatted lattice.
-            at current stage, only tab-formatted lattice is supported.
+            By default, it is 0, which means a plain lattice.
+            at current stage, only plain lattice is supported.
         
         savefile: flag to save the lattice file into hard disk
         
@@ -232,12 +440,22 @@ class lattice(object):
         # keep element order
         elemdict = OrderedDict()
         unitdict = {}
+        latticedatalen = len(latticedata)
+        headercount = 3
+        for i in range(latticedatalen):
+            if latticedata[i].strip() != '':
+                headercount -= 1
+            if headercount == 0:
+                break
+        headerlen = i
+        if headerlen >= latticedatalen or headercount != 0:
+            raise ValueError("Incomplete lattice data header.")
         if latticetypeid == 0:
             # tab formatted lattice file
-            if len(latticedata) <= 3:
+            if len(latticedata) <= headerlen:
                 # do nothing since no real data
                 return url, elemdict, unitdict
-            latticehead = latticedata[:3]
+            latticehead = latticedata[:headerlen]
             # lattice head has to have the following format:
             # the first 3 lines are column description
             # 1st line is for the column name which defines properties
@@ -249,13 +467,17 @@ class lattice(object):
             # -------------------------------------------------------------------------------
             # Pitch, Yaw, and Roll are rotations about the x, y, and z axes respectively
             # Pitch = Theta_x, Yaw = Theta_y, Roll = Theta_z
-            cols = latticehead[0].split()
-            #if cols[0].startswith('#') or cols[0].startswith('!'):
-            #    cols = cols[1:]
-            units = latticehead[1].split()
-            #if units[0].startswith('#') or units[0].startswith('!'):
-            #    units = units[1:]
-
+            cols=None
+            units=None
+            for h in latticehead:
+                if h.strip() != '':
+                    if not cols:
+                        cols = str(h).split()
+                    elif not units:
+                        units = str(h).split()
+            if cols==None or units==None:
+                raise ValueError("Incomplete lattice data header.")
+            
             skipcount = 0
             unitdict={}
             for i in range(len(cols)):
@@ -264,7 +486,7 @@ class lattice(object):
                 else:
                     unitdict[cols[i]] = units[i-skipcount]
 
-            latticebody = latticedata[3:]
+            latticebody = latticedata[headerlen+1:]
             for i in range(len(latticebody)):
                 body = latticebody[i]
                 attrs = body.split()
@@ -296,20 +518,8 @@ class lattice(object):
                     tmpdict['typeprop'] = typeprop
                     elemdict[str(i)] = tmpdict
         else:
-            raise TypeError('Wrong lattice format. Expecting a tab-formatted lattice.')
-#        elif latticetypeid == 1:
-#            # tracy-3 format
-#            raise TypeError("tracy-3 lattice format is not supported yet.")
-#        elif latticetypeid == 2:
-#            # tracy-4 format
-#            raise TypeError("tracy-4 lattice format is not supported yet.")
-#        elif latticetypeid == 3:
-#            # elegant format
-#            raise TypeError("elegant lattice format is not supported yet.")
-#        else:
-#            raise TypeError("unknown lattice format.")
+            raise TypeError('Wrong lattice format. Expecting a plain lattice.')
         
-        # remove duplicates in typelist, not order preserving since it does not matter
         return url, elemdict, unitdict
 
     def _getelemprop(self, value, keyname):
@@ -351,6 +561,8 @@ class lattice(object):
         
         latticefile = lattice['name']
         latticedata = lattice['data']
+        if latticefile==None or latticedata==None:
+            raise ValueError("Lattice data is not complete.")
         # pre-process and reorganize the data
         url, elemdict, unitdict = self._processlatticedata(latticefile, 
                                                            latticedata,
@@ -655,7 +867,6 @@ class lattice(object):
                     if len(etypeprops) > 0:
                         for etypeprop in etypeprops:
                             if not tmptypedict.has_key(etypeprop):
-                                print etypeprop
                                 etypepropid = self.updateelemtypeprop(etypename, etypeprop, etypepropunits)
                                 try:
                                     # element type property has unit
@@ -747,33 +958,28 @@ class lattice(object):
     def _saveelegantlattice(self, cur, latticeid, params):
         '''
         '''
-        print("To be implemented later")
+        raise Exception("This function has not been implemented yet.")
 
-    def savelattice(self, name, version, branch, latticetype=None, **params):
+    def savelattice(self, name, version, branch, **params):
         '''
-        Save lattice header information.
-        Note: the update should be dropped since lattice has
+        Save lattice data.
         parameters:
             name:        lattice name
             version:     version number
             branch:      branch name
             latticetype: a dictionary which consists of {'name': , 'format': }
-                         it is a predefined structure: [{'name': 'tab flat', 'format': 'txt'},
+                         it is a predefined structure: [{'name': 'plain', 'format': 'txt'},
                                                         {'name': 'tracy3',  'format': 'lat'},
                                                         {'name': 'tracy4',  'format': 'lat'},
                                                         {'name': 'elegant', 'format': 'lte'},
                                                         {'name': 'xal',     'format': 'xdxf'}]
-                         a lattice identifier is determined by the lattice type dictionary, which are as below:
-                             0. tab format; 
-                             1. tracy-3 format; 
-                             2. tracy-4 format; 
-                             3. elegant format
             
             description: description for this lattice, allow user put any info here (< 255 characters)
             creator:     original creator
             lattice:     lattice data, a dictionary:
                          {'name': ,
                           'data': ,
+                          'raw': ,
                           'map': {'name': 'value'},
                          }
                          name: file name to be saved into disk, it is same with lattice name by default
@@ -783,84 +989,27 @@ class lattice(object):
         
         return: lattice id if success, otherwise, raise an exception
         '''
-
-        latticetypeid = None
         
-        if latticetype != None:
-            # lattice type has been given.
-            # try to get lattice type id
-            latticetypename=None
-            latticetypeformat=None
+        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        if len(lattices) != 0:
+            raise ValueError('lattice (name: %s, version: %s, branch: %s) description information exists already. Please update it.'
+                             %(name, version, branch))
+        else:
+            latticeid= self.savelatticeinfo(name, version, branch, **params)
+
+        latticetypename=None
+        if params.has_key('latticetype') and params['latticetype'] != None:
             try:
-                latticetypename=latticetype["name"]
-                latticetypeformat=latticetype["format"]
+                latticetypename=params['latticetype']["name"]
             except:
                 pass
-            latticetypeid = self.retrievelatticetype(latticetypename, latticetypeformat)
-            if len(latticetypeid) == 1:
-                # get lattice type id
-                latticetypeid = latticetypeid[0][0]
-            else:
-                # no lattice type found, or more than one found.
-                raise ValueError("Does not support lattice with given type (%s) and format (%s)"%(latticetypename, latticetypeformat))
-
-        latticeid = None
+        
         try:
             cur = self.conn.cursor()
-            _, res = self.retrievelatticelist(name, version, branch)
+            if params.has_key('lattice') and params['lattice'] != None:
 
-            desc = None
-            if params.has_key('description'):
-                desc = params['description']
-            creator = None
-            if params.has_key('creator'):
-                creator = params['creator']
-
-            if len(res) == 0:
-                # no lattice entry found.
-                # add a new one
-                sql = '''
-                insert into lattice 
-                (lattice_type_id, lattice_name, lattice_version, lattice_branch, lattice_description, created_by, create_date) 
-                values
-                (%s, %s, %s, %s, %s, %s, now())
-                '''
-                cur.execute(sql,(latticetypeid, name, version, branch, desc, creator))
-                # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-                # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-                # it is per connection.
-                latticeid = cur.lastrowid
-            elif len(res) == 1:
-                # a unique lattice entry founded
-                # ensure there is no any element associated with this lattice
-                lattice=res.itervalues().next()
-                
-                latticeid = lattice['id']
-                sql = '''
-                select element_id from element where lattice_id = %s limit 1;
-                '''
-                cur.execute(sql, (latticeid,))
-                
-                if cur.fetchone() == None:
-                    sql = '''
-                    update lattice 
-                    set updated_by = %s, update_date = now()
-                    '''
-                    cur.execute(sql, (creator,))
-                else:
-                    self.conn.rollback()
-                    raise ValueError('lattice %s (version: %s, branch: %s) is not empty'
-                                     %(name, version, branch))
-            else:
-                # more than one lattice found
-                # this should never happen
-                self.conn.rollback()
-                raise ValueError('More than one lattice found for %s (version: %s, branch %s)'
-                                 %(name, version, branch))
-            
-            if params.has_key('lattice'):
                 # save lattice data
-                if latticetypename == 'tab flat':
+                if latticetypename == 'plain':
                     latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
                     latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
@@ -880,6 +1029,91 @@ class lattice(object):
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         return latticeid
+
+    def updatelattice(self, name, version, branch, **params):
+        '''
+        update lattice data.
+        parameters:
+            name:        lattice name
+            version:     version number
+            branch:      branch name
+            latticetype: a dictionary which consists of {'name': , 'format': }
+                         it is a predefined structure: [{'name': 'plain', 'format': 'txt'},
+                                                        {'name': 'tracy3',  'format': 'lat'},
+                                                        {'name': 'tracy4',  'format': 'lat'},
+                                                        {'name': 'elegant', 'format': 'lte'},
+                                                        {'name': 'xal',     'format': 'xdxf'}]
+            
+            description: description for this lattice, allow user put any info here (< 255 characters)
+            creator:     original creator
+            lattice:     lattice data, a dictionary:
+                         {'name': ,
+                          'data': ,
+                          'map': {'name': 'value'},
+                          'raw': 
+                         }
+                         name: file name to be saved into disk, it is same with lattice name by default
+                         data: lattice geometric and strength with predefined format
+                         raw:  raw data that is same with data but in original lattice format
+                         map:  name-value pair dictionary
+        
+        return: True if success, otherwise, raise an exception
+        '''
+        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        if len(lattices) == 0:
+            raise ValueError('Cannot find lattice (name: %s, version: %s, branch: %s) information.'
+                             %(name, version, branch))
+        elif len(lattices) > 1:
+            raise ValueError('Lattice (name: %s, version: %s, branch: %s) information is not unique.'
+                             %(name, version, branch))
+        else:
+            for k, _ in lattices.iteritems():
+                latticeid = k
+        sql = '''select count(element_id) from element where lattice_id = %s'''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, (latticeid))
+            res=cur.fetchone()
+            if res[0] > 0:
+                raise ValueError("Lattice geometric and strength is there already. Give up.")
+        except MySQLdb.Error as e:
+            self.logger.info('Error when checking lattice elements:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when checking lattice elements:\n%s (%d)' %(e.args[1], e.args[0]))
+
+        self.updatelatticeinfo(name, version, branch, **params)
+
+        latticetypename=None
+        if params.has_key('latticetype') and params['latticetype'] != None:
+            # lattice type has been given.
+            # try to get lattice type id
+            try:
+                latticetypename=params['latticetype']["name"]
+            except:
+                pass
+        try:
+            cur = self.conn.cursor()
+            if params.has_key('lattice') and params['lattice'] != None:
+                # save lattice data
+                if latticetypename == 'plain':
+                    latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
+                elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
+                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
+                elif latticetypename == 'elegant':
+                    latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
+                else:
+                    raise ValueError('Unknown lattice type (%s)' %(latticetypename))
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
+        except MySQLdb.Error as e:
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
+            self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
+        return True
 
     def retrievelattice(self, name, version, branch, description=None, latticetype=None, withdata=False, rawdata=False):
         '''
@@ -917,7 +1151,7 @@ class lattice(object):
                              } 
              }
         '''
-        urls, lattices = self.retrievelatticelist(name, version, branch, description=description)
+        urls, lattices = self.retrievelatticeinfo(name, version, branch, description=description, latticetype=latticetype)
         if len(lattices) == 0:
             return {}
 
@@ -936,7 +1170,7 @@ class lattice(object):
             order by element_order
             '''
             for k, v in lattices.iteritems():
-                latticeid = v['id']
+                latticeid = k
                 cur=self.conn.cursor()
                 cur.execute(sql, (latticeid, ))
                 results = cur.fetchall()
@@ -1009,27 +1243,28 @@ class lattice(object):
                 lattices[k] = v
         if urls:
             for k, v in urls.iteritems():
-                if rawdata:
-                    temp=lattices[k]
-                    try:
-                        with file(v, 'r') as f:
-                            data = f.readlines()
-                        basefile=os.path.basename(v)
-                        basefile=os.path.splitext(basefile)
-                        v=basefile[0][:-7]+basefile[1]
-                    except IOError:
-                        data = 'No raw lattice file found.'
-                    
-                    temp['rawlattice'] = {'name': v, 'data': data}
-                    lattices[k]=temp
-                if os.path.isdir(v+'_map'):
-                    maps = {}
-                    for path, _, files in os.walk(v+'_map'):
-                        for name in files:
-                            with file(os.path.join(path, name), 'r') as f:
-                                maps[name] = f.readlines()
-                    if len(maps) > 0:
-                        lattices[k] = {'map': maps}
+                if v != None:
+                    if rawdata:
+                        temp=lattices[k]
+                        try:
+                            with file(v, 'r') as f:
+                                data = f.readlines()
+                            basefile=os.path.basename(v)
+                            basefile=os.path.splitext(basefile)
+                            v=basefile[0][:-7]+basefile[1]
+                        except IOError:
+                            data = 'No raw lattice file found.'
+                        
+                        temp['rawlattice'] = {'name': v, 'data': data}
+                        lattices[k]=temp
+                    if os.path.isdir(v+'_map'):
+                        maps = {}
+                        for path, _, files in os.walk(v+'_map'):
+                            for name in files:
+                                with file(os.path.join(path, name), 'r') as f:
+                                    maps[name] = f.readlines()
+                        if len(maps) > 0:
+                            lattices[k] = {'map': maps}
         return lattices
         
     def retrieveelemtype(self, etypename):
@@ -1164,8 +1399,15 @@ class lattice(object):
             except KeyError:
                 cur.execute(sql + "(%s, %s, NULL)", (elementtypeid, etypeprop,))
             etypepropid = cur.lastrowid
+            if self.transaction:
+                self.transaction.commit_unless_managed()
+            else:
+                self.conn.commit()
         except MySQLdb.Error as e:
-            self.conn.rollback()
+            if self.transaction:
+                self.transaction.rollback_unless_managed()
+            else:
+                self.conn.rollback()
             self.logger.info('Error when saving element type (%s) property (%s):\n%s (%d)' 
                              %(etypename, etypeprop, e.args[1], e.args[0]))
             raise Exception('Error when saving element type (%s) property (%s):\n%s (%d)' 
@@ -1237,7 +1479,7 @@ class lattice(object):
         status = 0
         if params.has_key('status'):
             status=params['status']
-        _, lattices = self.retrievelatticelist(name, version, branch)
+        _, lattices = self.retrievelatticeinfo(name, version, branch)
         if len(lattices) != 1:
             raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s), or more than one found."%(name, version, branch))
         for _, lattice in lattices.iteritems():

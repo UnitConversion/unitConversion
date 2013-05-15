@@ -156,7 +156,7 @@ class model(object):
         else:
             latticebranch=_wildcardformat(latticebranch)
 
-        _, lattices = self.lat.retrievelatticelist(latticename, version=latticeversion, branch=latticebranch)
+        _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
         sql = '''
         select model_id, lattice_id, 
                model_name, model_desc, 
@@ -466,7 +466,7 @@ class model(object):
             if len(results) != 0:
                 raise ValueError('Model (%s) for given lattice (name: %s, version: %s, branch: %s) exists already.'
                                  %(modelname, latticename, latticeversion, latticebranch))
-            _, lattices = self.lat.retrievelatticelist(latticename, version=latticeversion, branch=latticebranch)
+            _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
             
             if len(lattices) == 0:
                 raise ValueError('lattice (name: %s, version: %s, branch: %s) does not exist yet.'
