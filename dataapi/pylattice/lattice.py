@@ -435,7 +435,10 @@ class lattice(object):
             fd, url = self._uniquefile('/'.join((dirname, latticefile)))
             with os.fdopen(fd,'w') as f:
                 for data in latticedata:
-                    f.write(data)
+                    if data.endswith('\n'):
+                        f.write(data)
+                    else:
+                        f.write(data+'\n')
         
         # keep element order
         elemdict = OrderedDict()
@@ -477,6 +480,8 @@ class lattice(object):
                         units = str(h).split()
             if cols==None or units==None:
                 raise ValueError("Incomplete lattice data header.")
+            elif len(cols) < 2 or len(units) < len(cols)-3:
+                raise ValueError("Incomplete lattice data header.")
             
             skipcount = 0
             unitdict={}
@@ -493,6 +498,11 @@ class lattice(object):
                 
                 # the line is not empty and not commented out by "#" or "!"
                 if  len(attrs) > 0 and not attrs[0].startswith('#') and not attrs[0].startswith('!'):
+                    # check whether lattice body matches lattice header
+                    if len(attrs) < len(cols)-1:
+                        # the last kickmap column could be empty
+                        print attrs
+                        raise ValueError("lattice property values is not complete.")
                     tmpdict = {}
                     typeprop = []
                     for j in range(len(attrs)):
@@ -571,8 +581,8 @@ class lattice(object):
             if lattice.has_key('map'):
                 self._savemapfile(url, lattice['map'])
 
-            sql = '''update lattice SET url = %s '''
-            cur.execute(sql,(url, ))
+            sql = '''update lattice SET url = %s where lattice_id = %s'''
+            cur.execute(sql,(url, latticeid))
 
         typedict = {}
 
@@ -582,7 +592,6 @@ class lattice(object):
         dx, dy, dz, pitch, yaw, roll)
         values
         '''
-
         if elemdict:
             for k, v in elemdict.iteritems():
                 etypeprops = v['typeprop']
@@ -1010,11 +1019,11 @@ class lattice(object):
 
                 # save lattice data
                 if latticetypename == 'plain':
-                    latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
+                    self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
-                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
+                    self._savetracylattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
-                    latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
+                    self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
             if self.transaction:
@@ -1028,6 +1037,7 @@ class lattice(object):
                 self.conn.rollback()
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
+        
         return latticeid
 
     def updatelattice(self, name, version, branch, **params):
