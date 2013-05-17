@@ -1145,20 +1145,21 @@ class lattice(object):
                          This flag will try to get the raw data received.
         
         return: a lattice table
-            {'lattice name': {'id': ,                      # identifier of this lattice
-                              'version': ,                 # version of this lattice
-                              'branch': ,                  # branch this lattice belongs to
-                              'description':  [optional],  # lattice description
-                              'creator':      [optional],  # who created this lattice first time
-                              'originalDate': [optional],  # when this lattice was create first time
-                              'updated':      [optional],  # who updated last time
-                              'lastModified': [optional],  # when this lattice was updated last time
-                              'latticeType':  [optional],  # lattice type name
-                              'latticeFormat':[optional],  # lattice type format
-                              'lattice':      [optional],  # real lattice data
-                              'rawlattice':   [optional],  # raw lattice data the server received
-                              'map':          [optional]   # file map. A dictionary which has name-value pair
-                             } 
+            {'id':  # identifier of this lattice
+                    {'lattice name':                       # lattice name
+                     'version': ,                 # version of this lattice
+                     'branch': ,                  # branch this lattice belongs to
+                     'description':  [optional],  # lattice description
+                     'creator':      [optional],  # who created this lattice first time
+                     'originalDate': [optional],  # when this lattice was create first time
+                     'updated':      [optional],  # who updated last time
+                     'lastModified': [optional],  # when this lattice was updated last time
+                     'latticeType':  [optional],  # lattice type name
+                     'latticeFormat':[optional],  # lattice type format
+                     'lattice':      [optional],  # real lattice data
+                     'rawlattice':   [optional],  # raw lattice data the server received
+                     'map':          [optional]   # file map. A dictionary which has name-value pair
+                    } 
              }
         '''
         urls, lattices = self.retrievelatticeinfo(name, version, branch, description=description, latticetype=latticetype)
@@ -1254,6 +1255,16 @@ class lattice(object):
         if urls:
             for k, v in urls.iteritems():
                 if v != None:
+                    maps = {}
+                    if os.path.isdir(v+'_map'):
+                        for path, _, files in os.walk(v+'_map'):
+                            for name in files:
+                                with file(os.path.join(path, name), 'r') as f:
+                                    maps[name] = f.readlines()
+                    if len(maps) > 0:
+                        temp = lattices[k]
+                        temp['map'] = maps
+                        lattices[k] = temp
                     if rawdata:
                         temp=lattices[k]
                         try:
@@ -1267,14 +1278,6 @@ class lattice(object):
                         
                         temp['rawlattice'] = {'name': v, 'data': data}
                         lattices[k]=temp
-                    if os.path.isdir(v+'_map'):
-                        maps = {}
-                        for path, _, files in os.walk(v+'_map'):
-                            for name in files:
-                                with file(os.path.join(path, name), 'r') as f:
-                                    maps[name] = f.readlines()
-                        if len(maps) > 0:
-                            lattices[k] = {'map': maps}
         return lattices
         
     def retrieveelemtype(self, etypename):

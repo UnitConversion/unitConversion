@@ -1100,6 +1100,7 @@ class TestPlainLattice(unittest.TestCase):
         self.assertEqual(r.status_code, 200, 'Expecting status code 200, but got %s'%(r.status_code))
         self.assertEqual(r.json(), {}, 'Expecting status code 200, but got %s'%(r.status_code))
 
+    def testRetrieve(self):
         # retrieve with data
         params={'function': 'retrieveLattice',
                    'name': self.name[0],
@@ -1112,12 +1113,173 @@ class TestPlainLattice(unittest.TestCase):
         }
         r=self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
         self.assertEqual(r.status_code, 200, 'Expecting status code 200, but got %s'%(r.status_code))
-        import pprint
-        pprint.pprint(r.json())
-        
+        lattice = r.json()
+        self.assertEqual(len(lattice), 1, 'Expecting getting only one lattice, but got %s' %(len(lattice)))
+        for _, v in lattice.iteritems():
+            self.assertEqual(self.testlatticetype[0]['name'], 
+                             v["latticeType"],
+                             'Expecting lattice type (%s), but got (%s)'
+                             %(self.testlatticetype[0]['name'],  v["latticeType"]))
+            self.assertEqual(self.testlatticetype[0]['format'], 
+                             v["latticeFormat"],
+                             'Expecting lattice format (%s), but got (%s)'
+                             %(self.testlatticetype[0]['format'],  v["latticeFormat"]))
+            self.assertEqual(self.name[0], 
+                             v["name"],
+                             'Expecting lattice name (%s), but got (%s)'
+                             %(self.name[0],  v['name']))
+            self.assertEqual(self.versions[0], 
+                             v["version"],
+                             'Expecting lattice version (%s), but got (%s)'
+                             %(self.versions[0],  v['version']))
+            self.assertEqual(self.branch[0], 
+                             v["branch"],
+                             'Expecting lattice branch (%s), but got (%s)'
+                             %(self.branch[0],  v['branch']))
+            self.assertEqual(self.creators[0], 
+                             v["creator"],
+                             'Expecting lattice created by (%s), but by (%s)'
+                             %(self.creators[0], v["creator"]))
+            self.assertEqual(self.descs[0], 
+                             v["description"],
+                             'Expecting lattice description (%s), but got (%s)'
+                             %(self.descs[0], v["description"]))
+            rawdata = v['rawlattice']['data']
+            databody = self.plainlat1.splitlines()
+            for i in range(len(rawdata)):
+                # raw data save in file is ended with line break
+                self.assertEqual(rawdata[i][:-1], databody[i], 'wrong raw data')
+            
+            # elements length: one empty line + 3 header lines
+            self.assertEqual(len(databody)-4, len(v['lattice'])-2, 'lattice elements do not match original one')
+        # retrieve CD3 lattice without insertion device
+        params={'function': 'retrieveLattice',
+                   'name': self.name[2],
+                   'version': self.versions[2],
+                   'branch': self.branch[2],
+                   'creator': self.creators[2],
+                   'description': self.descs[2],
+                   'withdata': True,
+                   'rawdata': True,
+        }
+        r=self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
+        self.assertEqual(r.status_code, 200, 'Expecting status code 200, but got %s'%(r.status_code))
+        lattice = r.json()
+        self.assertEqual(len(lattice), 1, 'Expecting getting only one lattice, but got %s' %(len(lattice)))
+        for _, v in lattice.iteritems():
+            
+            self.assertEqual(self.testlatticetype[0]['name'], 
+                             v["latticeType"],
+                             'Expecting lattice type (%s), but got (%s)'
+                             %(self.testlatticetype[0]['name'],  v["latticeType"]))
+            self.assertEqual(self.testlatticetype[0]['format'], 
+                             v["latticeFormat"],
+                             'Expecting lattice format (%s), but got (%s)'
+                             %(self.testlatticetype[0]['format'],  v["latticeFormat"]))
+            self.assertEqual(self.name[2], 
+                             v["name"],
+                             'Expecting lattice name (%s), but got (%s)'
+                             %(self.name[2],  v['name']))
+            self.assertEqual(self.versions[2], 
+                             v["version"],
+                             'Expecting lattice version (%s), but got (%s)'
+                             %(self.versions[2],  v['version']))
+            self.assertEqual(self.branch[2], 
+                             v["branch"],
+                             'Expecting lattice branch (%s), but got (%s)'
+                             %(self.branch[2],  v['branch']))
+            self.assertEqual(self.creators[2], 
+                             v["creator"],
+                             'Expecting lattice created by (%s), but by (%s)'
+                             %(self.creators[2], v["creator"]))
+            self.assertEqual(self.descs[2], 
+                             v["description"],
+                             'Expecting lattice description (%s), but got (%s)'
+                             %(self.descs[2], v["description"]))
+            rawdata = v['rawlattice']['data']
+            with file("/".join((ROOT,self.plainlat3)), 'r') as f:
+                databody = f.readlines()
+            for i in range(len(rawdata)):
+                self.assertEqual(rawdata[i], databody[i], 'wrong raw data')
+            self.assertEqual(len(databody)-3, len(v['lattice'])-2, 'lattice elements do not match original one')        
+
+        # retrieve CD3 lattice with insertion device
+        params={'function': 'retrieveLattice',
+                   'name': self.name[3],
+                   'version': self.versions[3],
+                   'branch': self.branch[3],
+                   'creator': self.creators[3],
+                   'description': self.descs[3],
+                   'withdata': True,
+                   'rawdata': True,
+        }
+        r=self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
+        self.assertEqual(r.status_code, 200, 'Expecting status code 200, but got %s'%(r.status_code))
+        lattice = r.json()
+        self.assertEqual(len(lattice), 1, 'Expecting getting only one lattice, but got %s' %(len(lattice)))
+        for _, v in lattice.iteritems():
+            self.assertEqual(self.testlatticetype[0]['name'], 
+                             v["latticeType"],
+                             'Expecting lattice type (%s), but got (%s)'
+                             %(self.testlatticetype[0]['name'],  v["latticeType"]))
+            self.assertEqual(self.testlatticetype[0]['format'], 
+                             v["latticeFormat"],
+                             'Expecting lattice format (%s), but got (%s)'
+                             %(self.testlatticetype[0]['format'],  v["latticeFormat"]))
+            self.assertEqual(self.name[3], 
+                             v["name"],
+                             'Expecting lattice name (%s), but got (%s)'
+                             %(self.name[3],  v['name']))
+            self.assertEqual(self.versions[3], 
+                             v["version"],
+                             'Expecting lattice version (%s), but got (%s)'
+                             %(self.versions[3],  v['version']))
+            self.assertEqual(self.branch[3], 
+                             v["branch"],
+                             'Expecting lattice branch (%s), but got (%s)'
+                             %(self.branch[3],  v['branch']))
+            self.assertEqual(self.creators[3], 
+                             v["creator"],
+                             'Expecting lattice created by (%s), but by (%s)'
+                             %(self.creators[3], v["creator"]))
+            self.assertEqual(self.descs[3], 
+                             v["description"],
+                             'Expecting lattice description (%s), but got (%s)'
+                             %(self.descs[3], v["description"]))
+            rawdata = v['rawlattice']['data']
+            with file("/".join((ROOT,self.plainlat4)), 'r') as f:
+                databody = f.readlines()
+            for i in range(len(rawdata)):
+                self.assertEqual(rawdata[i], databody[i], 'wrong raw data')
+            self.assertEqual(len(databody)-3, len(v['lattice'])-2, 'lattice elements do not match original one')            
+            fieldmap=v['map']
+            self.assertTrue(len(self.kickmap) == len(fieldmap), 'Wrong kick map files')
+            for km in self.kickmap:
+                kmfile="/".join((ROOT,km))
+                with file(kmfile, 'r') as f:
+                    data = f.readlines()
+                serverdata = fieldmap[os.path.basename(kmfile)]
+                for i in range(len(data)):
+                    self.assertEqual(serverdata[i], data[i], 'kick map data does not match.')
+            
         # clean whole lattice domain
-#        truncatelattice()
-        
+        truncatelattice()
+
+class TestTracyLattice(unittest.TestCase):
+    __url = 'http://localhost:8000/lattice/'
+    __jsonheader = {'content-type':'application/json', 'accept':'application/json'}
+
+    def setUp(self):
+        try:
+            requests_log = logging.getLogger("requests")
+            requests_log.setLevel(logging.DEBUG)
+            self.client = requests.session()
+        except:
+            raise
+
+    def tearDown(self):
+        self.client.close()
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
