@@ -17,6 +17,17 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 
 from preparerdb import cleanlatticetype, deletelattice, truncatelattice
 
+from testlat1 import tracylat as CD3ParID
+testlat1 = {'name': 'CD3-Oct3-12-30Cell-addID-par',
+            'version': 20121003,
+            'branch': 'Design',
+            'lattice': CD3ParID}
+from testlat2 import tracylat as CD3Par
+testlat2 = {'name': 'CD3-Apr07-10-30cell-par',
+            'version': 20100407,
+            'branch': 'Design',
+            'lattice': CD3Par}
+
 class TestClientConnection(unittest.TestCase):
 
     __url = 'http://localhost:8000/lattice/'
