@@ -761,7 +761,7 @@ class lattice(object):
                     pass
                 else: 
                     raise Exception("Can not create a sub directory to store map")
-        
+            
             for mapname, mapvalue in fieldmaps.iteritems():
                 with file(url+'_map/'+mapname, 'w') as f:
                     for data in mapvalue:
@@ -780,9 +780,14 @@ class lattice(object):
                       'map': 
                      }        
         '''
+        if not isinstance(params, dict) or not params.has_key('name') or not params.has_key('data') or params['data']==None:
+            raise ValueError('No lattice data found.')
+
+        if params.has_key('map') and params['map'] != None and not params.has_key('raw'):
+            raise ValueError('Cannot save field map files since raw lattice is missing.')
+
         # save raw lattice file
         if params.has_key('raw'):
-            sql = '''update lattice SET url = %s '''
             now = datetime.datetime.now()
             dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
             fd, url = self._uniquefile('/'.join((dirname, params['name'])))
@@ -790,11 +795,12 @@ class lattice(object):
                 for data in params['raw']:
                     f.write(data)
             
-            if lattice.has_key('map'):
-                self._savemapfile(url, lattice['map'])
-
-            cur.execute(sql,(url,))
-
+            if params.has_key('map'):
+                self._savemapfile(url, params['map'])
+            
+            sql = '''update lattice SET url = %s where lattice_id = %s'''
+            cur.execute(sql,(url,latticeid))
+        
         # save element statement
         sql = '''
         insert into element
