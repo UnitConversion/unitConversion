@@ -2079,6 +2079,10 @@ class TestGoldenLattice(unittest.TestCase):
         r = self.client.get(self.__url, params=params, verify=False, headers=self.__jsonheader)
         self.assertEqual(r.status_code, 200, 'Expecting status code 200, but got %s'%(r.status_code))
         self.assertEqual(r.json(), {}, 'Should get an empty golden lattice')
+        
+        # clean database
+        truncatelattice()
+        cleanlatticetype(self.testlatticetype)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
