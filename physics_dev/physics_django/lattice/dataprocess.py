@@ -248,4 +248,46 @@ def retrievelattice(params):
     result = latinst.retrievelattice(name, version, branch, description=description, latticetype=latticetype, withdata=withdata, rawdata=rawdata)
     
     return result
+
+def savegoldenlattice(params):
+    '''
+    '''
+    name = params['name']
+    version = params['version']
+    branch=params['branch']
+    status=params['status']
+    
+    result=latinst.savegoldenlattice(name, version, branch, status=status)
+    
+    return {'result':result}
+    
+def retrievegoldenlattice(params):
+    '''
+    '''
+    name = params['name']
+    version = params['version']
+    branch=params['branch']
+    if params.has_key('status'):
+        status=params['status']
+        ignorestatus=False
+    else:
+        status='*'
+        ignorestatus=True
+    
+#        select gold_lattice_id, lattice_name, lattice_version, lattice_branch, 
+#               gl.created_by, gl.create_date,
+#               gl.updated_by, gl.update_date,
+#               gl.gold_status_ind, gl.lattice_id
+    result=latinst.retrievegoldenlattice(name, version, branch, status=status, ignorestatus=ignorestatus)
+    goldenlattice={}
+    for res in result:
+        goldenlattice[res[9]]={'name': res[1],
+                               'version': res[2],
+                               'branch': res[3],
+                               'goldenStatus': res[8]}
+        
+    return goldenlattice
+    
+    
+    
     

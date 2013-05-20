@@ -75,6 +75,7 @@ def truncatelattice():
     delete from element;
     delete from element_type_prop;
     delete from element_type;
+    delete from gold_lattice;
     delete from lattice;
     '''
     conn=connect()

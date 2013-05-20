@@ -13,6 +13,7 @@ except ImportError:
 from dataprocess import retrievelatticetype, savelatticetype
 from dataprocess import savelatticeinfo, retrievelatticeinfo, updatelatticeinfo
 from dataprocess import savelattice, retrievelattice, updatelattice
+from dataprocess import savegoldenlattice, retrievegoldenlattice
 
 def _retrievecmddict(httpcmd):
     '''
@@ -34,10 +35,12 @@ post_actions = (('saveLatticeType', savelatticetype),
                 ('updateLatticeInfo', updatelatticeinfo),
                 ('saveLattice', savelattice),
                 ('updateLattice', updatelattice),
+                ('saveGoldenLattice', savegoldenlattice),
                 )
 get_actions = (('retrieveLatticeType', retrievelatticetype),
                ('retrieveLatticeInfo', retrievelatticeinfo),
                ('retrieveLattice', retrievelattice),
+               ('retrieveGoldenLattice', retrievegoldenlattice),
                )
 
 def dispatch(params, actions):

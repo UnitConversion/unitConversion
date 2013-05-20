@@ -1196,6 +1196,7 @@ class lattice(object):
                 typepropunits={}
                 for res in results:
                     typeproplist = []
+                    etypename = res[11]
                     if tempdict.has_key(res[0]):
                         innerdict = tempdict[res[0]]
                         if res[14] != None and res[12] != None:
@@ -1211,7 +1212,16 @@ class lattice(object):
                             else:
                                 innerdict[res[14]] = [res[12]]
                             if res[15] != None:
-                                typepropunits[res[14]] = res[15]
+                                # assume tracy if key is K for BENDING, QUADRUPOLE, and SEXTUPOLE
+                                if res[14]=='K':
+                                    if etypename.upper() in ['BENDING','QUADRUPOLE']:
+                                        typepropunits['K1'] = res[15]
+                                    elif etypename.upper() == 'SEXTUPOLE':
+                                        typepropunits['K2'] = res[15]
+                                    else:
+                                        typepropunits[res[14]] = res[15]
+                                else:
+                                    typepropunits[res[14]] = res[15]
                     else:
                         innerdict={'name': res[1],
                                    'id': res[2],
@@ -1249,7 +1259,16 @@ class lattice(object):
                             else:
                                 innerdict[res[14]] = [res[12]]
                             if res[15] != None:
-                                typepropunits[res[14]] = res[15]
+                                # assume tracy if key is K for BENDING, QUADRUPOLE, and SEXTUPOLE
+                                if res[14]=='K':
+                                    if etypename.upper() in ['BENDING','QUADRUPOLE']:
+                                        typepropunits['K1'] = res[15]
+                                    elif etypename.upper() == 'SEXTUPOLE':
+                                        typepropunits['K2'] = res[15]
+                                    else:
+                                        typepropunits[res[14]] = res[15]
+                                else:
+                                    typepropunits[res[14]] = res[15]
                     tempdict[res[0]] = innerdict
                         
                 if len(columns) > 0:
@@ -1456,7 +1475,7 @@ class lattice(object):
         select gold_lattice_id, lattice_name, lattice_version, lattice_branch, 
                gl.created_by, gl.create_date,
                gl.updated_by, gl.update_date,
-               gl.gold_status_ind
+               gl.gold_status_ind, gl.lattice_id
         from gold_lattice gl
         left join lattice on lattice.lattice_id = gl.lattice_id
         where
@@ -1501,8 +1520,8 @@ class lattice(object):
         _, lattices = self.retrievelatticeinfo(name, version, branch)
         if len(lattices) != 1:
             raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s), or more than one found."%(name, version, branch))
-        for _, lattice in lattices.iteritems():
-            latticeid = lattice['id']
+        for k, _ in lattices.iteritems():
+            latticeid = k
         # get all lattice no matter its status.
         res = self.retrievegoldenlattice(name, version, branch, ignorestatus=True)
         
