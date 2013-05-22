@@ -1019,7 +1019,7 @@ class TestPlainLattice(unittest.TestCase):
         r = self.client.post(self.__url, data=payload)
         self.assertEqual(r.status_code, 404, 'Expecting status code 404, but got %s.'%(r.status_code))
         self.assertEqual(r.text,
-                         'Lattice geometric and strength is there already. Give up.',
+                         'Lattice file exists already. Give up.',
                          'Expecting an error message. But got wrong:\n  -- %s'%(r.text))
         
         # retrieve without data
@@ -1600,6 +1600,34 @@ class TestTracyLattice(unittest.TestCase):
                    }
         r = self.client.post(self.__url, data=payload)
         self.assertEqual(r.status_code, 404, 'Expecting 404 status code, but got %s'%r.status_code)
+        self.assertEqual(r.text, 'No lattice name given.', 'Failed to update lattice')
+
+        # update with empty data
+        payload = {'function': 'updateLattice',
+                   'name': self.testlat1['name'],
+                   'version': self.testlat1['version'],
+                   'branch': self.testlat1['branch'],
+                   'creator': self.testlat1['creator'],
+                   'description': self.testlat1['description'],
+                   'latticetype': json.dumps(self.testlatticetype[0]),
+                   'lattice': json.dumps({'name':self.testlat1['name']})
+                   }
+        r = self.client.post(self.__url, data=payload)
+        self.assertEqual(r.status_code, 404, 'Expecting 404 status code, but got %s'%r.status_code)
+        self.assertEqual(r.text, 'No lattice data found.', 'Failed to update lattice')
+
+        # update with empty data
+        payload = {'function': 'updateLattice',
+                   'name': self.testlat1['name'],
+                   'version': self.testlat1['version'],
+                   'branch': self.testlat1['branch'],
+                   'creator': self.testlat1['creator'],
+                   'description': self.testlat1['description'],
+                   'latticetype': json.dumps(self.testlatticetype[0]),
+                   'lattice': json.dumps({'name':self.testlat1['name']})
+                   }
+        r = self.client.post(self.__url, data=payload)
+        self.assertEqual(r.status_code, 404, 'Expecting 404 status code, but got %s'%r.status_code)
         self.assertEqual(r.text, 'No lattice data found.', 'Failed to update lattice')
 
         # update with empty data
@@ -1744,7 +1772,7 @@ class TestTracyLattice(unittest.TestCase):
         r = self.client.post(self.__url, data=payload)
         self.assertEqual(r.status_code, 404, 'Expecting status code 404, but got %s.'%(r.status_code))
         self.assertEqual(r.text,
-                         'Lattice geometric and strength is there already. Give up.',
+                         'Lattice file exists already. Give up.',
                          'Expecting an error message. But got wrong:\n  -- %s'%(r.text))
         
         # retrieve without data
@@ -1934,7 +1962,7 @@ class TestTracyLattice(unittest.TestCase):
         # clean whole lattice domain
         truncatelattice()
 
-class TestGoldenLattice(unittest.TestCase):
+class TestLatticeStatus(unittest.TestCase):
     __url = 'http://localhost:8000/lattice/'
     __jsonheader = {'content-type':'application/json', 'accept':'application/json'}
 
@@ -1970,14 +1998,14 @@ class TestGoldenLattice(unittest.TestCase):
     def tearDown(self):
         self.client.close()
 
-    def testGoldenLattice(self):
+    def testLatticeStatus(self):
         '''
         '''
         truncatelattice()
         # clean lattice type
         cleanlatticetype(self.testlatticetype)
         # save a golden lattice that not existing yet.
-        payload = {'function': 'saveGoldenLattice',
+        payload = {'function': 'saveLatticeStatus',
                    'name': self.name[0],
                    'version': self.versions[0],
                    'branch': self.branch[0],
@@ -1986,6 +2014,8 @@ class TestGoldenLattice(unittest.TestCase):
 
         r = self.client.post(self.__url, data=payload)
         # should raise an exception since lattice does not exist yet.
+        print r.status_code
+        print r.text
         self.assertRaises(requests.exceptions.HTTPError, r.raise_for_status)
         self.assertEqual(r.status_code, 404, 'Expecting 404 status code, but got %s'%r.status_code)
         self.assertEqual(r.text, 
@@ -2015,7 +2045,7 @@ class TestGoldenLattice(unittest.TestCase):
 
         # save golden lattice
         for i in range(len(self.name)):
-            payload = {'function': 'saveGoldenLattice',
+            payload = {'function': 'saveLatticeStatus',
                        'name': self.name[i],
                        'version': self.versions[i],
                        'branch': self.branch[i],
@@ -2027,7 +2057,7 @@ class TestGoldenLattice(unittest.TestCase):
 
         # retrieve golden lattice
         for i in range(len(self.name)):
-            params = {'function': 'retrieveGoldenLattice',
+            params = {'function': 'retrieveLatticeStatus',
                        'name': self.name[i],
                        'version': self.versions[i],
                        'branch': self.branch[i],
@@ -2049,7 +2079,7 @@ class TestGoldenLattice(unittest.TestCase):
         
         # retrieve golden lattice according its status
         for i in range(len(self.name)):
-            params = {'function': 'retrieveGoldenLattice',
+            params = {'function': 'retrieveLatticeStatus',
                        'name': '*',
                        'version': '*',
                        'branch': '*',
@@ -2070,7 +2100,7 @@ class TestGoldenLattice(unittest.TestCase):
                                  'Expecting golden lattice status (%s), but got (%s)'%(self.status[i], v['goldenStatus']))
         
         # wrong golden status, should get nothing
-        params = {'function': 'retrieveGoldenLattice',
+        params = {'function': 'retrieveLatticeStatus',
                    'name': '*',
                    'version': '*',
                    'branch': '*',

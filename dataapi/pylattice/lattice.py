@@ -780,14 +780,17 @@ class lattice(object):
                       'map': 
                      }        
         '''
-        if not isinstance(params, dict) or not params.has_key('name') or not params.has_key('data') or params['data']==None:
+        if not isinstance(params, dict) or not params.has_key('name'):
+            raise ValueError('No lattice name given.')
+
+        if (not params.has_key('data') or params['data']==None) and (not params.has_key('raw') or len(params['raw'])==0):
             raise ValueError('No lattice data found.')
 
         if params.has_key('map') and params['map'] != None and not params.has_key('raw'):
             raise ValueError('Cannot save field map files since raw lattice is missing.')
 
         # save raw lattice file
-        if params.has_key('raw'):
+        if params.has_key('raw') and len(params['raw'])!=0:
             now = datetime.datetime.now()
             dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
             fd, url = self._uniquefile('/'.join((dirname, params['name'])))
@@ -800,6 +803,12 @@ class lattice(object):
             
             sql = '''update lattice SET url = %s where lattice_id = %s'''
             cur.execute(sql,(url,latticeid))
+        
+        #
+        if not params.has_key('data') or params['data']==None:
+            # no data to save.
+            # simply return.
+            return 
         
         # save element statement
         sql = '''
@@ -995,13 +1004,14 @@ class lattice(object):
                          {'name': ,
                           'data': ,
                           'raw': ,
-                          'map': {'name': 'value'},
+                          'map': {'name': ,
+                                  'value': },
                          }
                          name: file name to be saved into disk, it is same with lattice name by default
                          data: lattice geometric and strength with predefined format
                          raw:  raw data that is same with data but in original lattice format
                          map:  name-value pair dictionary
-        
+            dosimulation: Flag to identify whether to perform a simulation. False by default.
         return: lattice id if success, otherwise, raise an exception
         '''
         
@@ -1072,7 +1082,8 @@ class lattice(object):
                          data: lattice geometric and strength with predefined format
                          raw:  raw data that is same with data but in original lattice format
                          map:  name-value pair dictionary
-        
+            dosimulation: Flag to identify whether to perform a simulation. False by default.
+            
         return: True if success, otherwise, raise an exception
         '''
         _, lattices = self.retrievelatticeinfo(name, version, branch)
@@ -1085,9 +1096,14 @@ class lattice(object):
         else:
             for k, _ in lattices.iteritems():
                 latticeid = k
-        sql = '''select count(element_id) from element where lattice_id = %s'''
         try:
+            sql = '''select count(url) from lattice where lattice_id = %s'''
             cur=self.conn.cursor()
+            cur.execute(sql, (latticeid))
+            res=cur.fetchone()
+            if res[0] > 0:
+                raise ValueError("Lattice file exists already. Give up.")
+            sql = '''select count(element_id) from element where lattice_id = %s'''
             cur.execute(sql, (latticeid))
             res=cur.fetchone()
             if res[0] > 0:
@@ -1452,7 +1468,7 @@ class lattice(object):
                             %(etypename, etypeprop, e.args[1], e.args[0]))
         return etypepropid
     
-    def retrievegoldenlattice(self, name, version, branch, status=0, ignorestatus=False):
+    def retrievelatticestatus(self, name, version, branch, status=0, ignorestatus=False):
         '''
         Get golden lattice with given name, version, branch, and other conditions
         parameters:
@@ -1496,7 +1512,7 @@ class lattice(object):
         
         return res
     
-    def savegoldenlattice(self, name, version, branch, **params):
+    def savelatticestatus(self, name, version, branch, **params):
         '''
         Set a lattice to a golden lattice
         Parameters:
@@ -1523,7 +1539,7 @@ class lattice(object):
         for k, _ in lattices.iteritems():
             latticeid = k
         # get all lattice no matter its status.
-        res = self.retrievegoldenlattice(name, version, branch, ignorestatus=True)
+        res = self.retrievelatticestatus(name, version, branch, ignorestatus=True)
         
         if len(res) == 0:
             # if not found, flag lattice with given status.

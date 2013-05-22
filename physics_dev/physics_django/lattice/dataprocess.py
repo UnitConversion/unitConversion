@@ -249,7 +249,7 @@ def retrievelattice(params):
     
     return result
 
-def savegoldenlattice(params):
+def savelatticestatus(params):
     '''
     '''
     name = params['name']
@@ -257,11 +257,11 @@ def savegoldenlattice(params):
     branch=params['branch']
     status=params['status']
     
-    result=latinst.savegoldenlattice(name, version, branch, status=status)
+    result=latinst.savelatticestatus(name, version, branch, status=status)
     
     return {'result':result}
     
-def retrievegoldenlattice(params):
+def retrievelatticestatus(params):
     '''
     '''
     name = params['name']
@@ -278,7 +278,7 @@ def retrievegoldenlattice(params):
 #               gl.created_by, gl.create_date,
 #               gl.updated_by, gl.update_date,
 #               gl.gold_status_ind, gl.lattice_id
-    result=latinst.retrievegoldenlattice(name, version, branch, status=status, ignorestatus=ignorestatus)
+    result=latinst.retrievelatticestatus(name, version, branch, status=status, ignorestatus=ignorestatus)
     goldenlattice={}
     for res in result:
         goldenlattice[res[9]]={'name': res[1],

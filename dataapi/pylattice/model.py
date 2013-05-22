@@ -471,8 +471,8 @@ class model(object):
             if len(lattices) == 0:
                 raise ValueError('lattice (name: %s, version: %s, branch: %s) does not exist yet.'
                                  %(latticename, latticeversion, latticebranch))
-            for _, v in lattices.iteritems():
-                latticeid = v['id']
+            for latticeid, _ in lattices.iteritems():
+                #latticeid = v['id']
                 if modeldata.has_key('simulationCode'):
                     simulationcode = modeldata['simulationCode']
                 else:

@@ -13,7 +13,7 @@ except ImportError:
 from dataprocess import retrievelatticetype, savelatticetype
 from dataprocess import savelatticeinfo, retrievelatticeinfo, updatelatticeinfo
 from dataprocess import savelattice, retrievelattice, updatelattice
-from dataprocess import savegoldenlattice, retrievegoldenlattice
+from dataprocess import savelatticestatus, retrievelatticestatus
 
 def _retrievecmddict(httpcmd):
     '''
@@ -30,17 +30,25 @@ def _retrievecmddict(httpcmd):
             cmddict[k.lower()] = v
     return cmddict
 
+# savemodelcodeinfo, retrievemodelcodeinfo
+# savegoldenmodel, retrievegoldenmodel
+# savemode, updatemodel, retrievemodel
+# retrieve partial beam parameter information
+# retrievetransfermatrix(from, to)
+# retrievecloseorbit(from, to)
+# retrieveoptics(from, to)
+
 post_actions = (('saveLatticeType', savelatticetype),
                 ('saveLatticeInfo', savelatticeinfo),
                 ('updateLatticeInfo', updatelatticeinfo),
                 ('saveLattice', savelattice),
                 ('updateLattice', updatelattice),
-                ('saveGoldenLattice', savegoldenlattice),
+                ('saveLatticeStatus', savelatticestatus),
                 )
 get_actions = (('retrieveLatticeType', retrievelatticetype),
                ('retrieveLatticeInfo', retrievelatticeinfo),
                ('retrieveLattice', retrievelattice),
-               ('retrieveGoldenLattice', retrievegoldenlattice),
+               ('retrieveLatticeStatus', retrievelatticestatus),
                )
 
 def dispatch(params, actions):
