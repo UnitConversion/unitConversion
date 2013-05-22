@@ -284,7 +284,7 @@ def retrievelatticestatus(params):
         goldenlattice[res[9]]={'name': res[1],
                                'version': res[2],
                                'branch': res[3],
-                               'goldenStatus': res[8]}
+                               'status': res[8]}
         
     return goldenlattice
     

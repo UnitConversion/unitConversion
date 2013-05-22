@@ -55,8 +55,12 @@ def dispatch(params, actions):
     '''
     '''
     for p, f in actions:
-        if re.match(p, params['function']):
-            return f(params)
+        if len(p) > len(params['function']):
+            if re.match(p, params['function']):
+                return f(params)
+        else:
+            if re.match(params['function'], p):
+                return f(params)
 
 @require_http_methods(["GET", "POST"])
 def lattices(request):

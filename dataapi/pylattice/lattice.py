@@ -501,7 +501,7 @@ class lattice(object):
                     # check whether lattice body matches lattice header
                     if len(attrs) < len(cols)-1:
                         # the last kickmap column could be empty
-                        print attrs
+                        
                         raise ValueError("lattice property values is not complete.")
                     tmpdict = {}
                     typeprop = []
@@ -1476,8 +1476,9 @@ class lattice(object):
             version: lattice version
             branch:  lattice branch
             status:  0: current golden lattice
-                     1: alternative golden lattice
-                     2: previous golden lattice, but not any more
+                     1: current live lattice
+                     2: alternative golden lattice
+                     3: previous golden lattice, but not any more
                      other number can be defined by a user
             ignorestatus: get all golden lattice no matter whatever its status is.
         '''
@@ -1514,15 +1515,16 @@ class lattice(object):
     
     def savelatticestatus(self, name, version, branch, **params):
         '''
-        Set a lattice to a golden lattice
+        Save a lattice status
         Parameters:
             name:    lattice name
             version: lattice version
             branch:  lattice branch
             creator: who craeted it, or changed the status last time
             status:  0: current golden lattice [by default]
-                     1: alternative golden lattice
-                     2: previous golden lattice, but not any more
+                     1: current live lattice
+                     2: alternative golden lattice
+                     3: previous golden lattice, but not any more
                      other number can be defined by a user
         
         return: True if saving gold lattice successfully, otherwise, raise an exception
@@ -1534,6 +1536,7 @@ class lattice(object):
         if params.has_key('status'):
             status=params['status']
         _, lattices = self.retrievelatticeinfo(name, version, branch)
+
         if len(lattices) != 1:
             raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s), or more than one found."%(name, version, branch))
         for k, _ in lattices.iteritems():

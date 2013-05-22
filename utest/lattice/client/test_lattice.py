@@ -2014,8 +2014,6 @@ class TestLatticeStatus(unittest.TestCase):
 
         r = self.client.post(self.__url, data=payload)
         # should raise an exception since lattice does not exist yet.
-        print r.status_code
-        print r.text
         self.assertRaises(requests.exceptions.HTTPError, r.raise_for_status)
         self.assertEqual(r.status_code, 404, 'Expecting 404 status code, but got %s'%r.status_code)
         self.assertEqual(r.text, 
@@ -2074,8 +2072,8 @@ class TestLatticeStatus(unittest.TestCase):
                                  'Expecting lattice version (%s), but got (%s)'%(self.versions[i], v['version']))
                 self.assertEqual(self.branch[i], v[u'branch'], 
                                  'Expecting lattice branch (%s), but got (%s)'%(self.branch[i], v['branch']))
-                self.assertEqual(self.status[i], v[u'goldenStatus'], 
-                                 'Expecting golden lattice status (%s), but got (%s)'%(self.status[i], v['goldenStatus']))
+                self.assertEqual(self.status[i], v[u'status'], 
+                                 'Expecting lattice status (%s), but got (%s)'%(self.status[i], v['status']))
         
         # retrieve golden lattice according its status
         for i in range(len(self.name)):
@@ -2096,8 +2094,8 @@ class TestLatticeStatus(unittest.TestCase):
                                  'Expecting lattice version (%s), but got (%s)'%(self.versions[i], v['version']))
                 self.assertEqual(self.branch[i], v[u'branch'], 
                                  'Expecting lattice branch (%s), but got (%s)'%(self.branch[i], v['branch']))
-                self.assertEqual(self.status[i], v[u'goldenStatus'], 
-                                 'Expecting golden lattice status (%s), but got (%s)'%(self.status[i], v['goldenStatus']))
+                self.assertEqual(self.status[i], v[u'status'], 
+                                 'Expecting golden lattice status (%s), but got (%s)'%(self.status[i], v['status']))
         
         # wrong golden status, should get nothing
         params = {'function': 'retrieveLatticeStatus',
