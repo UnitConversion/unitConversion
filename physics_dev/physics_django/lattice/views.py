@@ -15,6 +15,11 @@ from dataprocess import savelatticeinfo, retrievelatticeinfo, updatelatticeinfo
 from dataprocess import savelattice, retrievelattice, updatelattice
 from dataprocess import savelatticestatus, retrievelatticestatus
 
+from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo
+from dataprocess import savegoldenmodel, retrievegoldenmodel
+from dataprocess import savemodel, updatemodel, retrievemodel, retrievemodellist
+from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrieveoptics
+
 def _retrievecmddict(httpcmd):
     '''
     Retrieve GET request parameters, lower all keys, and return parameter dictionary.
@@ -30,25 +35,32 @@ def _retrievecmddict(httpcmd):
             cmddict[k.lower()] = v
     return cmddict
 
-# savemodelcodeinfo, retrievemodelcodeinfo
-# savegoldenmodel, retrievegoldenmodel
-# savemode, updatemodel, retrievemodel
-# retrieve partial beam parameter information
-# retrievetransfermatrix(from, to)
-# retrievecloseorbit(from, to)
-# retrieveoptics(from, to)
 
 post_actions = (('saveLatticeType', savelatticetype),
                 ('saveLatticeInfo', savelatticeinfo),
                 ('updateLatticeInfo', updatelatticeinfo),
                 ('saveLattice', savelattice),
-                ('updateLattice', updatelattice),
+                ('updateLattice', updatelattice),                
                 ('saveLatticeStatus', savelatticestatus),
+
+                ('saveModelCodeInfo', savemodelcodeinfo),
+                ('saveGoldenModel', savegoldenmodel),
+                ('saveModel', savemodel),
+                ('updateModel', updatemodel),
                 )
 get_actions = (('retrieveLatticeType', retrievelatticetype),
                ('retrieveLatticeInfo', retrievelatticeinfo),
                ('retrieveLattice', retrievelattice),
                ('retrieveLatticeStatus', retrievelatticestatus),
+               
+               ('retrieveModelCodeInfo', retrievemodelcodeinfo),
+               ('retrieveGoldenModel', retrievegoldenmodel),
+               ('retrieveModel', retrievemodel),
+               ('retrieveModelList', retrievemodellist),
+               
+               ('retrieveTransferMatrix', retrievetransfermatrix),
+               ('retrieveClosedOrbit', retrieveclosedorbit),
+               ('retrieveOptics', retrieveoptics),
                )
 
 def dispatch(params, actions):

@@ -13,7 +13,7 @@ from pylattice.lattice import (lattice)
 from pylattice.model import (model)
 
 latinst = lattice(connection, transaction=transaction)
-modelinst = model(connection)
+modelinst = model(connection, transaction=transaction)
 
 def retrievelatticetype(params):
     '''
@@ -274,20 +274,278 @@ def retrievelatticestatus(params):
         status='*'
         ignorestatus=True
     
-#        select gold_lattice_id, lattice_name, lattice_version, lattice_branch, 
-#               gl.created_by, gl.create_date,
-#               gl.updated_by, gl.update_date,
-#               gl.gold_status_ind, gl.lattice_id
     result=latinst.retrievelatticestatus(name, version, branch, status=status, ignorestatus=ignorestatus)
-    goldenlattice={}
+    latticestatus={}
     for res in result:
-        goldenlattice[res[9]]={'name': res[1],
+        latticestatus[res[9]]={'name': res[1],
                                'version': res[2],
                                'branch': res[3],
                                'status': res[8]}
         
-    return goldenlattice
+    return latticestatus
     
+def savemodelcodeinfo(params):
+    ''''''
+    if params.has_key('name'):
+        name = params['name']
+    else:
+        name=None
+    if params.has_key('algorithm'):
+        algorithm = params['algorithm']
+    else:
+        algorithm=None
+    if name==None and algorithm==None:
+        raise ValueError("No sufficient information provided to retrieve a simulation info (simulation result and algorithm)")
+    result = modelinst.savemodelcodeinfo(name, algorithm)
+    return {'result': result}
+    
+def retrievemodelcodeinfo(params):
+    ''''''
+    if params.has_key('name'):
+        name = params['name']
+    else:
+        name=None
+    if params.has_key('algorithm'):
+        algorithm = params['algorithm']
+    else:
+        algorithm=None
+    if name==None and algorithm==None:
+        raise ValueError("No sufficient information provided to retrieve a simulation info (simulation result and algorithm)")
+    
+    result = modelinst.retrievemodelcodeinfo(name, algorithm)
+    resdict = {}
+    for res in result:
+        resdict[res[0]] = {'name': res[1], 'algorithm': res[2]}
+    
+    return resdict
+
+def savegoldenmodel(params):
+    ''''''
+    name = params['name']
+    status=params['status']
+    
+    result=modelinst.savegoldenmodel(name, status=status)
+    
+    return {'result':result}
+    
+def retrievegoldenmodel(params):
+    ''''''
+    name = params['name']
+    if params.has_key('status'):
+        status=params['status']
+        ignorestatus=False
+    else:
+        status='*'
+        ignorestatus=True
+
+    results=modelinst.retrievegoldenmodel(name, status=status, ignorestatus=ignorestatus)
+    result = {}
+    for res in results:
+        result[res[7]] = {'name': res[1],
+                          'status': res[6]
+                          }
+        if res[2] !=None:
+            result[res[7]]['creator'] = res[2]
+        if res[3] != None:
+            result[res[7]]['originalDate'] = res[3].isoformat()
+        if res[4] !=None:
+            result[res[7]]['updated'] = res[4]
+        if res[5] != None:
+            result[res[7]]['lastModified'] = res[5].isoformat()
+
+    print result
+
+def savemodel(params):
+    '''
+    Save a model.
+    parameters:
+        latticename:    lattice name that this model belongs to
+        latticeversion: the version of lattice
+        latticebranch:  the branch of lattice
+        modelname:      the name shows that which model this API will deal with
+        
+        model:          a dictionary which holds all data 
+            {'model name':                            # model name
+                           { # header information
+                            'description': ,          # description of this model
+                            'creator': ,              # name who create this model first time
+                            'updated': ,              # name who modified last time
+                            'tunex': ,                # horizontal tune
+                            'tuney': ,                # vertical tune
+                            'chromex0': ,             # linear horizontal chromaticity
+                            'chromex1': ,             # non-linear horizontal chromaticity
+                            'chromex2': ,             # high order non-linear horizontal chromaticity
+                            'chromey0': ,             # linear vertical chromaticity
+                            'chromey1': ,             # non-linear vertical chromaticity
+                            'chromey2': ,             # high order non-linear vertical chromaticity
+                            'finalEnergy': ,          # the final beam energy in GeV
+                            'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
+                            'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
+                                                      # and SI, or SI/PTC for Tracy code
+                            'simulationControl': ,    # various control constrains such as initial condition, beam distribution, 
+                                                      # and output controls
+                            'simulationControlFile':  # file name that control the simulation conditions, like a .ele file for elegant
+                            
+                            # simulation data
+                            'beamParameter':          # a dictionary consists of twiss, close orbit, transfer matrix and others
+                           }
+             ...
+            }
+    
+    '''
+    if params.has_key('latticeid'):
+        # ignore lattice name, version, and branch information
+        latticeid=params['latticeid']
+        latticename = None
+        latticeversion = None
+        latticebranch = None
+    else:
+        # no lattice provided. Have to use lattice name, version, and branch.
+        latticeid=None
+        latticename = params['latticename']
+        latticeversion = params['latticeversion']
+        latticebranch = params['latticebranch']
+    
+    if latticeid==None and (latticename==None or latticeversion==None or latticebranch==None):
+        raise ValueError("Cannot identify lattice that this model belongs to")
+    
+    if not params.has_key('model') or params['model'] == None:
+        raise ValueError ("Cannot find model information")
+    
+    models = params['model']
+    models = json.loads(models)
+    if not isinstance(models, dict):
+        raise TypeError("Model data parameter format error.")
+
+    if latticeid != None:
+        nbv = latinst._retrievelatticeinfobyid(latticeid)
+        if len(nbv) == 0:
+            raise ValueError('Cannot find lattice with id=%s'%lattice)
+        latticename = nbv[0]
+        latticeversion = nbv[1]
+        latticebranch = nbv[2]
+    
+    result = modelinst.savemodel(models, latticename, latticeversion, latticebranch)
+    return {'result': result}
+    
+def updatemodel(params):
+    ''''''
+    if params.has_key('latticeid'):
+        # ignore lattice name, version, and branch information
+        latticeid=params['latticeid']
+        latticename = None
+        latticeversion = None
+        latticebranch = None
+    else:
+        # no lattice provided. Have to use lattice name, version, and branch.
+        latticeid=None
+        latticename = params['latticename']
+        latticeversion = params['latticeversion']
+        latticebranch = params['latticebranch']
+    
+    if latticeid==None and (latticename==None or latticeversion==None or latticebranch==None):
+        raise ValueError("Cannot identify lattice that this model belongs to")
+    
+    if not params.has_key('model') or params['model'] == None:
+        raise ValueError ("Cannot find model information")
+    
+    models = params['model']
+    models = json.loads(models)
+    if not isinstance(models, dict):
+        raise TypeError("Model data parameter format error.")
+
+    if latticeid != None:
+        nbv = latinst._retrievelatticeinfobyid(latticeid)
+        if len(nbv) == 0:
+            raise ValueError('Cannot find lattice with id=%s'%lattice)
+        latticename = nbv[0]
+        latticeversion = nbv[1]
+        latticebranch = nbv[2]
+    
+    result = modelinst.updatemodel(models, latticename, latticeversion, latticebranch)
+    return {'result': result}
+
+def retrievemodel(params):
+    '''
+    Retrieve a model list that satisfies given constrains.
+    parameters:
+        name:    the name shows that which model this API will deal with
+        id:      the id shows that which model this API will deal with
+        
+    return: a dictionary
+            {'model name':                            # model name
+                           {'id': ,                   # model id number
+                            'latticeId': ,            # id of the lattice which given model belongs to
+                            'description': ,          # description of this model
+                            'creator': ,              # name who create this model first time
+                            'originalDate': ,         # date when this model was created
+                            'updated': ,              # name who modified last time
+                            'lastModified': ,         # the date this model was modified last time
+                            'tunex': ,                # horizontal tune
+                            'tuney': ,                # vertical tune
+                            'chromex0': ,             # linear horizontal chromaticity
+                            'chromex1': ,             # non-linear horizontal chromaticity
+                            'chromex2': ,             # high order non-linear horizontal chromaticity
+                            'chromey0': ,             # linear vertical chromaticity
+                            'chromey1': ,             # non-linear vertical chromaticity
+                            'chromey2': ,             # high order non-linear vertical chromaticity
+                            'finalEnergy': ,          # the final beam energy in GeV
+                            'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
+                            'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
+                                                      # and SI, or SI/PTC for Tracy code
+                            'simulationControl': ,    # various control constrains such as initial condition, beam distribution, 
+                                                      # and output controls
+                            'simulationControlFile':  # file name that control the simulation conditions, like a .ele file for elegant
+                           }
+             ...
+            }
+    '''
+    if params.has_key('name'):
+        name = params['name']
+    else:
+        name=None
+    if params.has_key('id'):
+        mid = params['id']
+    else:
+        mid=None
+    
+    result = modelinst.retrievemodel(name, mid)
+    return result
+
+def retrievemodellist(params):
+    '''
+    Retrieve all models info/list belong to a lattice
+    parameters:
+        latticename
+        latticebranch
+        latticeversion
+        
+    '''
+    latticename = params['latticename']
+    if params.has_key('latticebranch'):
+        latticebranch = params['latticebranch']
+    if params.has_key('latticeversion'):
+        latticeversion = params['latticeversion']
+    result = modelinst.retrievemodellist(latticename, latticebranch=latticebranch, latticeversion=latticeversion)
+    return result
+    
+def retrievetransfermatrix(params):
+    '''
+    from: 
+    to
+    ''' 
+    
+def retrieveclosedorbit(params):
+    '''
+    from: 
+    to
+    ''' 
+    
+def retrieveoptics(params):
+    '''
+    from: 
+    to
+    ''' 
     
     
     

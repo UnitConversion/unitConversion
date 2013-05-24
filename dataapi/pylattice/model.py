@@ -55,7 +55,7 @@ class model(object):
             cur.execute(sql, (codename, algorithm))
             modelcodeid = cur.lastrowid
             if self.transaction:
-                self.transaction.commit_unless_managed()
+                    self.transaction.commit_unless_managed()
             else:
                 self.conn.commit()
         except MySQLdb.Error as e:
@@ -87,24 +87,87 @@ class model(object):
         else:
             sql += 'code_name = %s '
         if algorithm:
-            if "*" in algorithm or "?" in algorithm:
+            if algorithm == "*":
+                pass
+            elif "*" in algorithm or "?" in algorithm:
                 sql += 'and algorithm like %s'
                 algorithm = _wildcardformat(algorithm)
             else:
                 sql += 'and algorithm = %s'
         else:
-            sql += ' and algorithm is %s'
+            sql += ' and algorithm is NULL'
         
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (codename, algorithm))
+            if algorithm==None or algorithm == "*":
+                cur.execute(sql, (codename,))
+            else:
+                cur.execute(sql, (codename, algorithm))
             res = cur.fetchall()
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
         return res
     
-    def retrievemodel(self, modelname, latticename=None, latticeversion=None, latticebranch=None):
+    def retrievemodellist(self, latticename, latticebranch=None, latticeversion=None):
+        '''
+        Retrieve a model list that satisfies given constrains.
+        parameters:
+            latticename:    lattice name that this model belongs to
+            latticeversion: the version of lattice
+            latticebranch:  the branch of lattice
+            
+        
+        return: a dictionary
+                {'model name':                            # model name
+                               {'id': ,                   # model id number
+                                'latticeId': ,            # id of the lattice which given model belongs to
+                                'description': ,          # description of this model
+                                'creator': ,              # name who create this model first time
+                                'originalDate': ,         # date when this model was created
+                                'updated': ,              # name who modified last time
+                                'lastModified': ,         # the date this model was modified last time
+                               }
+                 ...
+                }
+        '''
+        sql = '''
+        select model_id, lattice_id, 
+               model_name, model_desc, 
+               created_by, create_date,
+               updated_by, update_date,
+        from model
+        left join model_code on model_code.model_code_id = model.model_code_id
+        where
+        lattice_id = %s
+        '''
+        _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
+        resdict = {}
+        for latticeid, _ in lattices:
+            try:
+                cur = self.conn.cursor()
+                cur.execute(sql, (latticeid,))
+                results=cur.fetchall()
+                for res in results:
+                    resdict[res[2]] = {'id': res[0],
+                                       'latticeid': res[1],
+                                       }
+                    if res[3]!=None:
+                        resdict[res[2]]['description'] = res[3]
+                    if res[4]!=None:
+                        resdict[res[2]]['creator'] = res[4]
+                    if res[5]!=None:
+                        resdict[res[2]]['originalDate'] = res[5]
+                    if res[6]!=None:
+                        resdict[res[2]]['updated'] = res[6]
+                    if res[7]!=None:
+                        resdict[res[2]]['lastModified'] = res[7]
+            except MySQLdb.Error as e:
+                self.logger.info('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
+                raise Exception('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
+        return resdict
+    
+    def retrievemodel(self, modelname=None, modelid=None):
         '''
         Retrieve a model list that satisfies given constrains.
         parameters:
@@ -143,20 +206,8 @@ class model(object):
                  ...
                 }
         '''
-        if latticename == None:
-            latticename="%"
-        else:
-            latticename=_wildcardformat(latticename)
-        if latticeversion == None:
-            latticeversion="%"
-        else:
-            latticeversion=_wildcardformat(latticeversion)
-        if latticebranch == None:
-            latticebranch="%"
-        else:
-            latticebranch=_wildcardformat(latticebranch)
-
-        _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
+        if modelname==None and modelid==None:
+            raise ValueError("Cannot identify a model since neither name nor id is provided.")
         sql = '''
         select model_id, lattice_id, 
                model_name, model_desc, 
@@ -171,40 +222,53 @@ class model(object):
         from model
         left join model_code on model_code.model_code_id = model.model_code_id
         where
-        lattice_id = %s and
         '''
-        if "*" in modelname or "?" in modelname:
-            sql += ' model_name like %s'
+        vals=[]
+        if modelname !=None and modelid !=None:
+            if "*" in modelname or "?" in modelname:
+                sql += ' model_name like %s and model_id = %s'
+                vals.append(_wildcardformat(modelname))
+            else:
+                sql += ' model_name = %s and model_id = %s'
+                vals.append(modelname)
+            vals.append(modelid)
+        elif modelname !=None:
+            if "*" in modelname or "?" in modelname:
+                sql += ' model_name like %s'
+                vals.append(_wildcardformat(modelname))
+            else:
+                sql += ' model_name = %s'
+                vals.append(modelname)
         else:
-            sql += ' model_name = %s'
-        modelname = _wildcardformat(modelname)
+            sql += ' model_id = %s'
+            vals.append(modelid)
+        
+#        modelname = _wildcardformat(modelname)
         modelres = {}
-        for _, v in lattices.iteritems():
-            latticeid = v['id']
-            try:
-                cur=self.conn.cursor()
-                cur.execute(sql, (latticeid, modelname))
-                results = cur.fetchall()
-                for res in results:
-                    tempdict = {'id': res[0],
-                                'latticeId': res[1]}
-                    keys=['description', 'creator', 'originalDate',
-                          'updated', 'lastModified',
-                          'tunex', 'tuney',
-                          'chromex0', 'chromex1', 'chromex2',
-                          'chromey0', 'chromey1', 'chromey2',
-                          'finalEnergy', 
-                          'simulationCode', 'sumulationAlgorithm',
-                          'simulationControl', 'simulationControlFile'
-                          ]
-                    for i in range(3, len(res)):
-                        if res[i] != None:
-                            tempdict[keys[i-3]] = res[i]
-                    
-                    modelres[res[2]]=tempdict
-            except MySQLdb.Error as e:
-                self.logger.info('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
-                raise Exception('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, vals)
+            results = cur.fetchall()
+            for res in results:
+                tempdict = {'id': res[0],
+                            'latticeId': res[1]}
+                keys=['description', 'creator', 'originalDate',
+                      'updated', 'lastModified',
+                      'tunex', 'tuney',
+                      'chromex0', 'chromex1', 'chromex2',
+                      'chromey0', 'chromey1', 'chromey2',
+                      'finalEnergy', 
+                      'simulationCode', 'sumulationAlgorithm',
+                      'simulationControl', 'simulationControlFile'
+                      ]
+                for i in range(3, len(res)):
+                    if res[i] != None:
+                        tempdict[keys[i-3]] = res[i]
+                
+                modelres[res[2]]=tempdict
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
         return modelres
 
     def _elementslist2dict(self, elements):
@@ -460,6 +524,7 @@ class model(object):
         
         return: model id if success, otherwise raise a ValueError exception
         '''
+        modelids = []
         for modelname, modeldata in model.iteritems():
             # check whether a model exists already.
             results = self.retrievemodel(modelname, latticename=latticename, latticeversion=latticeversion, latticebranch=latticebranch)
@@ -543,7 +608,8 @@ class model(object):
                         self.conn.rollback()
                     self.logger.info('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
                     raise Exception('Error when saving a model:\n%s (%d)' %(e.args[1], e.args[0]))
-        return modelid
+            modelids.append(modelid)    
+        return modelids
 
     def updatemodel(self, model, latticename, latticeversion, latticebranch):
         '''
@@ -582,7 +648,7 @@ class model(object):
         Simulation info has to be provided and matches those inside the existing model.
         Otherwise, raise an exception.
         
-        return: model id if success, otherwise raise a ValueError exception
+        return: True if success, otherwise raise a ValueError exception
         '''
         for modelname, modeldata in model.iteritems():
             # check whether a model exists already.
@@ -692,7 +758,7 @@ class model(object):
         select gold_model_id, model_name, 
                gm.created_by, gm.create_date,
                gm.updated_by, gm.update_date,
-               gm.gold_status_ind
+               gm.gold_status_ind, gm.model_id
         from gold_model gm
         left join model on model.model_id = gm.model_id
         where

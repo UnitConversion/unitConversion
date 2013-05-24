@@ -332,6 +332,20 @@ class lattice(object):
     
         return True
         
+    def _retrievelatticeinfobyid(self, latticeid):
+        '''
+        Retrieve lattice information with given lattice id.
+        '''
+        sql = '''select lattice_name, lattice_version, lattice_branch from lattice where lattice_id = %s'''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, (latticeid,))
+            res=cur.fetchone()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
+        return res
+
     def retrievelatticetype(self, name, typeformat=None):
         '''
         Retrieve supported lattice type information.

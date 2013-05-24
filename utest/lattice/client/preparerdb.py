@@ -83,3 +83,23 @@ def truncatelattice():
     conn.cursor().execute(sql)
     conn.commit()
     conn.close()
+    
+def cleanmodelcode(codeinfo):
+    '''
+    '''
+    conn=connect()
+    if len(codeinfo) > 0:
+        cur = conn.cursor()
+        for col in codeinfo:
+            if col.has_key('algorithm') and col['algorithm']!=None:
+                sql = 'delete from model_code where code_name = %s and algorithm = %s'
+                cur.execute(sql, (col['name'], col['algorithm']))
+            else:
+                sql = 'delete from model_code where code_name = %s and algorithm is NULL'
+                cur.execute(sql, (col['name']))
+            
+        conn.commit()
+    conn.close()
+    
+    
+    
