@@ -33,7 +33,7 @@ class lattice(object):
         # use django transaction manager
         self.transaction = transaction
 
-    def retrievelatticeinfo(self, name, version=None, branch=None, description=None, latticetype=None):
+    def retrievelatticeinfo(self, name, version=None, branch=None, description=None, latticetype=None, creator=None):
         '''
         retrieve lattice header information. It gives lattice name, description, version, branch, 
         created info (by who & when), updated info (by who & when)
@@ -92,6 +92,12 @@ class lattice(object):
                 vals, sql = _assemblesql(sql, "*", "lattice_description", vals, connector="and")
             else:
                 vals, sql = _assemblesql(sql, description, "lattice_description", vals, connector="and")
+
+        if creator != None:
+            if isinstance(creator, (list, tuple)) and "" in creator:
+                vals, sql = _assemblesql(sql, "*", "created_by", vals, connector="and")
+            else:
+                vals, sql = _assemblesql(sql, creator, "created_by", vals, connector="and")
 
         if latticetype != None and isinstance(latticetype, dict):
             if latticetype.has_key('name'):
@@ -767,21 +773,21 @@ class lattice(object):
         '''
         # save field map files
         if len(fieldmaps) > 0:
-            try:
-                # create a sub directory to store field map
-                os.makedirs(url+"_map")
-            except OSError as exc:
-                if exc.errno == errno.EEXIST and os.path.isdir(url+"_map"):
-                    pass
-                else: 
-                    raise Exception("Can not create a sub directory to store map")
-            
             for mapname, mapvalue in fieldmaps.iteritems():
-                with file(url+'_map/'+mapname, 'w') as f:
+                dirname, _ = os.path.split(mapname)
+                try:
+                    # create a sub directory to store field map
+                    os.makedirs('/'.join((url+"_map",dirname)))
+                except OSError as exc:
+                    if exc.errno == errno.EEXIST and os.path.isdir('/'.join((url+"_map",dirname))):
+                        pass
+                    else: 
+                        raise Exception("Can not create a sub directory to store map")
+                with file('/'.join((url+"_map", mapname)), 'w') as f:
                     for data in mapvalue:
                         f.write(data)
 
-    def _savetracylattice(self, cur, latticeid, params):
+    def _savetracylattice(self, cur, latticeid, params, dosimulation=False):
         '''
         save real lattice data information
         
@@ -791,7 +797,8 @@ class lattice(object):
                      {'name': ,
                       'data': ,
                       'raw': ,
-                      'map': 
+                      'map': ,
+                      'alignment': 
                      }        
         '''
         if not isinstance(params, dict) or not params.has_key('name'):
@@ -819,11 +826,11 @@ class lattice(object):
             cur.execute(sql,(url,latticeid))
         
         #
-        if not params.has_key('data') or params['data']==None:
-            # no data to save.
-            # simply return.
-            return 
+        if params.has_key('data') and params['data']!=None:
+            # save lattice information
+            self._savetracylatticeelement(cur, latticeid, params)
         
+    def _savetracylatticeelement(self, cur, latticeid, params):
         # save element statement
         sql = '''
         insert into element
@@ -993,6 +1000,8 @@ class lattice(object):
         # save element type property value
         cur.execute(elempropsql[:-1])
         
+        return True
+        
     def _saveelegantlattice(self, cur, latticeid, params):
         '''
         '''
@@ -1020,12 +1029,13 @@ class lattice(object):
                           'raw': ,
                           'map': {'name': ,
                                   'value': },
+                          'alignment': ,
                          }
                          name: file name to be saved into disk, it is same with lattice name by default
                          data: lattice geometric and strength with predefined format
                          raw:  raw data that is same with data but in original lattice format
                          map:  name-value pair dictionary
-            dosimulation: Flag to identify whether to perform a simulation. False by default.
+                         alignment: mis-alignment information
         return: lattice id if success, otherwise, raise an exception
         '''
         
@@ -1042,6 +1052,10 @@ class lattice(object):
                 latticetypename=params['latticetype']["name"]
             except:
                 pass
+        if params.has_key('dosimulation'):
+            dosimulation = True
+        else:
+            dosimulation = False
         
         try:
             cur = self.conn.cursor()
@@ -1051,9 +1065,9 @@ class lattice(object):
                 if latticetypename == 'plain':
                     self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
-                    self._savetracylattice(cur, latticeid, params['lattice'])
+                    self._savetracylattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
                 elif latticetypename == 'elegant':
-                    self._saveelegantlattice(cur, latticeid, params['lattice'])
+                    self._saveelegantlattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
             if self.transaction:
@@ -1069,6 +1083,12 @@ class lattice(object):
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         
         return latticeid
+
+    def _checkelementbylatticeid(self, cursor, latticeid):
+        sql = '''select count(element_id) from element where lattice_id = %s'''
+        cursor.execute(sql, (latticeid))
+        res=cursor.fetchone()
+        return res
 
     def updatelattice(self, name, version, branch, **params):
         '''
@@ -1090,12 +1110,14 @@ class lattice(object):
                          {'name': ,
                           'data': ,
                           'map': {'name': 'value'},
-                          'raw': 
+                          'raw': ,
+                          'alignment': 
                          }
                          name: file name to be saved into disk, it is same with lattice name by default
                          data: lattice geometric and strength with predefined format
                          raw:  raw data that is same with data but in original lattice format
                          map:  name-value pair dictionary
+                         alignment: mis-alignment information
             dosimulation: Flag to identify whether to perform a simulation. False by default.
             
         return: True if success, otherwise, raise an exception
@@ -1117,9 +1139,8 @@ class lattice(object):
             res=cur.fetchone()
             if res[0] > 0:
                 raise ValueError("Lattice file exists already. Give up.")
-            sql = '''select count(element_id) from element where lattice_id = %s'''
-            cur.execute(sql, (latticeid))
-            res=cur.fetchone()
+
+            self._checkelementbylatticeid(cur, latticeid)
             if res[0] > 0:
                 raise ValueError("Lattice geometric and strength is there already. Give up.")
         except MySQLdb.Error as e:
@@ -1136,6 +1157,10 @@ class lattice(object):
                 latticetypename=params['latticetype']["name"]
             except:
                 pass
+        if params.has_key('dosimulation'):
+            dosimulation=True
+        else:
+            dosimulation=False
         try:
             cur = self.conn.cursor()
             if params.has_key('lattice') and params['lattice'] != None:
@@ -1143,9 +1168,9 @@ class lattice(object):
                 if latticetypename == 'plain':
                     latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
-                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
+                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
                 elif latticetypename == 'elegant':
-                    latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
+                    latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
             if self.transaction:
@@ -1161,7 +1186,7 @@ class lattice(object):
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         return True
 
-    def retrievelattice(self, name, version, branch, description=None, latticetype=None, withdata=False, rawdata=False):
+    def retrievelattice(self, name, version, branch, description=None, creator=None, latticetype=None, withdata=False, rawdata=False):
         '''
         Retrieve lattice geometric layout with magnetic strength. All information are provided here, 
         which is able to construct a desired lattice deck.
@@ -1198,7 +1223,7 @@ class lattice(object):
                     } 
              }
         '''
-        urls, lattices = self.retrievelatticeinfo(name, version, branch, description=description, latticetype=latticetype)
+        urls, lattices = self.retrievelatticeinfo(name, version, branch, description=description, latticetype=latticetype, creator=creator)
         if len(lattices) == 0:
             return {}
 

@@ -9,8 +9,12 @@ try:
 except ImportError:
     import json
 
+import datetime
+
 from pylattice.lattice import (lattice)
 from pylattice.model import (model)
+
+from pylattice import (runtracy, runelegant)
 
 latinst = lattice(connection, transaction=transaction)
 modelinst = model(connection, transaction=transaction)
@@ -98,7 +102,13 @@ def retrievelatticeinfo(params):
     else:
         branch = None
 
-    urls, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch)
+    if params.has_key('creator'):
+        creator = params['creator']
+        
+    if params.has_key('description'):
+        description = params['description']
+    
+    urls, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
     for k, v in lattices.iteritems():
         if urls[k] != None:
             v['url'] = urls[k]
@@ -147,12 +157,17 @@ def savelattice(params):
         lattice:     lattice data, a dictionary:
                      {'name': ,
                       'data': ,
+                      'raw': ,
                       'map': {'name': 'value'},
+                      'alignment': ,
                      }
                      name: file name to be saved into disk, it is same with lattice name by default
                      data: lattice geometric and strength with predefined format
                      raw:  raw data that is same with data but in original lattice format
                      map:  name-value pair dictionary
+                     alignment: mis-alignment information
+        dosimulation: Flag to identify whether to perform a simulation. False by default.
+        
     '''
     name=params['name']
     version=params['version']
@@ -174,15 +189,38 @@ def savelattice(params):
     else:
         description = None
     if params.has_key('lattice'):
-        lattice = params['lattice']
-        lattice = json.loads(lattice)
-        if not isinstance(lattice, dict):
+        latticedata = params['lattice']
+        latticedata = json.loads(latticedata)
+        if not isinstance(latticedata, dict):
             raise TypeError("Lattice type data parameter format error.")
     else:
-        lattice = None
+        latticedata = None
     
+    # check whether do simulation here or not.
+    modeldata=None
+    if params.has_key('dosimulation') and latticetype != None and latticedata!=None:
+        if latticedata.has_key('data') and latticedata['data'] !=None:
+            flattenlat=False
+        else:
+            flattenlat=True
+        if latticetype['name'].lower() in ['tracy3', 'tracy4']:
+            flattenlatdict, modeldata = runtracy(latticedata, tracy=latticetype['name'].lower(), flattenlat=flattenlat)
+            if flattenlat:
+                latticedata['data'] = flattenlatdict
+        elif latticetype['name'].lower() in ['elegant']:
+            modeldata = runelegant(latticedata, flattenlat=flattenlat)
+    
+    # save lattice
     result = latinst.savelattice(name, version, branch, creator=creator, description=description, 
-                        latticetype=latticetype, lattice=lattice)
+                                 latticetype=latticetype, lattice=latticedata)
+    
+    # save simulation result if there is one
+    if modeldata:
+        modeldata['description'] = 'automatic simulation result performed by server on %s'%(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %p"))
+        modelname = 'default model for %s (branch %s, version %s)'%(name, branch, version)
+        modeldata['creator'] = 'lattice/model service'
+        modelinst.savemodel({modelname:modeldata}, name, version, branch)
+    
     return {'id': result}
 
 def updatelattice(params):
@@ -208,15 +246,51 @@ def updatelattice(params):
     else:
         description = None
     if params.has_key('lattice'):
-        lattice = params['lattice']
-        lattice = json.loads(lattice)
-        if not isinstance(lattice, dict):
+        latticedata = params['lattice']
+        latticedata = json.loads(latticedata)
+        if not isinstance(latticedata, dict):
             raise TypeError("Lattice type data parameter format error.")
     else:
-        lattice = None
+        latticedata = None
     
+    latticeids = latinst.retrievelattice(name, version, branch)
+    if len(latticeids) != 1:
+        raise RuntimeError("More than one lattice found when updating lattice for %s (branch %s, version %s)"
+                           %(name, branch, version))
+    else:
+        latticeid = latticeids.keys()[0]
+    
+    # check whether element has been there
+    # do not do simulation 
+    res = latinst._checkelementbylatticeid(connection.cursor(), latticeid)
+    modelname = 'default model for %s (branch %s, version %s)'%(name, branch, version)
+    modelres = modelinst.retrievemodel(modelname=modelname)
+    
+    modeldata=None
+    if len(modelres) == 0:
+        # check whether do simulation here or not.
+        if params.has_key('dosimulation') and latticetype != None and latticedata!=None:
+            if latticedata.has_key('data') and latticedata['data'] !=None:
+                flattenlat=False
+            else:
+                flattenlat=True
+            if latticetype['name'].lower() in ['tracy3', 'tracy4']:
+                flattenlatdict, modeldata = runtracy(latticedata, tracy=latticetype['name'].lower(), flattenlat=flattenlat)
+                if flattenlat and res[0] == 0:
+                    latticedata['data'] = flattenlatdict
+            elif latticetype['name'].lower() in ['elegant']:
+                modeldata = runelegant(latticedata, flattenlat=flattenlat)
+    
+    # update lattice
     result = latinst.updatelattice(name, version, branch, creator=creator, description=description, 
-                                   latticetype=latticetype, lattice=lattice)
+                                   latticetype=latticetype, lattice=latticedata)
+    
+    # save simulation result if there is one
+    if modeldata:
+        modeldata['description'] = 'automatic simulation result performed by server on %s'%(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %p"))
+        modeldata['creator'] = 'lattice/model service'
+        modelinst.savemodel({modelname:modeldata}, name, version, branch)
+
     return {'result': result}
     
 def retrievelattice(params):
@@ -229,6 +303,11 @@ def retrievelattice(params):
         description = params['description']
     else:
         description = None
+    if params.has_key('creator'):
+        creator = params['creator']
+    else:
+        creator = None
+    
     if params.has_key('latticetype'):
         latticetype = params['latticetype']
         latticetype = json.loads(latticetype)
@@ -245,7 +324,8 @@ def retrievelattice(params):
     else:
         rawdata = False  
         
-    result = latinst.retrievelattice(name, version, branch, description=description, latticetype=latticetype, withdata=withdata, rawdata=rawdata)
+    result = latinst.retrievelattice(name, version, branch, description=description, creator=creator,
+                                     latticetype=latticetype, withdata=withdata, rawdata=rawdata)
     
     return result
 
@@ -353,7 +433,8 @@ def retrievegoldenmodel(params):
         if res[5] != None:
             result[res[7]]['lastModified'] = res[5].isoformat()
 
-    print result
+    #return {'result': result}
+    return result
 
 def savemodel(params):
     '''
@@ -531,21 +612,35 @@ def retrievemodellist(params):
     
 def retrievetransfermatrix(params):
     '''
-    from: 
-    to
+    name:  model name
+    from:  starting position
+    to:    end position
     ''' 
+    return modelinst.retrievetransfermatrix(params)
     
 def retrieveclosedorbit(params):
     '''
-    from: 
-    to
+    name:  model name
+    from:  starting position
+    to:    end position
     ''' 
+    return modelinst.retrieveclosedorbit(params)
     
-def retrieveoptics(params):
+def retrievetwiss(params):
     '''
-    from: 
-    to
+    name:  model name
+    from:  starting position
+    to:    end position
     ''' 
+    return modelinst.retrievetwiss(params)
+    
+def retrievebeamparameters(params):
+    '''
+    name:  model name
+    from:  starting position
+    to:    end position
+    ''' 
+    return modelinst.retrievebeamparameters(params)
     
     
     

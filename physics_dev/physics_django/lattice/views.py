@@ -18,7 +18,7 @@ from dataprocess import savelatticestatus, retrievelatticestatus
 from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo
 from dataprocess import savegoldenmodel, retrievegoldenmodel
 from dataprocess import savemodel, updatemodel, retrievemodel, retrievemodellist
-from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrieveoptics
+from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwiss, retrievebeamparameters
 
 def _retrievecmddict(httpcmd):
     '''
@@ -60,7 +60,8 @@ get_actions = (('retrieveLatticeType', retrievelatticetype),
                
                ('retrieveTransferMatrix', retrievetransfermatrix),
                ('retrieveClosedOrbit', retrieveclosedorbit),
-               ('retrieveOptics', retrieveoptics),
+               ('retrieveTwiss', retrievetwiss),
+               ('retrieveBeamParameters', retrievebeamparameters),
                )
 
 def dispatch(params, actions):
@@ -101,6 +102,8 @@ def lattices(request):
     except ValueError as e:
         return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
     except KeyError as e:
+        import traceback
+        print traceback.print_exc()
         return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
     except Exception as e:
         return HttpResponseBadRequest(content=e, mimetype="application/json")

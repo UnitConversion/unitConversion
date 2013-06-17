@@ -7,6 +7,11 @@ Created on Apr 15, 2013
 import logging
 import MySQLdb
 
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
+
 from .lattice import lattice
 
 from utils import _wildcardformat
@@ -169,7 +174,7 @@ class model(object):
     
     def retrievemodel(self, modelname=None, modelid=None):
         '''
-        Retrieve a model list that satisfies given constrains.
+        Retrieve a model list with global parameters such as tune & chromaticity that satisfies given constrains.
         parameters:
             modelname:      the name shows that which model this API will deal with
             
@@ -293,8 +298,8 @@ class model(object):
                   'etapy': ,
                   'phasex': ,
                   'phasey': ,
-                  'cox': ,
-                  'coy': ,
+                  'codx': ,
+                  'cody': ,
                   'transferMatrix': ,
                   'indexSliceCheck': ,
                   's': ,
@@ -322,7 +327,8 @@ class model(object):
         elements = self.lat._retrieveelementbylatticeid(latticeid, cursor)
         elementinfo = self._elementslist2dict(elements)
 
-        sql = '''insert into beam_parameter
+        #sql = '''insert into beam_parameter
+        sqlhead = '''insert into beam_parameter
         (model_id, element_id, 
         pos, 
         alpha_x, alpha_y, 
@@ -358,11 +364,12 @@ class model(object):
                 if elementname.upper() != bpval['name'].upper() and bpkey != 0:
                     raise ValueError('Element name (%s) does not match that in lattice (%s).'
                                      %(bpval['name'], elementname))
-                sql += '(%s, %s, '%(modelid, elementid)
-                
+                sql = sqlhead + '(%s, %s, '
+                sqlval = [modelid, elementid]
+                #sql += '(%s, %s, '%(modelid, elementid)
                 for key in ['position', 
                             'alphax', 'alphay', 'betax', 'betay', 'etax', 'etay', 'etapx', 'etapy', 'phasex', 'phasey',
-                            'cox', 'coy',
+                            'codx', 'cody',
                             'indexSliceCheck',
                             's',
                             'energy',
@@ -375,13 +382,21 @@ class model(object):
                             'emittancex', 'emittancey', 'emittancexz',
                             'transferMatrix']:
                     if bpval.has_key(key):
-                        sql += '%s, '%(bpval[key])
+                        sql += '%s, '
+                        if key == 'transferMatrix':
+                            #sql += '"%s", '%(json.dumps(bpval[key]))
+                            sqlval.append(json.dumps(bpval[key]))
+                        else:
+                            #sql += '%s, '%(bpval[key])
+                            sqlval.append(bpval[key])
                     else:
                         sql += 'NULL, '
-                sql= sql[:-2]+'),'
+                #sql= sql[:-2]+'),'
+                sql= sql[:-2]+')'
+                cursor.execute(sql, sqlval)
             else:
                 raise ValueError('elements in lattice do not match that in model')
-        cursor.execute(sql[:-1])
+        #cursor.execute(sql[:-1])
 
     def _updatebeamparameters(self, cursor, latticeid, modelid, beamparameter):
         '''
@@ -490,6 +505,7 @@ class model(object):
             latticeversion: the version of lattice
             latticebranch:  the branch of lattice
             modelname:      the name shows that which model this API will deal with
+            description:    description for this model
             
             model:          a dictionary which holds all data 
                 {'model name':                            # model name
@@ -527,7 +543,7 @@ class model(object):
         modelids = []
         for modelname, modeldata in model.iteritems():
             # check whether a model exists already.
-            results = self.retrievemodel(modelname, latticename=latticename, latticeversion=latticeversion, latticebranch=latticebranch)
+            results = self.retrievemodel(modelname=modelname)
             if len(results) != 0:
                 raise ValueError('Model (%s) for given lattice (name: %s, version: %s, branch: %s) exists already.'
                                  %(modelname, latticename, latticeversion, latticebranch))
@@ -570,12 +586,12 @@ class model(object):
                 keys = {'description': 'model_desc',
                         'tunex': 'tune_x',
                         'tuney': 'tune_y',
-                        'chromex0': 'chromme_x_0',
-                        'chromex1': 'chromme_x_1',
-                        'chromex2': 'chromme_x_2',
-                        'chromey0': 'chromme_y_0',
-                        'chromey1': 'chromme_y_1',
-                        'chromey2': 'chromme_y_2',
+                        'chromex0': 'chrome_x_0',
+                        'chromex1': 'chrome_x_1',
+                        'chromex2': 'chrome_x_2',
+                        'chromey0': 'chrome_y_0',
+                        'chromey1': 'chrome_y_1',
+                        'chromey2': 'chrome_y_2',
                         'finalEnergy': 'final_beam_energy',
                         'simulationControl': 'model_control',
                         'simulationControlFile': 'model_control_url',
@@ -867,58 +883,546 @@ class model(object):
 
         return True
     
-    def retrievebeamparameters(self):
+    def retrieveclosedorbit(self, params):
         '''
-        '''
+        Retrieve closed orbit that satisfies given constrains.
+        parameters:
+            modelname:   the name shows that which model this API will deal with
+            from:        s position of starting element, default 0
+            to:          s position of ending element, default the max of element in a lattice
         
-    def savebeamparameters(self):
+        return: a dictionary
+                {'model name':  # model name
+                    {
+                        'name': [element name],
+                        'index': [element index],
+                        'position': [s position],
+                        'codx': [codx],
+                        'cody': [cody]
+                    }
+                 ...
+                }
         '''
+        if params.has_key('modelname'):
+            name=params['modelname']
+        else:
+            raise TypeError('Not model name specified.')
+        if params.has_key('from'):
+            start = float(str(params['from']))
+        else:
+            start = None
+        if params.has_key('to'):
+            end = float(str(params['to']))
+        else:
+            end = None
+        
+        sql = '''
+        select model.model_id, model_name, element_name, element_order, bp.pos, element.s, co_x, co_y
+        from model
+        left join lattice on lattice.lattice_id = model.lattice_id
+        left join element on element.lattice_id = lattice.lattice_id
+        left join beam_parameter bp on bp.element_id = element.element_id
+        where model_name
         '''
-    
-    def retrievecloseorbit(self):
-        '''
-        '''
+        sqlvals = []
+        if "*" in name or "%" in name:
+            name = _wildcardformat(name)
+            sql += " like %s "
+        else:
+            sql += " = %s "
+        sqlvals.append(name)
+        if start != None and end != None:
+            sql += ' and element.s between %s and %s '
+            sqlvals.append(start)
+            sqlvals.append(end)
+        elif start != None:
+            sql += ' and element.s >= %s '
+            sqlvals.append(start)
+        elif end != None:
+            sql += ' and element.s <= %s '
+            sqlvals.append(end)
 
-    def savecloseorbit(self):
-        '''
-        '''
-    
-    def retrievetransfermatrix(self):
-        '''
-        '''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, sqlvals)
+            results = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving closed orbit:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving closed orbit:\n%s (%d)'
+                             %(e.args[1], e.args[0]))
+        resdict = {}
+        if len(results) != 0:
+            modelid = results[0][0]
+            modelname = results[0][1]
+            ename = []
+            order = []
+            pos = []
+            codx = []
+            cody = []
+            for res in results:
+                if modelid == res[0] and modelname == res[1]:
+                    ename.append(res[2])
+                    order.append(res[3])
+                    pos.append(res[4])
+                    codx.append(res[6])
+                    cody.append(res[7])
+                else:
+                    # when retrieving 
+                    resdict[modelname] = {'name': ename,
+                                          'index': order,
+                                          'position': pos,
+                                          'codx': codx,
+                                          'cody': cody}
+                    modelid = results[0][0]
+                    modelname = results[0][1]
+                    ename = []
+                    order = []
+                    pos = []
+                    codx = []
+                    cody = []
+                # save last value
+                resdict[modelname] = {'name': ename,
+                                      'order': order,
+                                      'position': pos,
+                                      'codx': codx,
+                                      'cody': cody}
 
-    def savetransfermatrix(self):
+        return resdict
+        
+    def retrievetransfermatrix(self, params):
         '''
+        Retrieve transfer matrix that satisfies given constrains.
+        parameters:
+            modelname:   the name shows that which model this API will deal with
+            from:        index of starting element
+            to:          index of ending element
+        
+        return: a dictionary
+                {'model name':  # model name
+                    {
+                        'name': [element name],
+                        'index': [element index],
+                        'position': [s position],
+                        'transferMatrix':[[transfer matrix],],
+                    }
+                 ...
+                }
         '''
-    
-    def retrievetwiss(self):
+        if params.has_key('modelname'):
+            name=params['modelname']
+        else:
+            raise TypeError('Not model name specified.')
+        if params.has_key('from'):
+            start = float(str(params['from']))
+        else:
+            start = None
+        if params.has_key('to'):
+            end = float(str(params['to']))
+        else:
+            end = None
+        
+        sql = '''
+        select model.model_id, model_name, element_name, element_order, bp.pos, element.s, transfer_matrix
+        from model
+        left join lattice on lattice.lattice_id = model.lattice_id
+        left join element on element.lattice_id = lattice.lattice_id
+        left join beam_parameter bp on bp.element_id = element.element_id
+        where model_name
         '''
-        '''
+        sqlvals = []
+        if "*" in name or "%" in name:
+            name = _wildcardformat(name)
+            sql += " like %s "
+        else:
+            sql += " = %s "
+        sqlvals.append(name)
+        if start != None and end != None:
+            sql += ' and element.s between %s and %s '
+            sqlvals.append(start)
+            sqlvals.append(end)
+        elif start != None:
+            sql += ' and element.s >= %s '
+            sqlvals.append(start)
+        elif end != None:
+            sql += ' and element.s <= %s '
+            sqlvals.append(end)
 
-    def savetwiss(self):
-        '''
-        '''
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, sqlvals)
+            results = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving closed orbit:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving closed orbit:\n%s (%d)'
+                             %(e.args[1], e.args[0]))
+        resdict = {}
+        if len(results) != 0:
+            modelid = results[0][0]
+            modelname = results[0][1]
+            ename = []
+            order = []
+            pos = []
+            tmat = []
+            for res in results:
+                if modelid == res[0] and modelname == res[1]:
+                    ename.append(res[2])
+                    order.append(res[3])
+                    pos.append(res[4])
+                    tmat.append(json.loads(res[6]))
+                else:
+                    # when retrieving 
+                    resdict[modelname] = {'name': ename,
+                                          'index': order,
+                                          'position': pos,
+                                          'transferMatrix': tmat}
+                    modelid = results[0][0]
+                    modelname = results[0][1]
+                    ename = []
+                    order = []
+                    pos = []
+                    tmat = []
+                # save last value
+                resdict[modelname] = {'name': ename,
+                                      'order': order,
+                                      'position': pos,
+                                      'transferMatrix': tmat}
+
+        return resdict
     
+    def retrievetwiss(self, params):
+        '''
+        Retrieve twiss parameters that satisfies given constrains.
+        parameters:
+            modelname:   the name shows that which model this API will deal with
+            from:        index of starting element
+            to:          index of ending element
+        
+        return: a dictionary
+                {'model name':  # model name
+                    {
+                        'name': [element name],
+                        'index': [element index],
+                        'position': [s position],
+                        'alphax': [],
+                        'alphay': [],
+                        'betax':  [],
+                        'betay':  [],
+                        'etax':   [],
+                        'etay':   [],
+                        'etapx':  [],
+                        'etapy':  [],
+                        'phasex': [],
+                        'phasey': [],
+                    }
+                 ...
+                }
+        '''
+        if params.has_key('modelname'):
+            name=params['modelname']
+        else:
+            raise TypeError('Not model name specified.')
+        if params.has_key('from'):
+            start = float(str(params['from']))
+        else:
+            start = None
+        if params.has_key('to'):
+            end = float(str(params['to']))
+        else:
+            end = None
+        
+        sql = '''
+        select model.model_id, model_name, element_name, element_order, bp.pos, element.s, 
+        alpha_x, alpha_y, beta_x, beta_y, eta_x, eta_y, etap_x, etap_y, nu_x, nu_y
+        from model
+        left join lattice on lattice.lattice_id = model.lattice_id
+        left join element on element.lattice_id = lattice.lattice_id
+        left join beam_parameter bp on bp.element_id = element.element_id
+        where model_name
+        '''
+        sqlvals = []
+        if "*" in name or "%" in name:
+            name = _wildcardformat(name)
+            sql += " like %s "
+        else:
+            sql += " = %s "
+        sqlvals.append(name)
+        if start != None and end != None:
+            sql += ' and element.s between %s and %s '
+            sqlvals.append(start)
+            sqlvals.append(end)
+        elif start != None:
+            sql += ' and element.s >= %s '
+            sqlvals.append(start)
+        elif end != None:
+            sql += ' and element.s <= %s '
+            sqlvals.append(end)
+
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, sqlvals)
+            results = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving closed orbit:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving closed orbit:\n%s (%d)'
+                             %(e.args[1], e.args[0]))
+        resdict = {}
+        if len(results) != 0:
+            modelid = results[0][0]
+            modelname = results[0][1]
+            ename = []
+            order = []
+            pos = []
+            alphax = []
+            alphay = []
+            betax = []
+            betay = []
+            etax = []
+            etay = []
+            etapx = []
+            etapy = []
+            nux=[]
+            nuy=[]
+            for res in results:
+                if modelid == res[0] and modelname == res[1]:
+                    ename.append(res[2])
+                    order.append(res[3])
+                    pos.append(res[4])
+                    alphax.append(res[6])
+                    alphay.append(res[7])
+                    betax.append(res[8])
+                    betay.append(res[9])
+                    etax.append(res[10])
+                    etay.append(res[11])
+                    etapx.append(res[12])
+                    etapy.append(res[13])
+                    nux.append(res[14])
+                    nuy.append(res[15])
+                else:
+                    # when retrieving 
+                    resdict[modelname] = {'name': ename,
+                                          'index': order,
+                                          'position': pos,
+                                          'alphax': alphax,
+                                          'alphay': alphay,
+                                          'betax':  betax,
+                                          'betay':  betay,
+                                          'etax':   etax,
+                                          'etay':   etay,
+                                          'etapx':  etapx,
+                                          'etapy':  etapy,
+                                          'phasex': nux,
+                                          'phasey': nuy}
+                    modelid = results[0][0]
+                    modelname = results[0][1]
+                    alphax = []
+                    alphay = []
+                    betax = []
+                    betay = []
+                    etax = []
+                    etay = []
+                    etapx = []
+                    etapy = []
+                    nux=[]
+                    nuy=[]
+                # save last value
+                resdict[modelname] = {'name': ename,
+                                      'index': order,
+                                      'position': pos,
+                                      'alphax': alphax,
+                                      'alphay': alphay,
+                                      'betax':  betax,
+                                      'betay':  betay,
+                                      'etax':   etax,
+                                      'etay':   etay,
+                                      'etapx':  etapx,
+                                      'etapy':  etapy,
+                                      'phasex': nux,
+                                      'phasey': nuy}
+
+        return resdict
+    
+    def retrievebeamparameters(self, params):
+        '''
+        Retrieve all beam parameters of each element that satisfies given constrains.
+        parameters:
+            modelname:   the name shows that which model this API will deal with
+            from:        index of starting element
+            to:          index of ending element
+        
+        return: a dictionary
+                {'model name':  # model name
+                    {
+                        'name': [element name],
+                        'index': [element index],
+                        'position': [s position],
+                        'alphax': [],
+                        'alphay': [],
+                        'betax':  [],
+                        'betax':  [],
+                        'etax':   [],
+                        'etay':   [],
+                        'etapx':  [],
+                        'etapy':  [],
+                        'phasex': [],
+                        'phasey': [],
+                        'codx',   [],
+                        'cody',   [],
+                        'transferMatrix':[[transfer matrix],],
+                    }
+                 ...
+                }
+        '''
+        if params.has_key('modelname'):
+            name=params['modelname']
+        else:
+            raise TypeError('Not model name specified.')
+        if params.has_key('from'):
+            start = float(str(params['from']))
+        else:
+            start = None
+        if params.has_key('to'):
+            end = float(str(params['to']))
+        else:
+            end = None
+        
+        sql = '''
+        select model.model_id, model_name, element_name, element_order, bp.pos, element.s, 
+        alpha_x, alpha_y, beta_x, beta_y, eta_x, eta_y, etap_x, etap_y, nu_x, nu_y,
+        co_x, co_y, 
+        transfer_matrix
+        from model
+        left join lattice on lattice.lattice_id = model.lattice_id
+        left join element on element.lattice_id = lattice.lattice_id
+        left join beam_parameter bp on bp.element_id = element.element_id
+        where model_name
+        '''
+        sqlvals = []
+        if "*" in name or "%" in name:
+            name = _wildcardformat(name)
+            sql += " like %s "
+        else:
+            sql += " = %s "
+        sqlvals.append(name)
+        if start != None and end != None:
+            sql += ' and element.s between %s and %s '
+            sqlvals.append(start)
+            sqlvals.append(end)
+        elif start != None:
+            sql += ' and element.s >= %s '
+            sqlvals.append(start)
+        elif end != None:
+            sql += ' and element.s <= %s '
+            sqlvals.append(end)
+
+        try:
+            cur=self.conn.cursor()
+            cur.execute(sql, sqlvals)
+            results = cur.fetchall()
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving closed orbit:\n%s (%d)' 
+                             %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving closed orbit:\n%s (%d)'
+                             %(e.args[1], e.args[0]))
+        resdict = {}
+        if len(results) != 0:
+            modelid = results[0][0]
+            modelname = results[0][1]
+            ename = []
+            order = []
+            pos = []
+            alphax = []
+            alphay = []
+            betax = []
+            betay = []
+            etax = []
+            etay = []
+            etapx = []
+            etapy = []
+            nux=[]
+            nuy=[]
+            codx=[]
+            cody=[]
+            tmat = []
+            for res in results:
+                if modelid == res[0] and modelname == res[1]:
+                    ename.append(res[2])
+                    order.append(res[3])
+                    pos.append(res[4])
+                    alphax.append(res[6])
+                    alphay.append(res[7])
+                    betax.append(res[8])
+                    betay.append(res[9])
+                    etax.append(res[10])
+                    etay.append(res[11])
+                    etapx.append(res[12])
+                    etapy.append(res[13])
+                    nux.append(res[14])
+                    nuy.append(res[15])
+                    codx.append(res[16])
+                    cody.append(res[17])
+                    tmat.append(json.loads(res[18]))
+                else:
+                    # when retrieving 
+                    resdict[modelname] = {'name': ename,
+                                          'index': order,
+                                          'position': pos,
+                                          'alphax': alphax,
+                                          'alphay': alphay,
+                                          'betax':  betax,
+                                          'betay':  betay,
+                                          'etax':   etax,
+                                          'etay':   etay,
+                                          'etapx':  etapx,
+                                          'etapy':  etapy,
+                                          'phasex': nux,
+                                          'phasey': nuy,
+                                          'codx': codx,
+                                          'cody': cody,
+                                          'transferMatrix': tmat}
+                    modelid = results[0][0]
+                    modelname = results[0][1]
+                    alphax = []
+                    alphay = []
+                    betax = []
+                    betay = []
+                    etax = []
+                    etay = []
+                    etapx = []
+                    etapy = []
+                    nux=[]
+                    nuy=[]
+                    codx=[]
+                    cody=[]
+                    tmat = []
+                # save last value
+                resdict[modelname] = {'name': ename,
+                                      'index': order,
+                                      'position': pos,
+                                      'alphax': alphax,
+                                      'alphay': alphay,
+                                      'betax':  betax,
+                                      'betay':  betay,
+                                      'etax':   etax,
+                                      'etay':   etay,
+                                      'etapx':  etapx,
+                                      'etapy':  etapy,
+                                      'phasex': nux,
+                                      'phasey': nuy,
+                                      'codx': codx,
+                                      'cody': cody,
+                                      'transferMatrix': tmat}
+
+        return resdict
     def retrieveemittance(self):
         '''
         '''
 
-    def saveemittance(self):
-        '''
-        '''
-        
-    def savebeamcoordinate(self):
-        '''
-        '''
-        
     def retrievebeamcoordinate(self):
         '''
         '''
-
-    def updatebeamcoordinate(self):
-        '''
-        '''
-        
     
     
     
