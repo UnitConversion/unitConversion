@@ -3,7 +3,7 @@ Created on Mar 19, 2013
 
 @author: shengb
 '''
-
+import os
 from collections import OrderedDict
 
 import MySQLdb
@@ -85,19 +85,30 @@ def preparetracy3lattice(latfile, twissfile):
     with file(latfile,'r') as f:
         templine = ''
         rawlatticedata = f.readlines()
+        end=False
+        committedline = False
         for line in rawlatticedata:
-            if not line.startswith('{') and ':' in line:
+            if line.strip().startswith('{'):
+                committedline = True
+            if line.strip().endswith('}'):
+                committedline = False
+                line = ''
+            if not committedline and line.strip()!='':
                 if ';' in line:
                     templine += line
-                    templine = ''
                     end=True
                 else:
-                    templine = line
+                    templine += line[:-1]
+                    #print templine
                     end=False
                 if end:
-                    lineparts = line.strip()[:-1].split(':')
-                    latdict[lineparts[0]] = lineparts[1]
-
+                    if ':' in templine:
+                        lineparts = templine.strip()[:-1].split(':')
+                        #print lineparts
+                        latdict[lineparts[0]] = lineparts[1]
+                    templine = ''
+                    
+    
     twissdict = OrderedDict()
     with file(twissfile, 'r') as f:
         for line in f.readlines():
@@ -105,6 +116,7 @@ def preparetracy3lattice(latfile, twissfile):
                 lineparts = line.split()
                 twissdict[lineparts[0]] = {'name': lineparts[1].upper(),
                                            'position': lineparts[2]}
+    map = []
     for k, v in twissdict.iteritems():
         if k != '0':
             # twiss file includes element 'BEGIN'
@@ -126,16 +138,18 @@ def preparetracy3lattice(latfile, twissfile):
                         v['length'] = tmpparts[1]
                     else:
                         v[tmpparts[0]] = tmpparts[1]
+                    if 'file' in tmpparts[0].lower() and tmpparts[1] not in map:
+                        map.append(tmpparts[1])
                     
             twissdict[k] = v
         else:
             v['type'] = 'Marker'
-            v['length'] = 0.0
+            v['length'] = '0.0'
             twissdict[k] = v
             
     # original lattice file can be save if adding a 'raw' in like
     # {'name': latfile, 'data': twissdict, 'raw': rawlatticedata}
-    return {'name': latfile, 'data': twissdict}
+    return {'name': os.path.basename(latfile), 'data': twissdict, 'map': map}
 
 def test_savetracylat(latfile, twissfile, latticename):
     '''

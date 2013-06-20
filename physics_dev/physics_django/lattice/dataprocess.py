@@ -160,6 +160,9 @@ def savelattice(params):
                       'raw': ,
                       'map': {'name': 'value'},
                       'alignment': ,
+                      'control': {'name': ,
+                                  'data': }, # control info for a simulation run, ele file for elegant for example
+                      'init_twiss':, # initial twiss condition
                      }
                      name: file name to be saved into disk, it is same with lattice name by default
                      data: lattice geometric and strength with predefined format
@@ -199,7 +202,7 @@ def savelattice(params):
     # check whether do simulation here or not.
     modeldata=None
     if params.has_key('dosimulation') and latticetype != None and latticedata!=None:
-        if latticedata.has_key('data') and latticedata['data'] !=None:
+        if latticedata.has_key('data') and latticedata['data'] != None:
             flattenlat=False
         else:
             flattenlat=True
@@ -208,7 +211,9 @@ def savelattice(params):
             if flattenlat:
                 latticedata['data'] = flattenlatdict
         elif latticetype['name'].lower() in ['elegant']:
-            modeldata = runelegant(latticedata, flattenlat=flattenlat)
+            flattenlatdict, modeldata = runelegant(latticedata, flattenlat=flattenlat)
+            if flattenlat:
+                latticedata['data'] = flattenlatdict
     
     # save lattice
     result = latinst.savelattice(name, version, branch, creator=creator, description=description, 

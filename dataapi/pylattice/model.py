@@ -194,6 +194,7 @@ class model(object):
                                 'lastModified': ,         # the date this model was modified last time
                                 'tunex': ,                # horizontal tune
                                 'tuney': ,                # vertical tune
+                                'alphac': ,               # momentum compaction
                                 'chromex0': ,             # linear horizontal chromaticity
                                 'chromex1': ,             # non-linear horizontal chromaticity
                                 'chromex2': ,             # high order non-linear horizontal chromaticity
@@ -218,12 +219,12 @@ class model(object):
                model_name, model_desc, 
                created_by, create_date,
                updated_by, update_date,
-               tune_x, tune_y,
+               tune_x, tune_y, alphac,
                chrome_x_0, chrome_x_1, chrome_x_2,
                chrome_y_0, chrome_y_1, chrome_y_2,
                final_beam_energy,
                code_name, algorithm, 
-               model_control, model_control_url
+               model_control_data, model_control_name
         from model
         left join model_code on model_code.model_code_id = model.model_code_id
         where
@@ -259,7 +260,7 @@ class model(object):
                             'latticeId': res[1]}
                 keys=['description', 'creator', 'originalDate',
                       'updated', 'lastModified',
-                      'tunex', 'tuney',
+                      'tunex', 'tuney', 'alphac',
                       'chromex0', 'chromex1', 'chromex2',
                       'chromey0', 'chromey1', 'chromey2',
                       'finalEnergy', 
@@ -515,6 +516,7 @@ class model(object):
                                 'updated': ,              # name who modified last time
                                 'tunex': ,                # horizontal tune
                                 'tuney': ,                # vertical tune
+                                'alphac':                 # momentum compaction factor
                                 'chromex0': ,             # linear horizontal chromaticity
                                 'chromex1': ,             # non-linear horizontal chromaticity
                                 'chromex2': ,             # high order non-linear horizontal chromaticity
@@ -592,16 +594,19 @@ class model(object):
                         'chromey0': 'chrome_y_0',
                         'chromey1': 'chrome_y_1',
                         'chromey2': 'chrome_y_2',
+                        'alphac':   'alphac',
                         'finalEnergy': 'final_beam_energy',
-                        'simulationControl': 'model_control',
-                        'simulationControlFile': 'model_control_url',
+                        'simulationControl': 'model_control_data',
+                        'simulationControlFile': 'model_control_name',
                         'creator': 'created_by'
-                
                 }
                 for k, v in keys.iteritems():
                     if modeldata.has_key(k):
                         sql += ' %s,' %v
-                        vals.append(modeldata[k])
+                        if k == 'simulationControl':
+                            vals.append(json.dumps(modeldata[k]))
+                        else:
+                            vals.append(modeldata[k])
                         sqlval += ' %s, '
                 sql += ' create_date) '
                 sqlval += ' now() )'
@@ -728,9 +733,10 @@ class model(object):
                     'chromey0': 'chromme_y_0',
                     'chromey1': 'chromme_y_1',
                     'chromey2': 'chromme_y_2',
+                    'alphac':   'alphac',
                     'finalEnergy': 'final_beam_energy',
-                    'simulationControl': 'model_control',
-                    'simulationControlFile': 'model_control_url',
+                    'simulationControl': 'model_control_data',
+                    'simulationControlFile': 'model_control_name',
                     'creator': 'updated_by'
             }
 

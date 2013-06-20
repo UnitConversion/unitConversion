@@ -787,7 +787,7 @@ class lattice(object):
                     for data in mapvalue:
                         f.write(data)
 
-    def _savetracylattice(self, cur, latticeid, params, dosimulation=False):
+    def _savetracylattice(self, cur, latticeid, params):
         '''
         save real lattice data information
         
@@ -1002,10 +1002,213 @@ class lattice(object):
         
         return True
         
+    def _saveelegantlatticeelement(self, cur, latticeid, params):
+        '''
+        '''
+        # save element statement
+        sql = '''
+        insert into element
+        (lattice_id, element_type_id, element_name, element_order, insert_date, s, length, 
+        dx, dy, dz, pitch, yaw, roll)
+        values
+        '''
+        # prepare type dictionary
+        # type dictionary format: 
+        # {'type name': {'id': , 
+        #                'type property': [type property id],
+        #                'type property': [type property id, type property unit],
+        #                'type property': [type property id, type property unit],
+        #                ...
+        #               }
+        # }
+        typedict = {}
+        for k, v in params['data'].iteritems():
+            if v.has_key('type'):
+                etypename = v['type']
+                
+                # get all properties for given element type
+                # key word in ['name', 'position', 'length', 'type'] is not a type property
+                etypeprops = []
+                etypepropunits = {}
+                for etypeprop in v.keys():
+                    if etypeprop not in ['name', 'position', 'length', 'type', 
+                                         'dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
+                        etypeprops.append(etypeprop)
+
+                # cache type dictionary
+                if typedict.has_key(etypename):
+                    tmptypedict = typedict[etypename]
+                else:
+                    tmptypedict = {}
+
+                # retrieve element type information, which includes also all properties belonging to this type
+                etypepropsres = self.retrieveelemtype(etypename)
+                if len(etypepropsres) == 0:
+                    # element type does not exist yet.
+                    # insert a new entry
+                    elemtypeid = self.saveelemtype(etypename, etypeprops, etypepropunits)
+                    
+                    # add a new entry, 'id',  into type dictionary
+                    tmptypedict['id'] = elemtypeid
+                    etypepropsres = self.retrieveelemtype(etypename)
+                    for etypepropres in etypepropsres:
+                        if etypepropres[3] != None:
+                            if etypepropres[4] == None:
+                                tmptypedict[etypepropres[3]] = [etypepropres[1]]
+                            else:
+                                tmptypedict[etypepropres[3]] = [etypepropres[1], etypepropres[4]]
+                else:
+                    elemtypeid = etypepropsres[0][0]
+                    if not tmptypedict:
+                        # check whether type dictionary is empty
+                        tmptypedict['id'] = elemtypeid
+                        for etypepropres in etypepropsres:
+                            if etypepropres[3] != None:
+                                if etypepropres[4] == None:
+                                    tmptypedict[etypepropres[3]] = [etypepropres[1]]
+                                else:
+                                    tmptypedict[etypepropres[3]] = [etypepropres[1], etypepropres[4]]
+                    else:
+                        # not empty, therefore the element type id has to be same
+                        assert tmptypedict['id'] == elemtypeid, 'element type id does not match'
+                    
+                    # check whether all properties are in database
+                    if len(etypeprops) > 0:
+                        for etypeprop in etypeprops:
+                            if not tmptypedict.has_key(etypeprop):
+                                etypepropid = self.updateelemtypeprop(etypename, etypeprop, etypepropunits)
+                                try:
+                                    # element type property has unit
+                                    tmptypedict[etypeprop] = [etypepropid, etypepropunits[etypeprop]]
+                                except KeyError:
+                                    # element type property does not have unit
+                                    tmptypedict[etypeprop] = [etypepropid]
+
+                typedict[etypename] = tmptypedict
+            else:
+                raise ValueError('Unknown element type for %s'%(v['name']))
+
+            # start to prepare insert statement
+            if v.has_key('length'):
+                sql += '''(%s, %s, '%s', %s, now(), %s, %s, '''%(latticeid, elemtypeid, v['name'], k, v['position'], v['length'])
+            else:
+                sql += '''(%s, %s, '%s', %s, now(), %s, NULL, '''%(latticeid, elemtypeid, v['name'], k, v['position'])
+            dx = self._getelemprop(v, 'dx')
+            if dx == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%dx
+            dy = self._getelemprop(v, 'dy')
+            if dy == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%dy
+            dz = self._getelemprop(v, 'dz')
+            if dz == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%dz
+            pitch = self._getelemprop(v, 'pitch')
+            if pitch == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%pitch
+            yaw= self._getelemprop(v, 'yaw')
+            if yaw == None:
+                sql += 'NULL, '
+            else:
+                sql += '%s, '%yaw
+            roll = self._getelemprop(v, 'roll')
+            if roll == None:
+                sql += 'NULL '
+            else:
+                sql += '%s '%roll
+            
+            sql += '),'
+        
+        # get rid of last comma from SQL statement.
+        # save element geometric value
+        cur.execute(sql[:-1])
+        
+        elementidres = self._retrieveelementbylatticeid(latticeid, cur)
+
+        # save element property value statement
+        elempropsql = '''
+        insert into element_prop
+        (element_id, element_type_prop_id, element_prop_value, element_prop_unit)
+        values
+        '''
+        
+        elementiddict = {}
+        for elementid in elementidres:
+            elementiddict[str(elementid[2])] = elementid
+        for k, v in params['data'].iteritems():
+            if k != str(elementiddict[k][2]):
+                # check the element order to ensure same element
+                raise ValueError("Element not same")
+            elementid = elementiddict[k][0]
+            etypename=v['type']
+            for etypeprop in v.keys():
+                if etypeprop not in  ['name', 'position', 'length', 'type', 
+                                         'dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
+                    etypeprops.append(etypeprop)
+                    etypeproptidunit = typedict[etypename][etypeprop]
+
+                    if len(etypeproptidunit) > 0:
+                            elempropsql += '''('%s', '%s', '%s', NULL),'''%(elementid, 
+                                                                            typedict[etypename][etypeprop][0],
+                                                                            v[etypeprop])
+                    else:
+                        raise TypeError("Unknown structure for element type property value and unit.")
+        # get rid of last comma from SQL statement.
+        # save element type property value
+        cur.execute(elempropsql[:-1])
+        
+        return True
+    
     def _saveelegantlattice(self, cur, latticeid, params):
         '''
+        save real lattice data information
+        
+        cur: database connection cursor
+        latticeid: lattice id to identify which lattice the data belongs to.
+        params:   lattice data dictionary:
+                     {'name': ,
+                      'data': ,
+                      'raw': ,
+                      'map': ,
+                      'alignment': ,
+                      'control': 
+                     }        
         '''
-        raise Exception("This function has not been implemented yet.")
+        if not isinstance(params, dict) or not params.has_key('name'):
+            raise ValueError('No lattice name given.')
+
+        if (not params.has_key('data') or params['data']==None) and (not params.has_key('raw') or len(params['raw'])==0):
+            raise ValueError('No lattice data found.')
+
+        if params.has_key('map') and params['map'] != None and not params.has_key('raw'):
+            raise ValueError('Cannot save field map files since raw lattice is missing.')
+
+        # save raw lattice file
+        if params.has_key('raw') and len(params['raw'])!=0:
+            now = datetime.datetime.now()
+            dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
+            with os.fdopen(fd,'w') as f:
+                for data in params['raw']:
+                    f.write(data)
+            
+            if params.has_key('map'):
+                self._savemapfile(url, params['map'])
+            
+            sql = '''update lattice SET url = %s where lattice_id = %s'''
+            cur.execute(sql,(url,latticeid))
+        
+        #
+        if params.has_key('data') and params['data']!=None:
+            # save lattice information
+            self._saveelegantlatticeelement(cur, latticeid, params)
 
     def savelattice(self, name, version, branch, **params):
         '''
@@ -1052,11 +1255,6 @@ class lattice(object):
                 latticetypename=params['latticetype']["name"]
             except:
                 pass
-        if params.has_key('dosimulation'):
-            dosimulation = True
-        else:
-            dosimulation = False
-        
         try:
             cur = self.conn.cursor()
             if params.has_key('lattice') and params['lattice'] != None:
@@ -1065,9 +1263,9 @@ class lattice(object):
                 if latticetypename == 'plain':
                     self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
-                    self._savetracylattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
+                    self._savetracylattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
-                    self._saveelegantlattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
+                    self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
             if self.transaction:
@@ -1118,7 +1316,6 @@ class lattice(object):
                          raw:  raw data that is same with data but in original lattice format
                          map:  name-value pair dictionary
                          alignment: mis-alignment information
-            dosimulation: Flag to identify whether to perform a simulation. False by default.
             
         return: True if success, otherwise, raise an exception
         '''
@@ -1157,10 +1354,6 @@ class lattice(object):
                 latticetypename=params['latticetype']["name"]
             except:
                 pass
-        if params.has_key('dosimulation'):
-            dosimulation=True
-        else:
-            dosimulation=False
         try:
             cur = self.conn.cursor()
             if params.has_key('lattice') and params['lattice'] != None:
@@ -1168,9 +1361,9 @@ class lattice(object):
                 if latticetypename == 'plain':
                     latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
-                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
+                    latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
-                    latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'], dosimulation=dosimulation)
+                    latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
             if self.transaction:

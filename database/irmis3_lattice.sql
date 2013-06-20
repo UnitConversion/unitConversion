@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 5/9/2013 11:07:03 AM
--- Diagram Version: 484
+-- Created on: 6/18/2013 10:48:50 AM
+-- Diagram Version: 486
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -184,6 +184,8 @@ CREATE TABLE `model` (
   `update_date` datetime,
   `tune_x` double,
   `tune_y` double,
+  `alphac` double(15,3),
+  `alphac2` double(15,3),
   `chrome_x_0` double,
   `chrome_x_1` double,
   `chrome_x_2` double,
@@ -191,8 +193,8 @@ CREATE TABLE `model` (
   `chrome_y_1` double,
   `chrome_y_2` double,
   `final_beam_energy` double,
-  `model_control` mediumtext,
-  `model_control_url` varchar(255),
+  `model_control_data` mediumtext,
+  `model_control_name` varchar(255),
   PRIMARY KEY(`model_id`),
   UNIQUE INDEX `model_name`(`model_name`),
   CONSTRAINT `FK_model_code` FOREIGN KEY (`model_code_id`)
