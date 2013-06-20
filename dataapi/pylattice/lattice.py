@@ -14,6 +14,8 @@ import tempfile
 import logging
 import MySQLdb
 
+import base64
+
 from utils import (_assemblesql, _wildcardformat)
 
 from .tracyunit import elementpropunits as tracypropunits
@@ -768,7 +770,7 @@ class lattice(object):
             # save element type property value
             cur.execute(elempropsql[:-1])
     
-    def _savemapfile(self, url, fieldmaps):
+    def _savemapfile(self, url, fieldmaps, b64decode=False):
         '''
         '''
         # save field map files
@@ -784,8 +786,11 @@ class lattice(object):
                     else: 
                         raise Exception("Can not create a sub directory to store map")
                 with file('/'.join((url+"_map", mapname)), 'w') as f:
-                    for data in mapvalue:
-                        f.write(data)
+                    if b64decode:
+                        f.write(base64.b64decode(mapvalue))
+                    else:
+                        for data in mapvalue:
+                            f.write(data)
 
     def _savetracylattice(self, cur, latticeid, params):
         '''
@@ -1200,8 +1205,7 @@ class lattice(object):
                     f.write(data)
             
             if params.has_key('map'):
-                self._savemapfile(url, params['map'])
-            
+                self._savemapfile(url, params['map'], b64decode=True)
             sql = '''update lattice SET url = %s where lattice_id = %s'''
             cur.execute(sql,(url,latticeid))
         
@@ -1379,6 +1383,26 @@ class lattice(object):
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
         return True
 
+    def _isbinary(self, filename):
+        """Return true if the given filename is binary.
+        @raise EnvironmentError: if the file does not exist or cannot be accessed.
+        @attention: found @ http://bytes.com/topic/python/answers/21222-determine-file-type-binary-text on 6/08/2010
+        @author: Trent Mick <TrentM@ActiveState.com>
+        @author: Jorge Orpinel <jorge@orpinel.com>"""
+        fin = open(filename, 'rb')
+        try:
+            CHUNKSIZE = 1024
+            while 1:
+                chunk = fin.read(CHUNKSIZE)
+                if '\0' in chunk: # found null byte
+                    return True
+                if len(chunk) < CHUNKSIZE:
+                    break # done
+            # A-wooo! Mira, python no necesita el "except:". Achis... Que listo es.
+        finally:
+            fin.close()
+        return False
+
     def retrievelattice(self, name, version, branch, description=None, creator=None, latticetype=None, withdata=False, rawdata=False):
         '''
         Retrieve lattice geometric layout with magnetic strength. All information are provided here, 
@@ -1532,8 +1556,14 @@ class lattice(object):
                     if os.path.isdir(v+'_map'):
                         for path, _, files in os.walk(v+'_map'):
                             for name in files:
+                                isbinary = self._isbinary(os.path.join(path, name))
                                 with file(os.path.join(path, name), 'r') as f:
-                                    maps[name] = f.readlines()
+                                    if isbinary:
+                                        # binary read file data
+                                        maps[name] = base64.b64encode(f.read())
+                                    else:
+                                        #read as text file
+                                        maps[name] = f.readlines()
                     if len(maps) > 0:
                         temp = lattices[k]
                         temp['map'] = maps
@@ -1551,6 +1581,7 @@ class lattice(object):
                         
                         temp['rawlattice'] = {'name': v, 'data': data}
                         lattices[k]=temp
+
         return lattices
         
     def retrieveelemtype(self, etypename):
