@@ -1,0 +1,13 @@
+How I modified mathmpl.py:
+
+try /usr/bin/latex2html
+-> it makes pages and too complicated
+
+found latex2png.py
+in that file used dvipng directly.
+-> space problem (empty spaces around the equations)
+
+found /usr/bin/latex2png -> .png is not clear
+-> found convert (ImageMagick)
+
+use dvipng directly and convert to remove the empty spaces!

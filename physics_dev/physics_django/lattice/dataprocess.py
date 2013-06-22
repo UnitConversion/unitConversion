@@ -284,8 +284,10 @@ def updatelattice(params):
                 if flattenlat and res[0] == 0:
                     latticedata['data'] = flattenlatdict
             elif latticetype['name'].lower() in ['elegant']:
-                modeldata = runelegant(latticedata, flattenlat=flattenlat)
-    
+                flattenlatdict, modeldata = runelegant(latticedata, flattenlat=flattenlat)
+                if flattenlat:
+                    latticedata['data'] = flattenlatdict
+
     # update lattice
     result = latinst.updatelattice(name, version, branch, creator=creator, description=description, 
                                    latticetype=latticetype, lattice=latticedata)

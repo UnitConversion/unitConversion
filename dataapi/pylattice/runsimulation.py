@@ -438,28 +438,28 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
             dvals = d.split(',')
             if len(dvals) == 2:
                 if dvals[0] == 'nux':
-                    modeldata['tunex'] = dvals[1][:-1]
+                    modeldata['tunex'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'nuy':
-                    modeldata['tuney'] = dvals[1][:-1]
+                    modeldata['tuney'] = dvals[1][:-1].strip()
                
                 elif dvals[0] == 'dnux/dp':
-                    modeldata['chromex0'] = dvals[1][:-1]
+                    modeldata['chromex0'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnux/dp2':
-                    modeldata['chromex1'] = dvals[1][:-1]
+                    modeldata['chromex1'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnux/dp3':
-                    modeldata['chromex2'] = dvals[1][:-1]
+                    modeldata['chromex2'] = dvals[1][:-1].strip()
                 
                 elif dvals[0] == 'dnuy/dp':
-                    modeldata['chromey0'] = dvals[1][:-1]
+                    modeldata['chromey0'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnuy/dp2':
-                    modeldata['chromey1'] = dvals[1][:-1]
+                    modeldata['chromey1'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnuy/dp3':
-                    modeldata['chromey2'] = dvals[1][:-1]
+                    modeldata['chromey2'] = dvals[1][:-1].strip()
                     
                 elif dvals[0] == 'alphac':
-                    modeldata['alphac'] = dvals[1][:-1]
+                    modeldata['alphac'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'pCentral':
-                    modeldata['energy'] = dvals[1][:-1]
+                    modeldata['finalEnergy'] = dvals[1][:-1].strip()
 
     # read closed orbit data
     with file(datafile[1],'r') as f:
@@ -514,6 +514,7 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
                    'phasey':  float(twissvals[10]),
                    'etay':    float(twissvals[11]),
                    'etapy':   float(twissvals[12]),
+                   'energy':   float(twissvals[13]),
                    'codx':    float(codvals[3]),
                    'cody':    float(codvals[5]),
                    'transferMatrix':tm}
