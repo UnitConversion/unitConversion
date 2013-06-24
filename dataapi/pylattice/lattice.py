@@ -166,6 +166,12 @@ class lattice(object):
         
         return: lattice id if success, otherwise, raise an exception
         '''
+        try:
+            float(version)
+        except ValueError as e:
+            self.logger.info('Version should be a numeric value:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise ValueError('Version should be a numeric value:\n%s (%d)' %(e.args[1], e.args[0]))
+        
         _, lattices = self.retrievelatticeinfo(name, version, branch)
         if len(lattices) != 0:
             raise ValueError('lattice (name: %s, version: %s, branch: %s) exists already.'
