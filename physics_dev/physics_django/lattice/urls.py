@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 
-from physics_django.lattice.views import (lattices, models) 
+from physics_django.lattice.views import (lattices) 
 
 urlpatterns = patterns(
     '',
@@ -8,7 +8,7 @@ urlpatterns = patterns(
     url(r'^lattice/$',
         lattices,
         name='lattices'),
-    url(r'^lattice/model/$',
-        models,
-        name='model'),
+#    url(r'^lattice/model/$',
+#        models,
+#        name='model'),
 )

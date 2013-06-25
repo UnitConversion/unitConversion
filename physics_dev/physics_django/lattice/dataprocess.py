@@ -598,6 +598,7 @@ def retrievemodel(params):
         mid=None
     
     result = modelinst.retrievemodel(name, mid)
+    
     return result
 
 def retrievemodellist(params):

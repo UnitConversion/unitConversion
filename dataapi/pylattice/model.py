@@ -162,11 +162,11 @@ class model(object):
                     if res[4]!=None:
                         resdict[res[2]]['creator'] = res[4]
                     if res[5]!=None:
-                        resdict[res[2]]['originalDate'] = res[5]
+                        resdict[res[2]]['originalDate'] = res[5].isoformat()
                     if res[6]!=None:
                         resdict[res[2]]['updated'] = res[6]
                     if res[7]!=None:
-                        resdict[res[2]]['lastModified'] = res[7]
+                        resdict[res[2]]['lastModified'] = res[7].isoformat()
             except MySQLdb.Error as e:
                 self.logger.info('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
                 raise Exception('Error when retrieving model code info:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -253,8 +253,10 @@ class model(object):
         modelres = {}
         try:
             cur=self.conn.cursor()
+            
             cur.execute(sql, vals)
             results = cur.fetchall()
+            
             for res in results:
                 tempdict = {'id': res[0],
                             'latticeId': res[1]}
@@ -269,7 +271,10 @@ class model(object):
                       ]
                 for i in range(3, len(res)):
                     if res[i] != None:
-                        tempdict[keys[i-3]] = res[i]
+                        if keys[i-3] in ['originalDate', 'lastModified']:
+                            tempdict[keys[i-3]] = res[i].isoformat()
+                        else:
+                            tempdict[keys[i-3]] = res[i]
                 
                 modelres[res[2]]=tempdict
         except MySQLdb.Error as e:

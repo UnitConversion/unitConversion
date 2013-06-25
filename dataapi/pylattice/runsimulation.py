@@ -4,28 +4,17 @@ Created on Jun 7, 2013
 @author: shengb
 '''
 import os
-import logging
 import errno
 import shutil
 import subprocess
 from collections import OrderedDict
 import base64
 
-def _setup_custom_logger(name):
-    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
-
-    #handler = logging.StreamHandler()
-    handler = logging.FileHandler('/var/tmp/runsimulation.log')
-    handler.setFormatter(formatter)
-
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-    return logger
-
-runsimulation_log = _setup_custom_logger("runsimulation")
 runtracydir = 'runtracy'
 runelegantdir = 'runelegant'
+
+from .logger import _setup_lattice_model_logger
+latticemodel_log = _setup_lattice_model_logger("runsimulation")
 
 #NSLS2_LBT_TWISS_INIT = [-0.5, -0.6, 4.5, 4.6, 0.0, 0.0, 0.0, 0.0]
 #NSLS2_BST_TWISS_INIT = [0.663442, 0.936493, 9.35591, 8.63852, 0.148315, 0.0000, 0.0000, 0.0000]
@@ -134,7 +123,7 @@ def _readtracyresult(latname, tracy='tracy3', flattenlat=False):
     '''
     pmfile='/'.join((runtracydir, "%s.pm"%(latname)))
     if not os.path.isfile(pmfile):
-        runsimulation_log.debug('Running tracy simulation failed.')
+        latticemodel_log.debug('Running tracy simulation failed.')
         raise RuntimeError('Fail to run tracy simulation.')
     
     with file(pmfile,'r') as f:
@@ -191,7 +180,7 @@ def _readtracyresult(latname, tracy='tracy3', flattenlat=False):
     if flattenlat:
         latfile='/'.join((runtracydir, "%s.lat"%(latname)))
         if not os.path.isfile(latfile):
-            runsimulation_log.debug('Cannot find lattice file.')
+            latticemodel_log.debug('Cannot find lattice file.')
             raise RuntimeError('Cannot find lattice file.')
         if tracy=='tracy3':
             latdict = _flattentracy3lattice(latfile)
@@ -293,9 +282,9 @@ def runtracy(latticedata, tracy='tracy3', flattenlat=False):
                             %(runtracydir, tracy_cmd, latname, latname), 
                             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdoutdata, stderrdata = proc.communicate()
-    runsimulation_log.debug(stdoutdata)
-    runsimulation_log.debug('std error - ' + stderrdata)
-    runsimulation_log.debug('Finish running tracy simulation')
+    latticemodel_log.debug(stdoutdata)
+    latticemodel_log.debug('std error - ' + stderrdata)
+    latticemodel_log.debug('Finish running tracy simulation')
     
     result = _readtracyresult(latname, tracy=tracy, flattenlat=flattenlat)    
     # clean directory
@@ -418,7 +407,7 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
     
     for f in datafile:
         if not os.path.isfile(f):
-            runsimulation_log.debug('Running elegant simulation failed. Could not find data file: %s'%f)
+            latticemodel_log.debug('Running elegant simulation failed. Could not find data file: %s'%f)
             raise RuntimeError('Fail to run elegant simulation. Could not find data file: %s'%f)
 
     modeldata={'simulationCode': 'elegant',
@@ -531,7 +520,7 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
         if not os.path.isfile(latfile):
             latfile='/'.join((runelegantdir, "%s.lte"%(latname)))
         if not os.path.isfile(latfile):
-            runsimulation_log.debug('Cannot find lattice file.')
+            latticemodel_log.debug('Cannot find lattice file.')
             raise RuntimeError('Cannot find lattice file.')
         latdict = _flattenelegantlattice(latfile)
 
@@ -652,9 +641,9 @@ def runelegant(latticedata, flattenlat=False):
                                            latname, latname, latname, latname, latname), 
                             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdoutdata, stderrdata = proc.communicate()
-    runsimulation_log.debug(stdoutdata)
-    runsimulation_log.debug('std error - ' + stderrdata)
-    runsimulation_log.debug('Finish running elegant simulation')
+    latticemodel_log.debug(stdoutdata)
+    latticemodel_log.debug('std error - ' + stderrdata)
+    latticemodel_log.debug('Finish running elegant simulation')
     
     result = _readelegantresult(latname, controls=latticedata['control'], flattenlat=flattenlat)    
     # clean directory

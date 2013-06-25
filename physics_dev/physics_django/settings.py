@@ -104,6 +104,7 @@ INSTALLED_APPS_PROD = (
 INSTALLED_APPS_DEV = (
 
     'magnets',
+    'lattice',
 
     #Third party apps
     'crispy_forms',
