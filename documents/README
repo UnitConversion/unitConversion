@@ -1,0 +1,8 @@
+Package dependency:
+latex2rtf
+texlive
+
+texlive-latex-extra for PDF file generating
+
+Generate html files:
+make html
