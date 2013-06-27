@@ -12,7 +12,9 @@ Welcome to physicsServices's documentation!
    introduction
    municonv
    latticemodel
+   latmodweb
 
+   
 Indices and tables
 ==================
 

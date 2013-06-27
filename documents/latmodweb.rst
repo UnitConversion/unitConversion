@@ -1,5 +1,5 @@
-Lattice/Model service
-=====================
+Lattice/Model web service implementation
+==========================================
 
 Introduction
 ------------

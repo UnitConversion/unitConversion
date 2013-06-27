@@ -45,7 +45,6 @@ The terminologies used in this service are defined as below:
 *elegant*:
     a particle accelerator simulation code [2]_
 
-
 **Note**: 
 
 - One lattice could consist of one or more elements. One element could be a real device physically installed somewhere, a quadrupole magnet for example,
@@ -160,8 +159,8 @@ A model is also associated with a status, which is an integer number. Users can 
 
 The model simulation code information could be captured also if it applies with the algorithm used during performing simulation.
 
-References
-===========
+
+-------
 
 .. [1] M. Boge, "Update on TRACY-2 Documentation", SLS Internal Note, SLS-TME-TA-1999-0002 (1999)
 .. [2] M. Borland, "ELEGANT: A Flexible SDDS-Compliant Code for Accelerator Simulation", Advanced Photon Source LS-287, September 2000.
