@@ -6,14 +6,12 @@
 Welcome to physicsServices's documentation!
 ===========================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
    introduction
+   municonv
    latticemodel
-
 
 Indices and tables
 ==================
