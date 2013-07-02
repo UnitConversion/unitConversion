@@ -1,4 +1,4 @@
-MUNICONV Basic
+MUNICONV web service
 =====================
 
 Introduction

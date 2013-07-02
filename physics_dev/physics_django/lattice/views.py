@@ -9,8 +9,6 @@ try:
 except ImportError:
     import json
 
-import traceback
-
 from pylattice import _setup_lattice_model_logger
 latticemodel_log = _setup_lattice_model_logger('latticemodel_view')
 

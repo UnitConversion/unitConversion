@@ -10,7 +10,9 @@ Welcome to physicsServices's documentation!
    :maxdepth: 2
 
    introduction
+   installation
    municonv
+   municonvweb
    latticemodel
    latmodweb
 
