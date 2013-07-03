@@ -406,7 +406,7 @@ def retrievemodelcodeinfo(params):
     
     return resdict
 
-def savegoldenmodel(params):
+def savemodelstatus(params):
     ''''''
     name = params['name']
     status=params['status']
@@ -415,7 +415,7 @@ def savegoldenmodel(params):
     
     return {'result':result}
     
-def retrievegoldenmodel(params):
+def retrievemodelstatus(params):
     ''''''
     name = params['name']
     if params.has_key('status'):
@@ -649,6 +649,3 @@ def retrievebeamparameters(params):
     to:    end position
     ''' 
     return modelinst.retrievebeamparameters(params)
-    
-    
-    

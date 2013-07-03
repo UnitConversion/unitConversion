@@ -18,7 +18,7 @@ from dataprocess import savelattice, retrievelattice, updatelattice
 from dataprocess import savelatticestatus, retrievelatticestatus
 
 from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo
-from dataprocess import savegoldenmodel, retrievegoldenmodel
+from dataprocess import savemodelstatus, retrievemodelstatus
 from dataprocess import savemodel, updatemodel, retrievemodel, retrievemodellist
 from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwiss, retrievebeamparameters
 
@@ -46,7 +46,7 @@ post_actions = (('saveLatticeType', savelatticetype),
                 ('saveLatticeStatus', savelatticestatus),
 
                 ('saveModelCodeInfo', savemodelcodeinfo),
-                ('saveGoldenModel', savegoldenmodel),
+                ('saveModelStatus', savemodelstatus),
                 ('saveModel', savemodel),
                 ('updateModel', updatemodel),
                 )
@@ -56,7 +56,7 @@ get_actions = (('retrieveLatticeType', retrievelatticetype),
                ('retrieveLatticeStatus', retrievelatticestatus),
                
                ('retrieveModelCodeInfo', retrievemodelcodeinfo),
-               ('retrieveGoldenModel', retrievegoldenmodel),
+               ('retrieveStatusModel', retrievemodelstatus),
                ('retrieveModel', retrievemodel),
                ('retrieveModelList', retrievemodellist),
                
