@@ -8,6 +8,7 @@ except ImportError:
     import json
 
 from pymuniconv.municonvinfo import (retrievemagnetinfo, retrievesystemdata, retrieveconversioninfo)
+from utils.utils import _checkkeys
 
 def _retrievecmddict(request):
     '''
@@ -37,16 +38,6 @@ def _gettreexml(data):
 def magnets_help(request):
     return render_to_response("magnets/magnets_help.html")
 
-def _checkkeys(keys, expectedkeys):
-    illegalkey = [] 
-    for key in keys:
-        if key not in expectedkeys:
-            illegalkey.append(key)
-    if len(illegalkey) != 0:
-        raise ValueError ("argument (%s) are not supported."%(",".join(illegalkey)))
-    else:
-        return True
-    
 def systemlistweb(request):
     params = _retrievecmddict(request)
     try:

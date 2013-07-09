@@ -510,9 +510,9 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
         beamparameter[str(i)] = tmpdict
 
         flattenlatdict[str(i)] = {'name': flatlatvals[0].upper(),
-                             'type': flatlatvals[1],
-                             'position': float(flatlatvals[2]),
-                             'length': float(flatlatvals[3])}
+                                  'type': flatlatvals[1],
+                                  'position': float(flatlatvals[2]),
+                                  'length': float(flatlatvals[3])}
     modeldata['beamParameter'] = beamparameter
     
     if flattenlat:
@@ -529,14 +529,14 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
             etype = v['type']
             if ename.upper() != '_BEG_':
                 if latdict.has_key(ename):
-                    elemprops = latdict[ename]
+                    elemprops = latdict[ename].copy()
                 else:
                     raise RuntimeError("Cannot find element %s in lattice deck."%(ename))
                 if elemprops['type'] != etype:
                     raise RuntimeError("Element %s type conflict."%(ename))
                 elemprops.update(v)
                 flattenlatdict[k] = elemprops
-    
+
     return flattenlatdict, modeldata
 
 elegantscript = '''

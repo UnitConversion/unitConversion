@@ -16,6 +16,8 @@ from pylattice.model import (model)
 
 from pylattice import (runtracy, runelegant)
 
+from utils.utils import _checkkeys
+
 latinst = lattice(connection, transaction=transaction)
 modelinst = model(connection, transaction=transaction)
 
@@ -26,6 +28,9 @@ def retrievelatticetype(params):
     '''
     names = params['name']
     formats = params['format']
+    
+    _checkkeys(params.keys(), ['function','name', 'format'])
+    
     if not isinstance(names, list) and not isinstance(formats, list):  
         results = latinst.retrievelatticetype(names, formats)
         resdict = {}
@@ -40,6 +45,7 @@ def savelatticetype(params):
     The params is a dictionary with format: {'name': , 'format': }
     the name is supported lattice type name, and format is type format such as 'lat', 'ele', and/or 'txt'.
     '''
+    _checkkeys(params.keys(), ['function','name', 'format'])
     result = latinst.savelatticetype(params['name'], params['format'])
     
     return {'result': result}
@@ -58,17 +64,9 @@ def savelatticeinfo(params):
         
         description: description for this lattice, allow user put any info here (< 255 characters)
         creator:     original creator
-        lattice:     lattice data, a dictionary:
-                     {'name': ,
-                      'data': ,
-                      'raw':  ,
-                      'map':  {'name': 'value'},
-                     }
-                     name: file name to be saved into disk, it is same with lattice name by default
-                     data: lattice geometric and strength with predefined format
-                     raw:  raw data that is same with data but in original lattice format
-                     map:  name-value pair dictionary
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'latticetype', 'description', 'creator'])
+
     name = params['name']
     version = params['version']
     branch=params['branch']
@@ -92,6 +90,8 @@ def savelatticeinfo(params):
 def retrievelatticeinfo(params):
     '''
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'description', 'creator'])
+
     name=params['name']
     if params.has_key('version'):
         version = params['version']
@@ -104,20 +104,27 @@ def retrievelatticeinfo(params):
 
     if params.has_key('creator'):
         creator = params['creator']
+    else:
+        creator=None
         
     if params.has_key('description'):
         description = params['description']
-    
-    urls, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
-    for k, v in lattices.iteritems():
-        if urls[k] != None:
-            v['url'] = urls[k]
-            lattices[k] = v
+    else:
+        description=None
+        
+    _, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
+#    urls, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
+#    for k, v in lattices.iteritems():
+#        if urls[k] != None:
+#            v['url'] = urls[k]
+#            lattices[k] = v
     return lattices
     
 def updatelatticeinfo(params):
     '''
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'latticetype', 'description', 'creator'])
+
     name = params['name']
     version = params['version']
     branch=params['branch']
@@ -172,6 +179,8 @@ def savelattice(params):
         dosimulation: Flag to identify whether to perform a simulation. False by default.
         
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'latticetype', 'description', 'creator', 'lattice', 'dosimulation'])
+
     name=params['name']
     version=params['version']
     branch=params['branch']
@@ -212,6 +221,7 @@ def savelattice(params):
                 latticedata['data'] = flattenlatdict
         elif latticetype['name'].lower() in ['elegant']:
             flattenlatdict, modeldata = runelegant(latticedata, flattenlat=flattenlat)
+
             if flattenlat:
                 latticedata['data'] = flattenlatdict
     
@@ -231,6 +241,8 @@ def savelattice(params):
 def updatelattice(params):
     '''
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'latticetype', 'description', 'creator', 'lattice', 'dosimulation'])
+
     name=params['name']
     version=params['version']
     branch=params['branch']
@@ -303,6 +315,8 @@ def updatelattice(params):
 def retrievelattice(params):
     '''
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'latticetype', 'description', 'creator', 'withdata', 'rawdata'])
+
     name = params['name']
     version = params['version']
     branch=params['branch']
@@ -330,7 +344,7 @@ def retrievelattice(params):
         rawdata = bool(json.loads(params['rawdata'].lower()))
     else:
         rawdata = False  
-        
+    
     result = latinst.retrievelattice(name, version, branch, description=description, creator=creator,
                                      latticetype=latticetype, withdata=withdata, rawdata=rawdata)
     
@@ -339,6 +353,8 @@ def retrievelattice(params):
 def savelatticestatus(params):
     '''
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'status'])
+
     name = params['name']
     version = params['version']
     branch=params['branch']
@@ -351,6 +367,8 @@ def savelatticestatus(params):
 def retrievelatticestatus(params):
     '''
     '''
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'status'])
+
     name = params['name']
     version = params['version']
     branch=params['branch']
@@ -373,6 +391,8 @@ def retrievelatticestatus(params):
     
 def savemodelcodeinfo(params):
     ''''''
+    _checkkeys(params.keys(), ['function','name', 'algorithm'])
+
     if params.has_key('name'):
         name = params['name']
     else:
@@ -388,6 +408,8 @@ def savemodelcodeinfo(params):
     
 def retrievemodelcodeinfo(params):
     ''''''
+    _checkkeys(params.keys(), ['function','name', 'algorithm'])
+
     if params.has_key('name'):
         name = params['name']
     else:
@@ -408,6 +430,8 @@ def retrievemodelcodeinfo(params):
 
 def savemodelstatus(params):
     ''''''
+    _checkkeys(params.keys(), ['function','name', 'status'])
+
     name = params['name']
     status=params['status']
     
@@ -417,6 +441,8 @@ def savemodelstatus(params):
     
 def retrievemodelstatus(params):
     ''''''
+    _checkkeys(params.keys(), ['function','name', 'status'])
+
     name = params['name']
     if params.has_key('status'):
         status=params['status']
@@ -481,6 +507,8 @@ def savemodel(params):
             }
     
     '''
+    _checkkeys(params.keys(), ['function','latticename', 'latticeversion', 'latticebranch','modelname', 'model'])
+
     if params.has_key('latticeid'):
         # ignore lattice name, version, and branch information
         latticeid=params['latticeid']
@@ -518,6 +546,8 @@ def savemodel(params):
     
 def updatemodel(params):
     ''''''
+    _checkkeys(params.keys(), ['function','latticeid', 'latticename', 'latticeversion', 'latticebranch', 'modelname', 'model'])
+
     if params.has_key('latticeid'):
         # ignore lattice name, version, and branch information
         latticeid=params['latticeid']
@@ -588,6 +618,8 @@ def retrievemodel(params):
              ...
             }
     '''
+    _checkkeys(params.keys(), ['function','name', 'id'])
+
     if params.has_key('name'):
         name = params['name']
     else:
@@ -610,6 +642,8 @@ def retrievemodellist(params):
         latticeversion
         
     '''
+    _checkkeys(params.keys(), ['function', 'latticename', 'latticeversion', 'latticebranch'])
+
     latticename = params['latticename']
     if params.has_key('latticebranch'):
         latticebranch = params['latticebranch']
@@ -623,7 +657,9 @@ def retrievetransfermatrix(params):
     name:  model name
     from:  starting position
     to:    end position
-    ''' 
+    '''
+    _checkkeys(params.keys(), ['function', 'modelname', 'from', 'to'])
+
     return modelinst.retrievetransfermatrix(params)
     
 def retrieveclosedorbit(params):
@@ -632,6 +668,8 @@ def retrieveclosedorbit(params):
     from:  starting position
     to:    end position
     ''' 
+    _checkkeys(params.keys(), ['function', 'modelname', 'from', 'to'])
+
     return modelinst.retrieveclosedorbit(params)
     
 def retrievetwiss(params):
@@ -640,6 +678,8 @@ def retrievetwiss(params):
     from:  starting position
     to:    end position
     ''' 
+    _checkkeys(params.keys(), ['function', 'modelname', 'from', 'to'])
+
     return modelinst.retrievetwiss(params)
     
 def retrievebeamparameters(params):
@@ -648,4 +688,6 @@ def retrievebeamparameters(params):
     from:  starting position
     to:    end position
     ''' 
+    _checkkeys(params.keys(), ['function', 'modelname', 'from', 'to'])
+
     return modelinst.retrievebeamparameters(params)

@@ -71,3 +71,14 @@ def _assemblesql(sql, data, strpattern, res, connector=""):
                 sql += strpattern4
                 res.append(data)
     return res, sql
+
+def _checkkeys(keys, expectedkeys):
+    illegalkey = [] 
+    for key in keys:
+        if key not in expectedkeys:
+            illegalkey.append(key)
+    if len(illegalkey) != 0:
+        raise ValueError ("argument (%s) are not supported."%(",".join(illegalkey)))
+    else:
+        return True
+

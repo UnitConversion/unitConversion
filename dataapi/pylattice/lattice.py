@@ -43,17 +43,17 @@ class lattice(object):
         Real lattice data (geometric layout and strength can be retrieved thru retrievelattice())
         
         return: dictionary with format
-                {'lattice name': {'id': ,                      # identifier of this lattice
-                                  'version': ,                 # version of this lattice
-                                  'branch': ,                  # branch this lattice belongs to
-                                  'description':  [optional],  # lattice description
-                                  'creator':      [optional],  # who created this lattice first time
-                                  'originalDate': [optional],  # when this lattice was create first time
-                                  'updated':      [optional],  # who updated last time
-                                  'lastModified': [optional],  # when this lattice was updated last time
-                                  'latticeType':  [optional],  # lattice type name
-                                  'latticeFormat':[optional],  # lattice type format
-                                 }
+                {'id': {'lattice name': ,            # identifier of this lattice
+                        'version': ,                 # version of this lattice
+                        'branch': ,                  # branch this lattice belongs to
+                        'description':  [optional],  # lattice description
+                        'creator':      [optional],  # who created this lattice first time
+                        'originalDate': [optional],  # when this lattice was create first time
+                        'updated':      [optional],  # who updated last time
+                        'lastModified': [optional],  # when this lattice was updated last time
+                        'latticeType':  [optional],  # lattice type name
+                        'latticeFormat':[optional],  # lattice type format
+                        }
                  ...
                 } 
             supported lattice type name and format is as below:
@@ -1555,7 +1555,7 @@ class lattice(object):
                     tempdict['typeunit'] = typepropunits
                 v['lattice'] = tempdict
                 lattices[k] = v
-        if urls:
+        if urls and (withdata or rawdata):
             for k, v in urls.iteritems():
                 if v != None:
                     maps = {}
