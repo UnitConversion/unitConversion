@@ -22,7 +22,7 @@ The source code is managed using Git, and hosted on GitHub as below ::
 
 The code could be check out from github as below :: 
 
-  git clone git://github.com/unixpickle/UnitConversion.git
+  git clone http://github.com/UnitConversion/unitConversion.git
 
 
 Project structure

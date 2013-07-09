@@ -13,9 +13,10 @@ Welcome to physicsServices's documentation!
    installation
    municonv
    municonvweb
+   municonvwebref
    latticemodel
    latmodweb
-
+   latmodwebref
    
 Indices and tables
 ==================
