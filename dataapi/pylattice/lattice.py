@@ -1739,17 +1739,17 @@ class lattice(object):
     
     def retrievelatticestatus(self, name, version, branch, status=0, ignorestatus=False):
         '''
-        Get golden lattice with given name, version, branch, and other conditions
+        Get lattice status with given name, version, branch, and other conditions
         parameters:
             name:    lattice name
             version: lattice version
             branch:  lattice branch
             status:  0: current golden lattice
-                     1: current live lattice
-                     2: alternative golden lattice
+                     1: alternative golden lattice
+                     2: lattice from live machine
                      3: previous golden lattice, but not any more
                      other number can be defined by a user
-            ignorestatus: get all golden lattice no matter whatever its status is.
+            ignorestatus: get all lattice no matter whatever its status is.
         '''
         name = _wildcardformat(name)
         branch = _wildcardformat(branch)

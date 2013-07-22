@@ -56,7 +56,7 @@ get_actions = (('retrieveLatticeType', retrievelatticetype),
                ('retrieveLatticeStatus', retrievelatticestatus),
                
                ('retrieveModelCodeInfo', retrievemodelcodeinfo),
-               ('retrieveStatusModel', retrievemodelstatus),
+               ('retrieveModelStatus', retrievemodelstatus),
                ('retrieveModel', retrievemodel),
                ('retrieveModelList', retrievemodellist),
                

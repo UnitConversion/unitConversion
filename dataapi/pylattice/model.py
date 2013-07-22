@@ -177,11 +177,7 @@ class model(object):
         Retrieve a model list with global parameters such as tune & chromaticity that satisfies given constrains.
         parameters:
             modelname:      the name shows that which model this API will deal with
-            
-            latticename:    lattice name that this model belongs to
-            latticeversion: the version of lattice
-            latticebranch:  the branch of lattice
-            
+            modelid:        the id shows that which model this API will deal with
         
         return: a dictionary
                 {'model name':                            # model name

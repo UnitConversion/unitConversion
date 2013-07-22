@@ -382,11 +382,19 @@ def retrievelatticestatus(params):
     result=latinst.retrievelatticestatus(name, version, branch, status=status, ignorestatus=ignorestatus)
     latticestatus={}
     for res in result:
-        latticestatus[res[9]]={'name': res[1],
-                               'version': res[2],
-                               'branch': res[3],
-                               'status': res[8]}
-        
+        tmpdict = {'name':   res[1],
+                   'version':res[2],
+                   'branch': res[3],
+                   'status': res[8]}
+        if res[4] != None:
+            tmpdict['creator'] =      res[4],
+        if res[5] != None:
+            tmpdict['originalDate'] = res[5].isoformat(),
+        if res[6] != None:
+            tmpdict['updated'] =      res[6],
+        if res[7] != None:
+            tmpdict['lastModified'] = res[7].isoformat(),
+        latticestatus[res[9]] = tmpdict
     return latticestatus
     
 def savemodelcodeinfo(params):
@@ -407,7 +415,8 @@ def savemodelcodeinfo(params):
     return {'result': result}
     
 def retrievemodelcodeinfo(params):
-    ''''''
+    '''
+    '''
     _checkkeys(params.keys(), ['function','name', 'algorithm'])
 
     if params.has_key('name'):
