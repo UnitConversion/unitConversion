@@ -16,7 +16,7 @@ In current implementation, 2 http methods, which are GET and POST respectively, 
 
     http://localhost:8000/lattice
 
-The data is returned from the server with a JSON encoding. An json header from client could be for example as below: ::
+A JSON encoding/decoding is adopted to transfer data over network. All data has to be encoded into a JSON string format before sending over network. For binary data, a BASE64 algorithm is supported to encode/decode the data into/from a string to enable data transferring with JSON string. An JSON header could be for example as below: ::
 
     {'content-type':'application/json', 'accept':'application/json'}
     
@@ -35,6 +35,47 @@ Service API
 ~~~~~~~~~~~~~
 The GET and POST methods implemented for lattice and model are described here.
 
+:NOTE: As described above, all raw data are carried as a JSON string, therefore, the data is suggested to be decoded into native format, a dictionary in Python for example, before consuming it, or encoded into a JSON string before shipping over network.
+
+A summary for service API is listed as below:
+
++--------------------------+----------------------------------------+
+| GET                      |   POST                                 |
++==========================+========================================+
+|   retrieveLatticeType    |  saveLatticeType                       |  
++--------------------------+----------------------------------------+
+|                          |  saveLatticeInfo                       |  
+|   retrieveLatticeInfo    +----------------------------------------+
+|                          |  updateLatticeInfo                     |  
++--------------------------+----------------------------------------+
+|                          |  saveLattice                           |  
+|   retrieveLattice        +----------------------------------------+
+|                          |  updateLattice                         |  
++--------------------------+----------------------------------------+
+|   retrieveLatticeStatus  |  saveLatticeStatus                     |  
++--------------------------+----------------------------------------+
+|   retrieveModelCodeInfo  |  saveModelCodeInfo                     |  
++--------------------------+----------------------------------------+
+|                          |  saveModel                             |  
+|   retrieveModel          +----------------------------------------+
+|                          |  updateModel                           |  
++--------------------------+----------------------------------------+
+|   retrieveModelList      |                                        |  
++--------------------------+----------------------------------------+
+|   retrieveModelStatus    |  saveModelStatus                       |  
++--------------------------+----------------------------------------+
+|   retrieveTransferMatrix |                                        |  
++--------------------------+----------------------------------------+
+|   retrieveClosedOrbit    |                                        |  
++--------------------------+----------------------------------------+
+|   retrieveTwiss          |                                        |  
++--------------------------+----------------------------------------+
+|   retrieveBeamParameters |                                        |  
++--------------------------+----------------------------------------+
+
+For status of a lattice or model, there is no updating method provided since the status history is not recorded.
+Each status is treated as a brand new except the original info when the entry is created first time.
+
 GET Methods
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -47,6 +88,9 @@ Rules for wildcasting matching:
     - ? for single character matching.
 
 It raises a **HTTP/404** error if an invalid keyword is given.
+
+    :NOTE: Since the data is saved as it is, and server does not do any manipulation, client has to be careful with the data returned from server and the convention when the data is produced, especially the unit. For example, Elegant uses :math:`\beta*\gamma` as beam energy output. Another example is in Tracy, phase advance is defined in the units of 2π, which means there is a factor of 2π comparing with values from other code like elegant.
+
 
 * **retrieveLatticeType**
 
@@ -277,7 +321,14 @@ It raises a **HTTP/404** error if an invalid keyword is given.
           ...
         }
     
-    Typically, the map file name is original file name of map file, and map file value is from a file read-in. If a map file is a plain text file, it is read directly as a list with each line as one value of the list. For a binary map, a SDDS kick-map for example, the whole file is read as a string and encoded with **Base64** algorithm as specified in RFC 3548. The advantage using Base64 algorithm is that encoded text strings can be safely used as parts of URLs, or included as part of an HTTP POST request.
+    Typically, the map file name is original file name of map file, and map file value is from a file read-in.
+    
+    encoding/decoding map data:
+        A file could be a plain ASCII text file like most .txt file, or a binary file like a SDDS file. Data encoding/decoding algorithm supported by this service is as below:
+
+        - ASCII data. If a map file is a plain text file, the data is read directly as a list with each line as one value of the list since a list can be easily serialized into a JSON string.
+        
+        - Binary data. Since the data is transfered over network as JSON string, which doesn't support binary data natively, the binary data has to be encoded so that it can be places into a string element in JSON. An algorithm, **Base64** as specified in RFC 3548, is used to encode/decode the binary data into/from a JSON string. The reason to choose Base64 is (1) it is a build-in module in Python which means server has no 3rd party library dependency; (2) ability to fit binary data into a strictly text-based and very limited format; (3) overhead is minimal compared to the convenience to maintain with JSON; (4) simple, commonly used standard, and unlikely to find something better specifically to use with JSON; (5) encoded text strings can be safely used as parts of URLs, or included as part of an HTTP POST request.
 
     Example command (a request sent to server as below) is similar with that in command retrieveLatticeInfo: ::
     
@@ -287,32 +338,417 @@ It raises a **HTTP/404** error if an invalid keyword is given.
     
     /lattice/?function=retrieveLattice&name=*&version=*&branch=*&withdata=true
     
-    Or get raw lattice: ::
+    or raw lattice: ::
         
     /lattice/?function=retrieveLattice&name=*&version=*&branch=*&rawdata=true
     
-    or get lattice and raw lattice: ::
+    or lattice and raw data: ::
     
     /lattice/?function=retrieveLattice&name=*&version=*&branch=*&withdata=true&rawdata=true
     
 
 * **retrieveLatticeStatus**
 
+    This retrieves a status of lattice, which is indicated by an integer. Each site could have its own convention how to use the status integer.
+    A typical use of the lattice status is to identify a golden lattice, and a reference definition could be as below:
+    
+    +-----+-----------------------------------------------+
+    | id  |   statement                                   |
+    +=====+===============================================+
+    |  0  |  current golden lattice                       |  
+    +-----+-----------------------------------------------+
+    |  1  |  alternative golden lattice                   |  
+    +-----+-----------------------------------------------+
+    |  2  |  lattice from live machine                    |  
+    +-----+-----------------------------------------------+
+    |  3  |  previous golden lattice                      |  
+    +-----+-----------------------------------------------+
+
+    **keywords** for searching: ::
+    
+        function:   retrieveLatticeStatus
+        name:       lattice name
+        version:    lattice version
+        branch:     lattice branch
+        status:     [optional]    lattice status
+
+            
+    if status is not specified, it gets all lattices having status no matter whatever its status is.
+        
+    **Result data structure**: ::
+    
+            {'id':  # identifier of this lattice
+                    {'lattice name':              # lattice name
+                     'version': ,                 # version of this lattice
+                     'branch': ,                  # branch this lattice belongs to
+                     'status': ,                  # lattice description
+                     'creator':      [optional],  # who set status first time
+                     'originalDate': [optional],  # when this status was set first time
+                     'updated':      [optional],  # who updated last time
+                     'lastModified': [optional],  # when it was updated last time
+                    } ,
+                ...
+             }
+
+
+    Example command (a request sent to server as below) could be as below: ::
+    
+    /lattice/?function=retrieveLatticeStatus&name=*&version=*&branch=*&status=*
+    
+    it gets all lattices those have status
+
+
+Up to here, the commands for GET to interactive with lattice related data have been explained. Next paragraph focus on the GET commands related to model data.
+
+As the definition in this service, a model is an output from either a simulation code, or from a measurement for a given lattice. A model data could be re-produced within acceptable error tolerance when all initial parameters are in place.
+
 * **retrieveModelCodeInfo**
+    
+    Since model data is an output from for example simulation, it is necessary to capture some brief information like data was generated by which simulation code with which algorithm. This commands is to get the simulation code name with the algorithm back. The code name could be a name of a particular simulation code, or whatever the name fit the site naming convention if it is from a measurement. It is suggested to given a brief name for the algorithm, but not mandatory. 
+    
+    :NOTE: the code name with algorithm has to be unique, and empty algorithm is also treated as one value.
 
-* **retrieveModelStatus**
+    **keywords** for searching: ::
+    
+        function:   retrieveModelCodeInfo
+        name:       [optional] code name to generate a model
+        algorithm:  [optional] algorithm to generate a model
 
-* **retrieveModel**
+    Client can search by either name, and/or algorithm. But if both name and algorithm are not given, it raises an exception, and returns client a 404 error.
+
+    **Result data structure**: ::
+    
+            {'id':  # model code internal id
+                  {'name':         # simulation code name
+                   'algorithm': ,  # algorithm, None if not specified.
+                  } ,
+                ...
+             }
+
+    Example command (a request sent to server as below) could be as below: ::
+    
+    /lattice/?function=retrieveModelCodeInfo&name=*&algorithm=*
+    
+    This command is particular useful since it returns all existing entries. Client is able to check what the service has already, and is able to reuse existing entry.
 
 * **retrieveModelList**
 
+    Retrieve model header information that satisfies given constrains. 
+    
+    **keywords** for searching: ::
+        
+        function:       retrieveModelList
+        latticename:    lattice name that this model belongs to
+        latticeversion: the version of lattice
+        latticebranch:  the branch of lattice
+    
+    **Result data structure**: ::    
+    
+        {'model name':                  # model name
+            {'id': ,                    # internal model id number
+             'latticeId': ,             # internal lattice id which this particular model belongs to
+             'description':, [optional] # description of this model
+             'creator': ,    [optional] # name who create this model first time
+             'originalDate':,[optional] # date when this model was created
+             'updated': ,    [optional] # name who modified last time
+             'lastModified':,[optional] # the date this model was modified last time
+            }
+            ...
+        }
+
+    Example command could be as below: ::
+    
+        /lattice/?function=retrieveModelList&latticename=*&latticeversion=*&latticebranch=*
+    
+    This command gets informations for all existing models for all lattices. Be careful to use this command since it might contain too many information.
+    
+* **retrieveModel**
+
+    Retrieve a model list that satisfies given constrains with global beam parameters.
+
+    **keywords** for searching: ::
+    
+        function:    retrieveModelList
+        name:        name of a model to be retrieved
+        id:          id of a model to be retrieved
+    
+    Client can search and retrieve a model by either a name of a model, or its internal id. When an ID is given, it retrieves exact that model which has given ID number. 
+    
+    :NOTE: if both ID and name are given, it tries to match both. It sometime is useful.
+    
+    **Result data structure**: ::    
+    
+        {'model name':                    # model name
+                {'id': ,                  # model id number
+                 'latticeId': ,           # id of the lattice which given model belongs to
+                 'description': ,         # description of this model
+                 'creator': ,             # name who create this model first time
+                 'originalDate': ,        # date when this model was created
+                 'updated': ,             # name who modified last time
+                 'lastModified': ,        # the date this model was modified last time
+                 'tunex': ,               # horizontal tune
+                 'tuney': ,               # vertical tune
+                 'alphac': ,              # momentum compaction
+                 'chromex0': ,            # linear horizontal chromaticity
+                 'chromex1': ,            # non-linear horizontal chromaticity
+                 'chromex2': ,            # high order non-linear horizontal chromaticity
+                 'chromey0': ,            # linear vertical chromaticity
+                 'chromey1': ,            # non-linear vertical chromaticity
+                 'chromey2': ,            # high order non-linear vertical chromaticity
+                 'finalEnergy': ,         # the final beam energy in GeV
+                 'simulationCode': ,      # name of simulation code, Elegant and Tracy for example
+                 'sumulationAlgorithm': , # algorithm used by simulation code, for example serial or parallel,
+                                          # and SI, or SI/PTC for Tracy code
+                 'simulationControl': ,   # various control constrains such as initial condition, beam distribution, 
+                                          # and output controls
+                 'simulationControlFile': # file name that control the simulation conditions, like a .ele file for elegant
+                }
+         ...
+        }
+                                
+                               }
+
+
+    :NOTE: for data generated from Elegant, ``finalEnergy`` usually is :math:`\beta*\gamma` unless the client converted it before saving it.
+
+    Example command could be as below: ::
+    
+        /lattice/?function=retrieveModel&name=*
+        
+    This command gets informations for all existing models. Be careful to use this command since it might contain too many information.
+
+    or can search by id as below: ::    
+    
+        /lattice/?function=retrieveModel&id=1
+        
+    This command gets informations for existing model with id = 1.
+
+    or can search by both id and name as below: ::    
+    
+        /lattice/?function=retrieveModel&id=1&name=whatever
+        
+    This command gets informations for existing model ``whatever`` that its id = 1. A wildcast is supported in the name matching; in this case, a model has given name matching pattern with given id will be returned by server.
+    
+    
+* **retrieveModelStatus**
+
+    Like a lattice, a model could have a status also, which is indicated by an integer. This API is to retrieve the status number if it has one.
+    
+    Each site could have own convention how to define the status. A typical use of the model status is to identify a golden model, and a reference definition could be as below:
+    
+    +-----+-----------------------------------------------+
+    | id  |   statement                                   |
+    +=====+===============================================+
+    |  0  |  current golden model                         |  
+    +-----+-----------------------------------------------+
+    |  1  |  alternative golden model                     |  
+    +-----+-----------------------------------------------+
+    |  2  |  model from live machine                      |  
+    +-----+-----------------------------------------------+
+    |  3  |  previous golden model                        |  
+    +-----+-----------------------------------------------+
+
+    **keywords** for searching: ::
+    
+        function:  retrieveModelStatus
+        name:      model name
+        status:    id number of that status.
+
+    if status is not specified, it gets all models having a status, no matter whatever its status is.
+        
+    **Result data structure**: ::
+        
+        {'id':  # identifier of this lattice
+            {'lattice name':              # lattice name
+             'version': ,                 # version of this lattice
+             'branch': ,                  # branch this lattice belongs to
+             'status': ,                  # lattice description
+             'creator':      [optional],  # who set status first time
+             'originalDate': [optional],  # when this status was set first time
+             'updated':      [optional],  # who updated last time
+             'lastModified': [optional],  # when it was updated last time
+            },
+            ...
+        }
+    
+    
+    Example command (a request sent to server as below) could be as below: ::
+        
+        /lattice/?function=retrieveModelStatus&name=*&status=*
+        
+    it gets all models those have status.
+    
+    
 * **retrieveTransferMatrix**
+
+    Retrieve transfer matrix if the it is available from a given model.
+        
+    **keywords** for searching: ::
+    
+        modelname:   the name shows that which model this API will deal with
+        from:        floating number, s position of starting element, default 0
+        to:          floating number, s position of ending element, default the max of element in a lattice
+
+    **Result data structure**: ::
+    
+        {'model name':  # model name
+            {
+                'name':          [element name],
+                'index':         [element index],
+                'position':      [s position],
+                'transferMatrix':[[transfer matrix],],
+            }
+            ...
+        }
+    
+    It returns a map, or dictionary in Python, results for each model shows as one entry in this map, with a sub-map/sub-dictionary. The sub-map has 4 keys which are described as below, and the value of each key is a collection/list/array:
+    
+    - name. Element ``'name'`` appears in its lattice.
+    - index. ``'index'`` is an sequence number to identify element appeared in its lattice.
+    - position. ``'position'`` is s position at the end of each element along beam direction, which is typically generated with a simulation code.
+    - transferMatrix. ``'transferMatrix'`` is 6-dimension beam linear transfer matrix from starting point, which means the valued is propagated from s=0. Transfer matrix of each element is a sub-array of the transfer matrix with a structure like:
+        
+        [M00 M01 M01 M03 M04 M05 M06 M07 M08 .. M55]
+        
+        :NOTE: the value heavily relies on the simulation environment such as code, algorithm, and others. 
+
+    Example command (a request sent to server as below) could be as below: ::
+        
+        /lattice/?function=retrieveTransferMatrix&name=whateverthename&from=12.3456&to=34.5678
+        
+    it intendes to get transfer matrix from model ``whateverthename``, that element s position is (12.3456, 34.5678). If there is no element in that range, it return an empty value.
 
 * **retrieveClosedOrbit**
 
+    Retrieve closed orbit distortion if the it is available from a given model.
+        
+    **keywords** for searching: ::
+    
+        modelname:   the name shows that which model this API will deal with
+        from:        floating number, s position of starting element, default 0
+        to:          floating number, s position of ending element, default the max of element in a lattice
+
+    **Result data structure**: ::
+    
+        {'model name':  # model name
+            {
+                'name':     [element name],
+                'index':    [element index],
+                'position': [s position],
+                'codx':     [codx],
+                'cody':     [cody]
+            }
+            ...
+        }
+    
+    It returns a map, or dictionary in Python, results for each model shows as one entry in this map, with a sub-map/sub-dictionary. The sub-map has 5 keys which are described as below, and the value of each key is a collection/list/array:
+    
+    - name. Element ``'name'`` appears in its lattice.
+    - index. ``'index'`` is an sequence number to identify element appeared in its lattice.
+    - position. ``'position'`` is s position at the end of each element along beam direction, which is typically generated with a simulation code.
+    - codx. ``'codx'`` is horizontal closed orbit distortion.
+    - cody. ``'cody'`` is vertical closed orbit distortion.
+    
+    Example command (a request sent to server as below) could be as below: ::
+        
+        /lattice/?function=retrieveClosedOrbit&name=whateverthename&from=12.3456&to=34.5678
+        
+    it intendes to get closed orbit for model ``whateverthename``, that element s position is (12.3456, 34.5678). If there is no element in that range, it return an empty value.
+
 * **retrieveTwiss**
 
+    Retrieve twiss parameters if the it is available from a given model.
+        
+    **keywords** for searching: ::
+    
+        modelname:   the name shows that which model this API will deal with
+        from:        floating number, s position of starting element, default 0
+        to:          floating number, s position of ending element, default the max of element in a lattice
+
+    **Result data structure**: ::
+    
+        {'model name':  # model name
+            {
+                'name':     [element name],
+                'index':    [element index],
+                'position': [s position],
+                'alphax':   [],
+                'alphay':   [],
+                'betax':    [],
+                'betay':    [],
+                'etax':     [],
+                'etay':     [],
+                'etapx':    [],
+                'etapy':    [],
+                'phasex':   [],
+                'phasey':   [],
+            }
+            ...
+        }
+    
+    It returns a map, or dictionary in Python, results for each model shows as one entry in this map, with a sub-map/sub-dictionary. The sub-map has 4 keys which are described as below, and the value of each key is a collection/list/array:
+    
+    - name. Element ``'name'`` appears in its lattice.
+    - index. ``'index'`` is an sequence number to identify element appeared in its lattice.
+    - position. ``'position'`` is s position at the end of each element along beam direction, which is typically generated with a simulation code.
+    - alphax. ``alphax`` is horizontal :math:`\alpha` twiss function
+    - alphay. ``alphay`` is vertical :math:`\alpha` twiss function
+    - betax. ``betax`` is horizontal :math:`\beta` twiss function
+    - betay. ``betay`` is vertical :math:`\beta` twiss function
+    - etax. ``etax`` is horizontal dispersion
+    - etay. ``etay`` is vertical dispersion
+    - etapx. ``etapx`` is slope of horizontal dispersion
+    - etapy. ``etapy`` is slope of vertical dispersion
+    - phasex. ``phasex`` is horizontal phase advance
+    - phasey. ``phasey`` is vertical phase advance
+
+    :NOTE: Be careful about the value, especially the unit of value. Usually, the value is stored as it is. It is suggested that client does not manipulate the value and uses code convention when it is stored. 
+
+    Example command (a request sent to server as below) could be as below: ::
+        
+        /lattice/?function=retrieveTwiss&name=whateverthename&from=12.3456&to=34.5678
+        
+    it intendes to get twiss parameter for model ``whateverthename``, that element s position is (12.3456, 34.5678). If there is no element in that range, it return an empty value.
+
 * **retrieveBeamParameters**
+
+    Retrieve all beam parameters of each element that satisfies given constrains.
+        
+    **keywords** for searching: ::
+    
+        modelname:   the name shows that which model this API will deal with
+        from:        floating number, s position of starting element, default 0
+        to:          floating number, s position of ending element, default the max of element in a lattice
+
+        {'model name':  # model name
+            {
+                'name':          [element name],
+                'index':         [element index],
+                'position':      [s position],
+                'alphax':        [],
+                'alphay':        [],
+                'betax':         [],
+                'betay':         [],
+                'etax':          [],
+                'etay':          [],
+                'etapx':         [],
+                'etapy':         [],
+                'phasex':        [],
+                'phasey':        [],
+                'codx',          [],
+                'cody',          [],
+                'transferMatrix':[[transfer matrix],],
+            }
+            ...
+        }
+    
+    The returned result is a collection of 3 APIs: which are ``retrieveTransferMatrix``, ``retrieveClosedOrbit``, and ``retrieveTwiss``.    
+
+    Example command (a request sent to server as below) could be as below: ::
+        
+        /lattice/?function=retrieveBeamParameters&name=whateverthename&from=12.3456&to=34.5678
+        
+    it intendes to get all beam parameters from model ``whateverthename``, that element s position is (12.3456, 34.5678). If there is no element in that range, it return an empty value.
 
 
 POST Methods
