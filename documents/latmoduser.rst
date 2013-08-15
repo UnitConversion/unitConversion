@@ -1,4 +1,4 @@
-Lattice/Model web service Reference Manual
+Lattice/Model Web Service User Manual
 ============================================
 
 Introduction

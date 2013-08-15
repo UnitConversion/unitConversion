@@ -15,8 +15,8 @@ Welcome to physicsServices's documentation!
    municonvweb
    municonvwebref
    latticemodel
-   latmodweb
-   latmodwebref
+   latmoduser
+   latmodref
    
 Indices and tables
 ==================
