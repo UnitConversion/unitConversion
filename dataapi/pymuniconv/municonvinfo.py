@@ -189,7 +189,7 @@ def _conversioninfobyfieldname(fieldname):
     localdict = _updateconversioninfo(res4magenticlen, localdict)
     return localdict
 
-def retrieveconversioninfo(params, cache=True):
+def retrieveconversioninfo(params, cache=False):
     '''
     acceptable key words to identify device(s):
      -- id: inventory id
@@ -263,7 +263,7 @@ def retrieveconversioninfo(params, cache=True):
     if fieldnames == None or len(fieldnames) == 0:
         fieldnames = None
 
-    cache = True
+    #cache = True
     if params.has_key('cache'):
         cache = True
 
