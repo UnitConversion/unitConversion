@@ -105,6 +105,7 @@ INSTALLED_APPS_DEV = (
 
     'magnets',
     'lattice',
+    'activeinterlock',
 
     #Third party apps
     'crispy_forms',
