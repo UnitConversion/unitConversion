@@ -1,7 +1,7 @@
 Active Interlock Data API
 =============================
 
-.. automodule:: activeinterlock.epsai
+.. automodule:: pyactiveinterlock.epsai
     :members: 
 
 .. autoclass:: epsai

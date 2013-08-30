@@ -12,7 +12,7 @@ import json
 import base64
 import random
 
-from dataapi.activeinterlock.epsai import epsai
+from dataapi.pyactiveinterlock.epsai import epsai
 from utest.activeinterlock.dataapi.rdbprepare import (close, connect)
 
 class Test(unittest.TestCase):
