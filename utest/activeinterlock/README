@@ -1,0 +1,8 @@
+this unit test needs a configuration file, rdbinfo.py, under rdbutils directory to point to a MySQL database server.
+The content of that file is as below:
+
+host = '' # host name/ip address or full socket path
+user = '' # user name if it has
+pw = ''   # password if it has
+db = ''   # database name
+dbp = ''  # database port

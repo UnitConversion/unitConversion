@@ -1,4 +1,4 @@
-Active Interlock Data API
+Data API
 =============================
 
 .. automodule:: pyactiveinterlock.epsai

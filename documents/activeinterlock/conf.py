@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys, os
+#import inspect
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -19,6 +20,10 @@ import sys, os
 #sys.path.insert(0, os.path.abspath('.'))
 
 sys.path.append(os.path.abspath('../../dataapi'))
+sys.path.append(os.path.abspath('../../physics_dev/physics_django'))
+#path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
+
+os.environ['DJANGO_SETTINGS_MODULE']='credentials'
 
 # -- General configuration -----------------------------------------------------
 

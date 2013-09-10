@@ -3,15 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to active interlock's documentation!
-============================================
+Welcome to active interlock data service's documentation!
+====================================================================================
 
-Contents:
+Active interlock data service is implementation using Django framework, and its implementation details could be found in this documen.
 
 .. toctree::
-   :maxdepth: 2
-
-   dataapi
+    :maxdepth: 2
+    
+    introduction
+    client
+    service
+    dataapi
 
 Indices and tables
 ==================

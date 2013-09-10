@@ -12,8 +12,8 @@ import json
 import base64
 import random
 
-from dataapi.pyactiveinterlock.epsai import epsai
-from utest.activeinterlock.dataapi.rdbprepare import (close, connect)
+from pyactiveinterlock.epsai import epsai
+from activeinterlock.rdbutils import (close, connect)
 
 class Test(unittest.TestCase):
 
@@ -269,7 +269,7 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         # clean active interlock RDB after finish
-        #self.__cleanrdb()
+        self.__cleanrdb()
         close(self.conn)
 
     def test_activeinterlocklogic(self):

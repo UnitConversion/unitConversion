@@ -3,69 +3,6 @@ Created on Aug 15, 2013
 
 @author: shengb
 
-Active interlock is a fast system, which needs to dump beam within 1 milli-seconds.
-It is a sub-system of EPS (Equipment Protection System). 
-
-Static data needed by active interlock system is captured and saved in RDB, whihc uses MySQL as RDBMS at current
-implementation, and all history data are kept. Once data is loaded into MySQL database, except its status (active or inactive),
-it is not allowed to change the data anymore to prevent any undesired behavior.
-
-This domain is dedicated to NSLS II project at BNL.
-
-**Terminology**:
-
-   - AIOL:  active interlock offset limit, which applies for both horizontal & vertical
-       - AIHOL: active interlock horizontal offset limit
-       - AIVOL: active interlock vertical offset limit
-   - AIAL:  active interlock angle limit, which applies for both horizontal & vertical
-       - AIHAL: active interlock horizontal angle limit
-       - AIVAL: active interlock vertical angle limit
-
-
-**Active interlock unit**: 
-
-Each active interlock unit consists of three (3) logical devices, which are usually two (2) BPMs 
-and one virtual device located in between of 2 BPMs with a sequence as below: ::
-
-    Device 1 (BPM) ---> Device 3 (Active Interlock Envelop) ---> Device 2 (BPM)
-
-As mentioned above, AIOL/AIAL applies both horizontal and vertical axes. According the device location, 
-some detailed parameters are defined as below:
-    
-     - ``x1``: horizontal and vertical (x & y) beam position at device 1;
-     - ``x2``: horizontal and vertical (x & y) beam position at device 2;
-     - ``s1``: location offset of device 1 relative a position, center of a straight section usually;
-     - ``s2``: location offset of device 2 relative a position, center of a straight section usually;
-     - ``s3``: location offset of device 3 relative a position, center of a straight section usually;
-  
-**Active interlock logic**: 
-
-An active interlock logic is defined to keep electron beam within allowed phase space in above 3 locations.
-The logic presented in source data are encoded with an algorithm as below: ::
-    
-    ======  ==================================  ====================  ======================
-     code               logic                       shape               AIE type
-    ------  ----------------------------------  --------------------  ----------------------
-      10       |x1|<AIOL & |x2|<AIOL              Diamond               AIE-ID-B & AIE-BM
-    ------  ----------------------------------  --------------------  ----------------------
-      20       |(x2-x1)*(s3-s1)/(s2-s1)|<AIOL     Rectangular           AIE-ID-A
-             & |(x2-x1)/(s2-s1)|<AIAL
-    ------  ----------------------------------  --------------------  ----------------------
-      21       |x1|<AIOL & |x2|<AIOL              Rectangular           AIE-ID-C
-             & |(x2-x1)/(s2-s1)|<AIAL            + optimal offset
-    ------  ----------------------------------  --------------------  ----------------------
-      22       |x1|<AIOL & |x2|<AIOL 
-             & |(x2-x1)*(s3-s1)/(s2-s1)|<AIOL     Rectangular           AIE-ID-D
-             & |(x2-x1)/(s2-s1)|<AIAL            + small offset
-    ======  ==================================  ====================  ======================
-
-
-
-The tens digit identifies a major AIE (active interlock envelope) shape, and the unit digit is for a derivation.
-If there is a new shape, a new code could be extended.
-
-:NOTE: An assumption here is that there is no more than 10 different shapes, and each shape has less than 10 derivations.
-
 """
 
 import logging
@@ -223,7 +160,8 @@ class epsai(object):
             sql += ' ai.status = %s '
             vals.append(status)
         else:
-            sql += ' ai.status like "%" '
+            sql += ' ai.status like %s '
+            vals.append('%')
         
         if datefrom != None:
             if len(vals) > 0:
@@ -239,15 +177,12 @@ class epsai(object):
         
         try:
             cur=self.conn.cursor()
-            if len(vals)>0:
-                cur.execute(sql, vals)
-            else:
-                cur.execute(sql)
+            cur.execute(sql, vals)
             res = cur.fetchall()
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching active interlock data set headers:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise
-    
+            raise e
+
         resdict = {}
         for r in res:
             tmp = {'status': r[1]}
@@ -265,7 +200,7 @@ class epsai(object):
             if len(r) == 8:
                 tmp['rawdata'] = r[7]
             resdict[r[0]] = tmp
-            
+
         return resdict
     
     def _retrievedataset(self, status, datefrom=None, dateto=None, rawdata=False):
@@ -331,7 +266,7 @@ class epsai(object):
         except KeyError as e:
             self.logger.info('Data set error when fetching active interlock data set:\n%s (%d)' %(e.args[1], e.args[0]))
             raise e
-    
+
         return res
     
     def saveactiveinterlock(self, data, description=None, rawdata=None, active=True, author=None):
@@ -395,7 +330,7 @@ class epsai(object):
              '', '', 'm', 'mm', 'mm'
             ]
             
-        :param data: data container with structure described as above.
+        :param data: original data structure is described as above.
         :type data: dict
             
         :param description: comments or any other notes for this data set.
@@ -588,7 +523,7 @@ class epsai(object):
         
         if status not in [0, 1]:
             raise AttributeError('status for active interlock data has to be either 0 or 1.')
-        
+
         try:
             cur=self.conn.cursor()
             cur.execute('''select status from active_interlock where active_interlock_id = %s''', (aiid,))
@@ -597,23 +532,25 @@ class epsai(object):
             if aiid_status == None:
                 raise ValueError("given internal id (%s) of active interlock data set does not exist"%(aiid))
             aiid_status = aiid_status[0]
+            
             if aiid_status == status:
                 # Nothing to do since status is same for that particular data set
                 return False
             
             deactivate=False
             active_id = -1
+            
             if status == 1:
                 # activate this particular data set, therefore, current active data set has to be deactivated.
                 
                 # get current active data set id
-                cur.execute('''select active_interlock_id from active_interlock where status = 1''', (aiid,))
+                cur.execute('''select active_interlock_id from active_interlock where status = 1''')
                 active_id = cur.fetchone()
                 if len(active_id) != 0:
                     # find active data set, has to deactivate it before setting a new active data set.
                     deactivate=True
                     active_id = active_id[0]
-
+            
             if author == None:
                 if deactivate:
                     sql = '''update active_interlock set status=0, modified_by=NULL, modified_date=now() where active_interlock_id = %s'''
@@ -719,7 +656,10 @@ class epsai(object):
         
         for r in res:
             for i in range(len(labels)):
-                results[i].append(r[i])
+                if i == 4:
+                    results[i].append(r[i].isoformat())
+                else:
+                    results[i].append(r[i])
 
         for i in range(len(labels)):
             resdict[labels[i]]=results[i]
@@ -779,6 +719,8 @@ class epsai(object):
             
     def retrieveactiveinterlocklogic(self, name, shape=None, logic=None):
         '''Retrieve logic information according given search constrains.
+        Active interlock envelop name has to be provided as a minimum requirement for this function.
+        
         Wildcast matching is supported for name and shape with:
         
             - ``*`` for multiple characters match, 
@@ -856,7 +798,10 @@ class epsai(object):
         
         for r in res:
             for i in range(len(labels)):
-                results[i].append(r[i])
+                if i == 6:
+                    results[i].append(r[i].isoformat())
+                else:
+                    results[i].append(r[i])
 
         for i in range(len(labels)):
             resdict[labels[i]]=results[i]

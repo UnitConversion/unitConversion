@@ -1,3 +1,11 @@
+""" 
+Created on May 9th, 2013
+
+.. module:: activeinterlock.views
+    :platform: Unix, Windows
+    :synopsis: RESTful interface for active interlock service 
+
+"""
 import re
 
 #from django.shortcuts import render_to_response
@@ -10,24 +18,22 @@ except ImportError:
     import json
 
 from utils.logger import _setup_logger
-activeinterlock_log = _setup_logger('activeinterlock_view')
+activeinterlock_log = _setup_logger('activeinterlock_view', 'activeinterlock.log')
 
 from dataprocess import (retrieveactiveinterlock, retrieveactiveinterlocklogic,retrieveactiveinterlockproptype,saveactiveinterlock,saveactiveinterlocklogic,saveactiveinterlockproptype,updateactiveinterlockstatus)
 
-def _retrievecmddict(request):
+def _retrievecmddict(httpcmd):
     '''
     Retrieve GET request parameters, lower all keys, and return parameter dictionary.
     '''
-    getcmd = request.GET.copy()
-    # multiple values support.
-    getdict = {}
-    for k, v in getcmd.iteritems():
-        vlist = getcmd.getlist(k)
+    cmddict = {}
+    for k, v in httpcmd.iteritems():
+        vlist = httpcmd.getlist(k)
         if len(vlist) > 1:
-            getdict[k.lower()] = list(set(vlist))
+            cmddict[k.lower()] = list(set(vlist))
         else:
-            getdict[k.lower()] = v
-    return getdict
+            cmddict[k.lower()] = v
+    return cmddict
 
 post_actions = (('saveActiveInterlock', saveactiveinterlock),
                 ('updateActiveInterlockStatus', updateactiveinterlockstatus),
@@ -52,6 +58,8 @@ def dispatch(params, actions):
 
 @require_http_methods(["GET", "POST"])
 def activeinterlock(request):
+    '''Interface to response a client request.
+    '''
     try:
         res = {'message': 'Did not found any entry.'}
         if request.method == 'GET':
