@@ -313,7 +313,7 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(r, 'Failed to create simple client')
         self.assertEqual(r.status_code, 200, 'Fail to connect to active interlock service')
 
-    def _test_activeinterlocklogic(self):
+    def test_activeinterlocklogic(self):
         ''''''
         self.__cleanrdb()
         labels = self.aie_logic['label']
@@ -372,7 +372,7 @@ class Test(unittest.TestCase):
             res.pop('date', None)
         self._checkdata(aie_logic, res)
         
-    def _test_activeinterlockproptype(self):
+    def test_activeinterlockproptype(self):
         ''''''
         self.__cleanrdb()
         labels = self.aie_prop_type['label']
