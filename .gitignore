@@ -3,3 +3,4 @@
 *.pyc
 credentials.py
 rdbinfo.py
+/nbproject/private/

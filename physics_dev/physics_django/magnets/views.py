@@ -38,6 +38,12 @@ def _gettreexml(data):
 def magnets_help(request):
     return render_to_response("magnets/magnets_help.html")
 
+def magnets_home(request):
+    return render_to_response("magnets/index.html")
+
+def magnets_content_home(request):
+    return render_to_response("magnets/content.html")
+
 def systemlistweb(request):
     params = _retrievecmddict(request)
     try:

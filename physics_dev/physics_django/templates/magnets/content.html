@@ -1,0 +1,95 @@
+{% verbatim %}
+<div>
+	<!-- Left navigation -->
+	<div class="container-left">
+		<div id="load_filters" class="well container-scroll">
+			<div class="clear"></div>
+			<div id="search_form">
+				<div class="">
+					<h5>Search for devices</h5>
+				</div>
+
+				<div>
+					Search in:
+				</div>
+				<div>
+					<label class="radio">
+						<input type="radio" name="type" ng-model="search.type" value="inventory" />
+						Inventory
+					</label>
+					<label class="radio">
+						<input type="radio" name="type" ng-model="search.type" value="installation" checked="checked" />
+						Installation
+					</label>
+					<br />
+				</div>
+				<div class="{{search.displaySystem}}">
+					System:
+					<br />
+					<input type="text" ng-model="search.system" name="system" typeahead="system for system in systems | filter:$viewValue | limitTo:8" />
+					<br />
+					<br />
+				</div>
+				<div class="{{search.displayName}}">
+					Name:
+					<br />
+					<input type="text" ng-model="search.name" name="name" />
+					<br />
+					<br />
+				</div>
+				<div>
+					Component type:
+					<br />
+					<input type="text" ng-model="search.component_type" name="component_type" />
+					<br />
+					<br />
+				</div>
+				<div>
+					Serial number:
+					<br />
+					<input type="text" ng-model="search.serial_number" name="serial_number" />
+					<br />
+					<br />
+				</div>
+				<div>
+					<button ng-click="searchForDevices(search)" class="btn">Search</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="container-resize">
+		<div id="container-resize"></div>
+	</div>
+
+	<!-- List of Logs -->
+	<a name="#top"></a>
+	<div class="container-middle">
+		<div id="load_devices" class="well container-scroll-middle">
+			<div class="form_search input-append" id="form-search">
+				<input type="text" placeholder="Search ..." id="search-query" class="search_input">
+				<button id="search-button" class="btn">Search</button>
+			</div>
+			<div ng-repeat="device in devices" class="device {{device.click}} {{device.color}}">
+				<input type="hidden" name="id" value="{{device.serialNumber}}" />
+				<p class="text-info">{{device.name}} - {{device.serialNumber}}</p>
+				{{device.typeDescription}}
+				<br />
+			</div>
+		</div>
+	</div>
+
+	<div class="container-resize2">
+		<div id="container-resize2"></div>
+	</div>
+
+	<!-- Details view -->
+	<a name="#view"></a>
+	<div class="container-right">
+		<div id="load_details" class="well container-scroll-last-one">
+			<div id="raw"></div>
+			<div id="plot"></div>
+		</div>
+	</div>
+</div>
+{% endverbatim %}
