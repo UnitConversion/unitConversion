@@ -1,6 +1,9 @@
+/**
+ * Provide systems to controllers
+ */
 app.factory('systemService', function($resource){
 
-	return $resource(serviceurl + 'magnets/system/', {'8000': ':8000'}, {
+	return $resource(serviceurl + 'magnets/system/', {}, {
 		transform: {
 			method:'GET',
 			isArray:false,

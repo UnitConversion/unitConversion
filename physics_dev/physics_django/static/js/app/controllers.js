@@ -1,13 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+app.controller('mainCtrl', function($scope, $http, systemService, $routeParams){
 
-/**
- * List systems in the left pane
- */
-app.controller('systemsListCtrl', function($scope, $routeParams, $http, systemService) {
-	l("system controller");
+});
+
+app.controller('searchFormCtrl', function($scope, systemService){
+	l("main controller");
+
 	$scope.search = {};
 	$scope.systems = [];
 	$scope.search.displayName = "display_search_filter";
@@ -21,7 +18,7 @@ app.controller('systemsListCtrl', function($scope, $routeParams, $http, systemSe
 
 	// Search button click
 	$scope.searchForDevices = function(search) {
-		window.location = "#/system=" + search.system;
+		window.location = "#/system=" + search.system + '&name=' + search.name;
 		//searchForLogs(search.system, true);
 	};
 
@@ -41,19 +38,13 @@ app.controller('systemsListCtrl', function($scope, $routeParams, $http, systemSe
 });
 
 /**
- * List devices in the middle pane
+ * List systems in the left pane
  */
-app.controller('devicesListCtrl', function($scope, $routeParams, $http, systemService){
-	l("devices controller");
-	$scope.devices = [];
-	$scope.systems = [];
-
-	// Load Systems
-	systemService.transform(function(data){
-		$scope.systems = data.systems;
-	});
+app.controller('listDevicesCtrl', function($scope, systemService, $routeParams, $http) {
+	l("search controller");
 
 	l($routeParams);
+	$scope.devices = [];
 
 	$http.get(serviceurl + 'magnets/devices/?system=' + $routeParams.systemName).success(function(data){
 
@@ -77,4 +68,20 @@ app.controller('devicesListCtrl', function($scope, $routeParams, $http, systemSe
 			$scope.devices.push(newItem);
 		});
 	});
+
+	$scope.showDetails = function(device){
+		l(device);
+		device.click = "device_click";
+		//$scope.devices[1].click = "device_click";
+		window.location = "#/query/id=3";
+	};
+});
+
+/**
+ * List devices in the middle pane
+ */
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, systemService){
+	l("details controller");
+	$('#load_details').show("fast");
+	$scope.data = "bla";
 });

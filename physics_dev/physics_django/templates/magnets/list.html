@@ -1,0 +1,12 @@
+{% verbatim %}
+<div class="form_search input-append" id="form-search">
+	<input type="text" placeholder="Search ..." id="search-query" class="search_input">
+	<button id="search-button" class="btn">Search</button>
+</div>
+<div ng-repeat="device in devices" ng-click="showDetails(device)" class="device {{device.click}} {{device.color}}">
+	<input type="hidden" name="id" value="{{device.serialNumber}}" />
+	<p class="text-info">{{device.name}} - {{device.serialNumber}}</p>
+	{{device.typeDescription}}
+	<br />
+</div>
+{% endverbatim %}

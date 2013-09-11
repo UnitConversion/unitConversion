@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 
-from physics_django.magnets.views import (magnetdevicesweb, magnets_help, magnets_home, magnets_content_home, systemlistweb, conversionweb) 
+from physics_django.magnets.views import (magnetdevicesweb, magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, systemlistweb, conversionweb) 
 from physics_django.magnets.views import (magnetdevices, systemlist, conversion) 
 
 urlpatterns = patterns(
@@ -26,6 +26,15 @@ urlpatterns = patterns(
 	url(r'^magnets/web/content.html$',
         magnets_content_home,
         name='magnets_content_home'),
+	url(r'^magnets/web/search.html$',
+        magnets_content_search,
+        name='magnets_content_search'),
+	url(r'^magnets/web/list.html$',
+        magnets_content_list,
+        name='magnets_content_list'),
+	url(r'^magnets/web/details.html$',
+        magnets_content_details,
+        name='magnets_content_details'),
 
     # return raw data not thru html ui
     url(r'^magnets/devices/$',
