@@ -1,8 +1,15 @@
+
+/*
+ * Main controller when we load the main page
+ */
 app.controller('mainCtrl', function($scope, $http, systemService, $routeParams){
 
 });
 
-app.controller('searchFormCtrl', function($scope, systemService){
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchFormCtrl', function($scope, systemService, $window){
 	l("main controller");
 
 	$scope.search = {};
@@ -18,13 +25,11 @@ app.controller('searchFormCtrl', function($scope, systemService){
 
 	// Search button click
 	$scope.searchForDevices = function(search) {
-		window.location = "#/system=" + search.system + '&name=' + search.name;
-		//searchForLogs(search.system, true);
+		$window.location = createDeviceListQuery(search, true) + "/list";
 	};
 
 	// Watch for search type change
 	$scope.$watch('search.type', function(newValue, oldValue){
-		l(newValue);
 
 		if(newValue === "installation") {
 			$scope.search.displayName = "display_search_filter";
@@ -37,25 +42,25 @@ app.controller('searchFormCtrl', function($scope, systemService){
 	});
 });
 
-/**
- * List systems in the left pane
+/*
+ * List devices in the middle pane
  */
-app.controller('listDevicesCtrl', function($scope, systemService, $routeParams, $http) {
-	l("search controller");
+app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window) {
+	l("search controller " + $routeParams.id);
+	$scope.id = $routeParams.id;
 
-	l($routeParams);
 	$scope.devices = [];
+	var previousDevice = undefined;
 
-	$http.get(serviceurl + 'magnets/devices/?system=' + $routeParams.systemName).success(function(data){
+	var query = serviceurl + 'magnets/devices/?' + createDeviceListQuery($routeParams, false);
+	l(query);
+
+	$http.get(query).success(function(data){
 
 		$.each(data, function(i, item){
 
 			// Build customized Log object
-			var newItem = {
-				name: item.name,
-				serialNumber: item.serialNumber,
-				typeDescription: item.typeDescription,
-			};
+			var newItem = item;
 
 			// Alternate background colors
 			if(i%2 === 0) {
@@ -70,18 +75,34 @@ app.controller('listDevicesCtrl', function($scope, systemService, $routeParams, 
 	});
 
 	$scope.showDetails = function(device){
-		l(device);
+		//l(device);
+
+		l(previousDevice);
+
+		// Clear click style from previously selected element
+		if(previousDevice !== undefined) {
+			previousDevice.click = "";
+			$scope.id = undefined;
+		}
+
+		previousDevice = device;
 		device.click = "device_click";
-		//$scope.devices[1].click = "device_click";
-		window.location = "#/query/id=3";
+		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + device.serialNumber;
 	};
 });
 
-/**
- * List devices in the middle pane
+/*
+ * Show details in the right pane
  */
 app.controller('showDetailsCtrl', function($scope, $routeParams, $http, systemService){
 	l("details controller");
-	$('#load_details').show("fast");
-	$scope.data = "bla";
+	$scope.id = $routeParams.id;
+	$scope.show = true;
+
+	var query = serviceurl + 'magnets/conversion/?id=' + $routeParams.id;
+	l(query);
+
+	$http.get(query).success(function(data){
+		showDetails(data, $routeParams.id);
+	});
 });

@@ -1,17 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Create module and add include dependencies
  */
 var app = angular.module('conversion', ['ui.bootstrap', 'ngResource', 'ngRoute', 'route-segment', 'view-segment']);
 
+/*
+ * Define routes for our module
+ */
 app.config(function($routeSegmentProvider, $routeProvider){
 
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',									's1.home').
-		when('/system=:systemName&name=:name',		's1.home.list').
-		when('/:query/id=:id',						's1.home.list.details').
+		when('/',																				's1.home').
+		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',	's1.home.list').
+		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id',	's1.home.list.details').
 
 		segment('s1', {
 			templateUrl: 'content.html',
@@ -25,16 +27,18 @@ app.config(function($routeSegmentProvider, $routeProvider){
 			within().
 				segment('list', {
 					templateUrl: 'list.html',
-					controller: 'listDevicesCtrl'
+					controller: 'listDevicesCtrl',
+					dependencies: ['system', 'name', 'cmpnt_type', 'serialno']
 				}).
 				within().
 					segment('details', {
 						templateUrl: 'details.html',
-						controller: 'showDetailsCtrl'
+						controller: 'showDetailsCtrl',
+						dependencies: ['id']
 					}).
 				up().
 			up().
 		up();
 
-		$routeProvider.otherwise({redirectTo: '/'});
+		//$routeProvider.otherwise({redirectTo: '/'});
 });

@@ -77,3 +77,62 @@ function saveFilterData(dataToBeSaved) {
 function saveOlogSettingsData(dataToBeSaved) {
 	$.cookie(settingsCookieName, JSON.stringify(dataToBeSaved));
 }
+
+/**
+ * Create query for listing devices
+ * @param {type} search search or $routeParams object
+ * @param {boolean} returnUrl return url or query
+ * @returns {String} return url or query string
+ */
+function createDeviceListQuery(search, returnUrl) {
+	var query = "";
+	var url = "#";
+
+	// Add system part
+	if(search.system !== undefined) {
+		query += "system=" + search.system + '&';
+		url += "/system/" + search.system;
+
+	} else {
+		query += "system=*&";
+		url += "/system/";
+	}
+
+	// Add name part
+	if(search.name !== undefined) {
+		query += "name=" + search.name + '&';
+		url += "/name/" + search.name;
+
+	} else {
+		query += "name=*&";
+		url += "/name/";
+	}
+
+	// Add component type part
+	if(search.cmpnt_type !== undefined) {
+		query += "cmpnt_type=" + search.cmpnt_type + '&';
+		url += "/cmpnt_type/" + search.cmpnt_type;
+
+	} else {
+		query += "cmpnt_type=*&";
+		url += "/cmpnt_type/";
+	}
+
+	// Add serial number part
+	if(search.serialno !== undefined) {
+		query += "serialno=" + search.serialno;
+		url += "/serialno/" + search.serialno;
+
+	} else {
+		query += "serialno=*";
+		url += "/serialno/";
+	}
+
+	// Return URL or query
+	if(returnUrl) {
+		return url;
+
+	} else {
+		return query;
+	}
+}

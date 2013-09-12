@@ -86,10 +86,6 @@ html, body {
 	overflow-y: auto;
 }
 
-#load_details {
-	display:none;
-}
-
 .float_right {
 	float: right;
 }
