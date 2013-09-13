@@ -21,6 +21,7 @@ import sys, os
 
 sys.path.append(os.path.abspath('../../dataapi'))
 sys.path.append(os.path.abspath('../../physics_dev/physics_django'))
+sys.path.append(os.path.abspath('../../clientapi'))
 #path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
 
 os.environ['DJANGO_SETTINGS_MODULE']='credentials'
