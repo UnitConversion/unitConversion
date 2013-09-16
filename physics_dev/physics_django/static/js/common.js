@@ -16,9 +16,6 @@ $(document).ready(function(){
 		converterSettings = $.parseJSON($.cookie(settingsCookieName));
 	}
 
-	// Set version number
-	$('.version').html("v" + version);
-
 	// Create new comparator
 	jQuery.expr[':'].Contains = function(a, i, m) {
 		return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
@@ -135,4 +132,29 @@ function createDeviceListQuery(search, returnUrl) {
 	} else {
 		return query;
 	}
+}
+
+/*
+ * Clear object properties of special charasters
+ */
+function removeColumnsFromObjects(data) {
+	var newData = {};
+
+	for(var first in data) {
+		newData[first] = data[first];
+
+		for(var second in newData[first]) {
+
+			if(second.indexOf(':') >= 0) {
+				var newSecond = second;
+				newSecond = newSecond.replace(':', '_');
+				newData[first][newSecond] = data[first][second];
+
+			} else {
+				newData[first][second] = data[first][second];
+			}
+		}
+	}
+
+	return newData;
 }

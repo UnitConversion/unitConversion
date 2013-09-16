@@ -3,7 +3,7 @@
  * Main controller when we load the main page
  */
 app.controller('mainCtrl', function($scope, $http, systemService, $routeParams){
-
+	$scope.version = version;
 });
 
 /*
@@ -75,14 +75,12 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 	});
 
 	$scope.showDetails = function(device){
-		//l(device);
-
-		l(previousDevice);
+		$scope.id = undefined;
 
 		// Clear click style from previously selected element
 		if(previousDevice !== undefined) {
 			previousDevice.click = "";
-			$scope.id = undefined;
+			//$scope.id = undefined;
 		}
 
 		previousDevice = device;
@@ -94,15 +92,37 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, systemService){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http){
 	l("details controller");
 	$scope.id = $routeParams.id;
 	$scope.show = true;
+	$scope.data = {};
+	$scope.view = $routeParams.view;
+
+	$scope.error = {};
 
 	var query = serviceurl + 'magnets/conversion/?id=' + $routeParams.id;
 	l(query);
 
 	$http.get(query).success(function(data){
 		showDetails(data, $routeParams.id);
+		//var repairedData = removeColumnsFromObjects(data[$routeParams.id]);
+		$scope.data = data[$routeParams.id];
 	});
+
+	$scope.result = "";
+
+	$scope.convert = function() {
+		var conversionQuery = serviceurl + 'magnets/conversion/?id=' + $routeParams.id + '&from=' + $scope.source_unit + '&to=' + $scope.destination_unit + '&value=' + $scope.initial_value;
+		l(conversionQuery);
+
+		$http.get(conversionQuery).success(function(data){
+			$scope.result = data[$routeParams.id];
+			l($scope.result);
+			$scope.error.display = false;
+
+		}).error(function(){
+			$scope.error.display = true;
+		});
+	};
 });

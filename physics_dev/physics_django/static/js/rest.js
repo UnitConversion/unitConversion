@@ -118,7 +118,7 @@ function getDeviceDetails(id){
 
 /**
  * Show log that was read from json object or from REST
- * @param {type} log log object
+ * @param {type} details details object
  * @param id id of the log in saved logs array
  */
 function showDetails(details, id){
@@ -128,9 +128,8 @@ function showDetails(details, id){
 
 	//var data = JSON.stringify(details);
 
-	var data = drawDataTree("", details[id]);
-
-	$('#raw').html(data);
+//	var data = drawDataTree("", details[id]);
+//	$('#raw').html(data);
 
 	var options = {
 		title: 'Plot',
@@ -157,11 +156,14 @@ function showDetails(details, id){
 		$('#plot').html("");
 	}
 
-	plot = $.jqplot ('plot', series, options);
+	// Only draw plot if something is in series
+	if(series[0] !== undefined) {
+		plot = $.jqplot ('plot', series, options);
+	}
 
-	series.push([[1,4], [2,5]]);
-	plot.replot({data: series});
-	l(plot.data);
+//	series.push([[1,4], [2,5]]);
+//	plot.replot({data: series});
+//	l(plot.data);
 }
 
 function drawDataTree(html, data){

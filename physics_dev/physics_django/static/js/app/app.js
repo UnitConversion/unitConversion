@@ -11,9 +11,9 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',																				's1.home').
-		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',	's1.home.list').
-		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id',	's1.home.list.details').
+		when('/',																						's1.home').
+		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',			's1.home.list').
+		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view?',	's1.home.list.details').
 
 		segment('s1', {
 			templateUrl: 'content.html',
