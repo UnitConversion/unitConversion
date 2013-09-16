@@ -1,4 +1,8 @@
-Client API Implementation
+Client API Library
 ==============================================
 
-The client is implemented against Django service.
+This library is to access active interlock service.
+
+.. automodule:: activeinterlockpy.activeinterlockclient
+    :members: 
+
