@@ -1,22 +1,11 @@
 from django.conf.urls.defaults import patterns, url
 
-from physics_django.magnets.views import (magnetdevicesweb, magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, magnets_content_results, systemlistweb, conversionweb) 
-from physics_django.magnets.views import (magnetdevices, systemlist, conversion) 
+#from physics_django.magnets.views import (magnetdevicesweb, magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, magnets_content_results, systemlistweb, conversionweb) 
+from physics_django.magnets.views import (magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, magnets_content_results)
+from physics_django.magnets.views import (magnetinventory, magnetinstall, systemlist, conversion) 
 
 urlpatterns = patterns(
     '',
-    url(r'^magnets/web/devices/$',
-        magnetdevicesweb,
-        name='magnetdevicesweb'),
-    url(r'^magnets/web/system/$',
-        systemlistweb,
-        name='system'),
-    url(r'^magnets/web/magnets_help.html',
-        magnets_help,
-        name='magnets_help'),
-    url(r'^magnets/web/conversion/$',
-        conversionweb,
-        name='conversionweb'),
     url(r'^magnets/web/$',
         magnets_home,
         name='magnets_home'),
@@ -38,11 +27,17 @@ urlpatterns = patterns(
 	url(r'^magnets/web/results.html$',
         magnets_content_results,
         name='magnets_content_results'),
+    url(r'^magnets/web/magnets_help.html',
+        magnets_help,
+        name='magnets_help'),
 
     # return raw data not thru html ui
-    url(r'^magnets/devices/$',
-        magnetdevices,
-        name='magnetdevices'),
+    url(r'^magnets/inventory/$',
+        magnetinventory,
+        name='magnetinventory'),
+    url(r'^magnets/install/$',
+        magnetinstall,
+        name='magnetinstall'),
     url(r'^magnets/system/$',
         systemlist,
         name='system'),
