@@ -107,15 +107,6 @@ def retrievemagnetinfo(params):
             for i in range(len(key)):
                 sub[key[i]] = tmp[i]
             res.append(sub)
-#    elif serialno == None:
-#        tmps=municonv.retrieveinstall(name, ctypename=cmpnt_type, location=location)
-#        key = ['installId', 'name', 'system', 'componentType', 'typeDescription', 'vendor']
-#        res = []
-#        for tmp in tmps:
-#            sub={}
-#            for i in range(len(key)):
-#                sub[key[i]] = tmp[i]
-#            res.append(sub)
     else:
         if serialno == None:
             serialno = "*"
@@ -202,10 +193,11 @@ def retrieveconversioninfo(params, cache=False):
      -- value
      -- unit
      -- energy
+     -- complex: identify which complex it will convert
     
     Some global switch
      -- mcdata: return conversion information with result, False by default.
-     -- cache: use cached value, True by default.
+     -- cache: use cached value, False by default.
     '''
     resdict = {}
     names = None
@@ -237,13 +229,6 @@ def retrieveconversioninfo(params, cache=False):
             for r in res:
                 invids.append(r[1])
                 fieldnames.append(r[0])
-
-#            for name in names:
-#                if name != "":
-#                    res = municonv.retrieveinventoryid(name)
-#                    for r in res:
-#                        invids.append(r[1])
-#                        fieldnames.append(r[0])
         elif names != "":
             res = municonv.retrieveinventoryid(names)
             if len(res) == 0:
@@ -265,7 +250,7 @@ def retrieveconversioninfo(params, cache=False):
 
     #cache = True
     if params.has_key('cache'):
-        cache = True
+        cache = bool(json.loads(params['cache'].lower()))
 
     if fieldnames != None:
         # use field name as key
@@ -302,7 +287,7 @@ def retrieveconversioninfo(params, cache=False):
                 return resdict
         mcdata=False
         if params.has_key('mcdata'):
-            mcdata = True
+            mcdata = bool(json.loads(params['mcdata'].lower()))
         
         src = params['from']
         dst = params['to']
@@ -311,16 +296,16 @@ def retrieveconversioninfo(params, cache=False):
             resdict['message'] = 'too many conversion info found. Please check from, to, and/or value parameter.'
             return resdict
         
+        if params.has_key('complex'):
+            cmplxkey=params['complex']
+        else:
+            cmplxkey=None
         keys = ['municonv', 'municonvChain']
-        
         for k, v in resdict.iteritems():
             for key in keys:
                 if v.has_key(key):
                     municonvparams = v[key]
-#                    efflen=None
-#                    if v.has_key('designLength'):
-#                        efflen = v['designLength']
-                    result = conversion(src, dst, value, municonvparams, energy=energy, mcdata=mcdata)
+                    result = conversion(src, dst, value, municonvparams, energy=energy, mcdata=mcdata, cmplxkey=cmplxkey)
                     if result != None:
                         v[key] = result
                         resdict[k] = v
@@ -696,22 +681,36 @@ def _strunicode2num(value):
         res=value
     return res
 
-def conversion(src, dst, value, paramsdict, energy=None, mcdata=False):
+def conversion(src, dst, value, paramsdict, energy=None, mcdata=False, cmplxkey=None):
     resdict={}
 
-    for k, v in paramsdict.iteritems():
-        # k would be either standard, complex:1, complex:2, complex:3, ...
-        res, message, unit = doconversion(src, dst, value, v, energy=energy)
+    if cmplxkey != None:
+        res, message, unit = doconversion(src, dst, value, paramsdict[cmplxkey], energy=energy)
         conversionresultdict = {'message': message,
                                 'unit': unit,
                                 'value': res
                                 }
         tempdict = {}
         if mcdata:
-            tempdict =  copy.deepcopy(v)
+            tempdict =  copy.deepcopy(paramsdict[cmplxkey])
         tempdict.update({'conversionResult':conversionresultdict})
         if energy != None:
             tempdict.update({'realEnergy': energy})
-        resdict[k] = tempdict
+        resdict[cmplxkey] = tempdict
+    else:
+        for k, v in paramsdict.iteritems():
+            # k would be either standard, complex:1, complex:2, complex:3, ...
+            res, message, unit = doconversion(src, dst, value, v, energy=energy)
+            conversionresultdict = {'message': message,
+                                    'unit': unit,
+                                    'value': res
+                                    }
+            tempdict = {}
+            if mcdata:
+                tempdict =  copy.deepcopy(v)
+            tempdict.update({'conversionResult':conversionresultdict})
+            if energy != None:
+                tempdict.update({'realEnergy': energy})
+            resdict[k] = tempdict
 
     return resdict
