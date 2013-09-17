@@ -53,6 +53,9 @@ def magnets_content_list(request):
 def magnets_content_details(request):
     return render_to_response("magnets/details.html")
 
+def magnets_content_results(request):
+    return render_to_response("magnets/results.html")
+
 def systemlistweb(request):
     params = _retrievecmddict(request)
     try:

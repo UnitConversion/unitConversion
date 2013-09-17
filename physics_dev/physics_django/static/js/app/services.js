@@ -1,4 +1,10 @@
-/**
+/*
+ * Services for conversion module
+ *
+ * @author: Dejan Dežman <dejan.dezman@cosylab.com>
+ */
+
+/*
  * Provide systems to controllers
  */
 app.factory('systemService', function($resource){
@@ -8,8 +14,6 @@ app.factory('systemService', function($resource){
 			method:'GET',
 			isArray:false,
 			transformResponse: function(response) {
-				l(response);
-
 				var systemsObject = {};
 				systemsObject.systems = JSON.parse(response);
 				return systemsObject;

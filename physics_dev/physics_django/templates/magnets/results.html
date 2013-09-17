@@ -1,0 +1,13 @@
+{% verbatim %}
+<div ng-if="convertedResult && error.display == false">
+	<ul class="nav nav-tabs">
+		<li ng-repeat="tab in tabs" ng-class="{'active': view == (tab.first + '_' + tab.second)}">
+			<a href="{{url}}{{tab.first}}_{{tab.second}}"><b>{{tab.first}}</b><br/>{{tab.second}}</a>
+		</li>
+	</ul>
+
+	<div ng-repeat="(firstName, firstValue) in convertedResult">
+		<div results-table="" results="firstValue" visible="view == (firstName)"></div>
+	</div>
+</div>
+{% endverbatim %}

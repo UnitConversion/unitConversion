@@ -42,48 +42,11 @@
 				</div>
 			</div>
 		</div>
-
-		<!--<div ng-if="data.municonv.standard">
-			<h5>Standard</h5>
-			<div ng-if="data.municonv.standard.designLength">
-				<p>Design length: {{data.municonv.standard.designLength}}</p>
-			</div>
-			<div ng-if="data.municonv.standard.defaultEnergy">
-				<p>Default Energy: {{data.municonv.standard.defaultEnergy}}</p>
-			</div>
-			<div ng-if="data.municonv.standard.description">
-				<p>Description: {{data.municonv.standard.description}}</p>
-			</div>
-
-			<h6>Algorithms</h6>
-			<div ng-repeat="(name, object) in data.municonv.standard.algorithms">
-				<div class="algorithm" name="name" table-data="object"></div>
-			</div>
-		</div>
-
-		<div ng-if="data.municonv.complex_1">
-			<h5>Complex 1</h5>
-			<div ng-if="data.municonv.complex_1.designLength">
-				<p>Design length: <span ng-bind="data.municonv.complex_1.designLength"></span></p>
-			</div>
-			<div ng-if="data.municonv.complex_1.defaultEnergy">
-				<p>Default Energy: <span ng-bind="data.municonv.complex_1.defaultEnergy"></span></p>
-			</div>
-			<div ng-if="data.municonv.complex_1.description">
-				<p>Description: <span ng-bind="data.municonv.complex_1.description"></span></p>
-			</div>
-
-			<h6>Algorithms</h6>
-			<div ng-repeat="(name, object) in data.municonv.complex_1.algorithms">
-				<div class="algorithm" name="name" table-data="object"></div>
-			</div>
-		</div>-->
-
 	</div>
 
 	<div class="details_data_conversion">
 		<div class="alert alert-error" ng-show="error.display === true">
-			<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}.
+			<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}. {{error.message}}
 		</div>
 
 		<h3>Conversion form</h3>
@@ -121,27 +84,8 @@
 		</table>
 		<br/>
 
-		<div ng-if="result">
-			<div ng-repeat="(firstName, firstValue) in result">
-				<h4>{{firstName}}</h4>
-				<div ng-repeat="(secondName, secondValue) in firstValue">
-					<h5>{{secondName}}</h5>
-					<div key-value-table="" table-data="secondValue.conversionResult"></div>
-				</div>
-			</div>
-		</div>
+		<div app-view-segment="4"></div>
 
-		<!--<ul class="nav nav-tabs">
-			<li ng-class="{'active': view.municonv_standard || view.undefined}">
-				<a href="#">Home</a>
-			</li>
-			<li ng-class="{'active': view.municonv_complex_1}">
-				<a href="#">2</a>
-			</li>
-			<li ng-class="{'active': view.municonv_complex_2}">
-				<a href="#">3</a>
-			</li>
-		</ul>-->
 	</div>
 
 	<div class="details_data">
@@ -152,7 +96,7 @@
 
 		<div ng-if="data.municonv.standard.measurementData">
 			<h3>Measurement data</h3>
-			<div key-value-table="" table-data="data.municonv.standard.measurementData"></div>
+			<div key-value-table="" table-data="data.municonv.standard.measurementData" visible="true"></div>
 		</div>
 	</div>
 </div>

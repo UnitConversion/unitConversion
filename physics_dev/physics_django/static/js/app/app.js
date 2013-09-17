@@ -13,7 +13,8 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.
 		when('/',																						's1.home').
 		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',			's1.home.list').
-		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view?',	's1.home.list.details').
+		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id',			's1.home.list.details').
+		when('/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',	's1.home.list.details.results').
 
 		segment('s1', {
 			templateUrl: 'content.html',
@@ -36,9 +37,16 @@ app.config(function($routeSegmentProvider, $routeProvider){
 						controller: 'showDetailsCtrl',
 						dependencies: ['id']
 					}).
+					within().
+						segment('results', {
+							templateUrl: 'results.html',
+							controller: 'showResultsCtrl',
+							dependencies: ['view']
+						}).
+					up().
 				up().
 			up().
 		up();
 
-		//$routeProvider.otherwise({redirectTo: '/'});
+		$routeProvider.otherwise({redirectTo: '/'});
 });

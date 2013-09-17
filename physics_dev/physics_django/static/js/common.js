@@ -135,26 +135,29 @@ function createDeviceListQuery(search, returnUrl) {
 }
 
 /*
- * Clear object properties of special charasters
+ * Create modal window on top of the web app
+ * Example of use: createModal($modal, $scope);
  */
-function removeColumnsFromObjects(data) {
-	var newData = {};
+function createModal(modal, scope) {
+	var modalInstance = modal.open({
+		template: '\n\
+		<div class="modal-header">\n\
+			<h3>Im a modal!</h3>\n\
+		</div>\n\
+		<div class="modal-body">\n\
+		body\n\
+		</div>\n\
+		<div class="modal-footer">\n\
+			<button class="btn btn-primary" ng-click="ok()">OK</button>\n\
+			<button class="btn btn-warning" ng-click="cancel()">Cancel</button>\n\
+		</div>\n\
+		',
+		controller: "modalCtrl"
+	});
 
-	for(var first in data) {
-		newData[first] = data[first];
-
-		for(var second in newData[first]) {
-
-			if(second.indexOf(':') >= 0) {
-				var newSecond = second;
-				newSecond = newSecond.replace(':', '_');
-				newData[first][newSecond] = data[first][second];
-
-			} else {
-				newData[first][second] = data[first][second];
-			}
-		}
-	}
-
-	return newData;
+	modalInstance.result.then(function(selectedItem) {
+		scope.selected = selectedItem;
+	}, function() {
+		l("modal dismissed");
+	});
 }

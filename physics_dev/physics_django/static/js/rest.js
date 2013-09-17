@@ -7,116 +7,6 @@
 var plot = undefined;
 
 /**
- * Get Logbooks from REST service
- * @param targetId id of the element Logbooks will be placed in
- * @param {type} showByDefault should logbooks be shown by default or not
- * @param {type} saveSelectedItemsIntoACookie only save current selected data into a cookie if this flag is set to true
- * @param {type} showSelectedItemsFromACookie should selected items from a cookie be displayed or not
- */
-function loadSystems(showByDefault){
-	var targetId = "#load_systems";
-
-	// Remove all systems before loading new ones
-	$(targetId).find("li:gt(1)").remove();
-
-	// Load Systems
-	$.getJSON(serviceurl + 'magnets/system/', function(systems) {
-		var template = getTemplate("#template_system");
-		var html = "";
-
-		$.each(systems, function(i, item) {
-			var customItem = {};
-			customItem.name = item;
-			customItem.clicked = "";
-
-			// Should Tags be shown by default or not
-			if(showByDefault !== undefined && showByDefault === true) {
-				customItem.show = "";
-
-			} else {
-				customItem.show = "display_none";
-			}
-
-			// Alternate background colors
-			if(i%2 === 0) {
-				customItem.color = "bg_dark";
-
-			} else {
-				customItem.color = "bg_light";
-			}
-
-			html = Mustache.to_html(template, customItem);
-
-			$(targetId).append(html);
-		});
-
-		// Open or close filter group
-		if(converterSettings.filtersOpened !== undefined && converterSettings.filtersOpened['load_systems'] === true) {
-			openFilterGroup($(targetId));
-
-		} else {
-			closeFilterGroup($(targetId));
-		}
-
-		// Load system filters
-		singleselect("list");
-
-		// Filter systems
-		filterListItems("systems_filter_search", "list");
-
-		// Listen for filters toggle
-		startListeningForToggleFilterClicks();
-
-	}).fail(function(){
-		$('#modal_container').load(modalWindows + ' #serverErrorModal', function(response, status, xhr){
-			$('#serverErrorModal').modal('toggle');
-		});
-	});
-}
-
-/**
- * Return raw template
- * @param {type} id div id selector that holds the template
- * @returns template as a string
- */
-function getTemplate(id){
-	$.ajaxSetup({async:false});
-	var template = "";
-
-	$('#template_container').load(templates + ' ' + id, function(response, status, xhr){
-		template = $(id).html();
-	});
-
-	return template;
-}
-
-/**
- * Get log from json object or from REST if it does not exist.
- * @param {type} id log id
- * @return Array with log data and logId
- */
-function getDeviceDetails(id){
-	var deviceData = null;
-	var serialNumber = id;
-
-	// Load log
-	if(id in savedDevices){
-		deviceData = savedDevices[id];
-
-	} else {
-		$.ajaxSetup({async:false});
-		var searchQuery = serviceurl + 'magnets/conversion/?id=' + id;
-		l(searchQuery);
-		$.getJSON(searchQuery, function(device) {
-			savedDevices[id] = device;
-			deviceData = device;
-		});
-	}
-
-	return [deviceData, serialNumber];
-}
-
-/**
  * Show log that was read from json object or from REST
  * @param {type} details details object
  * @param id id of the log in saved logs array
@@ -166,6 +56,12 @@ function showDetails(details, id){
 //	l(plot.data);
 }
 
+/**
+ * Represent jason data as a tree with <ul> and <li> elements.
+ * @param {type} html html code to start with
+ * @param {type} data json data object
+ * @returns {String} html with tree content
+ */
 function drawDataTree(html, data){
 	//l(data);
 
@@ -173,7 +69,6 @@ function drawDataTree(html, data){
 		return "";
 
 	} else {
-
 		html += "<ul>";
 
 		for(var prop in data) {
@@ -187,17 +82,19 @@ function drawDataTree(html, data){
 			} else {
 				html += ': ' + data[prop];
 			}
-
-
 			html += "</li>";
 		}
-
 		html += "</ul>";
 	}
 
 	return html;
 }
 
+/**
+ * Prepare series for plotting
+ * @param {type} data object that contains data for the series
+ * @returns {Array} array of points in series
+ */
 function prepareSeries(data) {
 
 	if(data.municonv.standard === undefined) {
