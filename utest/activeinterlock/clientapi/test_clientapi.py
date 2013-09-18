@@ -11,10 +11,6 @@ import requests
 import random
 
 import inspect
-import base64
-
-import json
-
 
 from activeinterlock.rdbutils import (close, connect)
 
