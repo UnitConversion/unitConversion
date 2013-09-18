@@ -66,13 +66,13 @@ STATICFILES_FINDERS = (
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.load_template_source',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 ROOT_URLCONF = 'physics_django.urls'
@@ -85,31 +85,42 @@ TEMPLATE_DIRS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    #django.contrib.auth.context_processors.auth",
     "django.core.context_processors.debug",
-    #django.core.context_processors.i18n",
     "django.core.context_processors.media",
     "django.core.context_processors.static",
-    #django.contrib.messages.context_processors.messages"
-    "apps.user_interface.context_processors.is_production"
+    "django.contrib.messages.context_processors.messages",
+    "django.contrib.auth.context_processors.auth",
 )
 
 
 INSTALLED_APPS_PROD = (
     'django.contrib.staticfiles', # include static files
-    #'magnets',                 # Component type editor
+
+    #  support for authentication
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+
+    #  support for admin
+    'django.contrib.messages',
+    'django.contrib.admin',
+
+    'commons',         # add common templates
+
+    # to add production application from here
+
+    #Third party apps
+    #'crispy_forms',
+    #'extra_views',
 )
 
 # Apps should be added here until they are ready to deploy in production
 INSTALLED_APPS_DEV = (
-
+    # application under development
     'magnets',
     'lattice',
     'activeinterlock',
 
-    #Third party apps
-    'crispy_forms',
-    'extra_views',
 )
 
 if PRODUCTION:
