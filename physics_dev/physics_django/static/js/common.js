@@ -85,24 +85,37 @@ function createDeviceListQuery(search, returnUrl) {
 	var query = "";
 	var url = "#";
 
-	// Add system part
-	if(search.system !== undefined) {
-		query += "system=" + search.system + '&';
-		url += "/system/" + search.system;
+	// Add type
+	query += search.type + '/?';
+	url += "/type/" + search.type;
 
-	} else {
-		query += "system=*&";
-		url += "/system/";
+	// Only include system attribute if we are looking through installed devices
+	if(search.type === "install") {
+
+		// Add system part
+		if(search.system !== undefined) {
+			query += "system=" + search.system + '&';
+			url += "/system/" + search.system;
+
+		} else {
+				query += "system=*&";
+				url += "/system/";
+		}
 	}
 
-	// Add name part
-	if(search.name !== undefined) {
-		query += "name=" + search.name + '&';
-		url += "/name/" + search.name;
+	// Only include name attribute if we are looking through installed devices
+	if(search.type === "install") {
 
-	} else {
-		query += "name=*&";
-		url += "/name/";
+		// Add name part
+		if(search.name !== undefined) {
+			query += "name=" + search.name + '&';
+			url += "/name/" + search.name;
+
+		} else {
+
+				query += "name=*&";
+				url += "/name/";
+		}
 	}
 
 	// Add component type part

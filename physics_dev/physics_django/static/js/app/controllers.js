@@ -19,7 +19,7 @@ app.controller('searchFormCtrl', function($scope, systemService, $window){
 	$scope.systems = [];
 	$scope.search.displayName = "display_search_filter";
 	$scope.search.displaySystem = "display_search_filter";
-	$scope.search.type = "installation";
+	$scope.search.type = "install";
 
 	// Load Systems
 	systemService.transform(function(data){
@@ -28,13 +28,15 @@ app.controller('searchFormCtrl', function($scope, systemService, $window){
 
 	// Search button click
 	$scope.searchForDevices = function(search) {
-		$window.location = createDeviceListQuery(search, true) + "/list";
+		var newLocation = createDeviceListQuery(search, true) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
 	};
 
 	// Watch for search type change
 	$scope.$watch('search.type', function(newValue, oldValue){
 
-		if(newValue === "installation") {
+		if(newValue === "install") {
 			$scope.search.displayName = "display_search_filter";
 			$scope.search.displaySystem = "display_search_filter";
 
@@ -54,7 +56,7 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 	$scope.devices = [];
 	var previousDevice = undefined;
 
-	var query = serviceurl + 'magnets/devices/?' + createDeviceListQuery($routeParams, false);
+	var query = serviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
 	l(query);
 
 	$http.get(query).success(function(data){
