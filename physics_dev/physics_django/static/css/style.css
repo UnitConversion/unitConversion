@@ -75,9 +75,33 @@ html, body {
 	left: 5px;
 	bottom: 5px;
 	overflow-y: auto;
+	background-image: url('../img/list_big2.png');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.container-scroll-middle-no-img {
+	position: absolute;
+	top: 5px;
+	right: 0px;
+	left: 5px;
+	bottom: 5px;
+	overflow-y: auto;
 }
 
 .container-scroll-last-one {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	left: 5px;
+	bottom: 5px;
+	overflow-y: auto;
+	background-image: url('../img/data_big2.png');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.container-scroll-last-one-no-img {
 	position: absolute;
 	top: 5px;
 	right: 5px;

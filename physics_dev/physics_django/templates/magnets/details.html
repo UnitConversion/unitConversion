@@ -1,11 +1,30 @@
 {% load verbatim %}
 {% verbatim %}
-<div id="load_details" class="well container-scroll-last-one" ng-show="show">
-	<div class="details_data">
-		<div id="raw"></div>
+<div class="details_data">
+	<div id="raw"></div>
 
-		<h3>Municonv</h3>
-		<div ng-repeat="(part, partObject) in data.municonv">
+	<h3>Municonv</h3>
+	<div ng-repeat="(part, partObject) in data.municonv">
+		<h4>{{part}}</h4>
+		<div ng-if="partObject.designLength">
+			<p>Design length: {{partObject.designLength}}</p>
+		</div>
+		<div ng-if="partObject.defaultEnergy">
+			<p>Default Energy: {{partObject.defaultEnergy}}</p>
+		</div>
+		<div ng-if="partObject.description">
+			<p>{{partObject.description}}</p>
+		</div>
+
+		<h5>Algorithms</h5>
+		<div ng-repeat="(name, object) in partObject.algorithms">
+			<div class="algorithm" name="name" table-data="object"></div>
+		</div>
+	</div>
+
+	<div ng-if="data.municonvChain">
+		<h3>Municonv Chain</h3>
+		<div ng-repeat="(part, partObject) in data.municonvChain">
 			<h4>{{part}}</h4>
 			<div ng-if="partObject.designLength">
 				<p>Design length: {{partObject.designLength}}</p>
@@ -22,83 +41,62 @@
 				<div class="algorithm" name="name" table-data="object"></div>
 			</div>
 		</div>
+	</div>
+</div>
 
-		<div ng-if="data.municonvChain">
-			<h3>Municonv Chain</h3>
-			<div ng-repeat="(part, partObject) in data.municonvChain">
-				<h4>{{part}}</h4>
-				<div ng-if="partObject.designLength">
-					<p>Design length: {{partObject.designLength}}</p>
-				</div>
-				<div ng-if="partObject.defaultEnergy">
-					<p>Default Energy: {{partObject.defaultEnergy}}</p>
-				</div>
-				<div ng-if="partObject.description">
-					<p>{{partObject.description}}</p>
-				</div>
-
-				<h5>Algorithms</h5>
-				<div ng-repeat="(name, object) in partObject.algorithms">
-					<div class="algorithm" name="name" table-data="object"></div>
-				</div>
-			</div>
-		</div>
+<div class="details_data_conversion">
+	<div class="alert alert-error" ng-show="error.display === true">
+		<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}. {{error.message}}
 	</div>
 
-	<div class="details_data_conversion">
-		<div class="alert alert-error" ng-show="error.display === true">
-			<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}. {{error.message}}
-		</div>
+	<h3>Conversion form</h3>
 
-		<h3>Conversion form</h3>
+	<table>
+		<tr>
+			<td>Source unit:</td>
+			<td>Destination unit:</td>
+			<td>Initial value:</td>
+		</tr>
+		<tr>
+			<td>
+				<select ng-model="source_unit">
+					<option value="i">i</option>
+					<option value="b">b</option>
+					<option value="k">k</option>
+				</select>
+			</td>
+			<td>
+				<select ng-model="destination_unit">
+					<option value="i">i</option>
+					<option value="b">b</option>
+					<option value="k">k</option>
+				</select>
+			</td>
+			<td>
+				<input type="text" ng-model="initial_value" />
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<input type="button" ng-click="convert()" value="Convert" class="btn" />
+			</td>
+		</tr>
+	</table>
+	<br/>
 
-		<table>
-			<tr>
-				<td>Source unit:</td>
-				<td>Destination unit:</td>
-				<td>Initial value:</td>
-			</tr>
-			<tr>
-				<td>
-					<select ng-model="source_unit">
-						<option value="i">i</option>
-						<option value="b">b</option>
-						<option value="k">k</option>
-					</select>
-				</td>
-				<td>
-					<select ng-model="destination_unit">
-						<option value="i">i</option>
-						<option value="b">b</option>
-						<option value="k">k</option>
-					</select>
-				</td>
-				<td>
-					<input type="text" ng-model="initial_value" />
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3">
-					<input type="button" ng-click="convert()" value="Convert" class="btn" />
-				</td>
-			</tr>
-		</table>
-		<br/>
+	<div app-view-segment="4"></div>
 
-		<div app-view-segment="4"></div>
+</div>
 
+<div class="details_data">
+	<div ng-if="data.municonv.standard.measurementData">
+		<h3>Plot</h3>
 	</div>
+	<div id="plot"></div>
 
-	<div class="details_data">
-		<div ng-if="data.municonv.standard.measurementData">
-			<h3>Plot</h3>
-		</div>
-		<div id="plot"></div>
-
-		<div ng-if="data.municonv.standard.measurementData">
-			<h3>Measurement data</h3>
-			<div key-value-table="" table-data="data.municonv.standard.measurementData" visible="true"></div>
-		</div>
+	<div ng-if="data.municonv.standard.measurementData">
+		<h3>Measurement data</h3>
+		<div key-value-table="" table-data="data.municonv.standard.measurementData" visible="true"></div>
 	</div>
 </div>
 {% endverbatim %}

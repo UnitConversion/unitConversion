@@ -9,6 +9,9 @@
  */
 app.controller('mainCtrl', function($scope, $http, systemService, $routeParams){
 	$scope.version = version;
+	$scope.style = {};
+	$scope.style.middle_class = "container-scroll-middle";
+	$scope.style.right_class = "container-scroll-last-one";
 });
 
 /*
@@ -51,6 +54,9 @@ app.controller('searchFormCtrl', function($scope, systemService, $window){
  * List devices in the middle pane
  */
 app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
 	$scope.id = $routeParams.id;
 
 	$scope.devices = [];
@@ -98,8 +104,10 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
  * Show details in the right pane
  */
 app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+
 	$scope.id = $routeParams.id;
-	$scope.show = true;
 	$scope.data = {};
 	$scope.view = $routeParams.view;
 	$scope.result = {};

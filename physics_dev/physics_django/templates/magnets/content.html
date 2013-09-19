@@ -27,7 +27,7 @@
 	<!-- List of Logs -->
 	<a name="#top"></a>
 	<div class="container-middle">
-		<div id="load_devices" class="well container-scroll-middle">
+		<div id="load_devices" class="well {{style.middle_class}}">
 			<div app-view-segment="2"></div>
 		</div>
 	</div>
@@ -39,7 +39,9 @@
 	<!-- Details view -->
 	<a name="#view"></a>
 	<div class="container-right">
-		<div app-view-segment="3"></div>
+		<div id="load_details" class="well {{style.right_class}}">
+			<div app-view-segment="3"></div>
+		</div>
 	</div>
 </div>
 {% endverbatim %}
