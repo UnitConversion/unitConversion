@@ -35,6 +35,10 @@ html, body {
 	margin: 0px;
 }
 
+.well-light {
+	background-color: white;
+}
+
 .container-left {
 	position: absolute;
 	left: 0px;
@@ -96,7 +100,7 @@ html, body {
 	left: 5px;
 	bottom: 5px;
 	overflow-y: auto;
-	background-image: url('../img/data_big2.png');
+	background-image: url('../img/data_big3.png');
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -198,12 +202,23 @@ html, body {
 }
 
 .details_data {
-	margin: 5px;
+	padding: 5px;
+}
+
+.details_data_tabs {
+	padding: 5px;
 }
 
 .details_data_conversion {
 	padding: 5px;
-	background-color: white;
 	border-top: 1px solid #dddddd;
 	border-bottom: 1px solid #dddddd;
+}
+
+.align-top {
+	vertical-align: top;
+}
+
+.left-space {
+	padding-left: 5px;
 }

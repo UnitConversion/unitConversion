@@ -11,10 +11,9 @@ var plot = undefined;
  * @param {type} details details object
  * @param id id of the log in saved logs array
  */
-function showDetails(details, id){
+function showDetails(data){
 
-	$('#load_details').show("fast");
-	l(details);
+	l(data);
 
 	//var data = JSON.stringify(details);
 
@@ -38,7 +37,7 @@ function showDetails(details, id){
 		}
 	};
 
-	var series = [prepareSeries(details[id])];
+	var series = [prepareSeries(data)];
 
 	// Destroy previous plot
 	if(plot !== undefined) {
@@ -97,12 +96,8 @@ function drawDataTree(html, data){
  */
 function prepareSeries(data) {
 
-	if(data.municonv.standard === undefined) {
-		return;
-	}
-
-	var currents = data.municonv.standard.measurementData.current;
-	var fields = data.municonv.standard.measurementData.field;
+	var currents = data.current;
+	var fields = data.field;
 
 	var series = [];
 

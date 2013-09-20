@@ -174,3 +174,19 @@ function createModal(modal, scope) {
 		l("modal dismissed");
 	});
 }
+
+/*
+ * Retun first X characters from the string.
+ * @param {type} string input string
+ * @param {type} count how many characters do we want to return
+ * @returns {String} First X words
+ */
+function returnFirstXCharacters(string, count){
+
+	if(string.length > count) {
+		return string.substring(0, count) + " ...";
+
+	} else {
+		return string;
+	}
+}

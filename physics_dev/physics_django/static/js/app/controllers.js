@@ -96,7 +96,14 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 
 		previousDevice = device;
 		device.click = "device_click";
-		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + device.serialNumber;
+
+		var id = device.inventoryId;
+
+		if($routeParams.type === "install") {
+			id = device.name;
+		}
+
+		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + id + "/0/results";
 	};
 });
 
@@ -110,30 +117,42 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 	$scope.id = $routeParams.id;
 	$scope.data = {};
 	$scope.view = $routeParams.view;
+	$scope.subview = $routeParams.subview;
 	$scope.result = {};
+	$scope.detailsTabs = [];
+	var detailsTabsIndex = 0;
 	$scope.tabs = [];
+	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
+	$scope.view = $routeParams.view;
 
 	$scope.error = {};
 	$scope.error.message = "";
 
 	var algorithms = {};
-	$scope.convertedResult = {};
+	$scope.convertedResult = [];
 
 	// Retrieve the details
 	var query = serviceurl + 'magnets/conversion/?id=' + $routeParams.id;
-	//l(query);
+
+	if($routeParams.type === "install") {
+		query = serviceurl + 'magnets/conversion/?name=' + $routeParams.id;
+	}
+
+	l(query);
 
 	$http.get(query).success(function(data){
-		showDetails(data, $routeParams.id);
+		//showDetails(data, $routeParams.id);
 		$scope.data = data[$routeParams.id];
 
 		for(var first in $scope.data) {
 			for(var second in $scope.data[first]) {
+				$scope.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
+				detailsTabsIndex ++;
+
 				for(var algorithm in $scope.data[first][second].algorithms)
 				algorithms[algorithm] = $scope.data[first][second].algorithms[algorithm];
 			}
 		}
-
 		l(algorithms);
 	});
 
@@ -143,51 +162,63 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 	$scope.convert = function() {
 		$scope.tabs = [];
 
-		var conversionQuery = serviceurl + 'magnets/conversion/?id=' + $routeParams.id + '&from=' + $scope.source_unit + '&to=' + $scope.destination_unit + '&value=' + $scope.initial_value;
+		var idParameter = "id";
+
+		if($routeParams.type === "install") {
+			idParameter = "name";
+		}
+
+		var conversionQuery = serviceurl
+				+ 'magnets/conversion/?' + idParameter
+				+ '=' + $routeParams.id
+				+ '&from=' + $scope.source_unit
+				+ '&to=' + $scope.destination_unit
+				+ '&value=' + $scope.initial_value
+				+ '&complex=' + $scope.detailsTabs[$routeParams.view]['second'];
+
+		if($scope.energy !== undefined && $scope.energy !== "") {
+			conversionQuery += '&energy=' + $scope.energy;
+		}
+
 		l(conversionQuery);
 
 		$http.get(conversionQuery).success(function(data){
+			l(data[$routeParams.id]);
 			var details = data[$routeParams.id];
+			var results = {};
 			$scope.result = details;
 			$scope.error.display = false;
 
-			// Go through returned data and save needed values
-			for(var first in details) {
+			if(details[$scope.detailsTabs[$routeParams.view]['first']] !== undefined) {
+				results = details[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']];
+				l(results);
 
-				for(var second in details[first]){
-					$scope.tabs.push({first: first, second: second});
-					var key = first + "_" + second;
-
-					if(details[first][second].conversionResult.value === null && details[first][second].conversionResult.unit === "") {
-						$scope.error.message = details[first][second].conversionResult.message;
-						$scope.error.display = true;
-						return;
-					}
-
-					// Create array of result objects
-					if(!(key in $scope.convertedResult)) {
-						$scope.convertedResult[key] = [];
-					}
-
-					// Get the initial unit from algorithms data
-					var initialUnit = "";
-					var algKey = $scope.source_unit + '2' + $scope.destination_unit;
-					var algKeyRev = $scope.destination_unit + '2' + $scope.source_unit;
-
-					if(algKey in algorithms) {
-						initialUnit = algorithms[algKey].initialUnit;
-
-					} else if(!(algKeyRev in algorithms)) {
-						initialUnit = algorithms[algKey].resultUnit;
-					}
-
-					$scope.convertedResult[key].push({init_value: $scope.initial_value, init_unit: initialUnit, conv_value: details[first][second].conversionResult.value, conv_unit: details[first][second].conversionResult.unit});
+				// Go through returned data and save needed values
+				if(results.conversionResult.value === null && results.conversionResult.unit === "") {
+					$scope.error.message = results.conversionResult.message;
+					$scope.error.display = true;
+					return;
 				}
+
+				// Get the initial unit from algorithms data
+				var initialUnit = "";
+				var algKey = $scope.source_unit + '2' + $scope.destination_unit;
+				var algKeyRev = $scope.destination_unit + '2' + $scope.source_unit;
+
+				if(algKey in algorithms) {
+					initialUnit = algorithms[algKey].initialUnit;
+
+				} else if(!(algKeyRev in algorithms)) {
+					initialUnit = algorithms[algKey].resultUnit;
+				}
+
+				$scope.convertedResult.push({
+					init_value: $scope.initial_value,
+					init_unit: initialUnit,
+					conv_value: results.conversionResult.value,
+					conv_unit: results.conversionResult.unit
+				});
 			}
-
-			var urlPart = $scope.tabs[0].first + '_' + $scope.tabs[0].second;
-
-			$window.location = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/' + urlPart;
 
 		}).error(function(){
 			$scope.error.display = true;
@@ -200,7 +231,14 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
  */
 app.controller('showResultsCtrl', function($scope, $routeParams){
 	$scope.view = $routeParams.view;
-	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
+	$scope.subview = $routeParams.subview;
+
+	if($scope.subview === "plot"){
+
+//		$scope.$watch('data', function(newData, oldData){
+//			showDetails(newData[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData);
+//		});
+	}
 });
 
 app.controller('modalCtrl', function($scope, $modalInstance) {

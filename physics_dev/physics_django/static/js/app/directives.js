@@ -27,7 +27,11 @@ app.directive('keyValueTable', function() {
 			visible: '='
 		},
 		link: function(scope, elem, attrs) {
-			scope.data = scope.tableData;
+			scope.data = {};
+
+			for(var key in scope.tableData) {
+				scope.data[key] = returnFirstXCharacters(JSON.stringify(scope.tableData[key]), 100);
+			}
 		}
 	};
 });
@@ -39,24 +43,12 @@ app.directive('algorithm', function() {
 	return {
 		restrict: 'C',
 		template : '\
-			<table class="table table-bordered">\n\
-				<tr>\n\
-					<th>Algorithm</th>\n\
-					<th>Function</th>\n\
-					<th>Initial unit</th>\n\
-					<th>Algorithm id</th>\n\
-					<th>Result unit</th>\n\
-					<th>Aux info</th>\n\
-				</tr>\n\
-				<tr>\n\
 					<td>{{name}}</td>\n\
 					<td>{{data.function}}</td>\n\
 					<td>{{data.initialUnit}}</td>\n\
 					<td>{{data.algorithmId}}</td>\n\
 					<td>{{data.resultUnit}}</td>\n\
 					<td>{{data.auxInfo}}</td>\n\
-				</tr>\n\
-			</table>\n\
 		',
 		scope: {
 			name: '=',

@@ -1,13 +1,25 @@
 {% load verbatim %} {% verbatim %}
-<div ng-if="convertedResult && error.display == false">
-	<ul class="nav nav-tabs">
-		<li ng-repeat="tab in tabs" ng-class="{'active': view == (tab.first + '_' + tab.second)}">
-			<a href="{{url}}{{tab.first}}_{{tab.second}}"><b>{{tab.first}}</b><br/>{{tab.second}}</a>
-		</li>
-	</ul>
+<br />
+<ul class="nav nav-tabs">
+	<li ng-class="{'active': (subview == undefined || subview == 'results')}">
+		<a href="{{url}}{{tab.index}}{{view}}/results">Conversion results</a>
+	</li>
+	<li ng-if="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'data'}">
+		<a href="{{url}}{{tab.index}}{{view}}/data">Measurement data</a>
+	</li>
+	<li ng-show="false">
+		<a href="{{url}}{{tab.index}}{{view}}/plot">Plot</a>
+	</li>
+</ul>
 
-	<div ng-repeat="(firstName, firstValue) in convertedResult">
-		<div results-table="" results="firstValue" visible="view == (firstName)"></div>
-	</div>
+<div ng-if="subview == 'data'">
+	<div key-value-table="" table-data="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" visible="true"></div>
 </div>
+
+<div ng-if="subview == 'results'">
+	<div results-table="" results="convertedResult" visible="true"></div>
+</div>
+
+<div id="plot"></div>
+
 {% endverbatim %}
