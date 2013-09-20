@@ -526,13 +526,13 @@ def _dob2k(paramsdict, value, energy, revert=False, efflen=None):
             # linear fitting with given function
             if revert:
                 res = optimize.fsolve(_makeb2k(funcexpr, revert=True, y = value), 0.0, energy)[0]
-                if efflen != None:
-                    res = res*efflen
+                #if efflen != None:
+                #    res = res*efflen
             else:
                 func = _makeb2k(funcexpr)
                 res = func(value, energy)
-                if efflen != None:
-                    res = res/efflen
+                #if efflen != None:
+                #    res = res/efflen
         elif algorithmId == 1:
             # high order polynomial fitting with given function.
             # need b2i to perform reversed calculation.
@@ -541,8 +541,8 @@ def _dob2k(paramsdict, value, energy, revert=False, efflen=None):
             else:
                 func = _makeb2k(funcexpr)
                 res = func(value, energy)
-                if efflen != None:
-                    res = res/efflen
+                #if efflen != None:
+                #    res = res/efflen
         elif algorithmId == 2:
             # linear fitting without function given. Use raw data to do fitting.
             # to be implemented later
