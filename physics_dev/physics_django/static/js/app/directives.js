@@ -69,12 +69,14 @@ app.directive('resultsTable', function() {
 		template : '\
 			<table class="table table-bordered" ng-show="visible">\n\
 				<tr>\n\
+					<th>Algorithm</th>\n\
 					<th>Initial value</th>\n\
 					<th>Initial unit</th>\n\
 					<th>Converted value</th>\n\
 					<th>Converted unit</th>\n\
 				</tr>\n\
 				<tr ng-repeat="result in results">\n\
+					<td>{{result.from}}2{{result.to}}</td>\n\
 					<td>{{result.init_value}}</td>\n\
 					<td>{{result.init_unit}}</td>\n\
 					<td>{{result.conv_value}}</td>\n\

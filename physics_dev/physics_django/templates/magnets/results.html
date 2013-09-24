@@ -1,25 +1,33 @@
 {% load verbatim %} {% verbatim %}
 <br />
-<ul class="nav nav-tabs">
-	<li ng-class="{'active': (subview == undefined || subview == 'results')}">
-		<a href="{{url}}{{tab.index}}{{view}}/results">Conversion results</a>
-	</li>
-	<li ng-if="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'data'}">
-		<a href="{{url}}{{tab.index}}{{view}}/data">Measurement data</a>
-	</li>
-	<li ng-show="false">
-		<a href="{{url}}{{tab.index}}{{view}}/plot">Plot</a>
-	</li>
-</ul>
+<div>
+	<ul class="nav nav-tabs">
+		<li ng-class="{'active': (subview == undefined || subview == 'results')}">
+			<a href="{{url}}{{tab.index}}{{view}}/results">Conversion results</a>
+		</li>
+		<li ng-if="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'data'}">
+			<a href="{{url}}{{tab.index}}{{view}}/data">Measurement data</a>
+		</li>
+		<li ng-if="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'plot'}">
+			<a href="{{url}}{{tab.index}}{{view}}/plot">Plot</a>
+		</li>
+	</ul>
+</div>
 
 <div ng-if="subview == 'data'">
+	<button ng-click="openNewVindow()" class="btn">Expand to vector view</button>
+	<br/>
+	<br/>
 	<div key-value-table="" table-data="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" visible="true"></div>
 </div>
 
 <div ng-if="subview == 'results'">
+	<button ng-click="clearTable()" class="btn">Clear table</button>
+	<br/>
+	<br/>
 	<div results-table="" results="convertedResult" visible="true"></div>
 </div>
 
-<div id="plot"></div>
+<div ng-show="subview == 'plot'" id="plot"></div>
 
 {% endverbatim %}

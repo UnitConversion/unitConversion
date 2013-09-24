@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 
 #from physics_django.magnets.views import (magnetdevicesweb, magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, magnets_content_results, systemlistweb, conversionweb) 
-from physics_django.magnets.views import (magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, magnets_content_results)
+from physics_django.magnets.views import (magnets_help, magnets_home, magnets_content_home, magnets_content_search, magnets_content_list, magnets_content_details, magnets_content_results, magnets_measurement_data)
 from physics_django.magnets.views import (magnetinventory, magnetinstall, systemlist, conversion) 
 
 urlpatterns = patterns(
@@ -30,6 +30,9 @@ urlpatterns = patterns(
     url(r'^magnets/web/magnets_help.html',
         magnets_help,
         name='magnets_help'),
+	url(r'^magnets/web/measurement_data.html',
+        magnets_measurement_data,
+        name='magnets_measurement_data'),
 
     # return raw data not thru html ui
     url(r'^magnets/inventory/$',

@@ -17,12 +17,17 @@ app.controller('mainCtrl', function($scope, $http, systemService, $routeParams){
 /*
  * Controller for the left/search pane
  */
-app.controller('searchFormCtrl', function($scope, systemService, $window){
+app.controller('searchFormCtrl', function($scope, systemService, $window, $routeParams){
 	$scope.search = {};
 	$scope.systems = [];
 	$scope.search.displayName = "display_search_filter";
 	$scope.search.displaySystem = "display_search_filter";
 	$scope.search.type = "install";
+
+	// Set search type
+	if($routeParams.type !== undefined) {
+		$scope.search.type = $routeParams.type;
+	}
 
 	// Load Systems
 	systemService.transform(function(data){
@@ -154,6 +159,11 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 			}
 		}
 		l(algorithms);
+
+		// Draw the plot if we are redirected directly to it
+		if($routeParams.subview !== undefined && $routeParams.subview === "plot"){
+			showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData);
+		}
 	});
 
 	/*
@@ -216,7 +226,9 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 					init_value: $scope.initial_value,
 					init_unit: initialUnit,
 					conv_value: results.conversionResult.value,
-					conv_unit: results.conversionResult.unit
+					conv_unit: results.conversionResult.unit,
+					from: $scope.source_unit,
+					to: $scope.destination_unit
 				});
 			}
 
@@ -229,16 +241,22 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 /*
  * Show conversion results in tabs
  */
-app.controller('showResultsCtrl', function($scope, $routeParams){
+app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
 
-	if($scope.subview === "plot"){
-
-//		$scope.$watch('data', function(newData, oldData){
-//			showDetails(newData[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData);
-//		});
+	if($scope.detailsTabs !== undefined && $scope.detailsTabs.length !== 0) {
+		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData);
 	}
+
+	$scope.clearTable = function() {
+		l("clear");
+		$scope.convertedResult = [];
+	};
+
+	$scope.openNewVindow = function() {
+		$window.open("measurement_data.html");
+	};
 });
 
 app.controller('modalCtrl', function($scope, $modalInstance) {

@@ -50,7 +50,7 @@ html, body {
 .container-middle {
 	position: absolute;
 	left: 20%;
-	width: 30%;
+	width: 25%;
 	top: 45px;
 	bottom: 0px;
 }
@@ -59,7 +59,7 @@ html, body {
 	position: absolute;
 	right: 0px;
 	top: 45px;
-	width: 50%;
+	width: 55%;
 	bottom: 0px;
 }
 
@@ -147,7 +147,7 @@ html, body {
 	background-color: #82bcd9;
 }
 
-.device_click > p {
+.device_click span {
 	color: white;
 }
 
@@ -219,6 +219,17 @@ html, body {
 	vertical-align: top;
 }
 
-.left-space {
-	padding-left: 5px;
+/*.details_table {
+	border-spacing: 10px;
+	border-collapse: separate;
+}*/
+
+.left-border {
+	padding: 10px;
+	border: 1px solid #dddddd;
+}
+
+.right-border {
+	padding: 10px;
+	border: 1px solid #dddddd;
 }

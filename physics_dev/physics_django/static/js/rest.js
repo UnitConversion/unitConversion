@@ -46,7 +46,7 @@ function showDetails(data){
 	}
 
 	// Only draw plot if something is in series
-	if(series[0] !== undefined) {
+	if(series[0].length !== 0) {
 		plot = $.jqplot ('plot', series, options);
 	}
 
@@ -95,11 +95,15 @@ function drawDataTree(html, data){
  * @returns {Array} array of points in series
  */
 function prepareSeries(data) {
+	var series = [];
+
+	if(data === undefined) {
+		return series;
+	}
 
 	var currents = data.current;
 	var fields = data.field;
 
-	var series = [];
 
 	if(currents !== undefined && fields !== undefined) {
 
