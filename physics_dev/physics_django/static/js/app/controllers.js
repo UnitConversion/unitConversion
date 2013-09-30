@@ -134,7 +134,8 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 	$scope.error.message = "";
 
 	var algorithms = {};
-	$scope.convertedResult = [];
+	$scope.results = {};
+	$scope.results.convertedResult = [];
 
 	// Retrieve the details
 	var query = serviceurl + 'magnets/conversion/?id=' + $routeParams.id;
@@ -154,15 +155,18 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 				$scope.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
 				detailsTabsIndex ++;
 
-				for(var algorithm in $scope.data[first][second].algorithms)
-				algorithms[algorithm] = $scope.data[first][second].algorithms[algorithm];
+				for(var algorithm in $scope.data[first][second].algorithms) {
+					var algorithmParts = algorithm.split("2");
+					algorithms[algorithm] = $scope.data[first][second].algorithms[algorithm];
+					algorithms[algorithmParts[0]] = $scope.data[first][second].algorithms[algorithm];
+				}
 			}
 		}
 		l(algorithms);
 
 		// Draw the plot if we are redirected directly to it
 		if($routeParams.subview !== undefined && $routeParams.subview === "plot"){
-			showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData);
+			showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, "current", "field", []);
 		}
 	});
 
@@ -213,16 +217,21 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 				// Get the initial unit from algorithms data
 				var initialUnit = "";
 				var algKey = $scope.source_unit + '2' + $scope.destination_unit;
-				var algKeyRev = $scope.destination_unit + '2' + $scope.source_unit;
 
+				// Algorithm in a table
 				if(algKey in algorithms) {
 					initialUnit = algorithms[algKey].initialUnit;
 
-				} else if(!(algKeyRev in algorithms)) {
-					initialUnit = algorithms[algKey].resultUnit;
+				// Initial unit of algorithm in a table
+				} else if ($scope.source_unit in algorithms) {
+					initialUnit = algorithms[$scope.source_unit].resultUnit;
+
+				// Nothing in a table, initial unit should be an empty string
+				} else {
+					initialUnit = "";
 				}
 
-				$scope.convertedResult.push({
+				$scope.results.convertedResult.push({
 					init_value: $scope.initial_value,
 					init_unit: initialUnit,
 					conv_value: results.conversionResult.value,
@@ -244,18 +253,46 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
+	$scope.plot = {};
+	$scope.plot.show_below_results_table = false;
+	$scope.plot.x_axis = "current";
+	$scope.plot.y_axis = "field";
 
 	if($scope.detailsTabs !== undefined && $scope.detailsTabs.length !== 0) {
-		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData);
+		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, []);
 	}
 
 	$scope.clearTable = function() {
 		l("clear");
-		$scope.convertedResult = [];
+		$scope.results.convertedResult = [];
+	};
+
+	$scope.redraw = function() {
+		l("redraw");
+		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, []);
+	};
+
+	$scope.showPoint = function(results) {
+		var series = [];
+
+		for(var result in results) {
+
+			if(results[result].show !== undefined && results[result].show === true) {
+				series.push([results[result].init_value, results[result].conv_value]);
+				l(series);
+			}
+		}
+
+		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
 	};
 
 	$scope.openNewVindow = function() {
-		$window.open("measurement_data.html");
+		var newWindowUrl = "measurement_data.html#?"
+		+ "type=" + $routeParams.type
+		+ "&id=" + $routeParams.id
+		+ "&view=" + $scope.detailsTabs[$routeParams.view]['first'] + "_" + $scope.detailsTabs[$routeParams.view]['second'];
+
+		$window.open(newWindowUrl);
 	};
 });
 

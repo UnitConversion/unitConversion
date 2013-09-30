@@ -11,7 +11,7 @@ var plot = undefined;
  * @param {type} details details object
  * @param id id of the log in saved logs array
  */
-function showDetails(data){
+function showDetails(data, x_axis, y_axis, newSeries){
 
 	l(data);
 
@@ -21,23 +21,22 @@ function showDetails(data){
 //	$('#raw').html(data);
 
 	var options = {
-		title: 'Plot',
 		series: [{}, {showLine:false}],
 		axesDefaults: {
 			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 		},
 		axes: {
 			xaxis: {
-				label: "Current",
+				label: x_axis,
 				pad: 0
 			},
 			yaxis: {
-				label: "Magnetic Field"
+				label: y_axis
 			}
 		}
 	};
 
-	var series = [prepareSeries(data)];
+	var series = [prepareSeries(data, x_axis, y_axis)];
 
 	// Destroy previous plot
 	if(plot !== undefined) {
@@ -50,8 +49,11 @@ function showDetails(data){
 		plot = $.jqplot ('plot', series, options);
 	}
 
-//	series.push([[1,4], [2,5]]);
-//	plot.replot({data: series});
+	// Redraw conversion points
+	if(newSeries.length !== 0) {
+		series.push(newSeries);
+		plot.replot({data: series});
+	}
 //	l(plot.data);
 }
 
@@ -94,9 +96,10 @@ function drawDataTree(html, data){
  * @param {type} data object that contains data for the series
  * @returns {Array} array of points in series
  */
-function prepareSeries(data) {
+function prepareSeries(data, x_axis, y_axis) {
 	var series = [];
 
+	// Check if data is udefined
 	if(data === undefined) {
 		return series;
 	}
@@ -104,6 +107,15 @@ function prepareSeries(data) {
 	var currents = data.current;
 	var fields = data.field;
 
+	// Set the new vector on x axis
+	if(x_axis !== undefined) {
+		currents = data[x_axis];
+	}
+
+	// Set the new vector on y axis
+	if(y_axis !== undefined) {
+		fields = data[y_axis];
+	}
 
 	if(currents !== undefined && fields !== undefined) {
 

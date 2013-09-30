@@ -23,11 +23,24 @@
 
 <div ng-if="subview == 'results'">
 	<button ng-click="clearTable()" class="btn">Clear table</button>
+	<br />
+	<br />
+	<label class="checkbox">
+		<input ng-model="plot.show_below_results_table" type="checkbox" /> Show plot below the conversion results table
+	</label>
 	<br/>
-	<br/>
-	<div results-table="" results="convertedResult" visible="true"></div>
+	<div results-table="" on-show-click="showPoint(result)" results="results.convertedResult" visible="true"></div>
 </div>
 
-<div ng-show="subview == 'plot'" id="plot"></div>
+<div ng-show="subview == 'plot' || plot.show_below_results_table">
+	<span>Select data on axis </span>
+	x: <select ng-model="plot.x_axis"><option ng-selected="plot.x_axis == key" ng-repeat="(key, value) in data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" value="{{key}}">{{key}}</option></select>
+	and y: <select ng-model="plot.y_axis"><option ng-selected="plot.y_axis == key" ng-repeat="(key, value) in data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" value="{{key}}">{{key}}</option></select>
+	<br/>
+	<button class="btn" ng-click="redraw()">Redraw plot</button>
+	<br/>
+	<br/>
+	<div id="plot"></div>
+</div>
 
 {% endverbatim %}

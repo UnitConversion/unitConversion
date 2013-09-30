@@ -74,21 +74,30 @@ app.directive('resultsTable', function() {
 					<th>Initial unit</th>\n\
 					<th>Converted value</th>\n\
 					<th>Converted unit</th>\n\
+					<th>Show</th>\n\
 				</tr>\n\
-				<tr ng-repeat="result in results">\n\
+				<tr ng-repeat="(index, result) in results">\n\
 					<td>{{result.from}}2{{result.to}}</td>\n\
 					<td>{{result.init_value}}</td>\n\
 					<td>{{result.init_unit}}</td>\n\
 					<td>{{result.conv_value}}</td>\n\
 					<td>{{result.conv_unit}}</td>\n\
+					<td><input ng-model="result.show_result" name="show_result" type="checkbox" ng-change="show(result)" /></td>\n\
 				</tr>\n\
 			</table>\n\
 		',
 		scope: {
 			results: '=',
-			visible: '='
+			visible: '=',
+			onShowClick: '&'
 		},
 		link: function(scope, elem, attrs) {
+			scope.data = {};
+
+			scope.show = function(result) {
+				result.show = result.show_result;
+				scope.onShowClick({result: scope.results});
+			};
 		}
 	};
 });
