@@ -394,7 +394,6 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
         funcdict = paramsdict['algorithms'][key]
         algorithmId = funcdict['algorithmId']
         funcexpr = funcdict['function']
-
         if algorithmId == 0:
             # linear fitting with given function
             if revert:
@@ -451,7 +450,6 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                 if str(direction[i]).upper() in ['UP', 'NA', 'N/A']:
                     cur.append(current[i])
                     fld.append(field[i])
-             
             if len (cur) in [1, 2]:
                 # if the data length is small, use linear fit instead
                 if len (cur) == 1:
@@ -528,13 +526,13 @@ def _dob2k(paramsdict, value, energy, revert=False, efflen=None):
             # linear fitting with given function
             if revert:
                 res = optimize.fsolve(_makeb2k(funcexpr, revert=True, y = value), 0.0, energy)[0]
-                if efflen != None:
-                    res = res*efflen
+                #if efflen != None:
+                #    res = res*efflen
             else:
                 func = _makeb2k(funcexpr)
                 res = func(value, energy)
-                if efflen != None:
-                    res = res/efflen
+                #if efflen != None:
+                #    res = res/efflen
         elif algorithmId == 1:
             # high order polynomial fitting with given function.
             # need b2i to perform reversed calculation.
@@ -543,8 +541,8 @@ def _dob2k(paramsdict, value, energy, revert=False, efflen=None):
             else:
                 func = _makeb2k(funcexpr)
                 res = func(value, energy)
-                if efflen != None:
-                    res = res/efflen
+                #if efflen != None:
+                #    res = res/efflen
         elif algorithmId == 2:
             # linear fitting without function given. Use raw data to do fitting.
             # to be implemented later
@@ -609,6 +607,7 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                                 message = 'Failed to convert current to K value.'
                             else:
                                 unit = conversiondict['b2k']['resultUnit']
+                                message = 'successfully convert current to K value.'
                     else:
                         message = "Cannot find algorithm to convert current to K value."
                 elif paramsdict.has_key('i2k'):
@@ -617,14 +616,17 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                     message = "Cannot find algorithm to convert current to K value."
     elif src == 'b':
         if dst == 'i':
-            if paramsdict.has_key('b2i'):
-                res, message = _doi2b(paramsdict, value, key='b2i')
-                if res != None:
-                    unit = conversiondict['b2i']['resultUnit']
-            elif paramsdict.has_key('i2b'):
-                res, message = _doi2b(paramsdict, value, revert=True)
-                if res != None:
-                    unit = conversiondict['i2b']['initialUnit']
+            if paramsdict.has_key('algorithms'):
+                if paramsdict['algorithms'].has_key('b2i'):
+                    res, message = _doi2b(paramsdict, value, key='b2i')
+                    if res != None:
+                        unit = conversiondict['b2i']['resultUnit']
+                elif paramsdict['algorithms'].has_key('i2b'):
+                    res, message = _doi2b(paramsdict, value, revert=True)
+                    if res != None:
+                        unit = conversiondict['i2b']['initialUnit']
+            else:
+                message = "No conversion algorithm available to convert magnet current to magnet field."
         elif dst == 'k':
             res, message = _dob2k(paramsdict, value, energy, efflen=efflen)
             if res == None:
@@ -642,9 +644,10 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                         if res == None:
                             message = 'Failed to convert current to K value.'
                         else:
+                            print res
                             res, message = _doi2b(paramsdict, res, revert=True)
                             if res == None:
-                                message = 'Failed to convert current to K value.'
+                                message = 'Failed to convert K value to current.'
                             else:
                                 unit = conversiondict['i2b']['initialUnit']
                     elif conversiondict.has_key('b2i'):
@@ -654,9 +657,10 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                         else:
                             res, message = _doi2b(paramsdict, res, key='b2i')
                             if res == None:
-                                message = 'Failed to convert current to K value.'
+                                message = 'Failed to convert K value to current.'
                             else:
                                 unit = conversiondict['i2b']['resultUnit']
+                                message = 'successfully convert K value to current.'
                     else:
                         message = "Cannot find algorithm to convert current to K value."
                 elif conversiondict.has_key('k2i') or conversiondict.has_key('i2k'):
