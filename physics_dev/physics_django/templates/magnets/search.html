@@ -22,28 +22,28 @@
 	<div class="{{search.displaySystem}}">
 		System:
 		<br />
-		<input type="text" ng-model="search.system" name="system" typeahead="system for system in systems | filter:$viewValue | limitTo:8" />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.system" name="system" typeahead="system for system in systems | filter:$viewValue | limitTo:8" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayName}}">
 		Name:
 		<br />
-		<input type="text" ng-model="search.name" name="name" />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.name" name="name" />
 		<br />
 		<br />
 	</div>
 	<div>
 		Component type:
 		<br />
-		<input type="text" ng-model="search.cmpnt_type" name="cmpnt_type" />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.cmpnt_type" name="cmpnt_type" />
 		<br />
 		<br />
 	</div>
 	<div>
 		Serial number:
 		<br />
-		<input type="text" ng-model="search.serialno" name="serialno" />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
 		<br />
 		<br />
 	</div>

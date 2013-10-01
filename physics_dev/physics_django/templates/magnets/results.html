@@ -11,6 +11,9 @@
 		<li ng-if="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'plot'}">
 			<a href="{{url}}{{tab.index}}{{view}}/plot">Plot</a>
 		</li>
+		<li ng-if="data[detailsTabs[view]['first']][detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'properties'}">
+			<a href="{{url}}{{tab.index}}{{view}}/properties">Properties</a>
+		</li>
 	</ul>
 </div>
 
@@ -41,6 +44,10 @@
 	<br/>
 	<br/>
 	<div id="plot"></div>
+</div>
+
+<div ng-if="subview == 'properties'">
+	<div key-value-table="" table-data="properties" visible="true"></div>
 </div>
 
 {% endverbatim %}

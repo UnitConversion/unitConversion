@@ -129,6 +129,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 	$scope.tabs = [];
 	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
 	$scope.view = $routeParams.view;
+	$scope.properties = {};
 
 	$scope.error = {};
 	$scope.error.message = "";
@@ -151,10 +152,20 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 		$scope.data = data[$routeParams.id];
 
 		for(var first in $scope.data) {
+
 			for(var second in $scope.data[first]) {
 				$scope.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
 				detailsTabsIndex ++;
 
+				// Save all axcept the algorithms in an array
+				for(var third in $scope.data[first][second]) {
+
+					if(third !== "algorithms") {
+						$scope.properties[third] = $scope.data[first][second][third];
+					}
+				}
+
+				// Save all algorithms into an array
 				for(var algorithm in $scope.data[first][second].algorithms) {
 					var algorithmParts = algorithm.split("2");
 					algorithms[algorithm] = $scope.data[first][second].algorithms[algorithm];
@@ -224,7 +235,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 
 				// Initial unit of algorithm in a table
 				} else if ($scope.source_unit in algorithms) {
-					initialUnit = algorithms[$scope.source_unit].resultUnit;
+					initialUnit = algorithms[$scope.source_unit].initialUnit;
 
 				// Nothing in a table, initial unit should be an empty string
 				} else {
@@ -251,6 +262,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
  * Show conversion results in tabs
  */
 app.controller('showResultsCtrl', function($scope, $routeParams, $window){
+	var series = [];
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
 	$scope.plot = {};
@@ -259,7 +271,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 	$scope.plot.y_axis = "field";
 
 	if($scope.detailsTabs !== undefined && $scope.detailsTabs.length !== 0) {
-		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, []);
+		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
 	}
 
 	$scope.clearTable = function() {
@@ -269,11 +281,10 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 
 	$scope.redraw = function() {
 		l("redraw");
-		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, []);
+		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
 	};
 
 	$scope.showPoint = function(results) {
-		var series = [];
 
 		for(var result in results) {
 
@@ -296,6 +307,9 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 	};
 });
 
+/*
+ * Modal window example
+ */
 app.controller('modalCtrl', function($scope, $modalInstance) {
 	$scope.ok = function() {
 		$modalInstance.close();

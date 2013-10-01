@@ -43,13 +43,13 @@ html, body {
 	position: absolute;
 	left: 0px;
 	top: 45px;
-	width: 20%;
+	width: 15%;
 	bottom: 0px;
 }
 
 .container-middle {
 	position: absolute;
-	left: 20%;
+	left: 15%;
 	width: 25%;
 	top: 45px;
 	bottom: 0px;
@@ -59,7 +59,7 @@ html, body {
 	position: absolute;
 	right: 0px;
 	top: 45px;
-	width: 55%;
+	width: 60%;
 	bottom: 0px;
 }
 
@@ -232,4 +232,8 @@ html, body {
 .right-border {
 	padding: 10px;
 	border: 1px solid #dddddd;
+}
+
+.search_field {
+	width: 93%;
 }

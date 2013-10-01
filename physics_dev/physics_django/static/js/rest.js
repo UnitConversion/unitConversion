@@ -22,6 +22,7 @@ function showDetails(data, x_axis, y_axis, newSeries){
 
 	var options = {
 		series: [{}, {showLine:false}],
+		seriesColors: ["#c5b47f", "#953579"],
 		axesDefaults: {
 			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 		},
@@ -33,10 +34,23 @@ function showDetails(data, x_axis, y_axis, newSeries){
 			yaxis: {
 				label: y_axis
 			}
+		},
+		highlighter: {
+			show: true,
+			sizeAdjust: 7.5
+		},
+		cursor: {
+			show: false
 		}
 	};
 
-	var series = [prepareSeries(data, x_axis, y_axis)];
+	var preparedSeries = prepareSeries(data, x_axis, y_axis);
+	var series = [];
+
+	// Add prepared series
+	if(preparedSeries.length !== 0) {
+		series.push(preparedSeries);
+	}
 
 	// Destroy previous plot
 	if(plot !== undefined) {
@@ -45,14 +59,22 @@ function showDetails(data, x_axis, y_axis, newSeries){
 	}
 
 	// Only draw plot if something is in series
-	if(series[0].length !== 0) {
+	if(series.length !== 0) {
 		plot = $.jqplot ('plot', series, options);
 	}
 
 	// Redraw conversion points
 	if(newSeries.length !== 0) {
-		series.push(newSeries);
-		plot.replot({data: series});
+
+		if(series.length === 0) {
+			series.push([[0,0]]);
+			series.push(newSeries);
+			plot = $.jqplot ('plot', series, options);
+
+		} else {
+			series.push(newSeries);
+			plot.replot({data: series});
+		}
 	}
 //	l(plot.data);
 }

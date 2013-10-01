@@ -1,5 +1,5 @@
 /*
- * This file contains directives - repetitive chunks of code with its own templates
+ * This file contains angular.js directives
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
@@ -99,5 +99,23 @@ app.directive('resultsTable', function() {
 				scope.onShowClick({result: scope.results});
 			};
 		}
+	};
+});
+
+/*
+ * Enter keypress event. It is primarily made for pressing enter on input tags
+ */
+app.directive('ngEnter', function() {
+	return function(scope, element, attrs) {
+		element.bind("keydown keypress", function(event) {
+
+			if(event.which === 13) {
+				scope.$apply(function(){
+					scope.$eval(attrs.ngEnter);
+				});
+
+				event.preventDefault();
+			}
+		});
 	};
 });
