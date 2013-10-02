@@ -15,19 +15,16 @@
 				<script src="../assets/js/html5shiv.js"></script>
 		<![endif]-->
 
-		<link rel="shortcut icon" href="static/img/favicon.png">
+		<link rel="shortcut icon" href="../../static/img/favicon.png">
 	</head>
-	<body>
+	<body ng-controller="indexCtrl">
 
 	<div id="contents" app-view-segment="0"></div>
 
-	<!-- Modal windows
-	==================================================== -->
-	<div id="modal_container"></div>
-
-	<!-- Templates
-	==================================================== -->
-	<div id="template_container"></div>
+	<!-- Back to top button -->
+	<div id="back_to_top_button" ng-click="top()">
+		<i class="icon-chevron-up icon-white"></i>
+	</div>
 
 	<!-- Import javascript files
 	================================================== -->

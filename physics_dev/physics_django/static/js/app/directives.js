@@ -29,9 +29,12 @@ app.directive('keyValueTable', function() {
 		link: function(scope, elem, attrs) {
 			scope.data = {};
 
-			for(var key in scope.tableData) {
-				scope.data[key] = returnFirstXCharacters(JSON.stringify(scope.tableData[key]), 100);
-			}
+			scope.$watch('tableData', function(newData, oldData) {
+
+				for(var key in newData) {
+					scope.data[key] = returnFirstXCharacters(JSON.stringify(newData[key]), 100);
+				}
+			});
 		}
 	};
 });

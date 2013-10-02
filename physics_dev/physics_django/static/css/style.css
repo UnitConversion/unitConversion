@@ -39,79 +39,146 @@ html, body {
 	background-color: white;
 }
 
-.container-left {
-	position: absolute;
-	left: 0px;
-	top: 45px;
-	width: 15%;
-	bottom: 0px;
+@media (max-width: 1023px) {
+	.container-left {
+		float: none;
+		padding: 0px 20px 20px 20px;
+	}
+
+	.container-middle {
+		float: none;
+		padding: 0px 20px 20px 20px;
+	}
+
+	.container-right {
+		float: none;
+		padding: 0px 20px 20px 20px;
+	}
+
+	.container-scroll-middle {
+		background-image: url('../img/list_big2.png');
+		background-repeat: no-repeat;
+		background-position: center;
+		height: 150px;
+	}
+
+	.container-scroll-middle-no-img {
+	}
+
+	.container-scroll-last-one {
+		background-image: url('../img/data_big3.png');
+		background-repeat: no-repeat;
+		background-position: center;
+		height: 150px;
+	}
+
+	.container-scroll-last-one-no-img {
+	}
+
+	/*
+	 * Back to top button
+	 */
+	#back_to_top_button {
+		position:fixed;
+		bottom: 5px;
+		right: 5px;
+		width: 50px;
+		height: 50px;
+		background-color: #0088cc;
+		border: 1px solid #cccccc;
+		-webkit-border-radius: 4px;
+		   -moz-border-radius: 4px;
+				border-radius: 4px;
+		cursor: pointer;
+		text-align: center;
+		opacity: 0.6;
+		display: block;
+	}
+
+	#back_to_top_button > i {
+		margin-top: 15px;
+	}
 }
 
-.container-middle {
-	position: absolute;
-	left: 15%;
-	width: 25%;
-	top: 45px;
-	bottom: 0px;
-}
+@media (min-width: 1024px) {
+	.container-left {
+		position: absolute;
+		left: 0px;
+		top: 45px;
+		width: 15%;
+		bottom: 0px;
+	}
 
-.container-right {
-	position: absolute;
-	right: 0px;
-	top: 45px;
-	width: 60%;
-	bottom: 0px;
-}
+	.container-middle {
+		position: absolute;
+		left: 15%;
+		width: 25%;
+		top: 45px;
+		bottom: 0px;
+	}
 
-.container-scroll {
-	position: absolute;
-	top: 5px;
-	right: 0px;
-	left: 5px;
-	bottom: 5px;
-	overflow-y: auto;
-}
+	.container-right {
+		position: absolute;
+		right: 0px;
+		top: 45px;
+		width: 60%;
+		bottom: 0px;
+	}
 
-.container-scroll-middle {
-	position: absolute;
-	top: 5px;
-	right: 0px;
-	left: 5px;
-	bottom: 5px;
-	overflow-y: auto;
-	background-image: url('../img/list_big2.png');
-	background-repeat: no-repeat;
-	background-position: center;
-}
+	.container-scroll {
+		position: absolute;
+		top: 5px;
+		right: 0px;
+		left: 5px;
+		bottom: 5px;
+		overflow-y: auto;
+	}
 
-.container-scroll-middle-no-img {
-	position: absolute;
-	top: 5px;
-	right: 0px;
-	left: 5px;
-	bottom: 5px;
-	overflow-y: auto;
-}
+	.container-scroll-middle {
+		position: absolute;
+		top: 5px;
+		right: 0px;
+		left: 5px;
+		bottom: 5px;
+		overflow-y: auto;
+		background-image: url('../img/list_big2.png');
+		background-repeat: no-repeat;
+		background-position: center;
+	}
 
-.container-scroll-last-one {
-	position: absolute;
-	top: 5px;
-	right: 5px;
-	left: 5px;
-	bottom: 5px;
-	overflow-y: auto;
-	background-image: url('../img/data_big3.png');
-	background-repeat: no-repeat;
-	background-position: center;
-}
+	.container-scroll-middle-no-img {
+		position: absolute;
+		top: 5px;
+		right: 0px;
+		left: 5px;
+		bottom: 5px;
+		overflow-y: auto;
+	}
 
-.container-scroll-last-one-no-img {
-	position: absolute;
-	top: 5px;
-	right: 5px;
-	left: 5px;
-	bottom: 5px;
-	overflow-y: auto;
+	.container-scroll-last-one {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		left: 5px;
+		bottom: 5px;
+		overflow-y: auto;
+		background-image: url('../img/data_big3.png');
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+
+	.container-scroll-last-one-no-img {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		left: 5px;
+		bottom: 5px;
+		overflow-y: auto;
+	}
+
+	#back_to_top_button {
+		display: none;
+	}
 }
 
 .float_right {
@@ -236,4 +303,16 @@ html, body {
 
 .search_field {
 	width: 93%;
+}
+
+.float_left {
+	float: left;
+}
+
+.float_clear {
+	clear: both;
+}
+
+.right_space {
+	padding-right: 20px;
 }

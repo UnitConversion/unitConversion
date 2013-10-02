@@ -4,10 +4,17 @@
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 
+app.controller('indexCtrl', function($scope, $window) {
+
+	$scope.top = function() {
+		$window.history.back();
+	};
+});
+
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope, $http, systemService, $routeParams){
+app.controller('mainCtrl', function($scope){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
@@ -115,7 +122,7 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 
@@ -138,30 +145,28 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 	$scope.results = {};
 	$scope.results.convertedResult = [];
 
-	// Retrieve the details
-	var query = serviceurl + 'magnets/conversion/?id=' + $routeParams.id;
+	$scope.scroll = {};
+	//$scope.scroll.scroll = $routeParams.id;
+	//$location.hash($scope.scroll.scroll);
 
-	if($routeParams.type === "install") {
-		query = serviceurl + 'magnets/conversion/?name=' + $routeParams.id;
-	}
+	l($location.hash());
 
-	l(query);
-
-	$http.get(query).success(function(data){
-		//showDetails(data, $routeParams.id);
+	detailsService.getDetails($routeParams).then(function(data) {
 		$scope.data = data[$routeParams.id];
 
 		for(var first in $scope.data) {
+			$scope.properties[first] = {};
 
 			for(var second in $scope.data[first]) {
 				$scope.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
 				detailsTabsIndex ++;
+				$scope.properties[first][second] = {};
 
 				// Save all axcept the algorithms in an array
 				for(var third in $scope.data[first][second]) {
 
-					if(third !== "algorithms") {
-						$scope.properties[third] = $scope.data[first][second][third];
+					if(third !== "algorithms" && third !== "measurementData") {
+						$scope.properties[first][second][third] = $scope.data[first][second][third];
 					}
 				}
 
@@ -172,12 +177,6 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 					algorithms[algorithmParts[0]] = $scope.data[first][second].algorithms[algorithm];
 				}
 			}
-		}
-		l(algorithms);
-
-		// Draw the plot if we are redirected directly to it
-		if($routeParams.subview !== undefined && $routeParams.subview === "plot"){
-			showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, "current", "field", []);
 		}
 	});
 
@@ -261,7 +260,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window)
 /*
  * Show conversion results in tabs
  */
-app.controller('showResultsCtrl', function($scope, $routeParams, $window){
+app.controller('showResultsCtrl', function($scope, $routeParams, $window, detailsService, $location, $anchorScroll){
 	var series = [];
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
@@ -269,10 +268,29 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 	$scope.plot.show_below_results_table = false;
 	$scope.plot.x_axis = "current";
 	$scope.plot.y_axis = "field";
+	$scope.data = undefined;
 
-	if($scope.detailsTabs !== undefined && $scope.detailsTabs.length !== 0) {
-		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
-	}
+	var detailsTabsIndex = 0;
+	$scope.scroll.scroll = $routeParams.id;
+	$location.hash($scope.scroll.scroll);
+
+	detailsService.getDetails($routeParams).then(function(data) {
+		$scope.data = {};
+		$scope.data.detailsTabs = [];
+		$scope.data.details = data[$routeParams.id];
+		l("data in results");
+
+		for(var first in $scope.data.details) {
+
+			for(var second in $scope.data.details[first]) {
+				$scope.data.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
+				detailsTabsIndex ++;
+			}
+		}
+
+		showDetails($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
+		$anchorScroll();
+	});
 
 	$scope.clearTable = function() {
 		l("clear");
@@ -281,7 +299,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 
 	$scope.redraw = function() {
 		l("redraw");
-		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
+		showDetails($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
 	};
 
 	$scope.showPoint = function(results) {
@@ -294,14 +312,14 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window){
 			}
 		}
 
-		showDetails($scope.data[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
+		showDetails($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
 	};
 
 	$scope.openNewVindow = function() {
 		var newWindowUrl = "measurement_data.html#?"
 		+ "type=" + $routeParams.type
 		+ "&id=" + $routeParams.id
-		+ "&view=" + $scope.detailsTabs[$routeParams.view]['first'] + "_" + $scope.detailsTabs[$routeParams.view]['second'];
+		+ "&view=" + $scope.data.detailsTabs[$routeParams.view]['first'] + "_" + $scope.data.detailsTabs[$routeParams.view]['second'];
 
 		$window.open(newWindowUrl);
 	};

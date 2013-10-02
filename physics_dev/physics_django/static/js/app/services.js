@@ -21,3 +21,27 @@ app.factory('systemService', function($resource){
 		}
 	});
 });
+
+app.factory('detailsService', function($q, $http) {
+
+	var getDetails = function(params) {
+		var deferred = $q.defer();
+		// Retrieve the details
+		var query = serviceurl + 'magnets/conversion/?id=' + params.id;
+
+		if(params.type === "install") {
+			query = serviceurl + 'magnets/conversion/?name=' + params.id;
+		}
+
+		$http.get(query).success(function(data){
+			deferred.resolve(data);
+		});
+
+		return deferred.promise;
+	};
+
+	return {
+		getDetails: getDetails
+	};
+
+});
