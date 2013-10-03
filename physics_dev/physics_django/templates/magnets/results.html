@@ -1,6 +1,6 @@
 {% load verbatim %} {% verbatim %}
 <br />
-<a name="{{scroll.scroll}}"></a>
+<a name="{{scroll.scroll2}}"></a>
 <div>
 	<ul class="nav nav-tabs">
 		<li ng-class="{'active': (subview == undefined || subview == 'results')}">
@@ -28,15 +28,15 @@
 <div ng-if="subview == 'results'">
 	<button ng-click="clearTable()" class="btn">Clear table</button>
 	<br />
-	<br />
-	<label class="checkbox">
-		<input ng-model="plot.show_below_results_table" type="checkbox" /> Show plot below the conversion results table
-	</label>
 	<br/>
 	<div results-table="" on-show-click="showPoint(result)" results="results.convertedResult" visible="true"></div>
+	<button class="btn" ng-click="redraw()">Redraw plot</button>
+	<br/>
+	<br/>
+	<div id="plot"></div>
 </div>
 
-<div ng-show="subview == 'plot' || plot.show_below_results_table">
+<div ng-show="subview == 'plot'">
 	<span>Select data on axis </span>
 	x: <select ng-model="plot.x_axis"><option ng-selected="plot.x_axis == key" ng-repeat="(key, value) in data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" value="{{key}}">{{key}}</option></select>
 	and y: <select ng-model="plot.y_axis"><option ng-selected="plot.y_axis == key" ng-repeat="(key, value) in data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" value="{{key}}">{{key}}</option></select>

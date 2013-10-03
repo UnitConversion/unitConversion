@@ -101,6 +101,45 @@ html, body {
 }
 
 @media (min-width: 1024px) {
+
+	.container-resize {
+		position: fixed;
+		left: 15%;
+		top: 45px;
+		width: 5px;
+		bottom: 0px;
+		z-index: 501;
+	}
+
+	.container-resize > div {
+		position:relative;
+		height: 100%;
+		width: 100%;
+	}
+
+	.container-resize > div:hover {
+		cursor: col-resize;
+	}
+
+	.container-resize2 {
+		position: fixed;
+		left: 35%;
+		top: 45px;
+		width: 5px;
+		bottom: 0px;
+		z-index: 501;
+	}
+
+	.container-resize2 > div {
+		position:relative;
+		height: 100%;
+		width: 100%;
+	}
+
+	.container-resize2 > div:hover {
+		cursor: col-resize;
+	}
+
 	.container-left {
 		position: absolute;
 		left: 0px;
@@ -112,7 +151,7 @@ html, body {
 	.container-middle {
 		position: absolute;
 		left: 15%;
-		width: 25%;
+		width: 20%;
 		top: 45px;
 		bottom: 0px;
 	}
@@ -121,7 +160,7 @@ html, body {
 		position: absolute;
 		right: 0px;
 		top: 45px;
-		width: 60%;
+		width: 65%;
 		bottom: 0px;
 	}
 

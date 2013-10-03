@@ -14,11 +14,15 @@ app.controller('indexCtrl', function($scope, $window) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope){
+app.controller('mainCtrl', function($scope, $location){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
+
+	$scope.$watch('location.hash()', function(){
+		l("hash: " + $location.hash());
+	});
 });
 
 /*
@@ -115,14 +119,14 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 			id = device.name;
 		}
 
-		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + id + "/0/results";
+		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + id + "/0/results#" + id;
 	};
 });
 
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location, $anchorScroll){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 
@@ -146,10 +150,10 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 	$scope.results.convertedResult = [];
 
 	$scope.scroll = {};
-	//$scope.scroll.scroll = $routeParams.id;
+	$scope.scroll.scroll = $routeParams.id;
 	//$location.hash($scope.scroll.scroll);
 
-	l($location.hash());
+	l("hash: " + $location.hash());
 
 	detailsService.getDetails($routeParams).then(function(data) {
 		$scope.data = data[$routeParams.id];
@@ -178,6 +182,8 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 				}
 			}
 		}
+
+		//$anchorScroll();
 	});
 
 	/*
@@ -265,7 +271,6 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
 	$scope.plot = {};
-	$scope.plot.show_below_results_table = false;
 	$scope.plot.x_axis = "current";
 	$scope.plot.y_axis = "field";
 	$scope.data = undefined;
