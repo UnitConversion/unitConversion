@@ -22,11 +22,15 @@ app.factory('systemService', function($resource){
 	});
 });
 
+/*
+ * Provide device's details to controllers
+ */
 app.factory('detailsService', function($q, $http) {
 
 	var getDetails = function(params) {
 		var deferred = $q.defer();
-		// Retrieve the details
+
+		// Create query string
 		var query = serviceurl + 'magnets/conversion/?id=' + params.id;
 
 		if(params.type === "install") {

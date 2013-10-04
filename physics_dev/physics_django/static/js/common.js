@@ -1,26 +1,11 @@
 /*
- * Functions common to complete application
+ * Helper functions for Unit Conversion client
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 
-$(document).ready(function(){
-
-	// Write data from cookie back to object and remove cookie
-	if($.cookie(filtersCookieName) !== undefined) {
-		selectedElements = $.parseJSON($.cookie(filtersCookieName));
-	}
-
-	// Read data from settings cookie and set it to converterSettings object
-	if($.cookie(settingsCookieName) !== undefined) {
-		converterSettings = $.parseJSON($.cookie(settingsCookieName));
-	}
-
-	// Create new comparator
-	jQuery.expr[':'].Contains = function(a, i, m) {
-		return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-	};
-});
+// Global plot variable
+var plot = undefined;
 
 /**
  * Write logs to Chrome or Firefox console
@@ -56,24 +41,6 @@ function trim(str) {
 jQuery.fn.doesExist = function(){
 	return jQuery(this).length > 0;
 };
-
-/**
- * Save filter data into a cookie
- * @param {type} dataToBeSaved object to be saved into a cookie
- */
-function saveFilterData(dataToBeSaved) {
-	l("save filters data");
-	l(dataToBeSaved);
-	$.cookie(filtersCookieName, JSON.stringify(dataToBeSaved));
-}
-
-/**
- * Save settings data to a cookie
- * @param {type} dataToBeSaved data to be saved into a cookie
- */
-function saveOlogSettingsData(dataToBeSaved) {
-	$.cookie(settingsCookieName, JSON.stringify(dataToBeSaved));
-}
 
 /**
  * Create query for listing devices
@@ -189,4 +156,139 @@ function returnFirstXCharacters(string, count){
 	} else {
 		return string;
 	}
+}
+
+/**
+ * Create plot from the two vectors from measurement data table
+ * @param {type} data measurement data object
+ * @param {type} x_axis measurement data object property that should be put on the x axis
+ * @param {type} y_axis measurement data object property that should be put on the y axis
+ * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
+ */
+function drawPlot(data, x_axis, y_axis, newSeries){
+
+	// Plot options object
+	var options = {
+		series: [{label: "Measurement data"}, {label: "Conversion results", showLine:false}],
+		seriesColors: ["#c5b47f", "#953579"],
+		axesDefaults: {
+			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+		},
+		legend: {show: true},
+		axes: {
+			xaxis: {
+				label: x_axis,
+				pad: 0
+			},
+			yaxis: {
+				label: y_axis
+			}
+		},
+		highlighter: {
+			show: true,
+			sizeAdjust: 7.5
+		},
+		cursor: {
+			show: false
+		}
+	};
+
+	// Prepared series from measuremetn data series
+	var preparedSeries = prepareSeries(data, x_axis, y_axis);
+	var series = [];
+
+	// Add prepared series
+	if(preparedSeries.length !== 0) {
+		series.push(preparedSeries);
+	}
+
+	// Ad series of conversion points
+	if(newSeries.length !== 0) {
+		series.push(newSeries);
+	}
+
+	// Destroy previous plot if exists
+	if(plot !== undefined) {
+		plot.destroy();
+		$('#plot').html("");
+	}
+
+	// Only draw plot if something is in series
+	if(series.length !== 0) {
+		plot = $.jqplot ('plot', series, options);
+	}
+}
+
+/**
+ * Represent jason data as a tree with <ul> and <li> elements.
+ * @param {type} html html code to start with
+ * @param {type} data json data object
+ * @returns {String} html with tree content
+ */
+function drawDataTree(html, data){
+	//l(data);
+
+	if(data === undefined) {
+		return "";
+
+	} else {
+		html += "<ul>";
+
+		for(var prop in data) {
+			html += "<li>";
+			html += "<b>" + prop + "</b>";
+
+			// Find object
+			if($.type(data[prop]) === 'object') {
+				html = drawDataTree(html, data[prop]);
+
+			} else {
+				html += ': ' + data[prop];
+			}
+			html += "</li>";
+		}
+		html += "</ul>";
+	}
+
+	return html;
+}
+
+/**
+ * Prepare series for plotting
+ * @param {type} data measurement data object
+ * @param {type} x_axis measurement data object property used to plot data on x axis
+ * @param {type} y_axis measurement data object property used to plot data on y axis
+ * @returns {Array} array of points
+ */
+function prepareSeries(data, x_axis, y_axis) {
+	var series = [];
+
+	// Check if data is udefined
+	if(data === undefined) {
+		return series;
+	}
+
+	// Set default data on axes
+	var x_data = data.current;
+	var y_data = data.field;
+
+	// Set a new vector on x axis
+	if(x_axis !== undefined) {
+		x_data = data[x_axis];
+	}
+
+	// Set a new vector on y axis
+	if(y_axis !== undefined) {
+		y_data = data[y_axis];
+	}
+
+	// If there is data available for plotting, rearange it to create array of points
+	if(x_data !== undefined && y_data !== undefined) {
+
+		for(var i=0; i<x_data.length; i++){
+			series.push([x_data[i], y_data[i]]);
+		}
+	}
+
+	return series;
 }

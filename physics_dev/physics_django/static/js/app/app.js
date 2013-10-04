@@ -1,10 +1,12 @@
 /*
  * Create module and add include dependencies
+ *
+ * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 var app = angular.module('conversion', ['ui.bootstrap', 'ngResource', 'ngRoute', 'route-segment', 'view-segment']);
 
 /*
- * Define routes for our module
+ * Define routes for app module
  */
 app.config(function($routeSegmentProvider, $routeProvider){
 
@@ -70,5 +72,5 @@ app.config(function($routeSegmentProvider, $routeProvider){
 			up().
 		up();
 
-		//$routeProvider.otherwise({redirectTo: '/'});
+		$routeProvider.otherwise({redirectTo: '/'});
 });

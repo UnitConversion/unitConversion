@@ -46,19 +46,18 @@ app.directive('algorithm', function() {
 	return {
 		restrict: 'C',
 		template : '\
-					<td>{{name}}</td>\n\
-					<td>{{data.function}}</td>\n\
-					<td>{{data.initialUnit}}</td>\n\
-					<td>{{data.algorithmId}}</td>\n\
-					<td>{{data.resultUnit}}</td>\n\
-					<td>{{data.auxInfo}}</td>\n\
+			<td>{{name}}</td>\n\
+			<td>{{tableData.function}}</td>\n\
+			<td>{{tableData.initialUnit}}</td>\n\
+			<td>{{tableData.algorithmId}}</td>\n\
+			<td>{{tableData.resultUnit}}</td>\n\
+			<td>{{tableData.auxInfo}}</td>\n\
 		',
 		scope: {
 			name: '=',
 			tableData: '='
 		},
 		link: function(scope, elem, attrs) {
-			scope.data = scope.tableData;
 		}
 	};
 });

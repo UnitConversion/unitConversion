@@ -4,7 +4,9 @@
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 
-
+/*
+ * Controller that prepare measurement data object for displaying
+ */
 measurementDataApp.controller('measurementDataCtrl', function($scope, $location, $http) {
 	$scope.data = {};
 	$scope.convertedData = [];
@@ -18,11 +20,9 @@ measurementDataApp.controller('measurementDataCtrl', function($scope, $location,
 	}
 
 	var query = serviceurl + 'magnets/conversion/?' + idParameter + '=' + parameters.id;
-
 	l(query);
 
 	$http.get(query).success(function(data){
-		//showDetails(data, $routeParams.id);
 		$scope.data = data[parameters.id][view[0]][view[1]]['measurementData'];
 		l($scope.data);
 		var length = 1;
@@ -35,9 +35,7 @@ measurementDataApp.controller('measurementDataCtrl', function($scope, $location,
 			var rowObject = {};
 
 			for(var key in $scope.data) {
-				var column = key;
 				var row = $scope.data[key];
-
 
 				if($.type(row) === 'array') {
 					rowObject[key] = row[i];
@@ -52,7 +50,6 @@ measurementDataApp.controller('measurementDataCtrl', function($scope, $location,
 					}
 				}
 			}
-
 			$scope.convertedData.push(rowObject);
 		}
 	});

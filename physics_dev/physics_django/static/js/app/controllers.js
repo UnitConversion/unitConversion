@@ -4,25 +4,38 @@
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 
-app.controller('indexCtrl', function($scope, $window) {
+app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 
 	$scope.top = function() {
-		$window.history.back();
+		l($location.hash());
+		var id = $location.hash();
+
+		// If no Log entry is selected, go to the top
+		if(id === "" || id === "top") {
+			$location.hash("top");
+			$anchorScroll();
+
+		// Scroll to the device
+		} else {
+			$location.hash("");
+			var element = $('input[value=' + id + ']');
+			l(element.offset().top);
+
+			$('html, body').animate({
+				scrollTop: element.parent().offset().top
+			}, 100);
+		}
 	};
 });
 
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope, $location){
+app.controller('mainCtrl', function($scope){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
-
-	$scope.$watch('location.hash()', function(){
-		l("hash: " + $location.hash());
-	});
 });
 
 /*
@@ -96,6 +109,13 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 				newItem.color = "bg_light";
 			}
 
+			// Add create device id and add it to device
+			newItem.id = item.inventoryId;
+
+			if($routeParams.type === "install" && item.name !== undefined) {
+				newItem.id = item.name;
+			}
+
 			$scope.devices.push(newItem);
 		});
 	});
@@ -126,7 +146,7 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location, $anchorScroll){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 
@@ -148,10 +168,10 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 	var algorithms = {};
 	$scope.results = {};
 	$scope.results.convertedResult = [];
+	$scope.results.series = [];
 
 	$scope.scroll = {};
 	$scope.scroll.scroll = $routeParams.id;
-	//$location.hash($scope.scroll.scroll);
 
 	l("hash: " + $location.hash());
 
@@ -182,8 +202,6 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 				}
 			}
 		}
-
-		//$anchorScroll();
 	});
 
 	/*
@@ -267,7 +285,6 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
  * Show conversion results in tabs
  */
 app.controller('showResultsCtrl', function($scope, $routeParams, $window, detailsService, $location, $anchorScroll){
-	var series = [];
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
 	$scope.plot = {};
@@ -293,7 +310,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 			}
 		}
 
-		showDetails($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
+		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series);
 		$anchorScroll();
 	});
 
@@ -304,7 +321,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 
 	$scope.redraw = function() {
 		l("redraw");
-		showDetails($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
+		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series);
 	};
 
 	$scope.showPoint = function(results) {
@@ -312,12 +329,12 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 		for(var result in results) {
 
 			if(results[result].show !== undefined && results[result].show === true) {
-				series.push([results[result].init_value, results[result].conv_value]);
-				l(series);
+				$scope.results.series.push([results[result].init_value, results[result].conv_value]);
+				l($scope.results.series);
 			}
 		}
 
-		showDetails($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, series);
+		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series);
 	};
 
 	$scope.openNewVindow = function() {

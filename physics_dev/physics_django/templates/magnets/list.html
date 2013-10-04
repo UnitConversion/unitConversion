@@ -3,7 +3,7 @@
 	<input type="text" placeholder="Filter devices ..." id="search-query" ng-model="device_filter" class="search_input">
 </div>
 <div ng-repeat="device in devices | filter:device_filter" ng-click="showDetails(device)" ng-class="{'device_click': device.serialNumber == id}" class="device {{device.click}} {{device.color}}">
-	<input type="hidden" name="id" value="{{device.serialNumber}}" />
+	<input type="hidden" name="id" value="{{device.id}}" />
 	<table>
 		<tr>
 			<td><img title="Serial Number" src="../../static/img/serial_number_icon2.png" /> Ser No:</td>
