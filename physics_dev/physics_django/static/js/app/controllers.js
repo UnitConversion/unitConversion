@@ -326,14 +326,12 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	};
 
 	$scope.showPoint = function(results) {
-		l(results);
 		$scope.results.series = [];
 
 		for(var result in results) {
 
 			if(results[result].show !== undefined && results[result].show === true) {
 				$scope.results.series.push([results[result].init_value, results[result].conv_value]);
-				l($scope.results.series);
 			}
 		}
 

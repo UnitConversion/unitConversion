@@ -26,11 +26,12 @@
 </div>
 
 <div ng-if="subview == 'results'">
-	<button ng-click="clearTable()" class="btn">Clear table</button>
+	<button ng-click="clearTable();showPoint(results.convertedResult);" class="btn">Clear table</button>
 	<br />
 	<br/>
 	<div results-table="" on-show-click="showPoint(result)" results="results.convertedResult" visible="true"></div>
 	<br/>
+	<button id="zoom" class="btn">Reset zoom</button>
 	<br/>
 	<div id="plot"></div>
 </div>

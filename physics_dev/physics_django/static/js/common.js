@@ -178,10 +178,12 @@ function drawPlot(data, x_axis, y_axis, newSeries){
 		axes: {
 			xaxis: {
 				label: x_axis,
-				pad: 0
+				pad: 0,
+				tickOptions:{formatString:'$%.4f'}
 			},
 			yaxis: {
-				label: y_axis
+				label: y_axis,
+				tickOptions:{formatString:'$%.4f'}
 			}
 		},
 		highlighter: {
@@ -189,7 +191,9 @@ function drawPlot(data, x_axis, y_axis, newSeries){
 			sizeAdjust: 7.5
 		},
 		cursor: {
-			show: false
+			show: true,
+			zoom: true,
+			showTooltip:	false
 		}
 	};
 
@@ -216,6 +220,11 @@ function drawPlot(data, x_axis, y_axis, newSeries){
 	// Only draw plot if something is in series
 	if(series.length !== 0) {
 		plot = $.jqplot ('plot', series, options);
+
+		$('#zoom').unbind('click');
+		$('#zoom').click(function() {
+			plot.resetZoom();
+		});
 	}
 }
 
