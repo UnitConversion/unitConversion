@@ -271,7 +271,8 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 					conv_value: results.conversionResult.value,
 					conv_unit: results.conversionResult.unit,
 					from: $scope.source_unit,
-					to: $scope.destination_unit
+					to: $scope.destination_unit,
+					id: $routeParams.id
 				});
 			}
 
@@ -325,6 +326,8 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	};
 
 	$scope.showPoint = function(results) {
+		l(results);
+		$scope.results.series = [];
 
 		for(var result in results) {
 
