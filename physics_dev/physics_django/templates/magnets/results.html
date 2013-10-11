@@ -31,7 +31,7 @@
 	<br/>
 	<div results-table="" on-show-click="showPoint(result)" results="results.convertedResult" visible="true"></div>
 	<br/>
-	<button id="zoom" class="btn">Reset zoom</button>
+	<button ng-if="data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" id="zoom" class="btn">Reset zoom</button>
 	<br/>
 	<div id="plot"></div>
 </div>
@@ -41,7 +41,28 @@
 	x: <select ng-model="plot.x_axis"><option ng-selected="plot.x_axis == key" ng-repeat="(key, value) in data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" value="{{key}}">{{key}}</option></select>
 	and y: <select ng-model="plot.y_axis"><option ng-selected="plot.y_axis == key" ng-repeat="(key, value) in data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" value="{{key}}">{{key}}</option></select>
 	<br/>
+
+	<div ng-if="plot.numberOfDirections > 0">
+		<label class="radio">
+			<input type="radio" name="direction_plot" ng-model="plot.direction_plot" value="false" />
+			Plot all points together
+		</label>
+		<label class="radio">
+			<input type="radio" name="direction_plot" ng-model="plot.direction_plot" value="true" />
+			Plot according to direction
+		</label>
+		<ul id="direction_list">
+			<li ng-repeat="(dir, dirValue) in plot.direction">
+				<label class="checkbox">
+					<input ng-disabled="plot.direction_plot == 'false'" ng-model="plot.direction[dir]" type="checkbox" value="true">
+					{{dir}}
+				</label>
+			</li>
+		</ul>
+	</div>
+	<br/>
 	<button class="btn" ng-click="redraw()">Redraw plot</button>
+	<button id="zoom" class="btn">Reset zoom</button>
 	<br/>
 	<br/>
 	<div id="plot"></div>

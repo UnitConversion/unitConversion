@@ -291,6 +291,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.plot = {};
 	$scope.plot.x_axis = "current";
 	$scope.plot.y_axis = "field";
+	$scope.plot.direction_plot = "false";
 	$scope.data = undefined;
 
 	var detailsTabsIndex = 0;
@@ -301,7 +302,6 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 		$scope.data = {};
 		$scope.data.detailsTabs = [];
 		$scope.data.details = data[$routeParams.id];
-		l("data in results");
 
 		for(var first in $scope.data.details) {
 
@@ -311,7 +311,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 			}
 		}
 
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series);
+		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
 		$anchorScroll();
 	});
 
@@ -322,7 +322,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 
 	$scope.redraw = function() {
 		l("redraw");
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series);
+		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
 	};
 
 	$scope.showPoint = function(results) {
@@ -335,7 +335,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 			}
 		}
 
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series);
+		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
 	};
 
 	$scope.openNewVindow = function() {

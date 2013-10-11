@@ -164,12 +164,86 @@ function returnFirstXCharacters(string, count){
  * @param {type} x_axis measurement data object property that should be put on the x axis
  * @param {type} y_axis measurement data object property that should be put on the y axis
  * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
+ * @param {type} scope $scope object
  */
-function drawPlot(data, x_axis, y_axis, newSeries){
+function drawPlot(data, x_axis, y_axis, newSeries, scope){
+
+	var seriesData = {};
+	scope.plot.numberOfDirections = 0;
+
+	if(scope.plot.direction === undefined) {
+		scope.plot.direction = {};
+	}
+
+	// Create series according to directions
+	if(data !== undefined && data.direction !== undefined) {
+
+		$.each(data.direction, function(i, dir) {
+
+			if(dir !== "") {
+
+				if(dir in seriesData) {
+					seriesData[dir].push([data[x_axis][i], data[y_axis][i]]);
+
+				} else {
+					seriesData[dir] = [[data[x_axis][i], data[y_axis][i]]];
+					scope.plot.numberOfDirections ++;
+
+					if(!(dir in scope.plot.direction)) {
+						scope.plot.direction[dir] = true;
+					}
+				}
+			}
+		});
+	}
+
+	var seriesOptions = [];
+	var series = [];
+	var preparedSeries = [];
+
+	if(scope.plot.direction_plot === "true") {
+
+		$.each(scope.plot.direction, function(i, dir) {
+
+			if(dir === true) {
+				seriesOptions.push({label: i, showLine:true});
+
+				// Prepared series from measuremetn data series
+				preparedSeries = seriesData[i];
+
+				// Add prepared series
+				if(preparedSeries.length !== 0) {
+
+					// Add 0,0 point if there is only one point to be plotted
+					if(preparedSeries.length === 1) {
+						preparedSeries.push([0, 0]);
+					}
+
+					series.push(preparedSeries);
+				}
+			}
+		});
+
+	} else {
+		seriesOptions.push({label: "Measurement data"}, {label: "Conversion results", showLine:false});
+
+		// Prepared series from measuremetn data series
+		preparedSeries = prepareSeries(data, x_axis, y_axis);
+
+		// Add prepared series
+		if(preparedSeries.length !== 0) {
+			series.push(preparedSeries);
+		}
+
+		// Ad series of conversion points
+		if(newSeries.length !== 0) {
+			series.push(newSeries);
+		}
+	}
 
 	// Plot options object
 	var options = {
-		series: [{label: "Measurement data"}, {label: "Conversion results", showLine:false}],
+		series: seriesOptions,
 		seriesColors: ["#c5b47f", "#953579"],
 		axesDefaults: {
 			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
@@ -193,23 +267,9 @@ function drawPlot(data, x_axis, y_axis, newSeries){
 		cursor: {
 			show: true,
 			zoom: true,
-			showTooltip:	false
+			showTooltip: false
 		}
 	};
-
-	// Prepared series from measuremetn data series
-	var preparedSeries = prepareSeries(data, x_axis, y_axis);
-	var series = [];
-
-	// Add prepared series
-	if(preparedSeries.length !== 0) {
-		series.push(preparedSeries);
-	}
-
-	// Ad series of conversion points
-	if(newSeries.length !== 0) {
-		series.push(newSeries);
-	}
 
 	// Destroy previous plot if exists
 	if(plot !== undefined) {
@@ -235,7 +295,6 @@ function drawPlot(data, x_axis, y_axis, newSeries){
  * @returns {String} html with tree content
  */
 function drawDataTree(html, data){
-	//l(data);
 
 	if(data === undefined) {
 		return "";
@@ -271,6 +330,7 @@ function drawDataTree(html, data){
  */
 function prepareSeries(data, x_axis, y_axis) {
 	var series = [];
+	var directions = [];
 
 	// Check if data is udefined
 	if(data === undefined) {
@@ -291,10 +351,14 @@ function prepareSeries(data, x_axis, y_axis) {
 		y_data = data[y_axis];
 	}
 
+	if(data.direction !== undefined) {
+		directions = data.direction;
+	}
+
 	// If there is data available for plotting, rearange it to create array of points
 	if(x_data !== undefined && y_data !== undefined) {
 
-		for(var i=0; i<x_data.length; i++){
+		for(var i=0; i < x_data.length; i++){
 			series.push([x_data[i], y_data[i]]);
 		}
 	}

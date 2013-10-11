@@ -355,3 +355,7 @@ html, body {
 .right_space {
 	padding-right: 20px;
 }
+
+#direction_list {
+	list-style-type: none;
+}
