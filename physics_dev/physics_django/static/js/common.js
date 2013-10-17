@@ -225,7 +225,7 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 		});
 
 	} else {
-		seriesOptions.push({label: "Measurement data"}, {label: "Conversion results", showLine:false});
+		seriesOptions.push({label: "Measurement data"});
 
 		// Prepared series from measuremetn data series
 		preparedSeries = prepareSeries(data, x_axis, y_axis);
@@ -234,17 +234,18 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 		if(preparedSeries.length !== 0) {
 			series.push(preparedSeries);
 		}
+	}
 
-		// Ad series of conversion points
-		if(newSeries.length !== 0) {
-			series.push(newSeries);
-		}
+	// Add series of conversion points
+	if(newSeries.length !== 0) {
+		seriesOptions.push({label: "Conversion results", showLine:false});
+		series.push(newSeries);
 	}
 
 	// Plot options object
 	var options = {
 		series: seriesOptions,
-		seriesColors: ["#c5b47f", "#953579"],
+		seriesColors: ["#0085cc", "#953579", "#579575", "#d8b83f", "#4bb2c5"],
 		axesDefaults: {
 			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 		},
@@ -253,11 +254,11 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 			xaxis: {
 				label: x_axis,
 				pad: 0,
-				tickOptions:{formatString:'$%.4f'}
+				tickOptions:{formatString:'%.4f'}
 			},
 			yaxis: {
 				label: y_axis,
-				tickOptions:{formatString:'$%.4f'}
+				tickOptions:{formatString:'%.4f'}
 			}
 		},
 		highlighter: {
@@ -270,6 +271,8 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 			showTooltip: false
 		}
 	};
+
+	l(series);
 
 	// Destroy previous plot if exists
 	if(plot !== undefined) {

@@ -291,7 +291,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.plot = {};
 	$scope.plot.x_axis = "current";
 	$scope.plot.y_axis = "field";
-	$scope.plot.direction_plot = "false";
+	$scope.plot.direction_plot = "true";
 	$scope.data = undefined;
 
 	var detailsTabsIndex = 0;
