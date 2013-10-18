@@ -1,0 +1,114 @@
+/*
+ * Flot styles
+ *
+ * @author: Dejan Dežman <dejan.dezman@cosylab.com>
+ */
+
+#placeholder {
+	width: 600px;
+	height: 400px;
+	margin: 25px;
+}
+
+.placeholder_hidden {
+	display: none;
+}
+
+.axisLabel {
+	position: absolute;
+	text-align: center;
+	font-size: 13px;
+}
+
+.yaxisLabel {
+	top: 50%;
+	left: -25px;
+	transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-webkit-transform:  rotate(-90deg);
+	transform-origin: 0 0;
+	-o-transform-origin: 0 0;
+	-ms-transform-origin: 0 0;
+	-moz-transform-origin: 0 0;
+	-webkit-transform-origin: 0 0;
+}
+
+.xaxisLabel {
+	left: 50%;
+	top: 100%;
+}
+
+.zoom, .pan {
+	padding-left: 3px;
+	padding-right: 3px;
+	position:absolute;
+	cursor: pointer;
+}
+
+.zoom_in {
+	margin: 0;
+	padding: 0;
+	right:45px;
+	top:20px;
+	background-image: url('../img/plus.png');
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+}
+
+.zoom_out {
+	margin: 0;
+	padding: 0;
+	right:65px;
+	top:20px;
+	background-image: url('../img/minus.png');
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+}
+
+.pan_up {
+	margin: 0;
+	padding: 0;
+	right:55px;
+	top:45px;
+	background-image: url('../img/icon_up.png');
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+}
+
+.pan_left {
+	margin: 0;
+	padding: 0;
+	right:70px;
+	top:60px;
+	background-image: url('../img/icon_left.png');
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+}
+
+.pan_down {
+	margin: 0;
+	padding: 0;
+	right:55px;
+	top:75px;
+	background-image: url('../img/icon_down.png');
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+}
+
+.pan_right {
+	margin: 0;
+	padding: 0;
+	right:40px;
+	top:60px;
+	background-image: url('../img/icon_right.png');
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+}

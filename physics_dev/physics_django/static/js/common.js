@@ -170,6 +170,8 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 
 	var seriesData = {};
 	scope.plot.numberOfDirections = 0;
+	var container = $("#placeholder");
+	container.addClass("placeholder_hidden");
 
 	if(scope.plot.direction === undefined) {
 		scope.plot.direction = {};
@@ -197,7 +199,6 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 		});
 	}
 
-	var seriesOptions = [];
 	var series = [];
 	var preparedSeries = [];
 
@@ -206,8 +207,6 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 		$.each(scope.plot.direction, function(i, dir) {
 
 			if(dir === true) {
-				seriesOptions.push({label: i, showLine:true});
-
 				// Prepared series from measuremetn data series
 				preparedSeries = seriesData[i];
 
@@ -219,76 +218,131 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 						preparedSeries.push([0, 0]);
 					}
 
-					series.push(preparedSeries);
+					series.push({label:i, lines: { show: true }, points: { show: true }, data:preparedSeries});
 				}
 			}
 		});
 
 	} else {
-		seriesOptions.push({label: "Measurement data"});
-
 		// Prepared series from measuremetn data series
 		preparedSeries = prepareSeries(data, x_axis, y_axis);
 
 		// Add prepared series
 		if(preparedSeries.length !== 0) {
-			series.push(preparedSeries);
+			series.push({label:"Measurement data", lines: { show: false }, points: { show: true }, data:preparedSeries});
 		}
 	}
 
 	// Add series of conversion points
-	if(newSeries.length !== 0) {
-		seriesOptions.push({label: "Conversion results", showLine:false});
-		series.push(newSeries);
+	if(newSeries.length > 0) {
+		series.push({label:"Conversion results", lines: { show: false }, points: { show: true }, data:newSeries});
 	}
-
-	// Plot options object
-	var options = {
-		series: seriesOptions,
-		seriesColors: ["#0085cc", "#953579", "#579575", "#d8b83f", "#4bb2c5"],
-		axesDefaults: {
-			labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-		},
-		legend: {show: true},
-		axes: {
-			xaxis: {
-				label: x_axis,
-				pad: 0,
-				tickOptions:{formatString:'%.4f'}
-			},
-			yaxis: {
-				label: y_axis,
-				tickOptions:{formatString:'%.4f'}
-			}
-		},
-		highlighter: {
-			show: true,
-			sizeAdjust: 7.5
-		},
-		cursor: {
-			show: true,
-			zoom: true,
-			showTooltip: false
-		}
-	};
 
 	l(series);
 
-	// Destroy previous plot if exists
-	if(plot !== undefined) {
-		plot.destroy();
-		$('#plot').html("");
-	}
+	// Plot options
+	var optionsFlot = {
+		legend: {
+			show: true,
+			position: "nw"
+		},
+		xaxis: {
+			tickDecimals: 4
+		},
+		yaxis: {
+			tickDecimals: 4
+		},
+		zoom: {
+			interactive: true
+		},
+		pan: {
+			interactive: true
+		},
+		grid: {
+			hoverable: true
+		}
+	};
 
-	// Only draw plot if something is in series
-	if(series.length !== 0) {
-		plot = $.jqplot ('plot', series, options);
+	// We have at least one series
+	if(series.length > 0) {
+		container.removeClass("placeholder_hidden");
 
-		$('#zoom').unbind('click');
-		$('#zoom').click(function() {
-			plot.resetZoom();
+		// Initialize plot
+		var flotPlot = $.plot(container, series, optionsFlot);
+
+		// Create y axis labe
+		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
+			.text(y_axis)
+			.appendTo(container);
+		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+
+		// Create x axis label
+		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
+			.text(x_axis)
+			.appendTo(container);
+		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
+
+		// Create zoom out button
+		$("<div class='zoom zoom_out'></div>")
+			.appendTo(container)
+			.click(function (event) {
+				event.preventDefault();
+				flotPlot.zoomOut();
+			}
+		);
+
+		// Create zoom in button
+		$("<div class='zoom zoom_in'></div>")
+			.appendTo(container)
+			.click(function (event) {
+				event.preventDefault();
+				flotPlot.zoom();
+			}
+		);
+
+		// Create pan arrows
+		addArrow("up", {top: -100}, container, flotPlot);
+		addArrow("left", {left: -100}, container, flotPlot);
+		addArrow("down", {top: 100}, container, flotPlot);
+		addArrow("right", {left: 100}, container, flotPlot);
+
+		// Create tooltips when hovering over points
+		container.bind("plothover", function (event, pos, item) {
+
+			if (item) {
+				$("#tooltip").remove();
+				var x = item.datapoint[0].toFixed(4);
+				var y = item.datapoint[1].toFixed(4);
+				showTooltip(item.pageX, item.pageY, x + ", " + y);
+
+			} else {
+				$("#tooltip").remove();
+			}
 		});
+
 	}
+}
+
+function addArrow(classNamePart, offset, placeholder, plot) {
+	$("<div class='pan pan_" + classNamePart + "'></div>")
+		.appendTo(placeholder)
+		.click(function (e) {
+			e.preventDefault();
+			plot.pan(offset);
+		});
+}
+
+function showTooltip(x, y, contents) {
+	$("<div id='tooltip'>" + contents + "</div>").css({
+		position: "absolute",
+		display: "none",
+		top: y + 5,
+		left: x + 5,
+		border: "1px solid #fdd",
+		padding: "2px",
+		"background-color": "#fee",
+		opacity: 0.80
+	}).appendTo("body").fadeIn(100);
 }
 
 /**
