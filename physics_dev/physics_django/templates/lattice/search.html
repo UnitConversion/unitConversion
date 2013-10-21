@@ -1,0 +1,104 @@
+{% load verbatim %} {% verbatim %}
+<div class="clear"></div>
+<div id="search_form">
+	<div class="">
+		<h5>Search</h5>
+	</div>
+
+	<div>
+		Search for:
+	</div>
+	<div>
+		<label class="radio">
+			<input type="radio" name="type" ng-model="search.type" value="lattice" checked="checked" />
+			Lattice
+		</label>
+		<label class="radio">
+			<input type="radio" name="type" ng-model="search.type" value="model" />
+			Model
+		</label>
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		Name:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.system" name="system" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		Branch:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.name" name="name" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		Version:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.cmpnt_type" name="cmpnt_type" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		Description:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		Creator:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		Status:
+		<br />
+		<select>
+			<option>a</option>
+		</select>
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayLattice}}">
+		<button ng-click="searchForDevices(search)" class="btn">Search</button>
+	</div>
+
+	<div class="{{search.displayModel}}">
+		Branch:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.name" name="name" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayModel}}">
+		Description:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayModel}}">
+		Creator:
+		<br />
+		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayModel}}">
+		Status:
+		<br />
+		<select>
+			<option>a</option>
+		</select>
+		<br />
+		<br />
+	</div>
+	<div class="{{search.displayModel}}">
+		<button ng-click="searchForDevices(search)" class="btn">Search</button>
+	</div>
+</div>
+{% endverbatim %}

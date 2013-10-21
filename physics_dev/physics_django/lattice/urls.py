@@ -1,6 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 
-from physics_django.lattice.views import (lattices) 
+from physics_django.lattice.views import (lattices)
+
+from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_details)
 
 urlpatterns = patterns(
     '',
@@ -11,4 +13,22 @@ urlpatterns = patterns(
 #    url(r'^lattice/model/$',
 #        models,
 #        name='model'),
+	url(r'^lattice/web/$',
+        lattice_home,
+        name='lattice_home'),
+	url(r'^lattice/web/index.html$',
+        lattice_home,
+        name='lattice_home'),
+	url(r'^lattice/web/content.html$',
+        lattice_content_home,
+        name='lattice_content_home'),
+	url(r'^lattice/web/search.html$',
+        lattice_content_search,
+        name='lattice_content_search'),
+	url(r'^lattice/web/list.html$',
+        lattice_content_list,
+        name='lattice_content_list'),
+	url(r'^lattice/web/details.html$',
+        lattice_content_details,
+        name='lattice_content_details'),
 )

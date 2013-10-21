@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html ng-app="lattice">
+	<head>
+		<title>Lattice & Model</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" type="text/css" href="../../static/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="../../static/css/bootstrap-responsive.min.css">
+		<link rel="stylesheet" type="text/css" href="../../static/css/jquery.jqplot.min.css">
+		<link rel="stylesheet" type="text/css" href="../../static/css/latticeapp/style.css">
+		<link rel="stylesheet" type="text/css" href="../../static/css/flot.css">
+
+		<link rel="shortcut icon" href="../../static/img/favicon.png">
+	</head>
+	<body ng-controller="indexCtrl">
+		<a name="top"></a>
+
+		<div id="contents" app-view-segment="0"></div>
+
+		<!-- Back to top button -->
+		<div id="back_to_top_button" ng-click="top()">
+			<i class="icon-chevron-up icon-white"></i>
+		</div>
+
+		<!-- Import javascript files
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="../../static/js/jquery-2.0.3.min.js"></script>
+		<script src="../../static/js/jquery-ui-1.10.3.custom.min.js"></script>
+		<script src="../../static/js/jquery.jqplot.min.js"></script>
+		<script src="../../static/js/jqplot.canvasTextRenderer.min.js"></script>
+		<script src="../../static/js/jqplot.canvasAxisLabelRenderer.min.js"></script>
+		<script src="../../static/js/jqplot.highlighter.min.js"></script>
+		<script src="../../static/js/jqplot.cursor.min.js"></script>
+		<script src="../../static/js/bootstrap.min.js"></script>
+		<script src="../../static/js/latticeapp/configuration.js"></script>
+		<script src="../../static/js/latticeapp/common.js"></script>
+
+		<script src="../../static/js/angular.min.js"></script>
+		<script src="../../static/js/angular-resource.min.js"></script>
+		<script src="../../static/js/angular-animate.min.js"></script>
+		<script src="../../static/js/angular-route.min.js"></script>
+		<script src="../../static/js/angular-route-segment.min.js"></script>
+		<script src="../../static/js/ui-bootstrap-tpls-0.6.0.min.js"></script>
+		<script src="../../static/js/latticeapp/app.js"></script>
+		<script src="../../static/js/latticeapp/controllers.js"></script>
+		<script src="../../static/js/latticeapp/services.js"></script>
+		<script src="../../static/js/latticeapp/directives.js"></script>
+
+		<script src="../../static/js/jquery.flot.min.js"></script>
+		<script src="../../static/js/jquery.flot.navigate.min.js"></script>
+
+	</body>
+</html>

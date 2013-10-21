@@ -4,6 +4,8 @@ import re
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
 
+from django.shortcuts import render_to_response
+
 try:
     from django.utils import simplejson as json
 except ImportError:
@@ -152,3 +154,18 @@ def lattices(request):
 #        return HttpResponseBadRequest(content=e, mimetype="application/json")
 #    
 #    return HttpResponse(json.dumps(res), mimetype="application/json")
+
+def lattice_home(request):
+    return render_to_response("lattice/index.html")
+
+def lattice_content_home(request):
+    return render_to_response("lattice/content.html")
+
+def lattice_content_search(request):
+    return render_to_response("lattice/search.html")
+
+def lattice_content_list(request):
+    return render_to_response("lattice/list.html")
+
+def lattice_content_details(request):
+    return render_to_response("lattice/details.html")

@@ -1,0 +1,91 @@
+{% load verbatim %}
+{% verbatim %}
+
+<a name="{{scroll.scroll}}"></a>
+<div class="details_data_tabs">
+	<ul class="nav nav-tabs">
+		<li ng-repeat="tab in detailsTabs" ng-class="{'active': view == tab.index}">
+			<a href="{{url}}{{tab.index}}/results"><b>{{tab.first}}</b><br/>{{tab.second}}</a>
+		</li>
+	</ul>
+</div>
+
+<div class="details_data">
+	<div id="raw"></div>
+
+	<div class="alert alert-error" ng-show="error.display === true">
+		<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}. {{error.message}}
+	</div>
+
+	<div class="float_left right_space">
+		<h3>Conversion form</h3>
+
+		<table>
+			<tr>
+				<td>Source unit:</td>
+			</tr>
+			<tr>
+				<td>
+					<select ng-model="source_unit">
+						<option value="i">i</option>
+						<option value="b">b</option>
+						<option value="k">k</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Destination unit:</td>
+			</tr>
+			<tr>
+				<td>
+					<select ng-model="destination_unit">
+						<option value="i">i</option>
+						<option value="b">b</option>
+						<option value="k">k</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Initial value:</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="text" ng-model="initial_value" />
+				</td>
+			</tr>
+			<tr>
+				<td>Energy:</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="text" ng-model="energy" />
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="button" ng-click="convert()" value="Convert" class="btn" />
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div class="float_left">
+		<h3>Algorithms</h3>
+		<table class="table table-bordered">
+			<tr>
+				<th>Alg</th>
+				<th>Funct</th>
+				<th>Init Unit</th>
+				<th>Alg Id</th>
+				<th>Res Unit</th>
+				<th>Aux Info</th>
+			</tr>
+			<tr ng-repeat="(name, object) in data[detailsTabs[view]['first']][detailsTabs[view]['second']].algorithms" class="algorithm" name="name" table-data="object">
+			</tr>
+		</table>
+	</div>
+	<div class="float_clear">
+		<div app-view-segment="4"></div>
+	</div>
+</div>
+
+{% endverbatim %}

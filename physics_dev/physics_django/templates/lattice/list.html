@@ -1,0 +1,34 @@
+{% load verbatim %} {% verbatim %}
+<div class="form_search" id="form-search">
+	<input type="text" placeholder="Filter devices ..." id="search-query" ng-model="device_filter" class="search_input">
+</div>
+<div ng-repeat="device in devices | filter:device_filter" ng-click="showDetails(device)" ng-class="{'device_click': device.serialNumber == id}" class="device {{device.click}} {{device.color}}">
+	<input type="hidden" name="id" value="{{device.id}}" />
+	<table>
+		<tr>
+			<td><img title="Serial Number" src="../../static/img/serial_number_icon2.png" /> Ser No:</td>
+			<td><span class="text-info">{{device.serialNumber}}</span></td>
+		</tr>
+		<tr ng-if="device.name">
+			<td><img title="Name" src="../../static/img/name_icon2.png" /> Name:</td>
+			<td><span class="text-info">{{device.name}}</span></td>
+		</tr>
+		<tr>
+			<td><img title="Component Type" src="../../static/img/component_type_icon2.png" /> Comp Tp:</td>
+			<td><span class="text-info">{{device.componentType}}</span></td>
+		</tr>
+		<tr ng-if="device.system">
+			<td><img title="System" src="../../static/img/system_icon2.png" /> System:</td>
+			<td><span class="text-info">{{device.system}}</span></td>
+		</tr>
+		<tr>
+			<td><img title="Vendor" src="../../static/img/vendor_icon2.png" /> Vendor:</td>
+			<td><span class="text-info">{{device.vendor}}</span></td>
+		</tr>
+		<tr>
+			<td><img title="Description" src="../../static/img/description_icon2.png" /> Desc:</td>
+			<td><span class="text-info">{{device.typeDescription}}</span></td>
+		</tr>
+	</table>
+</div>
+{% endverbatim %}
