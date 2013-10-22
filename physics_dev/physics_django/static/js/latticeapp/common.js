@@ -43,7 +43,7 @@ jQuery.fn.doesExist = function(){
 };
 
 /**
- * Create query for listing devices
+ * Create query for listing lattice
  * @param {type} search search or $routeParams object
  * @param {boolean} returnUrl return url or query
  * @returns {String} return url or query string
@@ -53,25 +53,9 @@ function createDeviceListQuery(search, returnUrl) {
 	var url = "#";
 
 	// Add type
-	query += search.type + '/?';
 	url += "/type/" + search.type;
 
-	// Only include system attribute if we are looking through installed devices
-	if(search.type === "install") {
-
-		// Add system part
-		if(search.system !== undefined) {
-			query += "system=" + search.system + '&';
-			url += "/system/" + search.system;
-
-		} else {
-				query += "system=*&";
-				url += "/system/";
-		}
-	}
-
-	// Only include name attribute if we are looking through installed devices
-	if(search.type === "install") {
+	if(search.type === "lattice") {
 
 		// Add name part
 		if(search.name !== undefined) {
@@ -79,30 +63,49 @@ function createDeviceListQuery(search, returnUrl) {
 			url += "/name/" + search.name;
 
 		} else {
-
 				query += "name=*&";
 				url += "/name/";
 		}
-	}
 
-	// Add component type part
-	if(search.cmpnt_type !== undefined) {
-		query += "cmpnt_type=" + search.cmpnt_type + '&';
-		url += "/cmpnt_type/" + search.cmpnt_type;
+		// Add version part
+		if(search.version !== undefined) {
+			query += "version=" + search.version + '&';
+			url += "/version/" + search.version;
 
-	} else {
-		query += "cmpnt_type=*&";
-		url += "/cmpnt_type/";
-	}
+		} else {
+			query += "version=*&";
+			url += "/version/";
+		}
 
-	// Add serial number part
-	if(search.serialno !== undefined) {
-		query += "serialno=" + search.serialno;
-		url += "/serialno/" + search.serialno;
+		// Add branch part
+		if(search.branch !== undefined) {
+			query += "branch=" + search.branch + '&';
+			url += "/branch/" + search.branch;
 
-	} else {
-		query += "serialno=*";
-		url += "/serialno/";
+		} else {
+			query += "branch=*&";
+			url += "/branch/";
+		}
+
+		// Add description part
+		if(search.desc !== undefined) {
+			query += "description=" + search.desc + '&';
+			url += "/desc/" + search.desc;
+
+		} else {
+			query += "description=*&";
+			url += "/desc/";
+		}
+
+		// Add creator part
+		if(search.creator !== undefined) {
+			query += "creator=" + search.creator;
+			url += "/creator/" + search.creator;
+
+		} else {
+			query += "creator=*";
+			url += "/creator/";
+		}
 	}
 
 	// Return URL or query
