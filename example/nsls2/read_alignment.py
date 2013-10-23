@@ -38,9 +38,10 @@ if __name__ == '__main__':
     else:
         root = raw_input('Please specify the path to the data file:')
 
-    datasheet = 'Alignment Error Summary ER 02-01-2013.xls'
-    target = 'SR-MG-INSTALL.xlsx'
-    
+#    datasheet = 'Alignment Error Summary ER 02-01-2013.xls'
+    datasheet = 'Alignment Error Summary ER 08-27-2013.xls'
+    target = 'SR-MG-INSTALL-SN-09-19.xls'
+
     rawdata = __readdata("/".join((root, datasheet)))
     targetdata, wb = __readdata("/".join((root, target)), writable=True)
 #    for i in range(15):
