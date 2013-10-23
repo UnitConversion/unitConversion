@@ -2,7 +2,7 @@ from django.conf.urls.defaults import patterns, url
 
 from physics_django.lattice.views import (lattices)
 
-from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_details)
+from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_model_list, lattice_content_details, lattice_content_model_details)
 
 urlpatterns = patterns(
     '',
@@ -28,7 +28,13 @@ urlpatterns = patterns(
 	url(r'^lattice/web/list.html$',
         lattice_content_list,
         name='lattice_content_list'),
+	url(r'^lattice/web/model_list.html$',
+        lattice_content_model_list,
+        name='lattice_content_model_list'),
 	url(r'^lattice/web/details.html$',
         lattice_content_details,
         name='lattice_content_details'),
+	url(r'^lattice/web/model_details.html$',
+        lattice_content_model_details,
+        name='lattice_content_model_details'),
 )

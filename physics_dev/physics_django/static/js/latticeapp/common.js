@@ -52,6 +52,14 @@ function createDeviceListQuery(search, returnUrl) {
 	var query = "";
 	var url = "#";
 
+	// Add time part
+	if(search.search !== undefined) {
+		url += "/search/" + search.search;
+
+	} else {
+			url += "/search/";
+	}
+
 	// Add type
 	url += "/type/" + search.type;
 

@@ -13,11 +13,11 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',																									'index.home').
-		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/list',		'index.home.list_lattice').
-		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/details',		'index.home.list_lattice.details').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',										'index.home.list_model').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',								'index.home.list_model.details').
+		when('/',																												'index.home').
+		when('/search/:search/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/list',		'index.home.lattice_list').
+		when('/search/:search/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/details',	'index.home.lattice_list.lattice_details').
+		when('/search/:search/type/:type/name/:name?/list',																		'index.home.model_list').
+		when('/search/:search/type/:type/name/:name?/details',																	'index.home.model_list.model_details').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -29,26 +29,27 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				controller: 'searchFormCtrl'
 			}).
 			within().
-				segment('list_lattice', {
+				segment('lattice_list', {
 					templateUrl: 'list.html',
 					controller: 'listLatticeCtrl',
-					dependencies: ['type', 'name', 'version', 'branch', 'desc', 'creator']
+					dependencies: ['search']
 				}).
 				within().
-					segment('details', {
+					segment('lattice_details', {
 						templateUrl: 'details.html',
-						controller: 'showDetailsCtrl'
+						controller: 'showDetailsCtrl',
+						dependencies: ['type', 'name', 'version', 'branch', 'desc', 'creator']
 					}).
 				up().
-				segment('list_model', {
-					templateUrl: 'list.html',
-					controller: 'listDevicesCtrl',
+				segment('model_list', {
+					templateUrl: 'model_list.html',
+					controller: 'listModelCtrl',
 					dependencies: ['type', 'system', 'name', 'cmpnt_type', 'serialno']
 				}).
 				within().
-					segment('details', {
-						templateUrl: 'details.html',
-						controller: 'showDetailsCtrl',
+					segment('model_details', {
+						templateUrl: 'model_details.html',
+						controller: 'showModelDetailsCtrl',
 						dependencies: ['id', 'view']
 					}).
 				up().
