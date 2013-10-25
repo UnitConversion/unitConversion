@@ -2,31 +2,15 @@
 <div class="form_search" id="form-search">
 	<input type="text" placeholder="Filter lattice ..." id="search-query" ng-model="lattice_filter" class="search_input">
 </div>
-<div ng-repeat="lattice in lattices | filter:lattice_filter" ng-click="showDetails(lattice)" class="lattice {{lattice.click}} {{lattice.color}}">
+<div ng-repeat="modeldata in models | filter:lattice_filter" ng-click="showDetails(modeldata)" class="lattice {{modeldata.click}} {{modeldata.color}}">
 	<table>
-		<tr ng-if="lattice.name">
+		<tr ng-if="modeldata.name">
 			<td><b>Name: </b></td>
-			<td><span class="text-info">{{lattice.name}}</span></td>
+			<td><span class="text-info">{{modeldata.name}}</span></td>
 		</tr>
-		<tr ng-if="lattice.version">
-			<td><b>Version: </b></td>
-			<td><span class="text-info">{{lattice.version}}</span></td>
-		</tr>
-		<tr ng-if="lattice.branch">
-			<td><b>Branch: </b></td>
-			<td><span class="text-info">{{lattice.branch}}</span></td>
-		</tr>
-		<tr ng-if="lattice.creator">
-			<td><b>Creator: </b></td>
-			<td><span class="text-info">{{lattice.creator}}</span></td>
-		</tr>
-		<tr ng-if="lattice.originalDate">
-			<td><b>Org Dat: </b></td>
-			<td><span class="text-info">{{lattice.originalDate}}</span></td>
-		</tr>
-		<tr ng-if="lattice.description">
+		<tr ng-if="modeldata.description">
 			<td><b>Desc: </b></td>
-			<td><span class="text-info">{{lattice.description}}</span></td>
+			<td><span class="text-info">{{modeldata.description}}</span></td>
 		</tr>
 	</table>
 </div>

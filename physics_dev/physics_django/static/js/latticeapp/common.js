@@ -48,7 +48,7 @@ jQuery.fn.doesExist = function(){
  * @param {boolean} returnUrl return url or query
  * @returns {String} return url or query string
  */
-function createDeviceListQuery(search, returnUrl) {
+function createLatticeListQuery(search, returnUrl) {
 	var query = "";
 	var url = "#";
 
@@ -57,7 +57,7 @@ function createDeviceListQuery(search, returnUrl) {
 		url += "/search/" + search.search;
 
 	} else {
-			url += "/search/";
+		url += "/search/";
 	}
 
 	// Add type
@@ -71,8 +71,8 @@ function createDeviceListQuery(search, returnUrl) {
 			url += "/name/" + search.name;
 
 		} else {
-				query += "name=*&";
-				url += "/name/";
+			query += "name=*&";
+			url += "/name/";
 		}
 
 		// Add version part
@@ -113,6 +113,49 @@ function createDeviceListQuery(search, returnUrl) {
 		} else {
 			query += "creator=*";
 			url += "/creator/";
+		}
+	}
+
+	// Return URL or query
+	if(returnUrl) {
+		return url;
+
+	} else {
+		return query;
+	}
+}
+
+/**
+ * Create query for listing models
+ * @param {type} search search or $routeParams object
+ * @param {boolean} returnUrl return url or query
+ * @returns {String} return url or query string
+ */
+function createModelListQuery(search, returnUrl) {
+	var query = "";
+	var url = "#";
+
+	// Add time part
+	if(search.search !== undefined) {
+		url += "/search/" + search.search;
+
+	} else {
+		url += "/search/";
+	}
+
+	// Add type
+	url += "/type/" + search.type;
+
+	if(search.type === "model") {
+
+		// Add name part
+		if(search.name !== undefined) {
+			query += "name=" + search.name;
+			url += "/name/" + search.name;
+
+		} else {
+			query += "name=*";
+			url += "/name/";
 		}
 	}
 

@@ -44,13 +44,12 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				segment('model_list', {
 					templateUrl: 'model_list.html',
 					controller: 'listModelCtrl',
-					dependencies: ['type', 'system', 'name', 'cmpnt_type', 'serialno']
+					dependencies: ['type', 'name']
 				}).
 				within().
 					segment('model_details', {
 						templateUrl: 'model_details.html',
-						controller: 'showModelDetailsCtrl',
-						dependencies: ['id', 'view']
+						controller: 'showModelDetailsCtrl'
 					}).
 				up().
 			up().

@@ -239,7 +239,7 @@ html, body {
 .lattice {
 	display: block;
 	cursor: pointer;
-	border-top: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
 	padding: 5px;
 }
 
@@ -294,6 +294,7 @@ html, body {
 	margin: 5px;
 	margin-bottom: 0px;
 	width: 95%;
+	border-bottom: 1px solid #dddddd;
 }
 
 .search_input {
