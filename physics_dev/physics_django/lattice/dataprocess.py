@@ -26,10 +26,14 @@ def retrievelatticetype(params):
     The params is a dictionary with format: {'name': , 'format': }
     the name is supported lattice type name, and format is type format such as 'lat', 'ele', and/or 'txt'.
     '''
-    names = params['name']
-    formats = params['format']
-    
     _checkkeys(params.keys(), ['function','name', 'format'])
+    
+    names = params['name']
+    if names == '':
+        names = '*'
+    formats = params['format']
+    if formats == '':
+        formats = '*'
     
     if not isinstance(names, list) and not isinstance(formats, list):  
         results = latinst.retrievelatticetype(names, formats)
@@ -46,6 +50,8 @@ def savelatticetype(params):
     the name is supported lattice type name, and format is type format such as 'lat', 'ele', and/or 'txt'.
     '''
     _checkkeys(params.keys(), ['function','name', 'format'])
+    if params['name'] == '':
+        raise ValueError('lattice type name is empty.')
     result = latinst.savelatticetype(params['name'], params['format'])
     
     return {'result': result}
@@ -68,19 +74,25 @@ def savelatticeinfo(params):
     _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'latticetype', 'description', 'creator'])
 
     name = params['name']
+    if name == '':
+        name = '*'
     version = params['version']
+    if version == '':
+        version = '*'
     branch=params['branch']
+    if branch == '':
+        branch = '*'
     latticetype=None
-    if params.has_key('latticetype'):
+    if params.has_key('latticetype') and params['latticetype'] != '':
         latticetype = params['latticetype']
         latticetype = json.loads(latticetype)
         if not isinstance(latticetype, dict):
             raise TypeError("Lattice type data parameter format error.")
     description = None
-    if params.has_key('description'):
+    if params.has_key('description') and params['description'] != '':
         description = params['description']
     creator = None
-    if params.has_key('creator'):
+    if params.has_key('creator') and params['creator'] != '':
         creator = params['creator']
 
     result = latinst.savelatticeinfo(name, version, branch, latticetype=latticetype, description=description, creator=creator)
@@ -93,21 +105,23 @@ def retrievelatticeinfo(params):
     _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'description', 'creator'])
 
     name=params['name']
-    if params.has_key('version'):
+    if name == '':
+        name = '*'
+    if params.has_key('version') and params['version'] != '':
         version = params['version']
     else:
         version = None        
-    if params.has_key('branch'):
+    if params.has_key('branch') and params['branch'] != '':
         branch = params['branch']
     else:
         branch = None
 
-    if params.has_key('creator'):
+    if params.has_key('creator') and params['creator'] != '':
         creator = params['creator']
     else:
         creator=None
         
-    if params.has_key('description'):
+    if params.has_key('description') and params['description'] != '':
         description = params['description']
     else:
         description=None
@@ -652,12 +666,20 @@ def retrievemodellist(params):
         
     '''
     _checkkeys(params.keys(), ['function', 'latticename', 'latticeversion', 'latticebranch'])
-
+    
     latticename = params['latticename']
-    if params.has_key('latticebranch'):
+    if latticename == '':
+        latticename = '*'
+    if params.has_key('latticebranch') and params['latticebranch'] != '':
         latticebranch = params['latticebranch']
-    if params.has_key('latticeversion'):
+    else:
+        latticebranch=None
+        
+    if params.has_key('latticeversion') and params['latticeversion']:
         latticeversion = params['latticeversion']
+    else:
+        latticeversion=None
+    print 'here?', latticename, latticebranch, type(latticeversion)
     result = modelinst.retrievemodellist(latticename, latticebranch=latticebranch, latticeversion=latticeversion)
     return result
     

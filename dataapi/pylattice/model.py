@@ -140,7 +140,7 @@ class model(object):
         select model_id, lattice_id, 
                model_name, model_desc, 
                created_by, create_date,
-               updated_by, update_date,
+               updated_by, update_date
         from model
         left join model_code on model_code.model_code_id = model.model_code_id
         where
@@ -148,7 +148,8 @@ class model(object):
         '''
         _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
         resdict = {}
-        for latticeid, _ in lattices:
+        
+        for latticeid, _ in lattices.iteritems():
             try:
                 cur = self.conn.cursor()
                 cur.execute(sql, (latticeid,))
