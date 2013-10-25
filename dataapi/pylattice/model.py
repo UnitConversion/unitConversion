@@ -227,14 +227,23 @@ class model(object):
         where
         '''
         vals=[]
-        if modelname !=None and modelid !=None:
+        modelname = str(modelname)
+        if isinstance(modelid, (str, unicode)):
+            modelid=str(modelid)
+        if modelname != None and modelid != None:
             if "*" in modelname or "?" in modelname:
-                sql += ' model_name like %s and model_id = %s'
+                sql += ' model_name like %s'
                 vals.append(_wildcardformat(modelname))
             else:
-                sql += ' model_name = %s and model_id = %s'
+                sql += ' model_name = %s'
                 vals.append(modelname)
-            vals.append(modelid)
+            
+            if "*" in modelid or "?" in modelid:
+                sql += ' and model_id like %s'
+                vals.append(_wildcardformat(modelid))
+            else:
+                sql += ' and model_id = %s'
+                vals.append(modelid)
         elif modelname !=None:
             if "*" in modelname or "?" in modelname:
                 sql += ' model_name like %s'
@@ -245,7 +254,7 @@ class model(object):
         else:
             sql += ' model_id = %s'
             vals.append(modelid)
-        
+
 #        modelname = _wildcardformat(modelname)
         modelres = {}
         try:
@@ -277,6 +286,8 @@ class model(object):
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
+        
+        print modelres
         return modelres
 
     def _elementslist2dict(self, elements):

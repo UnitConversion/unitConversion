@@ -647,7 +647,9 @@ def retrievemodel(params):
         name = params['name']
     else:
         name=None
-    if params.has_key('id'):
+    if  params['name'] == '':
+        name = '*'
+    if params.has_key('id') and params['id'] != '':
         mid = params['id']
     else:
         mid=None
