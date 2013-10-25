@@ -167,5 +167,11 @@ def lattice_content_search(request):
 def lattice_content_list(request):
     return render_to_response("lattice/list.html")
 
+def lattice_content_model_list(request):
+    return render_to_response("lattice/model_list.html")
+
 def lattice_content_details(request):
     return render_to_response("lattice/details.html")
+
+def lattice_content_model_details(request):
+    return render_to_response("lattice/model_details.html")

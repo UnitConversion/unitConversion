@@ -13,15 +13,13 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',																											's1.home').
-		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',					's1.home.list_install').
-		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',			's1.home.list_install.details').
-		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view/:subview',	's1.home.list_install.details.results').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',												's1.home.list_inventory').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',										's1.home.list_inventory.details').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view/:subview',								's1.home.list_inventory.details.results').
+		when('/',																												'index.home').
+		when('/search/:search/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/list',		'index.home.lattice_list').
+		when('/search/:search/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/details',	'index.home.lattice_list.lattice_details').
+		when('/search/:search/type/:type/name/:name?/list',																		'index.home.model_list').
+		when('/search/:search/type/:type/name/:name?/details',																	'index.home.model_list.model_details').
 
-		segment('s1', {
+		segment('index', {
 			templateUrl: 'content.html',
 			controller: 'mainCtrl'
 		}).
@@ -31,46 +29,31 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				controller: 'searchFormCtrl'
 			}).
 			within().
-				segment('list_inventory', {
+				segment('lattice_list', {
 					templateUrl: 'list.html',
-					controller: 'listDevicesCtrl',
-					dependencies: ['type', 'cmpnt_type', 'serialno']
+					controller: 'listLatticeCtrl',
+					dependencies: ['search']
 				}).
 				within().
-					segment('details', {
+					segment('lattice_details', {
 						templateUrl: 'details.html',
 						controller: 'showDetailsCtrl',
-						dependencies: ['id', 'view']
+						dependencies: ['type', 'name', 'version', 'branch', 'desc', 'creator']
 					}).
-					within().
-						segment('results', {
-							templateUrl: 'results.html',
-							controller: 'showResultsCtrl',
-							dependencies: ['subview']
-						}).
-					up().
 				up().
-				segment('list_install', {
-					templateUrl: 'list.html',
-					controller: 'listDevicesCtrl',
-					dependencies: ['type', 'system', 'name', 'cmpnt_type', 'serialno']
+				segment('model_list', {
+					templateUrl: 'model_list.html',
+					controller: 'listModelCtrl',
+					dependencies: ['type', 'name']
 				}).
 				within().
-					segment('details', {
-						templateUrl: 'details.html',
-						controller: 'showDetailsCtrl',
-						dependencies: ['id', 'view']
+					segment('model_details', {
+						templateUrl: 'model_details.html',
+						controller: 'showModelDetailsCtrl'
 					}).
-					within().
-						segment('results', {
-							templateUrl: 'results.html',
-							controller: 'showResultsCtrl',
-							dependencies: ['subview']
-						}).
-					up().
 				up().
 			up().
 		up();
 
-		$routeProvider.otherwise({redirectTo: '/'});
+		//$routeProvider.otherwise({redirectTo: '/'});
 });

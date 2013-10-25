@@ -1,0 +1,17 @@
+{% load verbatim %} {% verbatim %}
+<div class="form_search" id="form-search">
+	<input type="text" placeholder="Filter lattice ..." id="search-query" ng-model="lattice_filter" class="search_input">
+</div>
+<div ng-repeat="modeldata in models | filter:lattice_filter" ng-click="showDetails(modeldata)" class="lattice {{modeldata.click}} {{modeldata.color}}">
+	<table>
+		<tr ng-if="modeldata.name">
+			<td><b>Name: </b></td>
+			<td><span class="text-info">{{modeldata.name}}</span></td>
+		</tr>
+		<tr ng-if="modeldata.description">
+			<td><b>Desc: </b></td>
+			<td><span class="text-info">{{modeldata.description}}</span></td>
+		</tr>
+	</table>
+</div>
+{% endverbatim %}

@@ -1,5 +1,5 @@
 /*
- * Controllers for conversion module
+ * Controllers for lattice module
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
@@ -36,6 +36,7 @@ app.controller('mainCtrl', function($scope){
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
+	$scope.statuses = statuses;
 });
 
 /*
@@ -47,20 +48,25 @@ app.controller('searchFormCtrl', function($scope, systemService, $window, $route
 	$scope.search.displayLattice = "display_block";
 	$scope.search.displayModel = "display_none";
 	$scope.search.type = "lattice";
+	$scope.search.selected = "-";
 
 	// Set search type
 	if($routeParams.type !== undefined) {
 		$scope.search.type = $routeParams.type;
 	}
 
-	// Load Systems
-	systemService.transform(function(data){
-		$scope.systems = data.systems;
-	});
+	// Lattice search button click
+	$scope.searchForLattice = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createLatticeListQuery(search, true) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
 
-	// Search button click
-	$scope.searchForDevices = function(search) {
-		var newLocation = createDeviceListQuery(search, true) + "/list";
+	// Model search button click
+	$scope.searchForModel = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createModelListQuery(search, true) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -80,18 +86,19 @@ app.controller('searchFormCtrl', function($scope, systemService, $window, $route
 });
 
 /*
- * List devices in the middle pane
+ * List lattice in the middle pane
  */
-app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window) {
+app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window) {
 	// Remove image from the middle pane if there is something to show
 	$scope.style.middle_class = "container-scroll-middle-no-img";
 
 	$scope.id = $routeParams.id;
 
-	$scope.devices = [];
-	var previousDevice = undefined;
+	$scope.lattices = [];
+	var previousLattice = undefined;
+	var query = "";
 
-	var query = serviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
+	query = serviceurl + 'lattice/?function=retrieveLatticeInfo&' + createLatticeListQuery($routeParams, false);
 	l(query);
 
 	$http.get(query).success(function(data){
@@ -109,243 +116,280 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 				newItem.color = "bg_light";
 			}
 
-			// Add create device id and add it to device
-			newItem.id = item.inventoryId;
-
-			if($routeParams.type === "install" && item.name !== undefined) {
-				newItem.id = item.name;
-			}
-
-			$scope.devices.push(newItem);
+			$scope.lattices.push(newItem);
 		});
 	});
 
-	// Show details when user selects the device from a list
-	$scope.showDetails = function(device){
+	// Show details when user selects the lattice from a list
+	$scope.showDetails = function(lattice){
 		$scope.id = undefined;
 
 		// Clear click style from previously selected element
-		if(previousDevice !== undefined) {
-			previousDevice.click = "";
-			//$scope.id = undefined;
+		if(previousLattice !== undefined) {
+			previousLattice.click = "";
 		}
 
-		previousDevice = device;
-		device.click = "device_click";
+		previousLattice = lattice;
+		lattice.click = "lattice_click";
+		lattice.search = $routeParams.search;
+		lattice.type = $routeParams.type;
 
-		var id = device.inventoryId;
+		var location = createLatticeListQuery(lattice, true) + "/details";
+		l(location);
 
-		if($routeParams.type === "install") {
-			id = device.name;
+		$window.location = location;
+	};
+});
+
+/*
+ * List models in the middle pane
+ */
+app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+
+	$scope.models = [];
+	var previousModel = undefined;
+	var query = "";
+
+	query = serviceurl + 'lattice/?function=retrieveModel&' + createModelListQuery($routeParams, false);
+	l(query);
+
+
+	$http.get(query).success(function(data){
+		var index = 0;
+
+		$.each(data, function(i, item){
+
+			// Build customized Log object
+			var newItem = item;
+			newItem.name = i;
+
+			// Alternate background colors
+			if(index%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.models.push(newItem);
+
+			index ++;
+		});
+
+		l($scope.models);
+	});
+
+	// Show details when user selects the model from a list
+	$scope.showDetails = function(model){
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousModel !== undefined) {
+			previousModel.click = "";
 		}
 
-		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + id + "/0/results#" + id;
+		previousModel = model;
+		model.click = "lattice_click";
+		model.search = $routeParams.search;
+		model.type = $routeParams.type;
+
+		var location = createModelListQuery(model, true) + "/details";
+		l(location);
+
+		$window.location = location;
 	};
 });
 
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $location, $sce){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.raw = {};
+	$scope.raw.data = [];
+	$scope.raw.show = true;
+	$scope.lattices = [];
+	$scope.lattice = {};
+	$scope.models = {};
 
-	$scope.id = $routeParams.id;
-	$scope.data = {};
-	$scope.view = $routeParams.view;
-	$scope.subview = $routeParams.subview;
-	$scope.result = {};
-	$scope.detailsTabs = [];
-	var detailsTabsIndex = 0;
-	$scope.tabs = [];
-	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
-	$scope.view = $routeParams.view;
-	$scope.properties = {};
+	var query = "";
 
-	$scope.error = {};
-	$scope.error.message = "";
+	query = serviceurl + 'lattice/?function=retrieveLatticeInfo&' + createLatticeListQuery($routeParams, false);
+	l(query);
 
-	var algorithms = {};
-	$scope.results = {};
-	$scope.results.convertedResult = [];
-	$scope.results.series = [];
+	$http.get(query).success(function(data){
+		l("got data");
 
-	$scope.scroll = {};
-	$scope.scroll.scroll = $routeParams.id;
+		$.each(data, function(i, item){
+			l("item");
+			$scope.lattices.push(item);
+		});
 
-	l("hash: " + $location.hash());
-
-	detailsService.getDetails($routeParams).then(function(data) {
-		$scope.data = data[$routeParams.id];
-
-		for(var first in $scope.data) {
-			$scope.properties[first] = {};
-
-			for(var second in $scope.data[first]) {
-				$scope.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
-				detailsTabsIndex ++;
-				$scope.properties[first][second] = {};
-
-				// Save all axcept the algorithms in an array
-				for(var third in $scope.data[first][second]) {
-
-					if(third !== "algorithms" && third !== "measurementData") {
-						$scope.properties[first][second][third] = $scope.data[first][second][third];
-					}
-				}
-
-				// Save all algorithms into an array
-				for(var algorithm in $scope.data[first][second].algorithms) {
-					var algorithmParts = algorithm.split("2");
-					algorithms[algorithm] = $scope.data[first][second].algorithms[algorithm];
-					algorithms[algorithmParts[0]] = $scope.data[first][second].algorithms[algorithm];
-				}
-			}
-		}
+		$scope.lattice = $scope.lattices[0];
+		l($scope.lattices);
 	});
 
-	/*
-	 * When user clicks on convert button, fire this function
-	 */
-	$scope.convert = function() {
-		$scope.tabs = [];
+	query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + $routeParams.name + '&latticeversion=' + $routeParams.version + '&latticebranch=' + $routeParams.branch;
+	l(query);
 
-		var idParameter = "id";
+	$http.get(query).success(function(data){
+		l("got modeules");
 
-		if($routeParams.type === "install") {
-			idParameter = "name";
-		}
+		$scope.models.data = data;
+		l($scope.models.data);
+	});
 
-		var conversionQuery = serviceurl
-				+ 'magnets/conversion/?' + idParameter
-				+ '=' + $routeParams.id
-				+ '&from=' + $scope.source_unit
-				+ '&to=' + $scope.destination_unit
-				+ '&value=' + $scope.initial_value
-				+ '&complex=' + $scope.detailsTabs[$routeParams.view]['second'];
+	query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery($routeParams, false);
+	l(query);
 
-		if($scope.energy !== undefined && $scope.energy !== "") {
-			conversionQuery += '&energy=' + $scope.energy;
-		}
+	$http.get(query).success(function(data){
+		//$('#raw').html(drawDataTree("", data));
 
-		l(conversionQuery);
+		$.each(data, function(i, datum){
+			var lattice = datum.lattice;
+			var header = [];
 
-		$http.get(conversionQuery).success(function(data){
-			l(data[$routeParams.id]);
-			var details = data[$routeParams.id];
-			var results = {};
-			$scope.result = details;
-			$scope.error.display = false;
-
-			if(details[$scope.detailsTabs[$routeParams.view]['first']] !== undefined) {
-				results = details[$scope.detailsTabs[$routeParams.view]['first']][$scope.detailsTabs[$routeParams.view]['second']];
-				l(results);
-
-				// Go through returned data and save needed values
-				if(results.conversionResult.value === null && results.conversionResult.unit === "") {
-					$scope.error.message = results.conversionResult.message;
-					$scope.error.display = true;
-					return;
-				}
-
-				// Get the initial unit from algorithms data
-				var initialUnit = "";
-				var algKey = $scope.source_unit + '2' + $scope.destination_unit;
-
-				// Algorithm in a table
-				if(algKey in algorithms) {
-					initialUnit = algorithms[algKey].initialUnit;
-
-				// Initial unit of algorithm in a table
-				} else if ($scope.source_unit in algorithms) {
-					initialUnit = algorithms[$scope.source_unit].initialUnit;
-
-				// Nothing in a table, initial unit should be an empty string
-				} else {
-					initialUnit = "";
-				}
-
-				$scope.results.convertedResult.push({
-					init_value: $scope.initial_value,
-					init_unit: initialUnit,
-					conv_value: results.conversionResult.value,
-					conv_unit: results.conversionResult.unit,
-					from: $scope.source_unit,
-					to: $scope.destination_unit,
-					id: $routeParams.id
-				});
+			// Get the rest of the columns
+			if(lattice.columns !== undefined) {
+				header = lattice.columns;
 			}
+			l(header);
 
-		}).error(function(){
-			$scope.error.display = true;
+			$.each(lattice, function(i, line){
+
+			});
+
+			$scope.raw.data.push({head: header, body: lattice});
 		});
+
+		$scope.raw.show = false;
+	});
+
+	$scope.downloadFile = function() {
+
 	};
+
+	$scope.checkValue = function(column, line) {
+		var string = "";
+
+		if(line[column] !== undefined) {
+			string = line[column][0];
+		}
+
+		if(string === undefined) {
+			line[column][0] = $sce.trustAsHtml("");
+
+		} else {
+
+			if(column.indexOf("file") === -1) {
+				line[column][0] = $sce.trustAsHtml(string);
+
+			} else {
+				var newString = string.replace(/"/g, '');
+				line[column][0] = $sce.trustAsHtml("<a href='" + newString + "'>" + newString + "</a>");
+			}
+		}
+	};
+
 });
 
 /*
- * Show conversion results in tabs
+ * Show details in the right pane
  */
-app.controller('showResultsCtrl', function($scope, $routeParams, $window, detailsService, $location, $anchorScroll){
-	$scope.view = $routeParams.view;
-	$scope.subview = $routeParams.subview;
-	$scope.plot = {};
-	$scope.plot.x_axis = "current";
-	$scope.plot.y_axis = "field";
-	$scope.plot.direction_plot = "true";
-	$scope.data = undefined;
+app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $location, $sce){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.raw = {};
+	$scope.raw.data = [];
+	$scope.raw.show = true;
+	$scope.lattices = [];
+	$scope.lattice = {};
+	$scope.models = {};
 
-	var detailsTabsIndex = 0;
-	$scope.scroll.scroll = $routeParams.id;
-	$location.hash($scope.scroll.scroll);
+	var query = "";
 
-	detailsService.getDetails($routeParams).then(function(data) {
-		$scope.data = {};
-		$scope.data.detailsTabs = [];
-		$scope.data.details = data[$routeParams.id];
+	query = serviceurl + 'lattice/?function=retrieveLatticeInfo&' + createLatticeListQuery($routeParams, false);
+	l(query);
 
-		for(var first in $scope.data.details) {
+	$http.get(query).success(function(data){
+		l("got data");
 
-			for(var second in $scope.data.details[first]) {
-				$scope.data.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
-				detailsTabsIndex ++;
-			}
-		}
+		$.each(data, function(i, item){
+			l("item");
+			$scope.lattices.push(item);
+		});
 
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
-		$anchorScroll();
+		$scope.lattice = $scope.lattices[0];
+		l($scope.lattices);
 	});
 
-	$scope.clearTable = function() {
-		l("clear");
-		$scope.results.convertedResult = [];
-	};
+	query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + $routeParams.name + '&latticeversion=' + $routeParams.version + '&latticebranch=' + $routeParams.branch;
+	l(query);
 
-	$scope.redraw = function() {
-		l("redraw");
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
-	};
+	$http.get(query).success(function(data){
+		l("got modeules");
 
-	$scope.showPoint = function(results) {
-		$scope.results.series = [];
+		$scope.models.data = data;
+		l($scope.models.data);
+	});
 
-		for(var result in results) {
+	query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery($routeParams, false);
+	l(query);
 
-			if(results[result].show !== undefined && results[result].show === true) {
-				$scope.results.series.push([results[result].init_value, results[result].conv_value]);
+	$http.get(query).success(function(data){
+		//$('#raw').html(drawDataTree("", data));
+
+		$.each(data, function(i, datum){
+			var lattice = datum.lattice;
+			var header = [];
+
+			// Get the rest of the columns
+			if(lattice.columns !== undefined) {
+				header = lattice.columns;
 			}
+			l(header);
+
+			$.each(lattice, function(i, line){
+
+			});
+
+			$scope.raw.data.push({head: header, body: lattice});
+		});
+
+		$scope.raw.show = false;
+	});
+
+	$scope.downloadFile = function() {
+
+	};
+
+	$scope.checkValue = function(column, line) {
+		var string = "";
+
+		if(line[column] !== undefined) {
+			string = line[column][0];
 		}
 
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
+		if(string === undefined) {
+			line[column][0] = $sce.trustAsHtml("");
+
+		} else {
+
+			if(column.indexOf("file") === -1) {
+				line[column][0] = $sce.trustAsHtml(string);
+
+			} else {
+				var newString = string.replace(/"/g, '');
+				line[column][0] = $sce.trustAsHtml("<a href='" + newString + "'>" + newString + "</a>");
+			}
+		}
 	};
 
-	$scope.openNewVindow = function() {
-		var newWindowUrl = "measurement_data.html#?"
-		+ "type=" + $routeParams.type
-		+ "&id=" + $routeParams.id
-		+ "&view=" + $scope.data.detailsTabs[$routeParams.view]['first'] + "_" + $scope.data.detailsTabs[$routeParams.view]['second'];
-
-		$window.open(newWindowUrl);
-	};
 });
 
 /*

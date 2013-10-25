@@ -22,83 +22,83 @@
 	<div class="{{search.displayLattice}}">
 		Name:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.system" name="system" />
+		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.name" name="name" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayLattice}}">
 		Branch:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.name" name="name" />
+		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.branch" name="branch" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayLattice}}">
 		Version:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.cmpnt_type" name="cmpnt_type" />
+		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.version" name="version" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayLattice}}">
 		Description:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.desc" name="desc" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayLattice}}">
 		Creator:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.creator" name="creator" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayLattice}}">
 		Status:
 		<br />
-		<select>
-			<option>a</option>
+		<select ng-model="search.status">
+			<option ng-repeat="status in statuses" value="{{status.id}}" ng-selected="status.value == search.selected">{{status.value}}</option>
 		</select>
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayLattice}}">
-		<button ng-click="searchForDevices(search)" class="btn">Search</button>
+		<button ng-click="searchForLattice(search)" class="btn">Search</button>
 	</div>
 
 	<div class="{{search.displayModel}}">
-		Branch:
+		Name:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.name" name="name" />
+		<input class="search_field" ng-enter="searchForModel(search)" type="text" ng-model="search.name" name="name" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayModel}}">
 		Description:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<input class="search_field" ng-enter="searchForModel(search)" type="text" ng-model="search.desc" name="desc" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayModel}}">
 		Creator:
 		<br />
-		<input class="search_field" ng-enter="searchForDevices(search)" type="text" ng-model="search.serialno" name="serialno" />
+		<input class="search_field" ng-enter="searchForModel(search)" type="text" ng-model="search.creator" name="creator" />
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayModel}}">
 		Status:
 		<br />
-		<select>
-			<option>a</option>
+		<select ng-model="search.status">
+			<option ng-repeat="status in statuses" value="{{status.id}}">{{status.value}}</option>
 		</select>
 		<br />
 		<br />
 	</div>
 	<div class="{{search.displayModel}}">
-		<button ng-click="searchForDevices(search)" class="btn">Search</button>
+		<button ng-click="searchForModel(search)" class="btn">Search</button>
 	</div>
 </div>
 {% endverbatim %}
