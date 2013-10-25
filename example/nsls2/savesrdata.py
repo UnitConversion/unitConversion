@@ -121,6 +121,11 @@ def saveinstall(dfile):
     '''
     ctypelist = ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F',
                  'Sext A', 'Sext B', 'Sext C', 'Corr A', 'Corr C', 'Corr D', 'Corr Fast']
+    #ctypelist = ['Quad A', 'Quad B', 'Quad C', 'Quad Cp', 'Quad D', 'Quad D2', 'Quad E', 'Quad E2', 'Quad F',
+    #             'Sext A', 'Sext B', 'Sext C', 'Corr D']
+    # Corr D is a skew Quad
+    #corrlist=['Corr A', 'Corr C']
+    #fastcor=['Corr Fast']
     section = "Storage Ring"
     installeddev = __readdata(dfile)
     for data in installeddev[1:]:
@@ -251,6 +256,7 @@ def saverotcoildata(files):
         ctypeid = ctype[0]
         ctypename = ctype[1]
         ctypedesc = ctype[2]
+        
         res = municonv.retrievecmpnttype(ctypename, desc=ctypedesc, vendor=vendor)
         if len(res) == 0:
             res = municonv.savecmpnttype(ctypename, ctypedesc, vendor=vendor)
@@ -272,12 +278,6 @@ def saverotcoildata(files):
         else:
             invproptmpltid = municonv.saveinventoryproptmplt(proptmplt, ctypeid, desc=proptmpltdesc)
         
-        res = municonv.retrieveinventory(str(serial), ctypename, vendor)
-        if len(res) == 0:
-            invid = municonv.saveinventory(str(serial), ctypename, vendor)
-        else:
-            invid = res[0][1]
-
         run1 = []
         run2 = []
         run3 = []
@@ -386,6 +386,7 @@ def saverotcoildata(files):
                                         'algorithms': conversionsdict,
                                         'description': 'Skew quadrupole component',
                                         'defaultEnergy': defaultEnergy}
+        
         else:
             measurementDatadict = {'runNumber': run1,
                                 'current': cur1,
@@ -431,10 +432,98 @@ def saverotcoildata(files):
                                    'defaultEnergy': defaultEnergy}
 
         jsondump = json.dumps(resdict)
-        try:
-            municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
-        except:
-            municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+
+        if ctypename == 'Corr A':
+            # 156 mm corrector; has only one measurement data set
+            # use serial # 3
+            for sn  in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                        39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
+                        57, 58, 59, 60]:
+                res = municonv.retrieveinventory(str(sn), ctypename, vendor)
+                if len(res) == 0:
+                    invid = municonv.saveinventory(str(sn), ctypename, vendor)
+                else:
+                    invid = res[0][1]
+                try:
+                    municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+                except:
+                    municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+        elif ctypename == 'Corr C':
+            if serial == 13:
+                # available candidate: 1, 13
+                # use serial # 13
+                for sn in [8, 13, 15, 16, 18, 26, 37, 58, 62, 70, 71, 75, 78, 90]:
+                    res = municonv.retrieveinventory(str(sn), ctypename, vendor)
+                    if len(res) == 0:
+                        invid = municonv.saveinventory(str(sn), ctypename, vendor)
+                    else:
+                        invid = res[0][1]
+                    try:
+                        municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+                    except:
+                        municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+            elif serial == 31:
+                # available candidate: 2, 3, 6, 12, 31
+                #use serial # 31
+                for sn in [10, 14, 20, 21, 22, 25, 29, 31, 32, 34, 41, 43, 44, 50, 
+                           56, 57, 61, 64, 66, 68, 73, 77, 88, 91, 93, 98]:
+                    res = municonv.retrieveinventory(str(sn), ctypename, vendor)
+                    if len(res) == 0:
+                        invid = municonv.saveinventory(str(sn), ctypename, vendor)
+                    else:
+                        invid = res[0][1]
+                    try:
+                        municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+                    except:
+                        municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+            elif serial == 4:
+                # available candidate: 4
+                #use serial # 4
+                for sn in  [4, 5, 7, 11, 17, 19, 23, 24, 28, 30, 33, 35, 36, 39, 40, 48, 
+                            53, 54, 55, 59, 60, 69, 76, 89, 92, 94, 95, 99, 100, 102]:
+                    res = municonv.retrieveinventory(str(sn), ctypename, vendor)
+                    if len(res) == 0:
+                        invid = municonv.saveinventory(str(sn), ctypename, vendor)
+                    else:
+                        invid = res[0][1]
+                    try:
+                        municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+                    except:
+                        municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+            elif serial == 9:
+                # available candidate: 
+                #use serial # 9
+                for sn in  [9, 27, 42, 45, 46, 49, 51, 52, 63, 65, 67, 72, 74, 96, 97, 101]:
+                    res = municonv.retrieveinventory(str(sn), ctypename, vendor)
+                    if len(res) == 0:
+                        invid = municonv.saveinventory(str(sn), ctypename, vendor)
+                    else:
+                        invid = res[0][1]
+                    try:
+                        municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+                    except:
+                        municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+            else:
+                res = municonv.retrieveinventory(str(serial), ctypename, vendor)
+                if len(res) == 0:
+                    invid = municonv.saveinventory(str(serial), ctypename, vendor)
+                else:
+                    invid = res[0][1]
+                try:
+                    municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+                except:
+                    municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
+        else:
+            res = municonv.retrieveinventory(str(serial), ctypename, vendor)
+            if len(res) == 0:
+                invid = municonv.saveinventory(str(serial), ctypename, vendor)
+            else:
+                invid = res[0][1]
+            try:
+                municonv.saveinventoryprop(jsondump, invid, invproptmpltid)
+            except:
+                municonv.updateinventoryprop(jsondump, invid, invproptmpltid)
 
 def savehallprobedata(files):
     '''
@@ -472,7 +561,7 @@ def main(root):
 #    # save magnet data measured with hall probe method
     savehallprobedata(hallmaps)
 
-    saveinstall("/".join((root, 'Alignment/SR-MG-INSTALL-SN.xls')))
+    saveinstall("/".join((root, 'Alignment/SR-MG-INSTALL-SN-09-19.xls')))
 
 if __name__ == '__main__':
     municonv = municonvdata()
