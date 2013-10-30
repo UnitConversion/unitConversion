@@ -354,3 +354,7 @@ html, body {
 #direction_list {
 	list-style-type: none;
 }
+
+.compare_btn {
+	margin-bottom: 5px;
+}

@@ -52,14 +52,6 @@ function createLatticeListQuery(search, returnUrl) {
 	var query = "";
 	var url = "#";
 
-	// Add time part
-	if(search.search !== undefined) {
-		url += "/search/" + search.search;
-
-	} else {
-		url += "/search/";
-	}
-
 	// Add type
 	url += "/type/" + search.type;
 
@@ -135,18 +127,20 @@ function createModelListQuery(search, returnUrl) {
 	var query = "";
 	var url = "#";
 
-	// Add time part
-	if(search.search !== undefined) {
-		url += "/search/" + search.search;
-
-	} else {
-		url += "/search/";
-	}
-
 	// Add type
 	url += "/type/" + search.type;
 
 	if(search.type === "model") {
+
+		// Add id part
+		if(search.id !== undefined) {
+			query += "id=" + search.id + "&";
+			url += "/id/" + search.id;
+
+		} else {
+			query += "id=*&";
+			url += "/id/";
+		}
 
 		// Add name part
 		if(search.name !== undefined) {

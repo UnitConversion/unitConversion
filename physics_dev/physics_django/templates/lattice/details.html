@@ -3,86 +3,81 @@
 
 <a name="{{scroll.scroll}}"></a>
 
-<div class="details_data">
-	<div id="raw"></div>
-	<h3>Lattice Info</h3>
+<div ng-if="compare == false">
+	<div class="details_data">
+		<div id="raw"></div>
+		<h3>Lattice Info</h3>
 
-	<table>
-		<tr ng-if="lattice.name">
-			<td><b>Name: </b></td>
-			<td><span class="text-info">{{lattice.name}}</span></td>
-		</tr>
-		<tr ng-if="lattice.version">
-			<td><b>Version: </b></td>
-			<td><span class="text-info">{{lattice.version}}</span></td>
-		</tr>
-		<tr ng-if="lattice.branch">
-			<td><b>Branch: </b></td>
-			<td><span class="text-info">{{lattice.branch}}</span></td>
-		</tr>
-		<tr ng-if="lattice.creator">
-			<td><b>Creator: </b></td>
-			<td><span class="text-info">{{lattice.creator}}</span></td>
-		</tr>
-		<tr ng-if="lattice.originalDate">
-			<td><b>Original Date: </b></td>
-			<td><span class="text-info">{{lattice.originalDate}}</span></td>
-		</tr>
-		<tr ng-if="lattice.latticeType">
-			<td><b>Lattice Type: </b></td>
-			<td><span class="text-info">{{lattice.latticeType}}</span></td>
-		</tr>
-		<tr ng-if="lattice.latticeFormat">
-			<td><b>Lattice Format: </b></td>
-			<td><span class="text-info">{{lattice.latticeFormat}}</span></td>
-		</tr>
-		<tr ng-if="lattice.description">
-			<td><b>Description: </b></td>
-			<td><span class="text-info">{{lattice.description}}</span></td>
-		</tr>
-		<tr ng-if="lattice.updated">
-			<td><b>Updated: </b></td>
-			<td><span class="text-info">{{lattice.updated}}</span></td>
-		</tr>
-		<tr ng-if="lattice.lastModified">
-			<td><b>Last Modified: </b></td>
-			<td><span class="text-info">{{lattice.lastModified}}</span></td>
-		</tr>
-	</table>
+		<table class="table">
+			<tr ng-if="lattice.name">
+				<td><b>Name: </b></td>
+				<td><span class="text-info">{{lattice.name}}</span></td>
+			</tr>
+			<tr ng-if="lattice.version">
+				<td><b>Version: </b></td>
+				<td><span class="text-info">{{lattice.version}}</span></td>
+			</tr>
+			<tr ng-if="lattice.branch">
+				<td><b>Branch: </b></td>
+				<td><span class="text-info">{{lattice.branch}}</span></td>
+			</tr>
+			<tr ng-if="lattice.creator">
+				<td><b>Creator: </b></td>
+				<td><span class="text-info">{{lattice.creator}}</span></td>
+			</tr>
+			<tr ng-if="lattice.originalDate">
+				<td><b>Original Date: </b></td>
+				<td><span class="text-info">{{lattice.originalDate}}</span></td>
+			</tr>
+			<tr ng-if="lattice.latticeType">
+				<td><b>Lattice Type: </b></td>
+				<td><span class="text-info">{{lattice.latticeType}}</span></td>
+			</tr>
+			<tr ng-if="lattice.latticeFormat">
+				<td><b>Lattice Format: </b></td>
+				<td><span class="text-info">{{lattice.latticeFormat}}</span></td>
+			</tr>
+			<tr ng-if="lattice.description">
+				<td><b>Description: </b></td>
+				<td><span class="text-info">{{lattice.description}}</span></td>
+			</tr>
+			<tr ng-if="lattice.updated">
+				<td><b>Updated: </b></td>
+				<td><span class="text-info">{{lattice.updated}}</span></td>
+			</tr>
+			<tr ng-if="lattice.lastModified">
+				<td><b>Last Modified: </b></td>
+				<td><span class="text-info">{{lattice.lastModified}}</span></td>
+			</tr>
+		</table>
 
-	<br/>
+		<br/>
 
-	<button class="btn" ng-click="downloadFile()">Download the original file</button>
+		<button class="btn" ng-click="downloadFile()">Download the original file</button>
 
-	<br/>
-	<br/>
+		<br/>
+		<br/>
 
-	<h3>Lattice Models</h3>
+		<div ng-if="latticeModels[0]">
+			<h3>Lattice Models</h3>
 
-	<br/>
-	<br/>
+			<table class="table table-bordered">
+				<tr>
+					<th ng-repeat="(prop, data) in latticeModels[0]">{{prop | firstLetterUppercase}}</th>
+				</tr>
+				<tr ng-repeat="model in latticeModels">
+					<td ng-repeat="(propBody, dataBody) in model" ng-bind-html="dataBody"></td>
+				</tr>
+			</table>
+			<br/>
+		</div>
 
-	<h3>Lattice</h3>
-	<div ng-if="raw.show" class="loader">Loading data ...</div>
+		<h3>Lattice</h3>
+		<div ng-if="raw.show" class="loader">Loading data ...</div>
 
-	<table class="table table-bordered" ng-repeat="lattice in raw.data">
-		<tr>
-			<th>Id</th>
-			<th>Name</th>
-			<th>Type</th>
-			<th>Length</th>
-			<th>Position</th>
-			<th ng-repeat="column in lattice.head">{{column}}</th>
-		</tr>
-		<tr ng-repeat="line in lattice.body">
-			<td>{{line.id}}</td>
-			<td>{{line.name}}</td>
-			<td>{{line.type}}</td>
-			<td>{{line.length}}</td>
-			<td>{{line.position}}</td>
-			<td ng-repeat="column in lattice.head">{{line[column][0]}}</td>
-		</tr>
-	</table>
+		<table class="table table-bordered" id="lattice_table">
+		</table>
+	</div>
 </div>
 
 {% endverbatim %}

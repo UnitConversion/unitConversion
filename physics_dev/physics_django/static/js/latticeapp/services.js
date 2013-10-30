@@ -1,5 +1,5 @@
 /*
- * Services for conversion module
+ * Services for modules
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */

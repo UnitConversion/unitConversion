@@ -5,79 +5,28 @@
 
 <div class="details_data">
 	<div id="raw"></div>
-	<h3>Lattice Info</h3>
+	<h3>Model Info</h3>
 
-	<table>
-		<tr ng-if="lattice.name">
-			<td><b>Name: </b></td>
-			<td><span class="text-info">{{lattice.name}}</span></td>
-		</tr>
-		<tr ng-if="lattice.version">
-			<td><b>Version: </b></td>
-			<td><span class="text-info">{{lattice.version}}</span></td>
-		</tr>
-		<tr ng-if="lattice.branch">
-			<td><b>Branch: </b></td>
-			<td><span class="text-info">{{lattice.branch}}</span></td>
-		</tr>
-		<tr ng-if="lattice.creator">
-			<td><b>Creator: </b></td>
-			<td><span class="text-info">{{lattice.creator}}</span></td>
-		</tr>
-		<tr ng-if="lattice.originalDate">
-			<td><b>Original Date: </b></td>
-			<td><span class="text-info">{{lattice.originalDate}}</span></td>
-		</tr>
-		<tr ng-if="lattice.latticeType">
-			<td><b>Lattice Type: </b></td>
-			<td><span class="text-info">{{lattice.latticeType}}</span></td>
-		</tr>
-		<tr ng-if="lattice.latticeFormat">
-			<td><b>Lattice Format: </b></td>
-			<td><span class="text-info">{{lattice.latticeFormat}}</span></td>
-		</tr>
-		<tr ng-if="lattice.description">
-			<td><b>Description: </b></td>
-			<td><span class="text-info">{{lattice.description}}</span></td>
-		</tr>
-		<tr ng-if="lattice.updated">
-			<td><b>Updated: </b></td>
-			<td><span class="text-info">{{lattice.updated}}</span></td>
-		</tr>
-		<tr ng-if="lattice.lastModified">
-			<td><b>Last Modified: </b></td>
-			<td><span class="text-info">{{lattice.lastModified}}</span></td>
+	<table class="table">
+		<tr ng-repeat="(modelKey, modelValue) in models" ng-hide="modelKey == 'simulationControl' || modelKey == 'simulationControlParsed'">
+			<td><b>{{modelKey | firstLetterUppercase}}: </b></td>
+			<td><span class="text-info">{{modelValue}}</span></td>
 		</tr>
 	</table>
-
-	<br/>
 
 	<button class="btn" ng-click="downloadFile()">Download the original file</button>
-
-	<br/>
 	<br/>
 
-	<h3>Lattice</h3>
-	<div ng-if="raw.show" class="loader">Loading data ...</div>
+	<div ng-if="models.simulationControlParsed">
+		<h3>Simulation Control</h3>
 
-	<table class="table table-bordered" ng-repeat="lattice in raw.data">
-		<tr>
-			<th>Id</th>
-			<th>Name</th>
-			<th>Type</th>
-			<th>Length</th>
-			<th>Position</th>
-			<th ng-repeat="column in lattice.head">{{column}}</th>
-		</tr>
-		<tr ng-repeat="line in lattice.body">
-			<td>{{line.id}}</td>
-			<td>{{line.name}}</td>
-			<td>{{line.type}}</td>
-			<td>{{line.length}}</td>
-			<td>{{line.position}}</td>
-			<td ng-repeat="column in lattice.head">{{line[column][0]}}</td>
-		</tr>
-	</table>
+		<table class="table">
+			<tr ng-repeat="simulation in models.simulationControlParsed track by $index" ng-hide="trim(simulation) == ''">
+				<td><span class="text-info">{{simulation | clean}}</span></td>
+			</tr>
+		</table>
+	</div>
+
 </div>
 
 {% endverbatim %}
