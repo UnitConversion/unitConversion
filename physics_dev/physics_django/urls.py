@@ -9,10 +9,11 @@ from django.conf import settings
 
 # Production URLS
 urlpatterns = patterns('',
-    #(r'^$', redirect_to, {'url': '/lattice/', 'permanent' : False}),
+    #(r'^admin/', include(admin.site.urls)),
     (r'^', include('physics_django.magnets.urls')),
     (r'^', include('physics_django.lattice.urls')),
     (r'^', include('physics_django.activeinterlock.urls')),
+    
     
     # do not use this setting for your production.
     (r'^static/(.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_DOC_ROOT}),
