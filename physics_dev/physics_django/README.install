@@ -1,0 +1,178 @@
+Physics Django PROJECT README
+
+
+1) General
+
+	The source code is managed by the git on github:
+	http://github.com/UnitConversion/unitConversion.git
+	
+	Folder content:
+	
+	clientapi                   - client side API & library to access each resources 
+	dataapi                     - MySQL/IRMIS database access API & library in Python
+	database                    - MySQL database schema
+	documents                   - Documentation written using Sphinx 
+	physics_dev/phynsics_django - django project to develop and test python access to the IRMIS database.  
+	                              Each django application in physics_dev imports dataapi.
+
+
+2) Production Installation
+
+    0. Checkout source code
+		Install git client.
+		
+		Checkout source code.
+		mkdir top
+		git clone http://github.com/UnitConversion/unitConversion.git
+		
+		
+		    1. Install and populate the database
+		
+		Install MySQL database server.
+		
+		Create the database. Use latest available schema and data, or an older version for
+		specific requirements. 
+		
+		Create schema.
+		
+		mysql -p -u <user> -e "CREATE DATABASE <database name>"
+		mysql -p -u <user> <database name>  <  top/database/v0_3/xxxxxx.sql
+		
+		Populate data.
+		mysql -p -u <user> <database name>  <  top/database/v0_3/xxxxxxx_data.sql
+
+    2. Install Django environment (the following packages & version are examples for installation on Debian 7)
+		2.1 python-django (1.4.5-1+deb7u4)
+		2.2 python-mysqldb (1.2.3-2)
+		
+    3. Set credentials for database access, create file physics_dev/physics_django/credentials.py
+		==========credentials template===============
+		DATABASES = {
+		             'default': {
+		                         'ENGINE': 'django.db.backends.mysql',  # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+		                         'NAME': 'database name',               # Or path to database file if using sqlite3.
+		                         'USER': 'user name',                   # Not used with sqlite3.
+		                         'PASSWORD': 'user password',           # Not used with sqlite3.
+		                         'HOST': 'rdb host name/ip address',    # Set to empty string for localhost. Not used with sqlite3.
+		                         'PORT': '3306'                         # Set to empty string for default. Not used with sqlite3.
+		                         }
+		             }
+		
+		# Make this unique, and don't share it with anybody.
+		SECRET_KEY = ''
+		=========================
+
+    4. Configure web server forwarding to Django
+    
+		Example for Apache web server on a Debian like OS:
+		
+		* Install Apache
+		
+		Install Apache and Python gateway interface.
+		sudo apt-get install apache2 
+		#libapache2-mod-wsgi
+		
+		apache2 (2.2.22-13)
+		libapache2-mod-wsgi (3.3-4)
+		
+		Possible problems during installing (on Debian 7):
+
+		Problem:
+			- a2enmod: not found
+			- a2dismod: not found
+		
+			- Invalid command 'WSGIScriptAlias', perhaps misspelled or defined by a module not included in the server configuration
+		Solution:
+			# export PATH=$PATH:/usr/sbin
+			# sudo apt-get -y install libapache2-mod-wsgi
+
+		Problem:
+		'''
+		Error: PHP Startup: Unable to load dynamic library '/usr/lib/php5/20100525/suhosin.so' -
+		/usr/lib/php5/20100525/suhosin.so: cannot open shared object file: No such file or directory in Unknown, line 0
+		''''
+		Solution:
+			# sudo aptitude purge php5-suhosin
+
+		Problem:
+		[error] python_init: Python version mismatch, expected '2.7.2+', found '2.7.3'.
+		[Thu Oct 24 16:13:51 2013] [error] python_init: Python executable found '/usr/bin/python'.
+		[Thu Oct 24 16:13:51 2013] [error] python_init: Python path being used '/usr/lib/python2.7/:/usr/lib/python2.7/plat-linux2:/usr/lib/python2.7/lib-tk:/usr/lib/python2.7/lib-old:/usr/lib/python2.7/lib-dynload'.
+
+		
+		Solution:
+		Remove unnecessary packages
+			# dpkg --purge libapache2-mod-perl2 libapache2-mod-php5 libapache2-mod-python libapache2-reload-perl
+
+
+		* Create WSGI configuration.
+		
+		edit physics_dev/physics_django/wsgi.py
+		sys.path.append('/var/www/physics')
+		sys.path.append('/var/www/physics/physics_dev')
+		sys.path.append('/var/www/physics/physics_dev/physics_django')
+		sys.path.append('/var/www/physics/dataapi')
+		<Ctrl-D>
+		
+		
+		* Add admin interface
+		edit physics_dev/physics_django/urls.py
+		from django.contrib import admin
+		admin.autodiscover()
+
+		# Production URLS
+		urlpatterns = patterns('',
+    		(r'^admin/', include(admin.site.urls)),
+    		...
+    	)
+
+		
+		* Edit Apache configuration:
+		
+ServerName phyweb
+
+DocumentRoot /var/www/physics/
+Alias /media/ /var/www/physics/physics_dev/physics_django/media/
+       <Directory /var/www/physics/physics_dev/physics_django/media>
+                Order deny,allow
+                Allow from all
+        </Directory>
+Alias /static/ /var/www/physics/physics_dev/physics_django/sitestatic/
+        Alias /static/ /var/www/physics/physics_dev/physics_django/sitestatic/
+        <Directory /var/www/physics/physics_dev/physics_django/sitestatic>
+                Order deny,allow
+                Allow from all
+        </Directory>
+
+<Directory /var/www/physics/physics_dev/physics_django>
+<Files wsgi.py>
+Order allow,deny
+Allow from all
+</Files>
+</Directory>
+
+
+<Directory /var/www/physics/physics_dev/physics_django/>
+	<Files wsgi.py>
+	Order allow,deny
+	Allow from all
+	</Files>
+</Directory>
+WSGIScriptAlias / /var/www/physics/physics_dev/physics_django/wsgi.py
+WSGIApplicationGroup %{GLOBAL}
+        		
+		Make sure web server has permissions to access files under /var/www/physics. 
+		
+		* Prepare access to static files.
+		
+		cd /var/www/physics/physics_dev/physics_django/
+		python manage.py collectstatic
+		
+		When warned about overriding existing files, type 'yes'.
+			    
+		
+		* Restart Apache for configuration to take effect.
+		
+		sudo /etc/init.d/apache2 restart 
+		
+		The site is available at http://localhost

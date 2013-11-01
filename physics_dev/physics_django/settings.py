@@ -50,7 +50,7 @@ MEDIA_URL = '/media/'
 # Examples: "http://foo.com/media/", "/media/".
 #ADMIN_MEDIA_PREFIX = '/media/'
 
-STATIC_ROOT = os.path.join(ROOT_PATH, 'static')
+STATIC_ROOT = os.path.join(ROOT_PATH, 'sitestatic')
 STATIC_URL = '/static/'
 STATIC_DOC_ROOT = os.path.join(ROOT_PATH, 'static')
 STATICFILES_DIRS = (STATIC_DOC_ROOT,)
