@@ -16,8 +16,8 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/',																								'index.home').
 		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/list',	'index.home.lattice_list').
 		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/id/:id',	'index.home.lattice_list.lattice_details').
-		when('/type/:type/id/:id?/name/:name?/list',															'index.home.model_list').
-		when('/type/:type/id/:id?/name/:name?/details',															'index.home.model_list.model_details').
+		when('/type/:type/name/:name?/list',																	'index.home.model_list').
+		when('/type/:type/name/:name?/id/:id?',																	'index.home.model_list.model_details').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -44,13 +44,13 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				segment('model_list', {
 					templateUrl: 'model_list.html',
 					controller: 'listModelCtrl',
-					dependencies: ['type', 'name', 'id']
+					dependencies: ['type', 'name']
 				}).
 				within().
 					segment('model_details', {
 						templateUrl: 'model_details.html',
 						controller: 'showModelDetailsCtrl',
-						dependencies: ['type', 'name', 'id']
+						dependencies: ['id']
 					}).
 				up().
 			up().

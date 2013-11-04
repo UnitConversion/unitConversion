@@ -132,16 +132,6 @@ function createModelListQuery(search, returnUrl) {
 
 	if(search.type === "model") {
 
-		// Add id part
-		if(search.id !== undefined) {
-			query += "id=" + search.id + "&";
-			url += "/id/" + search.id;
-
-		} else {
-			query += "id=*&";
-			url += "/id/";
-		}
-
 		// Add name part
 		if(search.name !== undefined) {
 			query += "name=" + search.name;
@@ -203,6 +193,34 @@ function returnFirstXCharacters(string, count){
 
 	} else {
 		return string;
+	}
+}
+
+function checkLatticeFormat(lattices) {
+	var keys = Object.keys(lattices[0].data);
+	var format = lattices[0].data[keys[0]].latticeFormat;
+	var equalFormat = true;
+
+	$.each(lattices, function(i, lattice){
+		keys = Object.keys(lattice.data);
+
+		if(lattice.data[keys[0]].latticeFormat !== format) {
+			equalFormat = false;
+		}
+	});
+
+	return equalFormat;
+}
+
+function checkDiff(keys) {
+
+	//l(keys);
+
+	if(JSON.stringify(keys[0]) === JSON.stringify(keys[1])) {
+		return "diff_green";
+
+	} else {
+		return "diff_red";
 	}
 }
 

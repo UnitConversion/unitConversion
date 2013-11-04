@@ -3,7 +3,7 @@
 
 <a name="{{scroll.scroll}}"></a>
 
-<div ng-if="compare == false">
+<div ng-if="compare.show == false">
 	<div class="details_data">
 		<div id="raw"></div>
 		<h3>Lattice Info</h3>
@@ -76,6 +76,17 @@
 		<div ng-if="raw.show" class="loader">Loading data ...</div>
 
 		<table class="table table-bordered" id="lattice_table">
+		</table>
+	</div>
+</div>
+
+<div ng-if="compare.show == true">
+	<div class="details_data">
+		<h3>Compare lattices</h3>
+
+		{{compare.message}}
+
+		<table class="table table-bordered" id="lattice_table2">
 		</table>
 	</div>
 </div>

@@ -104,8 +104,8 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 
 	$scope.setCompareData = function() {
 		//comparison[latticeData.name + '|||' + latticeData.branch + '|||' + latticeData.version] = "compare";
-		l("comparison list");
-		l($scope.comparison);
+		//l("comparison list");
+		//l($scope.comparison);
 
 		$scope.comparison.length = Object.keys($scope.comparison.data).length;
 	};
@@ -114,7 +114,10 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 		var lattices = [];
 
 		$.each($scope.comparison.data, function(i, lattice){
-			lattices.push(i);
+
+			if(lattice === true) {
+				lattices.push(i);
+			}
 		});
 
 		var location = createLatticeListQuery($routeParams, true) + "/id/" + lattices.join(",");
@@ -224,7 +227,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		model.search = $routeParams.search;
 		model.type = $routeParams.type;
 
-		var location = createModelListQuery(model, true) + "/details";
+		var location = createModelListQuery(model, true) + "/id/" + model.id;
 		//l(location);
 
 		$window.location = location;
@@ -234,7 +237,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $location, $sce){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $location, $sce, $q){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -243,7 +246,14 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $locatio
 	$scope.lattices = [];
 	$scope.lattice = {};
 	$scope.latticeModels = [];
-	$scope.compare = false;
+	$scope.compare = {};
+	$scope.compare.show = false;
+	$scope.raw.id = $routeParams.id;
+
+	// Check if we got complex id
+	if($scope.raw.id.split(',').length > 1) {
+		$scope.compare.show = true;
+	}
 
 	$scope.$watch('comparison', function(newValue, oldValue){
 		l(newValue);
@@ -263,134 +273,248 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $locatio
 	paramsObject.version = params[2];
 	l(params);
 
-	query = serviceurl + 'lattice/?function=retrieveLatticeInfo&' + createLatticeListQuery(paramsObject, false);
-	l(query);
+	// Show lattice info only if not comparing lattices
+	if($scope.compare.show === false) {
+		query = serviceurl + 'lattice/?function=retrieveLatticeInfo&' + createLatticeListQuery(paramsObject, false);
+		l(query);
 
-	$http.get(query).success(function(data){
-		//l("got data");
+		$http.get(query).success(function(data){
+			//l("got data");
 
-		$.each(data, function(i, item){
-			l(item);
-			$scope.lattices.push(item);
-		});
-
-		$scope.lattice = $scope.lattices[0];
-		//l($scope.lattices);
-	});
-
-	query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + paramsObject.name + '&latticeversion=' + paramsObject.version + '&latticebranch=' + paramsObject.branch;
-	//l(query);
-
-	$http.get(query).success(function(data){
-		l("got modeules");
-
-		$.each(data, function(name, model){
-			model.name = name;
-
-			var route = {};
-			route.name = name;
-			route.id = model.id;
-			route.type = "model";
-
-			$.each(model, function(i, cell){
-				model[i] = $sce.trustAsHtml(model[i].toString());
+			$.each(data, function(i, item){
+				l(item);
+				$scope.lattices.push(item);
 			});
 
-			var location = createModelListQuery(route, true) + "/details";
-			model.link = $sce.trustAsHtml('<a href="' + location + '">link to model</a>');
-			$scope.latticeModels.push(model);
+			$scope.lattice = $scope.lattices[0];
+			//l($scope.lattices);
 		});
+	}
 
-		l($scope.latticeModels);
-	});
+	// Show lattice model list if not comparing lattices
+	if($scope.compare.show === false) {
+		query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + paramsObject.name + '&latticeversion=' + paramsObject.version + '&latticebranch=' + paramsObject.branch;
+		//l(query);
 
-	query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery(paramsObject, false);
-	//l(query);
+		$http.get(query).success(function(data){
+			l("got modeules");
 
-	var table = "";
+			$.each(data, function(name, model){
+				model.name = name;
 
-	$http.get(query).success(function(data){
-		//$('#raw').html(drawDataTree("", data));
+				var route = {};
+				route.name = name;
+				route.id = model.id;
+				route.type = "model";
 
-		$.each(data, function(i, datum){
-			var lattice = datum.lattice;
-			var header = [];
-
-			header.push("id");
-			header.push("name");
-			header.push("type");
-			header.push("length");
-			header.push("position");
-
-			// Get the rest of the columns
-			if(lattice.columns !== undefined) {
-
-				$.each(lattice.columns, function(i, column){
-					header.push(column);
+				$.each(model, function(i, cell){
+					model[i] = $sce.trustAsHtml(model[i].toString());
 				});
-			}
-			l(header);
 
-			$scope.raw.data.push({head: header});
-
-			// Add header
-			table = "<tr>";
-
-			$.each(header, function(i, column){
-				table += "<th>" + column.charAt(0).toUpperCase() + column.slice(1) + "</th>";
+				var location = createModelListQuery(route, true) + "/details";
+				model.link = $sce.trustAsHtml('<a href="' + location + '">link to model</a>');
+				$scope.latticeModels.push(model);
 			});
 
-			table += "</tr>";
+			l($scope.latticeModels);
+		});
+	}
 
-			// Add data
-			$.each(lattice, function(j, line){
-				table += "<tr>";
+	// If not comparing data, show raw lattice in a table
+	if($scope.compare.show === false) {
+		query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery(paramsObject, false);
+		//l(query);
+
+		var table = "";
+
+		$http.get(query).success(function(data){
+			//$('#raw').html(drawDataTree("", data));
+
+			$.each(data, function(i, datum){
+				var lattice = datum.lattice;
+				var header = [];
+
+				header.push("id");
+				header.push("name");
+				header.push("type");
+				header.push("length");
+				header.push("position");
+
+				// Get the rest of the columns
+				if(lattice.columns !== undefined) {
+
+					$.each(lattice.columns, function(i, column){
+						header.push(column);
+					});
+				}
+				l(header);
+
+				$scope.raw.data.push({head: header});
+
+				// Add header
+				table = "<tr>";
 
 				$.each(header, function(i, column){
-
-					if(line[column] === undefined) {
-						table += "<td></td>";
-
-					} else {
-						table += "<td>" + line[column] + "</td>";
-					}
+					table += "<th>" + column.charAt(0).toUpperCase() + column.slice(1) + "</th>";
 				});
 
 				table += "</tr>";
+
+				// Add data
+				$.each(lattice, function(j, line){
+					table += "<tr>";
+
+					$.each(header, function(i, column){
+
+						if(line[column] === undefined) {
+							table += "<td></td>";
+
+						} else {
+
+							// Ckeck for file links
+							if(column.indexOf("file") !== -1) {
+								table += '<td><a href="#">' + line[column] + '</a></td>';
+
+							} else {
+								table += "<td>" + line[column] + "</td>";
+							}
+						}
+					});
+
+					table += "</tr>";
+				});
 			});
+
+			$('#lattice_table').html(table);
+
+			$scope.raw.show = false;
 		});
 
-		$('#lattice_table').html(table);
+	// Compare lattices
+	} else {
+		var ids = $scope.raw.id.split(',');
 
-		$scope.raw.show = false;
-	});
+		if(ids.length > 2) {
+			$scope.compare.message = "Comparison of more than two lattices is not allowed!";
+
+		} else {
+			var gets = [];
+
+			$.each(ids, function(i, id){
+
+				var params = id.split('|||');
+				var paramsObject = {};
+				paramsObject.type = $routeParams.type;
+				paramsObject.name = params[0];
+				paramsObject.branch = params[1];
+				paramsObject.version = params[2];
+				l(params);
+
+				query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery(paramsObject, false);
+
+				gets.push($http.get(query));
+			});
+
+			// Return all results
+			$q.all(gets).then(function(results) {
+				var latticesData = {};
+
+				if(!checkLatticeFormat(results)) {
+					$scope.compare.message = "Selected lattices doens't have same formats. Comparison cannot continue.";
+
+				} else {
+					//l(results);
+
+					$.each(results, function(i, result){
+						var latticeData = {};
+						var keys = Object.keys(result.data);
+
+						var header = [];
+
+						header.push("id");
+						header.push("name");
+						header.push("type");
+						header.push("length");
+						header.push("position");
+
+						// Get the rest of the columns
+						if(result.data[keys[0]].lattice.columns !== undefined) {
+
+							$.each(result.data[keys[0]].lattice.columns, function(i, column){
+								header.push(column);
+							});
+						}
+
+						$.each(result.data[keys[0]].lattice, function(j, line){
+							var key = line["name"];
+
+							var valueObject = {};
+
+							$.each(header, function(k, headerEl){
+								valueObject[headerEl] = line[headerEl];
+							});
+
+							latticeData[key] = valueObject;
+						});
+
+						latticesData[result.data[keys[0]].name] = {keys:header, data:latticeData};
+					});
+
+					//l(latticesData);
+
+					// List devices
+					var latticesKeys = Object.keys(latticesData);
+					var html = "<tr><th>Device names</th>";
+
+					$.each(latticesKeys, function(i, key){
+						html += "<th>" + key + "</th>";
+					});
+
+					html += "<th>Diff</th>";
+
+					html += "</tr>";
+
+					$.each(latticesData[latticesKeys[0]].data, function(i, latticeLine) {
+						html += "<tr><td>" + i + "</td>";
+
+						var deviceKeys = [];
+
+						$.each(latticesData, function(j, lattice) {
+
+							var keys = [];
+
+							$.each(lattice.keys, function(j, header) {
+
+								if(latticeLine[header] === undefined) {
+									keys.push(header + "=");
+
+								} else {
+									keys.push(header + "=" + latticeLine[header]);
+								}
+							});
+
+							deviceKeys.push(keys);
+
+							html += "<td>" + keys.join(", ") + "</td>";
+						});
+
+						var cssClass = checkDiff(deviceKeys);
+
+						html += "<td class='" + cssClass + "'></td>";
+
+						html += "</tr>";
+
+					});
+
+					$('#lattice_table2').html(html);
+				}
+			});
+		}
+	}
 
 	$scope.downloadFile = function() {
 
 	};
-
-	$scope.checkValue = function(column, line) {
-		var string = "";
-
-		if(line[column] !== undefined) {
-			string = line[column][0];
-		}
-
-		if(string === undefined) {
-			line[column][0] = $sce.trustAsHtml("");
-
-		} else {
-
-			if(column.indexOf("file") === -1) {
-				line[column][0] = $sce.trustAsHtml(string);
-
-			} else {
-				var newString = string.replace(/"/g, '');
-				line[column][0] = $sce.trustAsHtml("<a href='" + newString + "'>" + newString + "</a>");
-			}
-		}
-	};
-
 });
 
 /*

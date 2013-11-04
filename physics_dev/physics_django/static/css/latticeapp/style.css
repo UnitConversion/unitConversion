@@ -358,3 +358,11 @@ html, body {
 .compare_btn {
 	margin-bottom: 5px;
 }
+
+.diff_red {
+	background-color: red;
+}
+
+.diff_green {
+	background-color: #c4d79b;
+}
