@@ -4,6 +4,13 @@
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 
+$(document).ready(function(){
+	// Create new comparator
+	jQuery.expr[':'].Contains = function(a, i, m) {
+		return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+	};
+});
+
 // Global plot variable
 var plot = undefined;
 
@@ -224,191 +231,56 @@ function checkDiff(keys) {
 	}
 }
 
-/**
- * Create plot from the two vectors from measurement data table
- * @param {type} data measurement data object
- * @param {type} x_axis measurement data object property that should be put on the x axis
- * @param {type} y_axis measurement data object property that should be put on the y axis
- * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
- * @param {type} scope $scope object
- */
-function drawPlot(data, x_axis, y_axis, newSeries, scope){
+function createLatticeTable(header, lattice) {
+	// Add header
+	var table = "<tr>";
 
-	var seriesData = {};
-	scope.plot.numberOfDirections = 0;
-	var container = $("#placeholder");
-	container.addClass("placeholder_hidden");
+	$.each(header, function(i, column){
+		table += "<th>" + column.charAt(0).toUpperCase() + column.slice(1) + "</th>";
+	});
 
-	if(scope.plot.direction === undefined) {
-		scope.plot.direction = {};
-	}
+	table += "</tr>";
 
-	// Create series according to directions
-	if(data !== undefined && data.direction !== undefined) {
+	// Add data
+	$.each(lattice, function(j, line){
+		table += "<tr class='lattice_table_row'>";
 
-		$.each(data.direction, function(i, dir) {
+		$.each(header, function(i, column){
 
-			if(dir !== "") {
-
-				if(dir in seriesData) {
-					seriesData[dir].push([data[x_axis][i], data[y_axis][i]]);
-
-				} else {
-					seriesData[dir] = [[data[x_axis][i], data[y_axis][i]]];
-					scope.plot.numberOfDirections ++;
-
-					if(!(dir in scope.plot.direction)) {
-						scope.plot.direction[dir] = true;
-					}
-				}
-			}
-		});
-	}
-
-	var series = [];
-	var preparedSeries = [];
-
-	if(scope.plot.direction_plot === "true") {
-
-		$.each(scope.plot.direction, function(i, dir) {
-
-			if(dir === true) {
-				// Prepared series from measuremetn data series
-				preparedSeries = seriesData[i];
-
-				// Add prepared series
-				if(preparedSeries.length !== 0) {
-
-					// Add 0,0 point if there is only one point to be plotted
-					if(preparedSeries.length === 1) {
-						preparedSeries.push([0, 0]);
-					}
-
-					series.push({label:i, lines: { show: true }, points: { show: true }, data:preparedSeries});
-				}
-			}
-		});
-
-	} else {
-		// Prepared series from measuremetn data series
-		preparedSeries = prepareSeries(data, x_axis, y_axis);
-
-		// Add prepared series
-		if(preparedSeries.length !== 0) {
-			series.push({label:"Measurement data", lines: { show: false }, points: { show: true }, data:preparedSeries});
-		}
-	}
-
-	// Add series of conversion points
-	if(newSeries.length > 0) {
-		series.push({label:"Conversion results", lines: { show: false }, points: { show: true }, data:newSeries});
-	}
-
-	l(series);
-
-	// Plot options
-	var optionsFlot = {
-		legend: {
-			show: true,
-			position: "nw"
-		},
-		xaxis: {
-			tickDecimals: 4
-		},
-		yaxis: {
-			tickDecimals: 4
-		},
-		zoom: {
-			interactive: true
-		},
-		pan: {
-			interactive: true
-		},
-		grid: {
-			hoverable: true
-		}
-	};
-
-	// We have at least one series
-	if(series.length > 0) {
-		container.removeClass("placeholder_hidden");
-
-		// Initialize plot
-		var flotPlot = $.plot(container, series, optionsFlot);
-
-		// Create y axis labe
-		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
-			.text(y_axis)
-			.appendTo(container);
-		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
-
-		// Create x axis label
-		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
-			.text(x_axis)
-			.appendTo(container);
-		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
-
-		// Create zoom out button
-		$("<div class='zoom zoom_out'></div>")
-			.appendTo(container)
-			.click(function (event) {
-				event.preventDefault();
-				flotPlot.zoomOut();
-			}
-		);
-
-		// Create zoom in button
-		$("<div class='zoom zoom_in'></div>")
-			.appendTo(container)
-			.click(function (event) {
-				event.preventDefault();
-				flotPlot.zoom();
-			}
-		);
-
-		// Create pan arrows
-		addArrow("up", {top: -100}, container, flotPlot);
-		addArrow("left", {left: -100}, container, flotPlot);
-		addArrow("down", {top: 100}, container, flotPlot);
-		addArrow("right", {left: 100}, container, flotPlot);
-
-		// Create tooltips when hovering over points
-		container.bind("plothover", function (event, pos, item) {
-
-			if (item) {
-				$("#tooltip").remove();
-				var x = item.datapoint[0].toFixed(4);
-				var y = item.datapoint[1].toFixed(4);
-				showTooltip(item.pageX, item.pageY, x + ", " + y);
+			if(line[column] === undefined) {
+				table += "<td></td>";
 
 			} else {
-				$("#tooltip").remove();
+
+				// Ckeck for file links
+				if(column.indexOf("file") !== -1) {
+					table += '<td><a href="#">' + line[column] + '</a></td>';
+
+				} else {
+					table += "<td>" + line[column] + "</td>";
+				}
 			}
 		});
 
-	}
+		table += "</tr>";
+	});
+
+	return table;
 }
 
-function addArrow(classNamePart, offset, placeholder, plot) {
-	$("<div class='pan pan_" + classNamePart + "'></div>")
-		.appendTo(placeholder)
-		.click(function (e) {
-			e.preventDefault();
-			plot.pan(offset);
-		});
-}
+/**
+ * @param {type} id id od the input element
+ * @param {type} name of the element that contains data
+ * @param {string} table selector of the table we are filtering
+ */
+function filterTableItems(id, name, table){
 
-function showTooltip(x, y, contents) {
-	$("<div id='tooltip'>" + contents + "</div>").css({
-		position: "absolute",
-		display: "none",
-		top: y + 5,
-		left: x + 5,
-		border: "1px solid #fdd",
-		padding: "2px",
-		"background-color": "#fee",
-		opacity: 0.80
-	}).appendTo("body").fadeIn(100);
+	var filter = $(id).val();
+	l(filter);
+
+	// Slide up items that does not contain filters and are not selected
+	$(table).find(name + ':not(:Contains(' + filter + ')):not(.multilist_clicked)').parent().slideUp();
+	$(table).find(name + ':Contains(' + filter + ')').parent().slideDown();
 }
 
 /**
@@ -442,49 +314,4 @@ function drawDataTree(html, data){
 	}
 
 	return html;
-}
-
-/**
- * Prepare series for plotting
- * @param {type} data measurement data object
- * @param {type} x_axis measurement data object property used to plot data on x axis
- * @param {type} y_axis measurement data object property used to plot data on y axis
- * @returns {Array} array of points
- */
-function prepareSeries(data, x_axis, y_axis) {
-	var series = [];
-	var directions = [];
-
-	// Check if data is udefined
-	if(data === undefined) {
-		return series;
-	}
-
-	// Set default data on axes
-	var x_data = data.current;
-	var y_data = data.field;
-
-	// Set a new vector on x axis
-	if(x_axis !== undefined) {
-		x_data = data[x_axis];
-	}
-
-	// Set a new vector on y axis
-	if(y_axis !== undefined) {
-		y_data = data[y_axis];
-	}
-
-	if(data.direction !== undefined) {
-		directions = data.direction;
-	}
-
-	// If there is data available for plotting, rearange it to create array of points
-	if(x_data !== undefined && y_data !== undefined) {
-
-		for(var i=0; i < x_data.length; i++){
-			series.push([x_data[i], y_data[i]]);
-		}
-	}
-
-	return series;
 }

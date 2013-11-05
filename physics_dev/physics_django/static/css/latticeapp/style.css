@@ -361,8 +361,10 @@ html, body {
 
 .diff_red {
 	background-color: red;
+	cursor: pointer;
 }
 
 .diff_green {
 	background-color: #c4d79b;
+	cursor: pointer;
 }

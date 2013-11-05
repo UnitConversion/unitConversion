@@ -84,10 +84,18 @@
 	<div class="details_data">
 		<h3>Compare lattices</h3>
 
+		<form class="form-search">
+			<input type="text" id="lattice_table2_filter" placeholder="Enter filter value ..." />
+			<button ng-click="filterLattice()" class="btn"><i class="icon-filter"></i> Filter lattice table</button>
+		</form>
+
 		{{compare.message}}
 
 		<table class="table table-bordered" id="lattice_table2">
 		</table>
+
+		<a name="details"></a>
+		<h3>Details</h3>
 	</div>
 </div>
 
