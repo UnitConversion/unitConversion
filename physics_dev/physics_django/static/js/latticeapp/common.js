@@ -268,6 +268,62 @@ function createLatticeTable(header, lattice) {
 	return table;
 }
 
+function createLatticeComparinsonRows(latticesData, key) {
+	var html = "";
+
+	$.each(latticesData[key].data, function(i, latticeLine) {
+		var deviceKeys = [];
+		var deviceName = latticeLine.name;
+
+		if(deviceName === undefined) {
+			return;
+		}
+
+		// Skip if this line heas already been compared
+		if(latticeLine['compared'] === true) {
+			return;
+		}
+
+		html += "<tr><td class='lattice_table2_row'>" + i + "</td>";
+
+		$.each(latticesData, function(j, lattice) {
+
+			var keys = [];
+
+			$.each(lattice.keys, function(j, header) {
+
+				if(header === "name" || header === "id") {
+					return;
+				}
+
+				if(lattice.data[deviceName] !== undefined) {
+					lattice.data[deviceName]['compared'] = true;
+
+					if(lattice.data[deviceName][header] === undefined) {
+						keys.push(header + "=");
+
+					} else {
+						keys.push(header + "=" + lattice.data[deviceName][header]);
+					}
+				}
+			});
+
+			deviceKeys.push(keys);
+
+			html += "<td>" + keys.join(", ") + "</td>";
+		});
+
+		var cssClass = checkDiff(deviceKeys);
+
+		html += "<td ng-click='diffDetails(\"" + deviceName + "\")' class='diff_details " + cssClass + "'><i class='icon-search'></i></td>";
+
+		html += "</tr>";
+
+	});
+
+	return html;
+}
+
 /**
  * @param {type} id id od the input element
  * @param {type} name of the element that contains data
