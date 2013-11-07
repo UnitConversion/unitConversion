@@ -94,22 +94,24 @@
 		<table class="table table-bordered" id="lattice_table2" compile="raw.table">
 		</table>
 
-		<a name="details"></a>
-		<h3>Details</h3>
+		<div ng-show="raw.latticeDetails.length > 1">
+			<a name="details"></a>
+			<h3>Details</h3>
 
-		<table class="table table-bordered">
-			<tr>
-				<th colspan="2" ng-bind="raw.deviceName"></th>
-			</tr>
-			<tr>
-				<th>property \ name</th>
-				<th ng-repeat="(name, data) in raw.lattices">{{name}}</th>
-			</tr>
-			<tr ng-repeat="line in raw.latticeDetails">
-				<td>{{line.property}}</td>
-				<td ng-repeat="(name, data) in raw.lattices">{{line[name]}}</td>
-			</tr>
-		</table>
+			<table class="table table-bordered">
+				<tr>
+					<th colspan="2" ng-bind="raw.deviceName"></th>
+				</tr>
+				<tr>
+					<th>property \ name</th>
+					<th ng-repeat="(name, data) in raw.lattices">{{name}}</th>
+				</tr>
+				<tr ng-repeat="line in raw.latticeDetails" ng-class="{diff_orange: (line.color == 'diff')}">
+					<td>{{line.property}}</td>
+					<td ng-repeat="(name, data) in raw.lattices">{{line[name]}}</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
 

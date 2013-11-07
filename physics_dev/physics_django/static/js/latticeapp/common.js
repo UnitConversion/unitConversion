@@ -66,7 +66,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add name part
 		if(search.name !== undefined) {
-			query += "name=" + search.name + '&';
+			query += "name=*" + search.name + '&';
 			url += "/name/" + search.name;
 
 		} else {
@@ -76,7 +76,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add version part
 		if(search.version !== undefined) {
-			query += "version=" + search.version + '&';
+			query += "version=*" + search.version + '&';
 			url += "/version/" + search.version;
 
 		} else {
@@ -86,7 +86,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add branch part
 		if(search.branch !== undefined) {
-			query += "branch=" + search.branch + '&';
+			query += "branch=*" + search.branch + '&';
 			url += "/branch/" + search.branch;
 
 		} else {
@@ -96,7 +96,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add description part
 		if(search.desc !== undefined) {
-			query += "description=" + search.desc + '&';
+			query += "description=*" + search.desc + '&';
 			url += "/desc/" + search.desc;
 
 		} else {
@@ -106,7 +106,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add creator part
 		if(search.creator !== undefined) {
-			query += "creator=" + search.creator;
+			query += "creator=*" + search.creator;
 			url += "/creator/" + search.creator;
 
 		} else {
@@ -322,6 +322,72 @@ function createLatticeComparinsonRows(latticesData, key) {
 	});
 
 	return html;
+}
+
+function createLatticeComparisonDetails(latticesData, latticesKeys, key, device) {
+	var firstLatticeProperties = latticesData[key].keys;
+	var firstLatticeDeviceData = latticesData[key].data[device];
+	var detailsData = [];
+
+	// Go through properties from the first lattice
+	if(firstLatticeDeviceData !== undefined) {
+
+		$.each(firstLatticeProperties, function(i, property) {
+
+			// Continue if property was already displayed
+			if(
+				latticesData[key].data[device].displayed !== undefined &&
+				latticesData[key].data[device].displayed[property] !== undefined &&
+				latticesData[key].data[device].displayed[property] === true
+			) {
+				return;
+			}
+
+			// Continue if we are at id property
+			if(property === "id") {
+				return;
+			}
+
+			var detailsDataEntry = {};
+			detailsDataEntry["property"] = property;
+			detailsDataEntry["color"] = "";
+
+			var value = latticesData[key].data[device][property];
+			var valuesEqual = true;
+
+			$.each(latticesKeys, function(i, key) {
+
+				if(latticesData[key].data[device] !== undefined && latticesData[key].data[device].displayed === undefined) {
+					latticesData[key].data[device].displayed = {};
+				}
+
+				if(latticesData[key].data[device] !== undefined && latticesData[key].data[device][property] !== undefined) {
+					detailsDataEntry[key] = latticesData[key].data[device][property];
+					latticesData[key].data[device].displayed[property] = true;
+
+					if(detailsDataEntry[key] !== value) {
+						valuesEqual = false;
+					}
+
+				} else {
+					detailsDataEntry[key] = "";
+
+					if(latticesData[key].data[device] !== undefined) {
+						latticesData[key].data[device].displayed[property] = true;
+					}
+				}
+			});
+
+			// Change color for row with equal values
+			if(!valuesEqual) {
+				detailsDataEntry["color"] = "diff";
+			}
+
+			detailsData.push(detailsDataEntry);
+		});
+	}
+
+	return detailsData;
 }
 
 /**

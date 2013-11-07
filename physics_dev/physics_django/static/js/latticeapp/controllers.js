@@ -58,16 +58,13 @@ app.controller('searchFormCtrl', function($scope, systemService, $window, $route
 
 	// Lattice search button click
 	$scope.searchForLattice = function(search) {
-		search.search = new Date().getTime();
 		var newLocation = createLatticeListQuery(search, true) + "/list";
-		//l(newLocation);
 		$window.location = newLocation;
 	};
 
 	// Model search button click
 	$scope.searchForModel = function(search) {
 		var newLocation = createModelListQuery(search, true) + "/list";
-		//l(newLocation);
 		$window.location = newLocation;
 	};
 
@@ -235,8 +232,9 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		model.click = "lattice_click";
 		model.search = $routeParams.search;
 		model.type = $routeParams.type;
+		$routeParams.click = "lattice_click";
 
-		var location = createModelListQuery(model, true) + "/id/" + model.id;
+		var location = createModelListQuery($routeParams, true) + "/id/" + model.name;
 		//l(location);
 
 		$window.location = location;
@@ -360,6 +358,7 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 
 	// If comparing data
 	var ids = $scope.raw.id.split(',');
+	$scope.raw.ids = ids;
 
 	if(ids.length > 2) {
 		$scope.compare.message = "Comparison of more than two lattices is not allowed!";
@@ -445,51 +444,6 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 
 				html += createLatticeComparinsonRows(latticesData, latticesKeys[1]);
 
-//				$.each(latticesData[latticesKeys[0]].data, function(i, latticeLine) {
-//					var deviceKeys = [];
-//					var deviceName = latticeLine.name;
-//
-//					if(deviceName === undefined) {
-//						return;
-//					}
-//
-//					html += "<tr><td class='lattice_table2_row'>" + i + "</td>";
-//
-//					$.each(latticesData, function(j, lattice) {
-//
-//						var keys = [];
-//
-//						$.each(lattice.keys, function(j, header) {
-//
-//							if(header === "name" || header === "id") {
-//								return;
-//							}
-//
-//							if(lattice.data[deviceName] !== undefined) {
-//								lattice.data[deviceName]['compared'] = true;
-//
-//								if(lattice.data[deviceName][header] === undefined) {
-//									keys.push(header + "=");
-//
-//								} else {
-//									keys.push(header + "=" + lattice.data[deviceName][header]);
-//								}
-//							}
-//						});
-//
-//						deviceKeys.push(keys);
-//
-//						html += "<td>" + keys.join(", ") + "</td>";
-//					});
-//
-//					var cssClass = checkDiff(deviceKeys);
-//
-//					html += "<td ng-click='diffDetails(\"" + deviceName + "\")' class='diff_details " + cssClass + "'><i class='icon-search'></i></td>";
-//
-//					html += "</tr>";
-//
-//				});
-
 				$scope.raw.table = html;
 			}
 		});
@@ -502,58 +456,12 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 		l(latticesKeys);
 		l(latticesData);
 
-		var firstLatticeProperties = latticesData[latticesKeys[0]].keys;
-		var firstLatticeDeviceData = latticesData[latticesKeys[0]].data[device];
-		var secondLatticeDeviceData = latticesData[latticesKeys[1]].data[device];
-		var detailsData = [];
-		l(secondLatticeDeviceData);
+		var detailsData = createLatticeComparisonDetails(latticesData, latticesKeys, latticesKeys[0], device);
+		l(latticesData[latticesKeys[0]].data[device]);
+		l(latticesData[latticesKeys[1]].data[device]);
+		detailsData = detailsData.concat(createLatticeComparisonDetails(latticesData, latticesKeys, latticesKeys[1], device));
 
-		// Go through properties from the first lattice
-		if(firstLatticeDeviceData !== undefined) {
-
-			$.each(firstLatticeProperties, function(i, property) {
-				var firstLatticeDeviceDataValue = firstLatticeDeviceData[property];
-				var secondLatticeDeviceDataValue = "";
-
-				if(secondLatticeDeviceData !== undefined && secondLatticeDeviceData[property] !== undefined) {
-					secondLatticeDeviceDataValue = secondLatticeDeviceData[property];
-				}
-
-				var detailsDataEntry = {};
-				detailsDataEntry["property"] = property;
-				detailsDataEntry[latticesKeys[0]] = firstLatticeDeviceDataValue;
-				detailsDataEntry[latticesKeys[1]] = secondLatticeDeviceDataValue;
-				detailsData.push(detailsDataEntry);
-			});
-		}
-
-		// Go through properties that are in the second lattice but not in the first one
-		l(secondLatticeDeviceData);
-		if(secondLatticeDeviceData !== undefined) {
-
-			$.each(Object.keys(secondLatticeDeviceData), function(property, value) {
-				var firstLatticeDeviceDataValue = "";
-				var secondLatticeDeviceDataValue = "";
-
-				// Set value of the first lattice
-				if(firstLatticeDeviceData !== undefined && firstLatticeDeviceData[value] !== undefined) {
-					firstLatticeDeviceDataValue = firstLatticeDeviceData[value];
-				}
-
-				// Set value of the second lattice
-				if(secondLatticeDeviceData[value] !== undefined) {
-					secondLatticeDeviceDataValue = secondLatticeDeviceData[value];
-				}
-
-				var detailsDataEntry = {};
-				detailsDataEntry["property"] = value;
-				detailsDataEntry[latticesKeys[0]] = firstLatticeDeviceDataValue;
-				detailsDataEntry[latticesKeys[1]] = secondLatticeDeviceDataValue;
-				detailsData.push(detailsDataEntry);
-			});
-		}
-
-		l(detailsData);
+		//l(detailsData);
 		$scope.raw.latticeDetails = detailsData;
 	};
 
@@ -583,7 +491,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	l(query);
 
 	$http.get(query).success(function(data){
-		l("got models");
+		l(data);
 
 		$.each(data, function(name, model){
 			model.name = name;
@@ -596,6 +504,13 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 		});
 
 		l($scope.models);
+	});
+
+	query = serviceurl + 'lattice/?function=retrieveBeamParameters&modelname=' + $routeParams.id + '&from=1&to=5';
+	l(query);
+
+	$http.get(query).success(function(data){
+		l(data);
 	});
 
 	$scope.trim = function(input) {

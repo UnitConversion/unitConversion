@@ -368,3 +368,8 @@ html, body {
 	background-color: #c4d79b;
 	cursor: pointer;
 }
+
+.diff_orange {
+	background-color: #ff6600;
+	color: white;
+}
