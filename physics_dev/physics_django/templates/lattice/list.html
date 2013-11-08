@@ -10,9 +10,11 @@
 		<input type="checkbox" ng-change="setCompareData()" ng-model="comparison.data[lattice.name + '|||' + lattice.branch + '|||' + lattice.version]"> Select for comparison
 	</label>
 
-	{{raw.id}}
-
 	<table ng-click="showDetails(lattice)">
+		<tr ng-if="lattice.latticeid">
+			<td><b>Id: </b></td>
+			<td><span class="text-info">{{lattice.latticeid}}</span></td>
+		</tr>
 		<tr ng-if="lattice.name">
 			<td><b>Name: </b></td>
 			<td><span class="text-info">{{lattice.name}}</span></td>

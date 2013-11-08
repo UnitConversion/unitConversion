@@ -141,7 +141,7 @@ function createModelListQuery(search, returnUrl) {
 
 		// Add name part
 		if(search.name !== undefined) {
-			query += "name=" + search.name;
+			query += "name=*" + search.name;
 			url += "/name/" + search.name;
 
 		} else {

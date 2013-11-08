@@ -1,9 +1,15 @@
 {% load verbatim %} {% verbatim %}
 <div class="form_search" id="form-search">
 	<input type="text" placeholder="Filter models ..." id="search-query" ng-model="lattice_filter" class="search_input">
+	<button ng-show="comparison.length > 1" class="btn compare_btn" ng-click="compareModel()">Plot multiple models</button>
+	<button ng-show="comparison.length > 1" class="btn compare_btn" ng-click="clearSelection()">Clear selection</button>
 </div>
-<div ng-repeat="modeldata in models | filter:lattice_filter" ng-click="showDetails(modeldata)" class="lattice {{modeldata.click}} {{modeldata.color}}">
-	<table>
+<div ng-repeat="modeldata in models | filter:lattice_filter" class="lattice {{modeldata.click}} {{modeldata.color}}">
+	<label class="checkbox">
+		<input type="checkbox" ng-change="setCompareData()" ng-model="comparison.data[modeldata.name]"> Select for plotting
+	</label>
+
+	<table ng-click="showDetails(modeldata)">
 		<tr ng-if="modeldata.name">
 			<td><b>Name: </b></td>
 			<td><span class="text-info">{{modeldata.name}}</span></td>

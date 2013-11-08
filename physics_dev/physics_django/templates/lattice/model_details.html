@@ -3,30 +3,79 @@
 
 <a name="{{scroll.scroll}}"></a>
 
-<div class="details_data">
-	<div id="raw"></div>
-	<h3>Model Info</h3>
+<div ng-if="compare.show == false">
+	<div class="details_data">
+		<div id="raw"></div>
+		<h3>Model Info</h3>
 
-	<table class="table">
-		<tr ng-repeat="(modelKey, modelValue) in models" ng-hide="modelKey == 'simulationControl' || modelKey == 'simulationControlParsed'">
-			<td><b>{{modelKey | firstLetterUppercase}}: </b></td>
-			<td><span class="text-info">{{modelValue}}</span></td>
-		</tr>
-	</table>
-
-	<button class="btn" ng-click="downloadFile()">Download the original file</button>
-	<br/>
-
-	<div ng-if="models.simulationControlParsed">
-		<h3>Simulation Control</h3>
-
-		<table class="table">
-			<tr ng-repeat="simulation in models.simulationControlParsed track by $index" ng-hide="trim(simulation) == ''">
-				<td><span class="text-info">{{simulation | clean}}</span></td>
+		<table class="table table-hover">
+			<tr ng-repeat="(modelKey, modelValue) in models" ng-hide="modelKey == 'simulationControl' || modelKey == 'simulationControlParsed'">
+				<td><b>{{modelKey | firstLetterUppercase}}: </b></td>
+				<td><span class="text-info">{{modelValue}}</span></td>
 			</tr>
 		</table>
-	</div>
 
+		<button ng-if="models.simulationControl" class="btn btn-info" ng-click="showSimulationControlData()">Show simulation control data</button>
+		<button class="btn btn-info" ng-click="downloadFile()">Download the original file</button>
+		<br/>
+
+		<div ng-if="models.simulationControlParsed">
+			<h3>Simulation Control</h3>
+
+			<table class="table table-hover">
+				<tr ng-repeat="simulation in models.simulationControlParsed track by $index" ng-hide="trim(simulation) == ''">
+					<td><span class="text-info">{{simulation | clean}}</span></td>
+				</tr>
+			</table>
+		</div>
+
+		<h3>Model details</h3>
+
+		<input ng-model="raw.search.from" type="text" placeholder="from ..." />
+		<input ng-model="raw.search.to" type="text" placeholder="to ..." />
+		<select ng-model="raw.search.detail">
+			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
+		</select>
+		<br/>
+		<button class="btn" ng-click="searchForModelDetails()">Search</button>
+
+		<br/>
+		<br/>
+
+		<table class="table table-bordered table-hover">
+			<tr>
+				<th ng-repeat="column in raw.header">{{column}}</th>
+			</tr>
+			<tr ng-repeat="row in raw.data.index">
+				<td ng-repeat="column in raw.header">{{raw.data[column][row]}}</td>
+			</tr>
+		</table>
+
+		<br />
+
+		<div ng-if="raw.transferMatrix">
+			<h3>Transfer matrices</h3>
+
+			<div ng-repeat="(i, table) in raw.transferMatrix">
+				<h4>Matrix {{i}}</h4>
+
+				<table class="table table-bordered table-hover table-condensed">
+					<tr ng-repeat="row in table">
+						<td ng-repeat="column in row track by $index" ng-class="{matrix_bold: (column != 0)}">{{column}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<div ng-if="compare.show == true">
+	<div class="details_data">
+		<div id="raw"></div>
+		<h3>Compare</h3>
+
+	</div>
 </div>
 
 {% endverbatim %}

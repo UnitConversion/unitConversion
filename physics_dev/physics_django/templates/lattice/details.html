@@ -9,6 +9,10 @@
 		<h3>Lattice Info</h3>
 
 		<table class="table">
+			<tr ng-if="lattice.latticeid">
+				<td><b>Id: </b></td>
+				<td><span class="text-info">{{lattice.latticeid}}</span></td>
+			</tr>
 			<tr ng-if="lattice.name">
 				<td><b>Name: </b></td>
 				<td><span class="text-info">{{lattice.name}}</span></td>
@@ -52,10 +56,6 @@
 		</table>
 
 		<br/>
-
-		<button class="btn" ng-click="downloadFile()">Download the original file</button>
-
-		<br/>
 		<br/>
 
 		<div ng-if="latticeModels[0]">
@@ -72,11 +72,16 @@
 			<br/>
 		</div>
 
-		<h3>Lattice</h3>
-		<div ng-if="raw.show" class="loader">Loading data ...</div>
+		<button class="btn btn-info" ng-click="showData()">Show data in a table</button>
+		<button class="btn btn-info" ng-click="downloadFile()">Download the original file</button>
 
-		<table class="table table-bordered" id="lattice_table">
-		</table>
+		<br/>
+
+		<div ng-if="raw.table">
+			<h3>Lattice</h3>
+			<table class="table table-bordered" id="lattice_table" compile="raw.table">
+			</table>
+		</div>
 	</div>
 </div>
 

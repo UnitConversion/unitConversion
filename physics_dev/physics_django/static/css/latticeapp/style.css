@@ -373,3 +373,7 @@ html, body {
 	background-color: #ff6600;
 	color: white;
 }
+
+.matrix_bold {
+	font-weight: bold;
+}

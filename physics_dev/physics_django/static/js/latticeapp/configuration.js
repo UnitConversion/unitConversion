@@ -34,3 +34,11 @@ var modelStatuses = [
 	{id:2, value:"Model from live machine"},
 	{id:3, value:"Previous golden model"}
 ];
+
+// Model details
+var modelDetails = [
+	{name:"Transfer Matrix", value:"retrieveTransferMatrix"},
+	{name:"Closed Orbit", value:"retrieveClosedOrbit"},
+	{name:"Twiss", value:"retrieveTwiss"},
+	{name:"Beam Parameters", value:"retrieveBeamParameters"}
+];

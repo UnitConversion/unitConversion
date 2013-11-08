@@ -19,6 +19,7 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/ids/:ids','index.home.lattice_list.lattices_details').
 		when('/type/:type/name/:name?/list',																	'index.home.model_list').
 		when('/type/:type/name/:name?/id/:id?',																	'index.home.model_list.model_details').
+		when('/type/:type/name/:name?/ids/:ids?',																'index.home.model_list.models_details').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -57,6 +58,11 @@ app.config(function($routeSegmentProvider, $routeProvider){
 						templateUrl: 'model_details.html',
 						controller: 'showModelDetailsCtrl',
 						dependencies: ['id']
+					}).
+					segment('models_details', {
+						templateUrl: 'model_details.html',
+						controller: 'showModelsDetailsCtrl',
+						dependencies: ['ids']
 					}).
 				up().
 			up().
