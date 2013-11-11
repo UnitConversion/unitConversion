@@ -390,6 +390,56 @@ function createLatticeComparisonDetails(latticesData, latticesKeys, key, device)
 	return detailsData;
 }
 
+function createModelDetailsUrl(search, modelName) {
+	var detail = search.detail;
+
+	if(detail === undefined) {
+		detail = "*";
+	}
+
+	var from = search.from;
+
+	if(from === undefined) {
+		from = "0";
+	}
+
+	var to = search.to;
+
+	if(to === undefined) {
+		to = "1";
+	}
+
+	return serviceurl + 'lattice/?function=' + detail + '&modelname=' + modelName + '&from=' + from + '&to=' + to;
+}
+
+function transformModelDetails(data) {
+	var modelNames = Object.keys(data);
+	l(data[modelNames[0]]);
+	var header = [];
+
+	if(data[modelNames[0]].index === undefined) {
+		data[modelNames[0]].index = data[modelNames[0]].order;
+	}
+
+	header.push("index");
+
+	var columns = Object.keys(data[modelNames[0]]);
+
+
+	$.each(columns, function(i, column) {
+
+		if(column === "transferMatrix" || column === "order" || column === "index") {
+			return;
+		}
+
+		header.push(column);
+	});
+
+	var outputData = data[modelNames[0]];
+
+	return [modelNames[0], header, outputData];
+}
+
 /**
  * @param {type} id id od the input element
  * @param {type} name of the element that contains data
@@ -403,6 +453,156 @@ function filterTableItems(id, name, table){
 	// Slide up items that does not contain filters and are not selected
 	$(table).find(name + ':not(:Contains(' + filter + ')):not(.multilist_clicked)').parent().slideUp();
 	$(table).find(name + ':Contains(' + filter + ')').parent().slideDown();
+}
+
+/**
+ * Create plot from the two vectors from measurement data table
+ * @param {type} data measurement data object
+ * @param {type} x_axis measurement data object property that should be put on the x axis
+ * @param {type} y_axis measurement data object property that should be put on the y axis
+ * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
+ * @param {type} scope $scope object
+ */
+function drawPlot(selection, data, x_axis, y_axis){
+
+	var container = $("#placeholder");
+	container.addClass("placeholder_hidden");
+
+	var series = [];
+
+	$.each(selection, function(prop, select) {
+		l(prop);
+		l(select);
+
+		$.each(select, function(moduleName, checked) {
+
+			// Property selected for specific module name
+			if(checked === true) {
+				var seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
+				// Add series of conversion points
+				series.push({label: prop, lines: { show: true }, points: { show: true }, data: seriesData});
+			}
+		});
+	});
+
+	l(series);
+
+	// Plot options
+	var optionsFlot = {
+		legend: {
+			show: true,
+			position: "nw"
+		},
+		xaxis: {
+			tickDecimals: 4
+		},
+		yaxis: {
+			tickDecimals: 4
+		},
+		zoom: {
+			interactive: true
+		},
+		pan: {
+			interactive: true
+		},
+		grid: {
+			hoverable: true
+		}
+	};
+
+	// We have at least one series
+	if(series.length > 0) {
+		container.removeClass("placeholder_hidden");
+
+		// Initialize plot
+		var flotPlot = $.plot(container, series, optionsFlot);
+
+		// Create y axis labe
+		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
+			.text(y_axis)
+			.appendTo(container);
+		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+
+		// Create x axis label
+		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
+			.text(x_axis)
+			.appendTo(container);
+		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
+
+		// Create zoom out button
+		$("<div class='zoom zoom_out'></div>")
+			.appendTo(container)
+			.click(function (event) {
+				event.preventDefault();
+				flotPlot.zoomOut();
+			}
+		);
+
+		// Create zoom in button
+		$("<div class='zoom zoom_in'></div>")
+			.appendTo(container)
+			.click(function (event) {
+				event.preventDefault();
+				flotPlot.zoom();
+			}
+		);
+
+		// Create pan arrows
+		addArrow("up", {top: -100}, container, flotPlot);
+		addArrow("left", {left: -100}, container, flotPlot);
+		addArrow("down", {top: 100}, container, flotPlot);
+		addArrow("right", {left: 100}, container, flotPlot);
+
+		// Create tooltips when hovering over points
+		container.bind("plothover", function (event, pos, item) {
+
+			if (item) {
+				$("#tooltip").remove();
+				var x = item.datapoint[0].toFixed(4);
+				var y = item.datapoint[1].toFixed(4);
+				showTooltip(item.pageX, item.pageY, x + ", " + y);
+
+			} else {
+				$("#tooltip").remove();
+			}
+		});
+
+	}
+}
+
+function createSeries(xData, yData) {
+	l(xData);
+	l(yData);
+
+	var data = [];
+
+	$.each(xData, function(i, x) {
+		data.push([x, yData[i]]);
+	});
+
+	return data;
+}
+
+function addArrow(classNamePart, offset, placeholder, plot) {
+	$("<div class='pan pan_" + classNamePart + "'></div>")
+		.appendTo(placeholder)
+		.click(function (e) {
+			e.preventDefault();
+			plot.pan(offset);
+		});
+}
+
+function showTooltip(x, y, contents) {
+	$("<div id='tooltip'>" + contents + "</div>").css({
+		position: "absolute",
+		display: "none",
+		top: y + 5,
+		left: x + 5,
+		border: "1px solid #fdd",
+		padding: "2px",
+		"background-color": "#fee",
+		opacity: 0.80
+	}).appendTo("body").fadeIn(100);
 }
 
 /**

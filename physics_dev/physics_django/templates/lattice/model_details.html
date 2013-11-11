@@ -73,8 +73,31 @@
 <div ng-if="compare.show == true">
 	<div class="details_data">
 		<div id="raw"></div>
-		<h3>Compare</h3>
+		<h3>Plot multiple models</h3>
 
+		<input ng-model="raw.search.from" type="text" placeholder="from ..." />
+		<input ng-model="raw.search.to" type="text" placeholder="to ..." />
+		<select ng-model="raw.search.detail">
+			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
+		</select>
+		<br/>
+		<button class="btn" ng-click="searchForModelDetails()">Search</button>
+
+		<h4>Select data to plot</h4>
+
+		<table class="table table-bordered">
+			<tr>
+				<th>property \ name</th>
+				<th ng-repeat="name in compare.names">{{name}}</th>
+			</tr>
+			<tr ng-repeat="(i, row) in compare.selection">
+				<td>{{i}}</td>
+				<td ng-repeat="(j, cell) in row"><input type="checkbox" ng-model="compare.selection[i][j]" /></td>
+			</tr>
+		</table>
+		<button class="btn" ng-click="plotData()">Plot data</button>
+
+		<div id="placeholder"></div>
 	</div>
 </div>
 

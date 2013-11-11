@@ -235,7 +235,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 			}
 		});
 
-		var location = createModelListQuery($routeParams, true) + "/ids/" + models.join(",");
+		var location = createModelListQuery($routeParams, true) + "/ids/" + models.join("|||");
 		//l(location);
 
 		$window.location = location;
@@ -530,13 +530,6 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 		l($scope.models);
 	});
 
-	query = serviceurl + 'lattice/?function=retrieveBeamParameters&modelname=' + $routeParams.id + '&from=1&to=5';
-	//l(query);
-
-	$http.get(query).success(function(data){
-		//l(data);
-	});
-
 	$scope.trim = function(input) {
 		var output = input.replace(/^\s+|\s+$|\r\n/g, '');
 		l(output);
@@ -556,56 +549,22 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	};
 
 	$scope.searchForModelDetails = function() {
-		var detail = $scope.raw.search.detail;
-
-		if(detail === undefined) {
-			detail = "*";
-		}
-
-		var from = $scope.raw.search.from;
-
-		if(from === undefined) {
-			from = "0";
-		}
-
-		var to = $scope.raw.search.to;
-
-		if(to === undefined) {
-			to = "1";
-		}
-
-		query = serviceurl + 'lattice/?function=' + detail + '&modelname=' + $routeParams.id + '&from=' + from + '&to=' + to;
+		query = createModelDetailsUrl($scope.raw.search, $routeParams.id);
 		l(query);
 
 		$http.get(query).success(function(data){
-			var modelNames = Object.keys(data);
-			l(data[modelNames[0]]);
-			$scope.raw.header = [];
 
-			if(data[modelNames[0]].index === undefined) {
-				data[modelNames[0]].index = data[modelNames[0]].order;
-			}
+			var transform = transformModelDetails(data);
+			var name = transform[0];
+			$scope.raw.header = transform[1];
+			$scope.raw.data = transform[2];
 
-			$scope.raw.header.push("index");
-
-			var columns = Object.keys(data[modelNames[0]]);
-
-
-			$.each(columns, function(i, column) {
-
-				if(column === "transferMatrix" || column === "order" || column === "index") {
-					return;
-				}
-
-				$scope.raw.header.push(column);
-			});
-
-			$scope.raw.data = data[modelNames[0]];
 			l($scope.raw.data);
 			l($scope.raw.header);
+			l(name);
 
 			if($scope.raw.data.transferMatrix !== undefined) {
-				$scope.raw.transferMatrix = data[modelNames[0]].transferMatrix;
+				$scope.raw.transferMatrix = data[name].transferMatrix;
 			}
 
 			l($scope.raw.transferMatrix);
@@ -617,41 +576,73 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 /*
  * Show details in the right pane
  */
-app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $location, $sce){
+app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $location, $q){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
+	$scope.raw.search = {};
 	$scope.raw.data = [];
 	$scope.models = {};
-
 	$scope.compare = {};
 	$scope.compare.show = true;
+	$scope.raw.modelDetails = modelDetails;
 
 	var query = serviceurl + 'lattice/?function=retrieveModel&' + createModelListQuery($routeParams, false);
 	l(query);
 
-	$http.get(query).success(function(data){
-		l(data);
+	var ids = $routeParams.ids.split("|||");
 
-		$.each(data, function(name, model){
-			model.name = name;
+	$scope.searchForModelDetails = function() {
+		var gets = [];
+		$scope.compare.names = [];
+		$scope.compare.selection = {};
+		$scope.compare.data = {};
 
-			if(model.simulationControl !== undefined) {
-				model.simulationControlParsed = JSON.parse(model.simulationControl);
-				l(model.simulationControlParsed);
-			}
-			$scope.models = model;
+		$.each(ids, function(i, id){
+			query = createModelDetailsUrl($scope.raw.search, id);
+			l(query);
+
+			gets.push($http.get(query));
 		});
 
-		l($scope.models);
-	});
+		// Return all results
+		$q.all(gets).then(function(results) {
 
-	query = serviceurl + 'lattice/?function=retrieveBeamParameters&modelname=' + $routeParams.id + '&from=1&to=5';
-	l(query);
+			$.each(results, function(i, result) {
+				var transform = transformModelDetails(result.data);
+				//l(transform);
 
-	$http.get(query).success(function(data){
-		l(data);
-	});
+				$scope.compare.names.push(transform[0]);
+				$scope.compare.data[transform[0]] = transform[2];
+
+				$.each(transform[1], function(i, head) {
+
+					if(head === "index" || head === "position" || head === "name") {
+						return;
+					}
+
+					if(head in $scope.compare.selection) {
+						$scope.compare.selection[head][transform[0]] = false;
+
+					} else {
+						$scope.compare.selection[head] = {};
+						$scope.compare.selection[head][transform[0]] = false;
+					}
+
+				});
+			});
+
+			l($scope.compare.selection);
+			l($scope.compare.names);
+			l($scope.compare.data);
+		});
+
+	};
+
+	$scope.plotData = function() {
+		l($scope.compare.selection);
+		drawPlot($scope.compare.selection, $scope.compare.data, "direction", "cos");
+	};
 
 	$scope.trim = function(input) {
 		var output = input.replace(/^\s+|\s+$|\r\n/g, '');
@@ -659,16 +650,6 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 
 		return output;
 	};
-
-//	query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + $routeParams.name + '&latticeversion=' + $routeParams.version + '&latticebranch=' + $routeParams.branch;
-//	l(query);
-//
-//	$http.get(query).success(function(data){
-//		l("got modeules");
-//
-//		$scope.models.data = data;
-//		l($scope.models.data);
-//	});
 
 	$scope.downloadFile = function() {
 
