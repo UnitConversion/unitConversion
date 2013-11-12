@@ -4,12 +4,16 @@
 	<button ng-show="comparison.length > 1" class="btn compare_btn" ng-click="compareModel()">Plot multiple models</button>
 	<button ng-show="comparison.length > 1" class="btn compare_btn" ng-click="clearSelection()">Clear selection</button>
 </div>
-<div ng-repeat="modeldata in models | filter:lattice_filter" class="lattice {{modeldata.click}} {{modeldata.color}}">
+<div ng-repeat="(key, modeldata) in models | filter:lattice_filter" class="lattice {{modeldata.click}} {{modeldata.color}}">
 	<label class="checkbox">
 		<input type="checkbox" ng-change="setCompareData()" ng-model="comparison.data[modeldata.name]"> Select for plotting
 	</label>
 
 	<table ng-click="showDetails(modeldata)">
+		<tr ng-if="modeldata.id">
+			<td><b> Mod Id: </b></td>
+			<td><span class="text-info">{{modeldata.id}}</span></td>
+		</tr>
 		<tr ng-if="modeldata.name">
 			<td><b>Name: </b></td>
 			<td><span class="text-info">{{modeldata.name}}</span></td>

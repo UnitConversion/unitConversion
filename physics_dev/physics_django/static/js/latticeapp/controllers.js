@@ -187,7 +187,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 	$scope.comparison.length = 0;
 	$scope.comparison.show = 'false';
 
-	$scope.models = [];
+	$scope.models = {};
 	var previousModel = undefined;
 	var query = "";
 
@@ -212,7 +212,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 				newItem.color = "bg_light";
 			}
 
-			$scope.models.push(newItem);
+			$scope.models[i] = newItem;
 
 			index ++;
 		});
@@ -229,9 +229,10 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		var models = [];
 
 		$.each($scope.comparison.data, function(i, model){
+			var id = i + "||" + $scope.models[i].id;
 
 			if(model === true) {
-				models.push(i);
+				models.push(id);
 			}
 		});
 
@@ -304,7 +305,6 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 			model.name = name;
 
 			var route = {};
-			route.name = name;
 			route.id = model.id;
 			route.type = "model";
 
@@ -312,7 +312,7 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 				model[i] = $sce.trustAsHtml(model[i].toString());
 			});
 
-			var location = createModelListQuery(route, true) + "/details";
+			var location = createModelListQuery(route, true) + "/id/" + name;
 			model.link = $sce.trustAsHtml('<a href="' + location + '">link to model</a>');
 			$scope.latticeModels.push(model);
 		});
@@ -323,8 +323,6 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 	// Show raw lattice in a table
 	query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery(paramsObject, false);
 	//l(query);
-
-	var table = "";
 
 	var lattice = {};
 	var header = [];
@@ -374,6 +372,8 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 	$scope.compare = {};
 	$scope.compare.show = true;
 	$scope.raw.id = $routeParams.ids;
+	$scope.filter = {};
+	$scope.filter.deviceName = "";
 
 	l($location.path());
 
@@ -493,7 +493,7 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 	};
 
 	$scope.filterLattice = function() {
-		filterTableItems("#lattice_table2_filter", ".lattice_table2_row", "#lattice_table2");
+		filterTableItems($scope.filter, ".lattice_table2_row", "#lattice_table2");
 	};
 
 	$scope.downloadFile = function() {
@@ -587,19 +587,23 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 	$scope.compare.show = true;
 	$scope.raw.modelDetails = modelDetails;
 
-	var query = serviceurl + 'lattice/?function=retrieveModel&' + createModelListQuery($routeParams, false);
-	l(query);
-
+	var query = "";
 	var ids = $routeParams.ids.split("|||");
+	var nameToIdMap = {};
 
 	$scope.searchForModelDetails = function() {
 		var gets = [];
 		$scope.compare.names = [];
+		$scope.compare.ids = [];
 		$scope.compare.selection = {};
+		$scope.compare.selectionCount = 0;
 		$scope.compare.data = {};
 
 		$.each(ids, function(i, id){
-			query = createModelDetailsUrl($scope.raw.search, id);
+			var idParts = id.split("||");
+			nameToIdMap[idParts[0]] = idParts[1];
+
+			query = createModelDetailsUrl($scope.raw.search, idParts[0]);
 			l(query);
 
 			gets.push($http.get(query));
@@ -613,6 +617,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 				//l(transform);
 
 				$scope.compare.names.push(transform[0]);
+				$scope.compare.ids.push(nameToIdMap[transform[0]]);
 				$scope.compare.data[transform[0]] = transform[2];
 
 				$.each(transform[1], function(i, head) {
@@ -630,6 +635,8 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 					}
 
 				});
+
+				$scope.compare.selectionCount = Object.keys($scope.compare.selection).length;
 			});
 
 			l($scope.compare.selection);
@@ -641,7 +648,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 
 	$scope.plotData = function() {
 		l($scope.compare.selection);
-		drawPlot($scope.compare.selection, $scope.compare.data, "direction", "cos");
+		drawPlot($scope.compare.selection, $scope.compare.data, nameToIdMap, "Position", "Property");
 	};
 
 	$scope.trim = function(input) {

@@ -90,7 +90,14 @@
 		<h3>Compare lattices</h3>
 
 		<form class="form-search">
-			<input type="text" id="lattice_table2_filter" placeholder="Enter filter value ..." />
+			<input type="text" ng-model="filter.deviceName" id="lattice_table2_filter" placeholder="Enter device name ..." />
+			<br/>
+			<br/>
+			<label class="checkbox">
+				<input ng-model="filter.showOnlyDifferent" type="checkbox" /> Show only different devices
+			</label>
+			<br/>
+			<br/>
 			<button ng-click="filterLattice()" class="btn"><i class="icon-filter"></i> Filter lattice table</button>
 		</form>
 

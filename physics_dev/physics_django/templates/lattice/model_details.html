@@ -83,21 +83,35 @@
 		<br/>
 		<button class="btn" ng-click="searchForModelDetails()">Search</button>
 
-		<h4>Select data to plot</h4>
+		<div ng-if="compare.selectionCount > 0">
+			<br/>
+			<h4>Select data to plot</h4>
 
-		<table class="table table-bordered">
-			<tr>
-				<th>property \ name</th>
-				<th ng-repeat="name in compare.names">{{name}}</th>
-			</tr>
-			<tr ng-repeat="(i, row) in compare.selection">
-				<td>{{i}}</td>
-				<td ng-repeat="(j, cell) in row"><input type="checkbox" ng-model="compare.selection[i][j]" /></td>
-			</tr>
-		</table>
-		<button class="btn" ng-click="plotData()">Plot data</button>
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<th>model name</th>
+					<th ng-repeat="name in compare.names">{{name}}</th>
+				</tr>
+				<tr>
+					<th>model id (mid)</th>
+					<th ng-repeat="id in compare.ids">{{id}}</th>
+				</tr>
+				<tr ng-repeat="(i, row) in compare.selection">
+					<td>{{i}}</td>
+					<td ng-repeat="(j, cell) in row">
+						<label>
+							<input type="checkbox" ng-model="compare.selection[i][j]" />
+							<span class="hidden">hidden label</span>
+						</label>
+					</td>
+				</tr>
+			</table>
+			<button class="btn" ng-click="plotData()">Plot data</button>
 
-		<div id="placeholder"></div>
+			<br/>
+			<h4>Plot</h4>
+			<div id="placeholder"></div>
+		</div>
 	</div>
 </div>
 

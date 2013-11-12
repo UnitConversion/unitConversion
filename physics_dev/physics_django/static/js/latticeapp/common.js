@@ -113,6 +113,16 @@ function createLatticeListQuery(search, returnUrl) {
 			query += "creator=*";
 			url += "/creator/";
 		}
+
+		// Add status part
+//		if(search.status !== undefined) {
+//			query += "status=*" + search.status;
+//			url += "/status/" + search.status;
+//
+//		} else {
+//			query += "status=*";
+//			url += "/status/";
+//		}
 	}
 
 	// Return URL or query
@@ -441,18 +451,46 @@ function transformModelDetails(data) {
 }
 
 /**
- * @param {type} id id od the input element
+ * @param {type} filters Object with filter data
  * @param {type} name of the element that contains data
  * @param {string} table selector of the table we are filtering
  */
-function filterTableItems(id, name, table){
+function filterTableItems(filters, name, table){
 
-	var filter = $(id).val();
+	var filter = filters.deviceName.toLowerCase();
 	l(filter);
 
+	var cells = $(table).find(name);
+
+	$.each(cells, function(i, cell) {
+		var parentElement = $(cell).parent();
+		var diffElement = parentElement.find('.diff_details');
+		var value = $(cell).text().toLowerCase();
+		var visible = true;
+
+		//l(parentElement);
+		//l(diffElement);
+		//l(value);
+
+		if(filters.showOnlyDifferent === true && diffElement[0].className.indexOf('diff_red') === -1) {
+			visible = false;
+		}
+
+		if(visible && value.indexOf(filter) === -1) {
+			visible = false;
+		}
+
+		if(visible) {
+			parentElement.slideDown();
+
+		} else {
+			parentElement.slideUp();
+		}
+	});
+
 	// Slide up items that does not contain filters and are not selected
-	$(table).find(name + ':not(:Contains(' + filter + ')):not(.multilist_clicked)').parent().slideUp();
-	$(table).find(name + ':Contains(' + filter + ')').parent().slideDown();
+	//$(table).find(name + ':not(:Contains(' + filter + ')):not(.multilist_clicked)').parent().slideUp();
+	//$(table).find(name + ':Contains(' + filter + ')').parent().slideDown();
 }
 
 /**
@@ -463,7 +501,7 @@ function filterTableItems(id, name, table){
  * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
  * @param {type} scope $scope object
  */
-function drawPlot(selection, data, x_axis, y_axis){
+function drawPlot(selection, data, nameToIdMap, x_axis, y_axis){
 
 	var container = $("#placeholder");
 	container.addClass("placeholder_hidden");
@@ -480,7 +518,9 @@ function drawPlot(selection, data, x_axis, y_axis){
 			if(checked === true) {
 				var seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
 				// Add series of conversion points
-				series.push({label: prop, lines: { show: true }, points: { show: true }, data: seriesData});
+
+				var seriesLabel = "mid " + nameToIdMap[moduleName] + ", " + prop
+				series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
 			}
 		});
 	});
