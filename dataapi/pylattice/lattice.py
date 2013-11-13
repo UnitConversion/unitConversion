@@ -35,6 +35,15 @@ class lattice(object):
         # use django transaction manager
         self.transaction = transaction
 
+    def generateFilePath():
+        '''
+        Generate path for the uploaded file
+        '''
+        now = datetime.datetime.now()
+        dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+
+        return dirname
+
     def retrievelatticeinfo(self, name, version=None, branch=None, description=None, latticetype=None, creator=None):
         '''
         retrieve lattice header information. It gives lattice name, description, version, branch, 
@@ -458,8 +467,7 @@ class lattice(object):
         '''
         url = None
         if savefile:
-            now = datetime.datetime.now()
-            dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+            dirname = generateFilePath()
             fd, url = self._uniquefile('/'.join((dirname, latticefile)))
             with os.fdopen(fd,'w') as f:
                 for data in latticedata:
@@ -823,8 +831,7 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            now = datetime.datetime.now()
-            dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+            dirname = generateFilePath()
             fd, url = self._uniquefile('/'.join((dirname, params['name'])))
             with os.fdopen(fd,'w') as f:
                 for data in params['raw']:
@@ -1203,8 +1210,7 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            now = datetime.datetime.now()
-            dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+            dirname = generateFilePath()
             fd, url = self._uniquefile('/'.join((dirname, params['name'])))
             with os.fdopen(fd,'w') as f:
                 for data in params['raw']:
@@ -1869,4 +1875,3 @@ class lattice(object):
                              %(e.args[1], e.args[0]))
 
         return True
-

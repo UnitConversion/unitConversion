@@ -377,3 +377,8 @@ html, body {
 .matrix_bold {
 	font-weight: bold;
 }
+
+.placeholder {
+	width: 700px;
+	height: 400px;
+}

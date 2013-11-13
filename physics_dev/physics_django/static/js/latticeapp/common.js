@@ -241,7 +241,14 @@ function checkDiff(keys) {
 	}
 }
 
-function createLatticeTable(header, lattice) {
+/*
+ * Create lattice data table
+ * @param {type} header array of header columns
+ * @param {type} lattice lattice object data
+ * @param {type} url lattice raw file url
+ * @returns {String} html string
+ */
+function createLatticeTable(header, lattice, url) {
 	// Add header
 	var table = "<tr>";
 
@@ -264,7 +271,8 @@ function createLatticeTable(header, lattice) {
 
 				// Ckeck for file links
 				if(column.indexOf("file") !== -1) {
-					table += '<td><a href="#">' + line[column] + '</a></td>';
+					var fileName = line[column][0].replace(/"/gi, "");
+					table += '<td><a target="_blank" href="' + url + '_map/' + fileName + '">' + fileName + '</a></td>';
 
 				} else {
 					table += "<td>" + line[column] + "</td>";
@@ -450,6 +458,26 @@ function transformModelDetails(data) {
 	return [modelNames[0], header, outputData];
 }
 
+function createPropertySelectionTable(headerRows, modelName, selection) {
+
+	$.each(headerRows, function(i, head) {
+
+		if(head === "index" || head === "position" || head === "name") {
+			return;
+		}
+
+		if(head in selection) {
+			selection[head][modelName] = false;
+
+		} else {
+			selection[head] = {};
+			selection[head][modelName] = false;
+		}
+	});
+
+	return selection;
+}
+
 /**
  * @param {type} filters Object with filter data
  * @param {type} name of the element that contains data
@@ -501,9 +529,10 @@ function filterTableItems(filters, name, table){
  * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
  * @param {type} scope $scope object
  */
-function drawPlot(selection, data, nameToIdMap, x_axis, y_axis){
+function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
+	l(data);
 
-	var container = $("#placeholder");
+	var container = $(placeholder);
 	container.addClass("placeholder_hidden");
 
 	var series = [];
@@ -519,7 +548,14 @@ function drawPlot(selection, data, nameToIdMap, x_axis, y_axis){
 				var seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
 				// Add series of conversion points
 
-				var seriesLabel = "mid " + nameToIdMap[moduleName] + ", " + prop
+				var seriesLabel = "";
+
+				if(nameToIdMap !== undefined){
+					seriesLabel = nameToIdMap[moduleName] + ", " + prop;
+
+				} else {
+					seriesLabel = prop;
+				}
 				series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
 			}
 		});

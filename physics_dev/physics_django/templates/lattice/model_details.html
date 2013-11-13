@@ -42,18 +42,20 @@
 		<br/>
 		<br/>
 
-		<table class="table table-bordered table-hover">
+		<table class="table table-bordered table-hover" ng-repeat="(name, cols) in raw.header">
 			<tr>
-				<th ng-repeat="column in raw.header">{{column}}</th>
+				<th ng-repeat="column in cols">{{column}}</th>
 			</tr>
-			<tr ng-repeat="row in raw.data.index">
-				<td ng-repeat="column in raw.header">{{raw.data[column][row]}}</td>
+			<tr ng-repeat="row in raw.data[name].index">
+				<td ng-repeat="column in cols">{{raw.data[name][column][row]}}</td>
 			</tr>
 		</table>
 
 		<br />
 
-		<div ng-if="raw.transferMatrix">
+		<button ng-if="raw.transferMatrix" class="btn btn-info" ng-click="showMatrices()">Show matrices</button>
+
+		<div ng-if="raw.showMatrices">
 			<h3>Transfer matrices</h3>
 
 			<div ng-repeat="(i, table) in raw.transferMatrix">
@@ -67,12 +69,36 @@
 			</div>
 		</div>
 
+		<div ng-if="raw.selectionCount > 0">
+			<h3>Select data to plot</h3>
+
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<th>property</th>
+					<th>{{models["name"]}}</th>
+				</tr>
+				<tr ng-repeat="(i, row) in raw.selection">
+					<td>{{i}}</td>
+					<td ng-repeat="(j, cell) in row">
+						<label>
+							<input type="checkbox" ng-model="raw.selection[i][j]" />
+							<span class="hidden">hidden label</span>
+						</label>
+					</td>
+				</tr>
+			</table>
+			<button class="btn" ng-click="plotData()">Plot data</button>
+
+			<br/>
+			<h3>Plot</h3>
+			<div class="placeholder"></div>
+		</div>
+
 	</div>
 </div>
 
 <div ng-if="compare.show == true">
 	<div class="details_data">
-		<div id="raw"></div>
 		<h3>Plot multiple models</h3>
 
 		<input ng-model="raw.search.from" type="text" placeholder="from ..." />
@@ -93,7 +119,7 @@
 					<th ng-repeat="name in compare.names">{{name}}</th>
 				</tr>
 				<tr>
-					<th>model id (mid)</th>
+					<th>model id</th>
 					<th ng-repeat="id in compare.ids">{{id}}</th>
 				</tr>
 				<tr ng-repeat="(i, row) in compare.selection">
@@ -110,7 +136,7 @@
 
 			<br/>
 			<h4>Plot</h4>
-			<div id="placeholder"></div>
+			<div class="placeholder"></div>
 		</div>
 	</div>
 </div>

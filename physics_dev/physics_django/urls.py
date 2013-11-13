@@ -17,7 +17,7 @@ urlpatterns = patterns('',
     
     # do not use this setting for your production.
     (r'^static/(.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_DOC_ROOT}),
-    (r'^media/(.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    (r'^documents/(.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 )
 
 

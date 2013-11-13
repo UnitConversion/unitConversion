@@ -286,20 +286,19 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 	$scope.compare.show = false;
 	$scope.raw.id = $routeParams.id;
 
+	// Get id parameter from the URL and split it by |||
 	var params = $routeParams.id.split('|||');
 	var paramsObject = {};
 	paramsObject.type = $routeParams.type;
 	paramsObject.name = params[0];
 	paramsObject.branch = params[1];
 	paramsObject.version = params[2];
-	l(params);
 
 	// Show lattice model list
 	var query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + paramsObject.name + '&latticeversion=' + paramsObject.version + '&latticebranch=' + paramsObject.branch;
-	//l(query);
 
+	// Get model list data and create appropriate object
 	$http.get(query).success(function(data){
-		l("got modeules");
 
 		$.each(data, function(name, model){
 			model.name = name;
@@ -316,25 +315,23 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 			model.link = $sce.trustAsHtml('<a href="' + location + '">link to model</a>');
 			$scope.latticeModels.push(model);
 		});
-
-		l($scope.latticeModels);
 	});
 
 	// Show raw lattice in a table
-	query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery(paramsObject, false);
-	//l(query);
+	query = serviceurl + 'lattice/?function=retrieveLattice&rawdata=true&withdata=true&' + createLatticeListQuery(paramsObject, false);
 
 	var lattice = {};
 	var header = [];
 
+	// Get lattice data and generate appropriate objects
 	$http.get(query).success(function(data){
-		l(data);
-
 		var latticeKeys = Object.keys(data);
 		lattice = data[latticeKeys[0]].lattice;
+		$scope.raw.url = serviceurl + 'documents/' + data[latticeKeys[0]].rawlattice.name;
 		$scope.lattice = data[latticeKeys[0]];
 		$scope.lattice.latticeid = latticeKeys[0];
 
+		// Create array of header columns
 		header.push("id");
 		header.push("name");
 		header.push("type");
@@ -352,12 +349,9 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 		$scope.raw.data.push({head: header});
 	});
 
+	// Show data by clicking on Show data in a table button
 	$scope.showData = function() {
-		$scope.raw.table =  createLatticeTable(header, lattice);
-	};
-
-	$scope.downloadFile = function() {
-
+		$scope.raw.table =  createLatticeTable(header, lattice, $scope.raw.url);
 	};
 });
 
@@ -502,7 +496,7 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 });
 
 /*
- * Show details in the right pane
+ * Show model details in the right pane
  */
 app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $location, $sce){
 	// Remove image from the middle pane if there is something to show
@@ -510,9 +504,13 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	$scope.raw = {};
 	$scope.raw.search = {};
 	$scope.raw.data = {};
+	$scope.raw.header = {};
 	$scope.raw.show = true;
 	$scope.models = {};
 	$scope.raw.modelDetails = modelDetails;
+	$scope.raw.showMatrices = false;
+	$scope.raw.selection = {};
+	$scope.raw.selectionCount = 0;
 
 	$scope.compare = {};
 	$scope.compare.show = false;
@@ -549,6 +547,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	};
 
 	$scope.searchForModelDetails = function() {
+		$scope.raw.showMatrices = false;
 		query = createModelDetailsUrl($scope.raw.search, $routeParams.id);
 		l(query);
 
@@ -556,19 +555,30 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 
 			var transform = transformModelDetails(data);
 			var name = transform[0];
-			$scope.raw.header = transform[1];
-			$scope.raw.data = transform[2];
+			$scope.raw.header[transform[0]] = transform[1];
+			$scope.raw.data[transform[0]] = transform[2];
+			$scope.raw.selection = createPropertySelectionTable(transform[1], transform[0], $scope.raw.selection);
+			$scope.raw.selectionCount = Object.keys($scope.raw.selection).length;
 
 			l($scope.raw.data);
 			l($scope.raw.header);
 			l(name);
 
-			if($scope.raw.data.transferMatrix !== undefined) {
+			if($scope.raw.data[transform[0]].transferMatrix !== undefined) {
 				$scope.raw.transferMatrix = data[name].transferMatrix;
 			}
 
 			l($scope.raw.transferMatrix);
 		});
+	};
+
+	$scope.showMatrices = function() {
+		$scope.raw.showMatrices = true;
+	};
+
+	$scope.plotData = function() {
+		l($scope.compare.selection);
+		drawPlot(".placeholder", $scope.raw.selection, $scope.raw.data, undefined, "Position", "Property");
 	};
 
 });
@@ -581,7 +591,6 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
 	$scope.raw.search = {};
-	$scope.raw.data = [];
 	$scope.models = {};
 	$scope.compare = {};
 	$scope.compare.show = true;
@@ -620,21 +629,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 				$scope.compare.ids.push(nameToIdMap[transform[0]]);
 				$scope.compare.data[transform[0]] = transform[2];
 
-				$.each(transform[1], function(i, head) {
-
-					if(head === "index" || head === "position" || head === "name") {
-						return;
-					}
-
-					if(head in $scope.compare.selection) {
-						$scope.compare.selection[head][transform[0]] = false;
-
-					} else {
-						$scope.compare.selection[head] = {};
-						$scope.compare.selection[head][transform[0]] = false;
-					}
-
-				});
+				$scope.compare.selection = createPropertySelectionTable(transform[1], transform[0], $scope.compare.selection);
 
 				$scope.compare.selectionCount = Object.keys($scope.compare.selection).length;
 			});
@@ -648,7 +643,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 
 	$scope.plotData = function() {
 		l($scope.compare.selection);
-		drawPlot($scope.compare.selection, $scope.compare.data, nameToIdMap, "Position", "Property");
+		drawPlot(".placeholder", $scope.compare.selection, $scope.compare.data, nameToIdMap, "Position", "Property");
 	};
 
 	$scope.trim = function(input) {
