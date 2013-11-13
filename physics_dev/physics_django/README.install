@@ -171,8 +171,13 @@ WSGIApplicationGroup %{GLOBAL}
 		When warned about overriding existing files, type 'yes'.
 			    
 		
+		* modify physics_dev/physics_django/sitestatic/js/configuration.js
+		change serviceurl to something like 
+		var serviceurl = "http://phyweb/";
+		
 		* Restart Apache for configuration to take effect.
 		
 		sudo /etc/init.d/apache2 restart 
 		
-		The site is available at http://localhost
+		The site is available at http://phyweb
+		

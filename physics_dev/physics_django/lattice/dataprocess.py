@@ -681,7 +681,7 @@ def retrievemodellist(params):
         latticeversion = params['latticeversion']
     else:
         latticeversion=None
-    print 'here?', latticename, latticebranch, type(latticeversion)
+
     result = modelinst.retrievemodellist(latticename, latticebranch=latticebranch, latticeversion=latticeversion)
     return result
     

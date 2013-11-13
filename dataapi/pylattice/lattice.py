@@ -35,13 +35,20 @@ class lattice(object):
         # use django transaction manager
         self.transaction = transaction
 
-    def generateFilePath():
+    def generateFilePath(self):
         '''
         Generate path for the uploaded file
         '''
-        now = datetime.datetime.now()
-        dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
-
+        #now = datetime.datetime.now()
+        #dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+        dirname = 'documents/%s'%datetime.datetime.now().strftime("%Y%m%d/%H%M%S/%f")
+        try:
+            os.makedirs(dirname)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(dirname):
+                pass
+            else: 
+                raise Exception("Could not create a directory to save lattice file")
         return dirname
 
     def retrievelatticeinfo(self, name, version=None, branch=None, description=None, latticetype=None, creator=None):
@@ -436,20 +443,20 @@ class lattice(object):
             raise Exception('Error when saving a new lattice type:\n%s (%d)' %(e.args[1], e.args[0]))
         return res
 
-    def _uniquefile(self, file_name):
-        dirname, filename = os.path.split(file_name)
-        prefix, suffix = os.path.splitext(filename)
-    
-        try:
-            os.makedirs(dirname)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(dirname):
-                pass
-            else: 
-                raise Exception("Could not create a directory to save lattice file")
-    
-        fd, filename = tempfile.mkstemp(suffix, prefix+"_", dirname)
-        return fd, filename
+#    def _uniquefile(self, file_name):
+#        dirname, filename = os.path.split(file_name)
+#        prefix, suffix = os.path.splitext(filename)
+#    
+#        try:
+#            os.makedirs(dirname)
+#        except OSError as exc:
+#            if exc.errno == errno.EEXIST and os.path.isdir(dirname):
+#                pass
+#            else: 
+#                raise Exception("Could not create a directory to save lattice file")
+#    
+#        fd, filename = tempfile.mkstemp(suffix, prefix+"_", dirname)
+#        return fd, filename
 
     def _processlatticedata(self, latticefile, latticedata, latticetypeid=0, savefile=True):
         '''
@@ -467,14 +474,21 @@ class lattice(object):
         '''
         url = None
         if savefile:
-            dirname = generateFilePath()
-            fd, url = self._uniquefile('/'.join((dirname, latticefile)))
-            with os.fdopen(fd,'w') as f:
+            furl = self.generateFilePath()
+            with open('/'.join((furl, latticefile)), 'w') as f:
                 for data in latticedata:
                     if data.endswith('\n'):
                         f.write(data)
                     else:
                         f.write(data+'\n')
+
+#            fd, url = self._uniquefile('/'.join((dirname, latticefile)))
+#            with os.fdopen(fd,'w') as f:
+#                for data in latticedata:
+#                    if data.endswith('\n'):
+#                        f.write(data)
+#                    else:
+#                        f.write(data+'\n')
         
         # keep element order
         elemdict = OrderedDict()
@@ -521,12 +535,19 @@ class lattice(object):
             
             skipcount = 0
             unitdict={}
-            for i in range(len(cols)):
-                if str.lower(cols[i]) in ['elementtype', 'type', 'elementname', 'name', 'map', 'kickmap', 'fieldmap']:
-                    skipcount += 1
-                else:
-                    unitdict[cols[i]] = units[i-skipcount]
-
+            try:
+                for i in range(len(cols)):
+                    
+                    if str.lower(cols[i]) in ['elementtype', 'type', 'elementname', 'name', 'map', 'kickmap', 'fieldmap']:
+                        skipcount += 1
+                    else:
+                        unitdict[cols[i]] = units[i-skipcount]
+            except IndexError:
+                print i
+                print cols[i], len(unitdict), unitdict
+                print i-skipcount, len(units), units
+                print 
+                raise
             latticebody = latticedata[headerlen+1:]
             for i in range(len(latticebody)):
                 body = latticebody[i]
@@ -831,17 +852,20 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            dirname = generateFilePath()
-            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
-            with os.fdopen(fd,'w') as f:
+            furl = self.generateFilePath()
+            with open('/'.join((furl, params['name'])), 'w') as f:
                 for data in params['raw']:
                     f.write(data)
+#            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
+#            with os.fdopen(fd,'w') as f:
+#                for data in params['raw']:
+#                    f.write(data)
             
             if params.has_key('map'):
-                self._savemapfile(url, params['map'])
+                self._savemapfile(furl, params['map'])
             
             sql = '''update lattice SET url = %s where lattice_id = %s'''
-            cur.execute(sql,(url,latticeid))
+            cur.execute(sql,(furl,latticeid))
         
         #
         if params.has_key('data') and params['data']!=None:
@@ -1210,16 +1234,20 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            dirname = generateFilePath()
-            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
-            with os.fdopen(fd,'w') as f:
+            furl = self.generateFilePath()
+            with open('/'.join((furl, params['name'])), 'w') as f:
                 for data in params['raw']:
                     f.write(data)
+                      
+#            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
+#            with os.fdopen(fd,'w') as f:
+#                for data in params['raw']:
+#                    f.write(data)
             
             if params.has_key('map'):
-                self._savemapfile(url, params['map'], b64decode=True)
+                self._savemapfile(furl, params['map'], b64decode=True)
             sql = '''update lattice SET url = %s where lattice_id = %s'''
-            cur.execute(sql,(url,latticeid))
+            cur.execute(sql,(furl,latticeid))
         
         #
         if params.has_key('data') and params['data']!=None:

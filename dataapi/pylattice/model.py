@@ -287,7 +287,6 @@ class model(object):
             self.logger.info('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
         
-        print modelres
         return modelres
 
     def _elementslist2dict(self, elements):
@@ -1433,13 +1432,13 @@ class model(object):
                                       'transferMatrix': tmat}
 
         return resdict
-    def retrieveemittance(self):
-        '''
-        '''
-
-    def retrievebeamcoordinate(self):
-        '''
-        '''
+#    def retrieveemittance(self):
+#        '''
+#        '''
+#
+#    def retrievebeamcoordinate(self):
+#        '''
+#        '''
     
     
     
