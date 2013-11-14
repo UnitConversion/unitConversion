@@ -9,7 +9,7 @@ import os
 import errno
 import datetime
 from collections import OrderedDict
-import tempfile
+#import tempfile
 
 import logging
 import MySQLdb
@@ -472,7 +472,7 @@ class lattice(object):
         
         return: url, typelist, elemdict, unitdict
         '''
-        url = None
+        furl = None
         if savefile:
             furl = self.generateFilePath()
             with open('/'.join((furl, latticefile)), 'w') as f:
@@ -507,7 +507,7 @@ class lattice(object):
             # tab formatted lattice file
             if len(latticedata) <= headerlen:
                 # do nothing since no real data
-                return url, elemdict, unitdict
+                return furl, elemdict, unitdict
             latticehead = latticedata[:headerlen]
             # lattice head has to have the following format:
             # the first 3 lines are column description
@@ -587,7 +587,7 @@ class lattice(object):
         else:
             raise TypeError('Wrong lattice format. Expecting a plain lattice.')
         
-        return url, elemdict, unitdict
+        return furl, elemdict, unitdict
 
     def _getelemprop(self, value, keyname):
         res=None
@@ -639,7 +639,7 @@ class lattice(object):
                 self._savemapfile(url, lattice['map'])
 
             sql = '''update lattice SET url = %s where lattice_id = %s'''
-            cur.execute(sql,(url, latticeid))
+            cur.execute(sql,('/'.join((url, latticefile)), latticeid))
 
         typedict = {}
 
@@ -865,7 +865,7 @@ class lattice(object):
                 self._savemapfile(furl, params['map'])
             
             sql = '''update lattice SET url = %s where lattice_id = %s'''
-            cur.execute(sql,(furl,latticeid))
+            cur.execute(sql,('/'.join((furl, params['name'])), latticeid))
         
         #
         if params.has_key('data') and params['data']!=None:
@@ -1247,7 +1247,7 @@ class lattice(object):
             if params.has_key('map'):
                 self._savemapfile(furl, params['map'], b64decode=True)
             sql = '''update lattice SET url = %s where lattice_id = %s'''
-            cur.execute(sql,(furl,latticeid))
+            cur.execute(sql,('/'.join((furl, params['name'])),latticeid))
         
         #
         if params.has_key('data') and params['data']!=None:
@@ -1593,8 +1593,10 @@ class lattice(object):
             for k, v in urls.iteritems():
                 if v != None:
                     maps = {}
-                    if os.path.isdir(v+'_map'):
-                        for path, _, files in os.walk(v+'_map'):
+                    dname, _ = os.path.split(v)
+                    dname = dname + '_map'
+                    if os.path.isdir(dname):
+                        for path, _, files in os.walk(dname):
                             for name in files:
                                 isbinary = self._isbinary(os.path.join(path, name))
                                 with file(os.path.join(path, name), 'r') as f:
