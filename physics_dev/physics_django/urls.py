@@ -4,14 +4,15 @@ from django.conf import settings
 #from django.views.generic.simple import redirect_to
 
 # Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
 # Production URLS
 urlpatterns = patterns('',
-    #(r'^admin/', include(admin.site.urls)),
+    (r'^admin/', include(admin.site.urls)),
     (r'^', include('physics_django.magnets.urls')),
     (r'^', include('physics_django.lattice.urls')),
+    (r'^', include('physics_django.user.urls')),
     (r'^', include('physics_django.activeinterlock.urls')),
     
     

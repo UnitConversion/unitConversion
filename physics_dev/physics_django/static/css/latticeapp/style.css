@@ -382,3 +382,21 @@ html, body {
 	width: 700px;
 	height: 400px;
 }
+/*
+ * LOGIN start
+ */
+.user_dropdown_menu {
+	padding: 10px;
+}
+
+.login_error {
+	color: red;
+	display: none;
+}
+
+#top_container {
+	display: block;
+}
+/*
+ * LOGIN end
+ */

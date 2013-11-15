@@ -8,6 +8,42 @@
 
 			<a class="brand" href="index.html">Lattice & Model <span class="version">{{version}}</span></a>
 
+			<div id="top_container" class="pull-right btn-group">
+
+				{% endverbatim %}
+				{% if user.is_authenticated %}
+					<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user icon-white"></i>
+						{{user.username}}
+						<strong class="caret"></strong>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a ng-click="logout()">Sign out</a></li>
+					</ul>
+				{% else %}
+					<a id="user_login_dropdown" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user icon-white"></i>
+						Guest
+						<strong class="caret"></strong>
+					</a>
+
+					<div class="dropdown-menu user_dropdown_menu">
+						<fieldset>
+							<legend>Sign in</legend>
+							<label>Username</label>
+							<input id="user_username" type="text" ng-model="loginData.username" placeholder="Your username ...">
+
+							<label>Password</label>
+							<input id="user_password" type="password" ng-model="loginData.password" placeholder="Your password ..."><br />
+
+							<button id="user_login" class="btn btn-primary" ng-click="login()">Sign in</button>
+						</fieldset>
+						<span id="login_error" class="login_error">The username or password is incorrect!</span>
+					</div>
+				{% endif %}
+				{% verbatim %}
+			</div>
+
 		</div>
 	</div>
 </div>

@@ -31,13 +31,46 @@ app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope){
+app.controller('mainCtrl', function($scope, $http, $route){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
 	$scope.statuses = statuses;
 	$scope.modelStatuses = modelStatuses;
+	setUpLoginForm();
+
+	$scope.loginData = {};
+
+	$scope.login = function() {
+		l($scope.loginData);
+
+		$.ajax({
+			url: serviceurl + "user/login/",
+			method: "POST",
+			data: "username=" + $scope.loginData.username + "&password=" + $scope.loginData.password
+		}).success(function(data, status, headers, config) {
+			l(data);
+			location.reload();
+
+		}).error(function(data, status, headers, config) {
+
+		});
+	};
+
+	$scope.logout = function() {
+
+		$.ajax({
+			url: serviceurl + "user/logout/",
+			method: "POST"
+		}).success(function(data, status, headers, config) {
+			l(data);
+			location.reload();
+
+		}).error(function(data, status, headers, config) {
+
+		});
+	};
 });
 
 /*
@@ -327,7 +360,7 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 	$http.get(query).success(function(data){
 		var latticeKeys = Object.keys(data);
 		lattice = data[latticeKeys[0]].lattice;
-		$scope.raw.url = serviceurl + 'documents/' + data[latticeKeys[0]].rawlattice.name;
+		$scope.raw.url = serviceurl + data[latticeKeys[0]].rawlattice.name;
 		$scope.lattice = data[latticeKeys[0]];
 		$scope.lattice.latticeid = latticeKeys[0];
 

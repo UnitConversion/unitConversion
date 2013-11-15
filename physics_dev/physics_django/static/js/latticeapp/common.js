@@ -713,3 +713,19 @@ function drawDataTree(html, data){
 
 	return html;
 }
+
+function setUpLoginForm() {
+	// Setup drop down menu
+	$('.dropdown-toggle').dropdown();
+
+	// Fix input element click problem
+	$('.dropdown-menu').click(function(e) {
+		e.stopPropagation();
+	});
+
+	$('#user_login_dropdown').click(function(){
+		$('.user_dropdown_menu').ready(function(){
+			$('#user_username').focus();
+		});
+	});
+}

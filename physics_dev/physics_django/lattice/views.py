@@ -1,10 +1,10 @@
 import re
 
-#from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
 
 from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 try:
     from django.utils import simplejson as json
@@ -159,7 +159,7 @@ def lattice_home(request):
     return render_to_response("lattice/index.html")
 
 def lattice_content_home(request):
-    return render_to_response("lattice/content.html")
+    return render_to_response("lattice/content.html", context_instance = RequestContext(request))
 
 def lattice_content_search(request):
     return render_to_response("lattice/search.html")
