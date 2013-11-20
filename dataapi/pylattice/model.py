@@ -146,7 +146,7 @@ class model(object):
         where
         lattice_id = %s
         '''
-        _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
+        lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
         resdict = {}
         
         for latticeid, _ in lattices.iteritems():

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_5
--- Created on: 9/10/2013 12:21:09 PM
--- Diagram Version: 504
+-- Created on: 11/15/2013 11:40:49 AM
+-- Diagram Version: 511
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -19,6 +19,23 @@ CREATE TABLE `active_interlock_prop_type` (
 )
 ENGINE=INNODB;
 
+-- Drop table active_interlock_logic
+DROP TABLE IF EXISTS `active_interlock_logic`;
+
+CREATE TABLE `active_interlock_logic` (
+  `active_interlock_logic_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50),
+  `shape` varchar(50),
+  `logic` varchar(255),
+  `logic_code` int(11),
+  `status` int(11),
+  `created_by` varchar(50),
+  `created_date` datetime,
+  PRIMARY KEY(`active_interlock_logic_id`),
+  UNIQUE INDEX `name`(`name`)
+)
+ENGINE=INNODB;
+
 -- Drop table active_interlock
 DROP TABLE IF EXISTS `active_interlock`;
 
@@ -32,22 +49,6 @@ CREATE TABLE `active_interlock` (
   `modified_by` varchar(50),
   `modified_date` datetime,
   PRIMARY KEY(`active_interlock_id`)
-)
-ENGINE=INNODB;
-
--- Drop table active_interlock_logic
-DROP TABLE IF EXISTS `active_interlock_logic`;
-
-CREATE TABLE `active_interlock_logic` (
-  `active_interlock_logic_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50),
-  `shape` varchar(50),
-  `logic` varchar(255),
-  `logic_code` int(11),
-  `created_by` varchar(50),
-  `created_date` datetime,
-  PRIMARY KEY(`active_interlock_logic_id`),
-  UNIQUE INDEX `name`(`name`)
 )
 ENGINE=INNODB;
 
@@ -72,25 +73,6 @@ CREATE TABLE `active_interlock_device` (
 )
 ENGINE=INNODB;
 
--- Drop table activeinterlocldevice__install
-DROP TABLE IF EXISTS `activeinterlocldevice__install`;
-
-CREATE TABLE `activeinterlocldevice__install` (
-  `activeinterlocldevice__install_id` int(11) NOT NULL AUTO_INCREMENT,
-  `active_interlock_device_id` int(11),
-  `install_id` int(11),
-  PRIMARY KEY(`activeinterlocldevice__install_id`),
-  CONSTRAINT `Ref_02` FOREIGN KEY (`active_interlock_device_id`)
-    REFERENCES `active_interlock_device`(`active_interlock_device_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `Ref_03` FOREIGN KEY (`install_id`)
-    REFERENCES `install`(`install_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-)
-ENGINE=INNODB;
-
 -- Drop table active_interlock_prop
 DROP TABLE IF EXISTS `active_interlock_prop`;
 
@@ -99,7 +81,8 @@ CREATE TABLE `active_interlock_prop` (
   `active_interlock_device_id` int(11),
   `active_interlock_prop_type_id` int(11),
   `value` varchar(1024),
-  `inserted_date` datetime,
+  `status` tinyint(4),
+  `date` datetime,
   PRIMARY KEY(`active_interlock_prop_id`),
   CONSTRAINT `Ref_05` FOREIGN KEY (`active_interlock_device_id`)
     REFERENCES `active_interlock_device`(`active_interlock_device_id`)

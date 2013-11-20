@@ -8,10 +8,10 @@ BASE_PATH = os.path.dirname(__file__)
 #Add the pyirmis app to our django path
 sys.path.append(os.path.join(BASE_PATH, '../../'))
 #Add the pyirmis irmis dev packages
-sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib/python2.7/site-packages/'))
-sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib/python2.6/site-packages/'))
-sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib64/python2.7/site-packages/'))
-sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib64/python2.6/site-packages/'))
+#sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib/python2.7/site-packages/'))
+#sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib/python2.6/site-packages/'))
+#sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib64/python2.7/site-packages/'))
+#sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib64/python2.6/site-packages/'))
 from django.core.management import execute_manager
 
 try:

@@ -126,7 +126,7 @@ def retrievelatticeinfo(params):
     else:
         description=None
         
-    _, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
+    lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
 #    urls, lattices = latinst.retrievelatticeinfo(name, version=version, branch=branch, description=description, creator=creator)
 #    for k, v in lattices.iteritems():
 #        if urls[k] != None:

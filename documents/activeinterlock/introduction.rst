@@ -13,11 +13,11 @@ The data service is to capture all static data which are needed by active interl
 **Terminology**:
 
    - AIOL:  active interlock offset limit, which applies for both horizontal & vertical
-       - AIHOL: active interlock horizontal offset limit
-       - AIVOL: active interlock vertical offset limit
+       - AIOLH: active interlock offset limit in horizontal plane
+       - AIOLV: active interlock offset limit in vertical  plane
    - AIAL:  active interlock angle limit, which applies for both horizontal & vertical
-       - AIHAL: active interlock horizontal angle limit
-       - AIVAL: active interlock vertical angle limit
+       - AIALH: active interlock horizontal angle limit in horizontal plane
+       - AIALV: active interlock vertical angle limit in vertical plane
 
 
 **Active interlock unit**: 
@@ -44,15 +44,17 @@ The logic presented in source data are encoded with an algorithm as below: ::
     ======  ==================================  ====================  ======================
      code               logic                       shape               AIE type
     ------  ----------------------------------  --------------------  ----------------------
-      10       |x1|<AIOL & |x2|<AIOL              Diamond               AIE-ID-B & AIE-BM
+      10       |x|<AIOL & |y|<AIOL                Slit                  AI-BM
     ------  ----------------------------------  --------------------  ----------------------
-      20       |(x2-x1)*(s3-s1)/(s2-s1)|<AIOL     Rectangular           AIE-ID-A
+      20       |x1|<AIOL & |x2|<AIOL              Diamond               AIE-ID-B
+    ------  ----------------------------------  --------------------  ----------------------
+      21       |(x2-x1)*(s3-s1)/(s2-s1)|<AIOL     Rectangular           AIE-ID-A
              & |(x2-x1)/(s2-s1)|<AIAL
     ------  ----------------------------------  --------------------  ----------------------
-      21       |x1|<AIOL & |x2|<AIOL              Rectangular           AIE-ID-C
+      22       |x1|<AIOL & |x2|<AIOL              Rectangular           AIE-ID-C
              & |(x2-x1)/(s2-s1)|<AIAL            + optimal offset
     ------  ----------------------------------  --------------------  ----------------------
-      22       |x1|<AIOL & |x2|<AIOL 
+      23       |x1|<AIOL & |x2|<AIOL 
              & |(x2-x1)*(s3-s1)/(s2-s1)|<AIOL     Rectangular           AIE-ID-D
              & |(x2-x1)/(s2-s1)|<AIAL            + small offset
     ======  ==================================  ====================  ======================

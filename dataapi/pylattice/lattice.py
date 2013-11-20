@@ -69,6 +69,7 @@ class lattice(object):
                         'lastModified': [optional],  # when this lattice was updated last time
                         'latticeType':  [optional],  # lattice type name
                         'latticeFormat':[optional],  # lattice type format
+                        'url': [optional],           # where the lattice file is stored on server
                         }
                  ...
                 } 
@@ -138,7 +139,6 @@ class lattice(object):
             raise Exception('Error when fetching lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
         
         resdict = {}
-        urls = {}
         for r in res:
             tempdict = {'name': r[1],
                         'version': r[2],
@@ -157,9 +157,10 @@ class lattice(object):
                 tempdict['latticeType'] = r[9]
             if r[10] != None:
                 tempdict['latticeFormat'] = r[10]
+            if r[11] != None:
+                tempdict['url'] = r[11]
             resdict[r[0]] = tempdict
-            urls[r[0]] = r[11]
-        return urls, resdict
+        return resdict
 
     def savelatticeinfo(self, name, version, branch, **params):
         '''
@@ -188,7 +189,7 @@ class lattice(object):
             self.logger.info('Version should be a numeric value:\n%s (%d)' %(e.args[1], e.args[0]))
             raise ValueError('Version should be a numeric value:\n%s (%d)' %(e.args[1], e.args[0]))
         
-        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        lattices = self.retrievelatticeinfo(name, version, branch)
         if len(lattices) != 0:
             raise ValueError('lattice (name: %s, version: %s, branch: %s) exists already.'
                              %(name, version, branch))
@@ -282,7 +283,7 @@ class lattice(object):
         
         return: True, otherwise, raise an exception
         '''
-        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        lattices = self.retrievelatticeinfo(name, version, branch)
         latticeid = None
         if len(lattices) == 0:
             raise ValueError('Did not find lattice (name: %s, version: %s, branch: %s).'
@@ -1286,7 +1287,7 @@ class lattice(object):
         return: lattice id if success, otherwise, raise an exception
         '''
         
-        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        lattices = self.retrievelatticeinfo(name, version, branch)
         if len(lattices) != 0:
             raise ValueError('lattice (name: %s, version: %s, branch: %s) description information exists already. Please update it.'
                              %(name, version, branch))
@@ -1363,7 +1364,7 @@ class lattice(object):
             
         return: True if success, otherwise, raise an exception
         '''
-        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        lattices = self.retrievelatticeinfo(name, version, branch)
         if len(lattices) == 0:
             raise ValueError('Cannot find lattice (name: %s, version: %s, branch: %s) information.'
                              %(name, version, branch))
@@ -1480,7 +1481,7 @@ class lattice(object):
                     } 
              }
         '''
-        urls, lattices = self.retrievelatticeinfo(name, version, branch, description=description, latticetype=latticetype, creator=creator)
+        lattices = self.retrievelatticeinfo(name, version, branch, description=description, latticetype=latticetype, creator=creator)
         if len(lattices) == 0:
             return {}
 
@@ -1589,8 +1590,11 @@ class lattice(object):
                     tempdict['typeunit'] = typepropunits
                 v['lattice'] = tempdict
                 lattices[k] = v
-        if urls and (withdata or rawdata):
-            for k, v in urls.iteritems():
+        if withdata or rawdata:
+            for k, vurl in lattices.iteritems():
+                v = None
+                if vurl.has_key('url'):
+                    v = vurl['url']
                 if v != None:
                     maps = {}
                     dname, _ = os.path.split(v)
@@ -1840,7 +1844,7 @@ class lattice(object):
         status = 0
         if params.has_key('status'):
             status=params['status']
-        _, lattices = self.retrievelatticeinfo(name, version, branch)
+        lattices = self.retrievelatticeinfo(name, version, branch)
 
         if len(lattices) != 1:
             raise ValueError("Can not find lattice (name: %s, version: %s, beanch: %s), or more than one found."%(name, version, branch))

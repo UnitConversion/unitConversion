@@ -123,41 +123,6 @@ def lattices(request):
         raise e
     return HttpResponse(finalres, mimetype="application/json")
 
-#@require_http_methods(["GET", "POST"])
-#def models(request):
-#    try:
-#        res = {'message': 'Did not found any entry.'}
-#        if request.method == 'GET':
-#            params = _retrievecmddict(request.GET.copy())
-#            if params.has_key('function'):
-#                for p, _ in post_actions:
-#                    if re.match(p, params['function']): 
-#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-#                res = dispatch(params, get_actions)
-#            else:
-#                res = {'message': 'No function specified.'}
-#            print res
-#            
-#        elif request.method == 'POST':
-#            params = _retrievecmddict(request.POST.copy())
-#            if params.has_key('function'):
-#                for p, _ in get_actions:
-#                    if re.match(p, params['function']): 
-#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-#                res = dispatch(params, post_actions)
-#            else:
-#                res = {'message': 'No function specified.'}
-#        else:
-#            return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'))
-#    except ValueError as e:
-#        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
-#    except KeyError as e:
-#        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
-#    except Exception as e:
-#        return HttpResponseBadRequest(content=e, mimetype="application/json")
-#    
-#    return HttpResponse(json.dumps(res), mimetype="application/json")
-
 def lattice_home(request):
     return render_to_response("lattice/index.html")
 
