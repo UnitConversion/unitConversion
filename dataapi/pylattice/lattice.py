@@ -1619,9 +1619,9 @@ class lattice(object):
                         try:
                             with file(v, 'r') as f:
                                 data = f.readlines()
-                            basefile=os.path.basename(v)
-                            basefile=os.path.splitext(basefile)
-                            v=basefile[0][:-7]+basefile[1]
+                            #basefile=os.path.basename(v)
+                            #basefile=os.path.splitext(basefile)
+                            #v=basefile[0][:-7]+basefile[1]
                         except IOError:
                             data = 'No raw lattice file found.'
                         
