@@ -24,6 +24,9 @@ from dataprocess import savemodelstatus, retrievemodelstatus
 from dataprocess import savemodel, updatemodel, retrievemodel, retrievemodellist
 from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwiss, retrievebeamparameters
 
+from django.contrib.auth.decorators import permission_required
+import requests
+
 def _retrievecmddict(httpcmd):
     '''
     Retrieve GET request parameters, lower all keys, and return parameter dictionary.
@@ -175,3 +178,56 @@ def lattice_content_details(request):
 
 def lattice_content_model_details(request):
     return render_to_response("lattice/model_details.html")
+
+@permission_required('lattice.can_upload')
+def lattice_upload(request):
+    
+    # Define result
+    result = {}
+    data = {}
+    
+    try:
+        data = json.loads(request.raw_post_data)
+    except ValueError as e:
+        result['result'] = 'error'
+    
+    print data
+    
+    url = 'http://localhost:8000/lattice/'
+    
+    # Define payload variables
+    name = ''
+    branch = ''
+    version = -1
+    
+    # Check if keys are defined
+    if('name' in data):
+        name = data['name']
+    
+    if('branch' in data):
+        branch = data['branch']
+    
+    if('version' in data):
+        version = int(data['version'])
+
+    # Create payload
+    payload={'function': 'saveLatticeInfo',
+             'name': name,
+             'version': version,
+             'branch': branch
+    }
+    
+    # Make a request
+    r = requests.post(url, data=payload)
+    print r.headers
+    
+    # Check status, 200 is OK
+    if(r.status_code == 200):
+        result['result'] = 'ok'
+    
+    else:
+        result['result'] = 'error'
+        result['code'] = r.status_code
+    
+    # Return response
+    return HttpResponse(json.dumps(result), mimetype="application/json")

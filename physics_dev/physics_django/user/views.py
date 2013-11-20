@@ -8,7 +8,7 @@ except ImportError:
     import json
 
 @require_http_methods(["GET", "POST"])
-def userLogin(request):
+def user_login(request):
     '''
     Authenticate user if credetials match
     '''
@@ -40,7 +40,7 @@ def userLogin(request):
     return HttpResponse(json.dumps(result), mimetype="application/json")
 
 @require_http_methods(["GET", "POST"])
-def userLogout(request):
+def user_logout(request):
     '''
     Log user out
     '''

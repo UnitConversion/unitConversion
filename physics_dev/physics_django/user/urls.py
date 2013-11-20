@@ -1,14 +1,14 @@
 from django.conf.urls.defaults import patterns, url
 
-from physics_django.user.views import (userLogin, userLogout)
+from physics_django.user.views import (user_login, user_logout)
 
 # Url paterns for logging in and logging out
 urlpatterns = patterns(
     '',
     url(r'^user/login/$',
-        userLogin,
+        user_login,
         name='login'),
     url(r'^user/logout/$',
-        userLogout,
+        user_logout,
         name='logout'),
 )

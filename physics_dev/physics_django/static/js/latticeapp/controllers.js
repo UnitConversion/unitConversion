@@ -31,7 +31,7 @@ app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope, $http, $route){
+app.controller('mainCtrl', function($scope, $http, $route, $modal){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
@@ -69,6 +69,38 @@ app.controller('mainCtrl', function($scope, $http, $route){
 
 		}).error(function(data, status, headers, config) {
 
+		});
+	};
+
+	$scope.uploadLattice = function() {
+		var modalInstance = $modal.open({
+			template: '\
+				<div class="modal-header">\
+					<button type="button" class="close" ng-click="cancel()">&times;</button>\
+					<h3>Upload lattice</h3>\
+				</div>\
+				<div class="modal-body">\
+					<div class="alert alert-error" ng-show="modal.error.show">\
+						<button type="button" class="close" ng-click="closeAlert()">&times;</button>\
+						<strong>Warning!</strong> Best check yo self, you not looking too good.\
+					</div>\
+					{{modal.error.show}}\
+					<fieldset>\
+						<label>Name</label>\
+						<input ng-model="upload.name" type="text">\
+						<label>Version</label>\
+						<input ng-model="upload.version" type="text">\
+						<label>Branch</label>\
+						<input ng-model="upload.branch" type="text">\
+						<label>File</label>\
+						<input type="file">\
+					</fieldset>\
+				</div>\
+				<div class="modal-footer">\
+					<button class="btn btn-primary" ng-click="ok()">Upload</button>\
+					<button class="btn btn-primary" ng-click="cancel()">Cancel</button>\
+				</div>',
+			controller: 'uploadLatticeModalCtrl'
 		});
 	};
 });
@@ -693,11 +725,38 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 });
 
 /*
- * Modal window example
+ * Upload lattice controller
  */
-app.controller('modalCtrl', function($scope, $modalInstance) {
+app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
+	$scope.upload = {};
+	$scope.modal = {};
+	$scope.modal.error = {};
+	$scope.modal.error.show = false;
+
+	$scope.closeAlert = function() {
+		$scope.modal.error.show = false;
+	};
+
 	$scope.ok = function() {
-		$modalInstance.close();
+		l(JSON.stringify($scope.upload));
+
+		$.ajax({
+			url: serviceurl + "lattice/upload",
+			method: "POST",
+			contentType: 'application/json; charset=utf-8',
+			data: JSON.stringify($scope.upload)
+		}).success(function(data, status, headers, config) {
+			l(data);
+
+			if(data.result === "error") {
+				$scope.modal.error.show = true;
+			}
+
+		}).error(function(data, status, headers, config) {
+			$scope.modal.error.show = true;
+		});
+
+		//$modalInstance.close();
 	};
 
 	$scope.cancel = function () {
