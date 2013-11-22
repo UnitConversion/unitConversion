@@ -52,10 +52,9 @@ class lattice(object):
                             zipdst.write(filename, arcname)
     def _removeendbackslash(self, string):
         if string.endswith("/"):
-            string = string[:-1]
+            return self._removeendbackslash(string[:-1])
         else:
             return string
-
 
     def generateFilePath(self):
         '''
