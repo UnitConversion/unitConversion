@@ -122,7 +122,7 @@ INSTALLED_APPS_DEV = (
     'magnets',
     'lattice',
     'activeinterlock',
-    'login',
+    'user',
 
 )
 

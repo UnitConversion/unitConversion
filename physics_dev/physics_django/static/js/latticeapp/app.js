@@ -13,13 +13,13 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',																												'index.home').
-		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/list',	'index.home.lattice_list').
-		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/id/:id',	'index.home.lattice_list.lattice_details').
-		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/ids/:ids','index.home.lattice_list.lattices_details').
-		when('/type/:type/name/:name?/list',																					'index.home.model_list').
-		when('/type/:type/name/:name?/id/:id?',																					'index.home.model_list.model_details').
-		when('/type/:type/name/:name?/ids/:ids?',																				'index.home.model_list.models_details').
+		when('/',																															'index.home').
+		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/list',		'index.home.lattice_list').
+		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/id/:id',	'index.home.lattice_list.lattice_details').
+		when('/type/:type/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/ids/:ids',	'index.home.lattice_list.lattices_details').
+		when('/type/:type/name/:name?/list',																								'index.home.model_list').
+		when('/type/:type/name/:name?/id/:id?',																								'index.home.model_list.model_details').
+		when('/type/:type/name/:name?/ids/:ids?',																							'index.home.model_list.models_details').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -34,7 +34,7 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				segment('lattice_list', {
 					templateUrl: 'list.html',
 					controller: 'listLatticeCtrl',
-					dependencies: ['type', 'name', 'version', 'branch', 'desc', 'creator']
+					dependencies: ['type', 'name', 'version', 'branch', 'desc', 'creator', 'latticetype']
 				}).
 				within().
 					segment('lattice_details', {

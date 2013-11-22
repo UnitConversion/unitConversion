@@ -15,7 +15,7 @@
 			</tr>
 		</table>
 
-		<button ng-if="models.simulationControl" class="btn btn-info" ng-click="showSimulationControlData()">Show simulation control data</button>
+		<button ng-if="models.simulationControl" ng-class="{'active': models.simulationControlParsed}" class="btn btn-info" ng-click="showSimulationControlData()">Show simulation control data</button>
 		<br/>
 
 		<div ng-if="models.simulationControlParsed">
@@ -26,6 +26,31 @@
 					<td><span class="text-info">{{simulation | clean}}</span></td>
 				</tr>
 			</table>
+		</div>
+		
+		<div ng-if="raw.selectionCount > 0">
+			<h3>Select data to plot</h3>
+
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<th>property</th>
+					<th>{{models["name"]}}</th>
+				</tr>
+				<tr ng-repeat="(i, row) in raw.selection">
+					<td>{{i}}</td>
+					<td ng-repeat="(j, cell) in row">
+						<label>
+							<input type="checkbox" ng-model="raw.selection[i][j]" />
+							<span class="hidden">hidden label</span>
+						</label>
+					</td>
+				</tr>
+			</table>
+			<button class="btn" ng-click="plotData()">Plot data</button>
+
+			<br/>
+			<h3>Plot</h3>
+			<div class="placeholder"></div>
 		</div>
 
 		<h3>Model details</h3>
@@ -52,7 +77,7 @@
 
 		<br />
 
-		<button ng-if="raw.transferMatrix" class="btn btn-info" ng-click="showMatrices()">Show matrices</button>
+		<button ng-if="raw.transferMatrix" ng-class="{'active': raw.showMatrices}" class="btn btn-info" ng-click="showMatrices()">Show matrices</button>
 
 		<div ng-if="raw.showMatrices">
 			<h3>Transfer matrices</h3>
@@ -66,31 +91,6 @@
 					</tr>
 				</table>
 			</div>
-		</div>
-
-		<div ng-if="raw.selectionCount > 0">
-			<h3>Select data to plot</h3>
-
-			<table class="table table-bordered table-condensed">
-				<tr>
-					<th>property</th>
-					<th>{{models["name"]}}</th>
-				</tr>
-				<tr ng-repeat="(i, row) in raw.selection">
-					<td>{{i}}</td>
-					<td ng-repeat="(j, cell) in row">
-						<label>
-							<input type="checkbox" ng-model="raw.selection[i][j]" />
-							<span class="hidden">hidden label</span>
-						</label>
-					</td>
-				</tr>
-			</table>
-			<button class="btn" ng-click="plotData()">Plot data</button>
-
-			<br/>
-			<h3>Plot</h3>
-			<div class="placeholder"></div>
 		</div>
 
 	</div>

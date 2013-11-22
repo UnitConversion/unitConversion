@@ -72,7 +72,6 @@
 			<br/>
 		</div>
 
-		<button class="btn btn-info" ng-click="showData()">Show data in a table</button>
 		<a class="btn btn-info" href="{{raw.url}}" >Download the original file</a>
 
 		<br/>
@@ -81,6 +80,10 @@
 			<h3>Lattice</h3>
 			<table class="table table-bordered" id="lattice_table" compile="raw.table">
 			</table>
+		</div>
+		<div ng-if="!raw.table">
+			<br />
+			Loading data ...
 		</div>
 	</div>
 </div>

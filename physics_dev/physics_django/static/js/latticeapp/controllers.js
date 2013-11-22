@@ -194,7 +194,7 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 		$scope.comparison.length = 0;
 	};
 
-	query = serviceurl + 'lattice/?function=retrieveLatticeInfo&' + createLatticeListQuery($routeParams, false);
+	query = serviceurl + 'lattice/?function=retrieveLattice&' + createLatticeListQuery($routeParams, false);
 	//l(query);
 
 	$http.get(query).success(function(data){
@@ -341,7 +341,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 /*
  * Show lattice details in the right pane
  */
-app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $location, $sce, $q){
+app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $location, $sce, $q, $timeout){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -384,15 +384,17 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 
 	// Show raw lattice in a table
 	query = serviceurl + 'lattice/?function=retrieveLattice&rawdata=true&withdata=true&' + createLatticeListQuery(paramsObject, false);
+	l(query);
 
 	var lattice = {};
 	var header = [];
 
 	// Get lattice data and generate appropriate objects
 	$http.get(query).success(function(data){
+		l(data);
 		var latticeKeys = Object.keys(data);
 		lattice = data[latticeKeys[0]].lattice;
-		$scope.raw.url = serviceurl + data[latticeKeys[0]].rawlattice.name;
+		$scope.raw.url = serviceurl + data[latticeKeys[0]].url;
 		$scope.lattice = data[latticeKeys[0]];
 		$scope.lattice.latticeid = latticeKeys[0];
 
@@ -412,12 +414,12 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 		}
 
 		$scope.raw.data.push({head: header});
-	});
 
-	// Show data by clicking on Show data in a table button
-	$scope.showData = function() {
-		$scope.raw.table =  createLatticeTable(header, lattice, $scope.raw.url);
-	};
+		// Show data with some delay
+		$timeout(function() {
+			$scope.raw.table =  createLatticeTable(header, lattice, $scope.raw.url);
+		}, 100);
+	});
 });
 
 /*
@@ -601,9 +603,12 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	};
 
 	$scope.showSimulationControlData = function() {
-		if(privateModel.simulationControl !== undefined) {
+		if(privateModel.simulationControl !== undefined && privateModel.simulationControlParsed === undefined) {
 			privateModel.simulationControlParsed = JSON.parse(privateModel.simulationControl);
-			l(privateModel.simulationControlParsed);
+			//l(privateModel.simulationControlParsed);
+
+		} else {
+			privateModel.simulationControlParsed = undefined;
 		}
 	};
 
@@ -638,7 +643,13 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	};
 
 	$scope.showMatrices = function() {
-		$scope.raw.showMatrices = true;
+
+		if($scope.raw.showMatrices) {
+			$scope.raw.showMatrices = false;
+
+		} else {
+			$scope.raw.showMatrices = true;
+		}
 	};
 
 	$scope.plotData = function() {

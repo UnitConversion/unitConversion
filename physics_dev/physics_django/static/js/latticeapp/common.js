@@ -66,7 +66,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add name part
 		if(search.name !== undefined) {
-			query += "name=*" + search.name + '&';
+			query += "name=" + search.name + '&';
 			url += "/name/" + search.name;
 
 		} else {
@@ -76,7 +76,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add version part
 		if(search.version !== undefined) {
-			query += "version=*" + search.version + '&';
+			query += "version=" + search.version + '&';
 			url += "/version/" + search.version;
 
 		} else {
@@ -86,7 +86,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add branch part
 		if(search.branch !== undefined) {
-			query += "branch=*" + search.branch + '&';
+			query += "branch=" + search.branch + '&';
 			url += "/branch/" + search.branch;
 
 		} else {
@@ -96,7 +96,7 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add description part
 		if(search.desc !== undefined) {
-			query += "description=*" + search.desc + '&';
+			query += "description=" + search.desc + '&';
 			url += "/desc/" + search.desc;
 
 		} else {
@@ -106,17 +106,27 @@ function createLatticeListQuery(search, returnUrl) {
 
 		// Add creator part
 		if(search.creator !== undefined) {
-			query += "creator=*" + search.creator;
+			query += "creator=" + search.creator + '&';
 			url += "/creator/" + search.creator;
 
 		} else {
-			query += "creator=*";
+			query += "creator=*&";
 			url += "/creator/";
+		}
+
+		// Add lattice type part
+		if(search.latticetype !== undefined) {
+			query += 'latticetype={"name":"' + search.latticetype + '"}';
+			url += "/latticetype/" + search.latticetype;
+
+		} else {
+			query += "";
+			url += "/latticetype/";
 		}
 
 		// Add status part
 //		if(search.status !== undefined) {
-//			query += "status=*" + search.status;
+//			query += "status=" + search.status;
 //			url += "/status/" + search.status;
 //
 //		} else {
@@ -151,7 +161,7 @@ function createModelListQuery(search, returnUrl) {
 
 		// Add name part
 		if(search.name !== undefined) {
-			query += "name=*" + search.name;
+			query += "name=" + search.name;
 			url += "/name/" + search.name;
 
 		} else {
@@ -260,6 +270,12 @@ function createLatticeTable(header, lattice, url) {
 
 	// Add data
 	$.each(lattice, function(j, line){
+
+		// Skip rows that are not lattice
+		if(j === "columns" || j === "typeunit") {
+			return;
+		}
+
 		table += "<tr class='lattice_table_row'>";
 
 		$.each(header, function(i, column){
@@ -270,9 +286,11 @@ function createLatticeTable(header, lattice, url) {
 			} else {
 
 				// Ckeck for file links
-				if(column.indexOf("file") !== -1) {
+				if(column.indexOf("file") !== -1 || column.indexOf("FILE") !== -1) {
 					var fileName = line[column][0].replace(/"/gi, "");
-					table += '<td><a target="_blank" href="' + url + '_map/' + fileName + '">' + fileName + '</a></td>';
+					var urlParts = url.split("/");
+					var mapUrl = urlParts.slice(0, urlParts.length-1).join("/") + '_map/';
+					table += '<td><a target="_blank" href="' + mapUrl + fileName + '">' + fileName + '</a></td>';
 
 				} else {
 					table += "<td>" + line[column] + "</td>";

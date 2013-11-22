@@ -31,6 +31,10 @@
 			<td><b>Desc: </b></td>
 			<td><span class="text-info">{{lattice.description}}</span></td>
 		</tr>
+		<tr ng-if="lattice.latticeType">
+			<td><b>Type: </b></td>
+			<td><span class="text-info">{{lattice.latticeType}}</span></td>
+		</tr>
 	</table>
 </div>
 {% endverbatim %}
