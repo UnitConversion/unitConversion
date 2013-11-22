@@ -559,7 +559,7 @@ class model(object):
             if len(results) != 0:
                 raise ValueError('Model (%s) for given lattice (name: %s, version: %s, branch: %s) exists already.'
                                  %(modelname, latticename, latticeversion, latticebranch))
-            _, lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
+            lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
             
             if len(lattices) == 0:
                 raise ValueError('lattice (name: %s, version: %s, branch: %s) does not exist yet.'

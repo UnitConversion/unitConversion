@@ -52,7 +52,13 @@ def savelatticetype(params):
     _checkkeys(params.keys(), ['function','name', 'format'])
     if params['name'] == '':
         raise ValueError('lattice type name is empty.')
-    result = latinst.savelatticetype(params['name'], params['format'])
+
+    try:
+        result = latinst.savelatticetype(params['name'], params['format'])
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     
     return {'result': result}
 
@@ -95,7 +101,12 @@ def savelatticeinfo(params):
     if params.has_key('creator') and params['creator'] != '':
         creator = params['creator']
 
-    result = latinst.savelatticeinfo(name, version, branch, latticetype=latticetype, description=description, creator=creator)
+    try:
+        result = latinst.savelatticeinfo(name, version, branch, latticetype=latticetype, description=description, creator=creator)
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     
     return {"id": result}
 
@@ -155,7 +166,12 @@ def updatelatticeinfo(params):
     if params.has_key('creator'):
         creator = params['creator']
     
-    result = latinst.updatelatticeinfo(name, version, branch, latticetype=latticetype, description=description, creator=creator)
+    try:
+        result = latinst.updatelatticeinfo(name, version, branch, latticetype=latticetype, description=description, creator=creator)
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     
     return {"result": result}
     
@@ -240,16 +256,22 @@ def savelattice(params):
                 latticedata['data'] = flattenlatdict
     
     # save lattice
-    result = latinst.savelattice(name, version, branch, creator=creator, description=description, 
-                                 latticetype=latticetype, lattice=latticedata)
-    
-    # save simulation result if there is one
-    if modeldata:
-        modeldata['description'] = 'automatic simulation result performed by server on %s'%(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %p"))
-        modelname = 'default model for %s (branch %s, version %s)'%(name, branch, version)
-        modeldata['creator'] = 'lattice/model service'
-        modelinst.savemodel({modelname:modeldata}, name, version, branch)
-    
+    try:
+        result = latinst.savelattice(name, version, branch, creator=creator, description=description, 
+                                     latticetype=latticetype, lattice=latticedata)
+        
+        # save simulation result if there is one
+        if modeldata:
+            modeldata['description'] = 'automatic simulation result performed by server on %s'%(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %p"))
+            modelname = 'default model for %s (branch %s, version %s)'%(name, branch, version)
+            modeldata['creator'] = 'lattice/model service'
+            modelinst.savemodel({modelname:modeldata}, name, version, branch)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
+
     return {'id': result}
 
 def updatelattice(params):
@@ -315,14 +337,20 @@ def updatelattice(params):
                     latticedata['data'] = flattenlatdict
 
     # update lattice
-    result = latinst.updatelattice(name, version, branch, creator=creator, description=description, 
-                                   latticetype=latticetype, lattice=latticedata)
-    
-    # save simulation result if there is one
-    if modeldata:
-        modeldata['description'] = 'automatic simulation result performed by server on %s'%(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %p"))
-        modeldata['creator'] = 'lattice/model service'
-        modelinst.savemodel({modelname:modeldata}, name, version, branch)
+    try:
+        result = latinst.updatelattice(name, version, branch, creator=creator, description=description, 
+                                       latticetype=latticetype, lattice=latticedata)
+        
+        # save simulation result if there is one
+        if modeldata:
+            modeldata['description'] = 'automatic simulation result performed by server on %s'%(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %p"))
+            modeldata['creator'] = 'lattice/model service'
+            modelinst.savemodel({modelname:modeldata}, name, version, branch)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
 
     return {'result': result}
     
@@ -374,7 +402,13 @@ def savelatticestatus(params):
     branch=params['branch']
     status=params['status']
     
-    result=latinst.savelatticestatus(name, version, branch, status=status)
+    try:
+        result=latinst.savelatticestatus(name, version, branch, status=status)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     
     return {'result':result}
     
@@ -425,7 +459,15 @@ def savemodelcodeinfo(params):
         algorithm=None
     if name==None and algorithm==None:
         raise ValueError("No sufficient information provided to retrieve a simulation info (simulation result and algorithm)")
-    result = modelinst.savemodelcodeinfo(name, algorithm)
+
+    try:
+        result = modelinst.savemodelcodeinfo(name, algorithm)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
+
     return {'result': result}
     
 def retrievemodelcodeinfo(params):
@@ -458,7 +500,13 @@ def savemodelstatus(params):
     name = params['name']
     status=params['status']
     
-    result=modelinst.savegoldenmodel(name, status=status)
+    try:
+        result=modelinst.savegoldenmodel(name, status=status)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     
     return {'result':result}
     
@@ -564,7 +612,13 @@ def savemodel(params):
         latticeversion = nbv[1]
         latticebranch = nbv[2]
     
-    result = modelinst.savemodel(models, latticename, latticeversion, latticebranch)
+    try:
+        result = modelinst.savemodel(models, latticename, latticeversion, latticebranch)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     return {'result': result}
     
 def updatemodel(params):
@@ -603,7 +657,13 @@ def updatemodel(params):
         latticeversion = nbv[1]
         latticebranch = nbv[2]
     
-    result = modelinst.updatemodel(models, latticename, latticeversion, latticebranch)
+    try:
+        result = modelinst.updatemodel(models, latticename, latticeversion, latticebranch)
+        
+        transaction.commit_unless_managed()
+    except:
+        transaction.rollback_unless_managed()
+        raise
     return {'result': result}
 
 def retrievemodel(params):

@@ -9,7 +9,7 @@ import os
 import errno
 import datetime
 from collections import OrderedDict
-#import tempfile
+import zipfile
 
 import logging
 import MySQLdb
@@ -34,6 +34,28 @@ class lattice(object):
         self.conn = conn
         # use django transaction manager
         self.transaction = transaction
+
+    
+    def _ziplattice(self, dstfile, srcdir):
+        '''Archived original files as a zipped file
+        '''
+        relroot = os.path.abspath(os.path.join(srcdir, ".."))
+        with zipfile.ZipFile(dstfile, "w", zipfile.ZIP_DEFLATED) as zipdst:
+            for src in [srcdir, srcdir+"_map"]:
+                for root, _, files in os.walk(src):
+                    # add directory (needed for empty dirs)
+                    zipdst.write(root, os.path.relpath(root, relroot))
+                    for fname in files:
+                        filename = os.path.join(root, fname)
+                        if os.path.isfile(filename): # regular files only
+                            arcname = os.path.join(os.path.relpath(root, relroot), fname)
+                            zipdst.write(filename, arcname)
+    def _removeendbackslash(self, string):
+        if string.endswith("/"):
+            string = string[:-1]
+        else:
+            return string
+
 
     def generateFilePath(self):
         '''
@@ -247,14 +269,16 @@ class lattice(object):
             # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
             # it is per connection.
             latticeid = cur.lastrowid
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLError as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             
             self.logger.info('Error when saving lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -348,14 +372,16 @@ class lattice(object):
             
             cur.execute(sql, vals)
 
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLError as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             
             self.logger.info('Error when updating lattice information:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -430,15 +456,17 @@ class lattice(object):
             cur=self.conn.cursor()
             cur.execute(sql, (name, typeformat))
             
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
             res = cur.lastrowid
         except MySQLdb.Error as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             self.logger.info('Error when saving a new lattice type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving a new lattice type:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -641,6 +669,9 @@ class lattice(object):
 
             sql = '''update lattice SET url = %s where lattice_id = %s'''
             cur.execute(sql,('/'.join((url, latticefile)), latticeid))
+            
+            # save a zip file
+            self._ziplattice('%s_%s.zip'%(self._removeendbackslash(url), latticefile), url)
 
         typedict = {}
 
@@ -867,7 +898,10 @@ class lattice(object):
             
             sql = '''update lattice SET url = %s where lattice_id = %s'''
             cur.execute(sql,('/'.join((furl, params['name'])), latticeid))
-        
+            
+            # save a zip file
+            self._ziplattice('%s_%s.zip'%(self._removeendbackslash(furl), params['name']), furl)
+
         #
         if params.has_key('data') and params['data']!=None:
             # save lattice information
@@ -1249,6 +1283,9 @@ class lattice(object):
                 self._savemapfile(furl, params['map'], b64decode=True)
             sql = '''update lattice SET url = %s where lattice_id = %s'''
             cur.execute(sql,('/'.join((furl, params['name'])),latticeid))
+
+            # save a zip file
+            self._ziplattice('%s_%s.zip'%(self._removeendbackslash(furl), params['name']), furl)
         
         #
         if params.has_key('data') and params['data']!=None:
@@ -1313,14 +1350,16 @@ class lattice(object):
                     self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLdb.Error as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -1411,14 +1450,16 @@ class lattice(object):
                     latticeid = self._saveelegantlattice(cur, latticeid, params['lattice'])
                 else:
                     raise ValueError('Unknown lattice type (%s)' %(latticetypename))
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLdb.Error as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -1709,14 +1750,16 @@ class lattice(object):
                         sql += '''NULL),'''
                 sql = sql[:-1]
                 cur.execute(sql)
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLdb.Error as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             self.logger.info('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving lattice:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -1762,14 +1805,16 @@ class lattice(object):
             except KeyError:
                 cur.execute(sql + "(%s, %s, NULL)", (elementtypeid, etypeprop,))
             etypepropid = cur.lastrowid
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLdb.Error as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
             self.logger.info('Error when saving element type (%s) property (%s):\n%s (%d)' 
                              %(etypename, etypeprop, e.args[1], e.args[0]))
@@ -1893,14 +1938,16 @@ class lattice(object):
         try:
             cur=self.conn.cursor()
             cur.execute(sql, vals)
-            if self.transaction:
-                self.transaction.commit_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.commit_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.commit()
         except MySQLdb.Error as e:
-            if self.transaction:
-                self.transaction.rollback_unless_managed()
-            else:
+#            if self.transaction:
+#                self.transaction.rollback_unless_managed()
+#            else:
+            if self.transaction == None:
                 self.conn.rollback()
                 
             self.logger.info('Error when saving golden lattice:\n%s (%d)' 
