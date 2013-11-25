@@ -66,12 +66,12 @@ def _readtracyresult(latname, tracy='tracy3', flattenlat=False):
          'description': ,          # description of this model
          'tunex': ,                # horizontal tune
          'tuney': ,                # vertical tune
-         'chromex0': ,             # linear horizontal chromaticity
-         'chromex1': ,             # non-linear horizontal chromaticity
-         'chromex2': ,             # high order non-linear horizontal chromaticity
-         'chromey0': ,             # linear vertical chromaticity
-         'chromey1': ,             # non-linear vertical chromaticity
-         'chromey2': ,             # high order non-linear vertical chromaticity
+         'chromX0': ,             # linear horizontal chromaticity
+         'chromX1': ,             # non-linear horizontal chromaticity
+         'chromX2': ,             # high order non-linear horizontal chromaticity
+         'chromY0': ,             # linear vertical chromaticity
+         'chromY1': ,             # non-linear vertical chromaticity
+         'chromY2': ,             # high order non-linear vertical chromaticity
          'finalEnergy': ,          # the final beam energy in GeV
          'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
          'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
@@ -151,8 +151,8 @@ def _readtracyresult(latname, tracy='tracy3', flattenlat=False):
                 modeldata['tunex'] = dtmps[1]
                 modeldata['tuney'] = dtmps[2]
             elif dtmps[0] == 'chrom':
-                modeldata['chromex0'] = dtmps[1]
-                modeldata['chromey0'] = dtmps[2]
+                modeldata['chromX0'] = dtmps[1]
+                modeldata['chromY0'] = dtmps[2]
             elif dtmps[0] == 'energy':
                 modeldata['finalEnergy'] = dtmps[1]
             elif dtmps[0] == 'alphac':
@@ -338,12 +338,12 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
          'description': ,          # description of this model
          'tunex': ,                # horizontal tune
          'tuney': ,                # vertical tune
-         'chromex0': ,             # linear horizontal chromaticity
-         'chromex1': ,             # non-linear horizontal chromaticity
-         'chromex2': ,             # high order non-linear horizontal chromaticity
-         'chromey0': ,             # linear vertical chromaticity
-         'chromey1': ,             # non-linear vertical chromaticity
-         'chromey2': ,             # high order non-linear vertical chromaticity
+         'chromX0': ,             # linear horizontal chromaticity
+         'chromX1': ,             # non-linear horizontal chromaticity
+         'chromX2': ,             # high order non-linear horizontal chromaticity
+         'chromY0': ,             # linear vertical chromaticity
+         'chromY1': ,             # non-linear vertical chromaticity
+         'chromY2': ,             # high order non-linear vertical chromaticity
          'finalEnergy': ,          # the final beam energy in GeV
          'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
          'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
@@ -432,18 +432,18 @@ def _readelegantresult(latname, controls=None, flattenlat=False):
                     modeldata['tuney'] = dvals[1][:-1].strip()
                
                 elif dvals[0] == 'dnux/dp':
-                    modeldata['chromex0'] = dvals[1][:-1].strip()
+                    modeldata['chromX0'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnux/dp2':
-                    modeldata['chromex1'] = dvals[1][:-1].strip()
+                    modeldata['chromX1'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnux/dp3':
-                    modeldata['chromex2'] = dvals[1][:-1].strip()
+                    modeldata['chromX2'] = dvals[1][:-1].strip()
                 
                 elif dvals[0] == 'dnuy/dp':
-                    modeldata['chromey0'] = dvals[1][:-1].strip()
+                    modeldata['chromY0'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnuy/dp2':
-                    modeldata['chromey1'] = dvals[1][:-1].strip()
+                    modeldata['chromY1'] = dvals[1][:-1].strip()
                 elif dvals[0] == 'dnuy/dp3':
-                    modeldata['chromey2'] = dvals[1][:-1].strip()
+                    modeldata['chromY2'] = dvals[1][:-1].strip()
                     
                 elif dvals[0] == 'alphac':
                     modeldata['alphac'] = dvals[1][:-1].strip()

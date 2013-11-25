@@ -192,12 +192,12 @@ class model(object):
                                 'tunex': ,                # horizontal tune
                                 'tuney': ,                # vertical tune
                                 'alphac': ,               # momentum compaction
-                                'chromex0': ,             # linear horizontal chromaticity
-                                'chromex1': ,             # non-linear horizontal chromaticity
-                                'chromex2': ,             # high order non-linear horizontal chromaticity
-                                'chromey0': ,             # linear vertical chromaticity
-                                'chromey1': ,             # non-linear vertical chromaticity
-                                'chromey2': ,             # high order non-linear vertical chromaticity
+                                'chromX0': ,             # linear horizontal chromaticity
+                                'chromX1': ,             # non-linear horizontal chromaticity
+                                'chromX2': ,             # high order non-linear horizontal chromaticity
+                                'chromY0': ,             # linear vertical chromaticity
+                                'chromY1': ,             # non-linear vertical chromaticity
+                                'chromY2': ,             # high order non-linear vertical chromaticity
                                 'finalEnergy': ,          # the final beam energy in GeV
                                 'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
                                 'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
@@ -269,8 +269,8 @@ class model(object):
                 keys=['description', 'creator', 'originalDate',
                       'updated', 'lastModified',
                       'tunex', 'tuney', 'alphac',
-                      'chromex0', 'chromex1', 'chromex2',
-                      'chromey0', 'chromey1', 'chromey2',
+                      'chromX0', 'chromX1', 'chromX2',
+                      'chromY0', 'chromY1', 'chromY2',
                       'finalEnergy', 
                       'simulationCode', 'sumulationAlgorithm',
                       'simulationControl', 'simulationControlFile'
@@ -527,12 +527,12 @@ class model(object):
                                 'tunex': ,                # horizontal tune
                                 'tuney': ,                # vertical tune
                                 'alphac':                 # momentum compaction factor
-                                'chromex0': ,             # linear horizontal chromaticity
-                                'chromex1': ,             # non-linear horizontal chromaticity
-                                'chromex2': ,             # high order non-linear horizontal chromaticity
-                                'chromey0': ,             # linear vertical chromaticity
-                                'chromey1': ,             # non-linear vertical chromaticity
-                                'chromey2': ,             # high order non-linear vertical chromaticity
+                                'chromX0': ,             # linear horizontal chromaticity
+                                'chromX1': ,             # non-linear horizontal chromaticity
+                                'chromX2': ,             # high order non-linear horizontal chromaticity
+                                'chromY0': ,             # linear vertical chromaticity
+                                'chromY1': ,             # non-linear vertical chromaticity
+                                'chromY2': ,             # high order non-linear vertical chromaticity
                                 'finalEnergy': ,          # the final beam energy in GeV
                                 'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
                                 'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
@@ -598,12 +598,12 @@ class model(object):
                 keys = {'description': 'model_desc',
                         'tunex': 'tune_x',
                         'tuney': 'tune_y',
-                        'chromex0': 'chrome_x_0',
-                        'chromex1': 'chrome_x_1',
-                        'chromex2': 'chrome_x_2',
-                        'chromey0': 'chrome_y_0',
-                        'chromey1': 'chrome_y_1',
-                        'chromey2': 'chrome_y_2',
+                        'chromX0': 'chrome_x_0',
+                        'chromX1': 'chrome_x_1',
+                        'chromX2': 'chrome_x_2',
+                        'chromY0': 'chrome_y_0',
+                        'chromY1': 'chrome_y_1',
+                        'chromY2': 'chrome_y_2',
                         'alphac':   'alphac',
                         'finalEnergy': 'final_beam_energy',
                         'simulationControl': 'model_control_data',
@@ -652,12 +652,12 @@ class model(object):
                                 'description': ,          # description of this model
                                 'tunex': ,                # horizontal tune
                                 'tuney': ,                # vertical tune
-                                'chromex0': ,             # linear horizontal chromaticity
-                                'chromex1': ,             # non-linear horizontal chromaticity
-                                'chromex2': ,             # high order non-linear horizontal chromaticity
-                                'chromey0': ,             # linear vertical chromaticity
-                                'chromey1': ,             # non-linear vertical chromaticity
-                                'chromey2': ,             # high order non-linear vertical chromaticity
+                                'chromX0': ,             # linear horizontal chromaticity
+                                'chromX1': ,             # non-linear horizontal chromaticity
+                                'chromX2': ,             # high order non-linear horizontal chromaticity
+                                'chromY0': ,             # linear vertical chromaticity
+                                'chromY1': ,             # non-linear vertical chromaticity
+                                'chromY2': ,             # high order non-linear vertical chromaticity
                                 'finalEnergy': ,          # the final beam energy in GeV
                                 'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
                                 'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
@@ -737,12 +737,12 @@ class model(object):
             keys = {'description': 'model_desc',
                     'tunex': 'tune_x',
                     'tuney': 'tune_y',
-                    'chromex0': 'chromme_x_0',
-                    'chromex1': 'chromme_x_1',
-                    'chromex2': 'chromme_x_2',
-                    'chromey0': 'chromme_y_0',
-                    'chromey1': 'chromme_y_1',
-                    'chromey2': 'chromme_y_2',
+                    'chromX0': 'chromme_x_0',
+                    'chromX1': 'chromme_x_1',
+                    'chromX2': 'chromme_x_2',
+                    'chromY0': 'chromme_y_0',
+                    'chromY1': 'chromme_y_1',
+                    'chromY2': 'chromme_y_2',
                     'alphac':   'alphac',
                     'finalEnergy': 'final_beam_energy',
                     'simulationControl': 'model_control_data',

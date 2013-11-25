@@ -497,12 +497,12 @@ As the definition in this service, a model is an output from either a simulation
                  'tunex': ,               # horizontal tune
                  'tuney': ,               # vertical tune
                  'alphac': ,              # momentum compaction
-                 'chromex0': ,            # linear horizontal chromaticity
-                 'chromex1': ,            # non-linear horizontal chromaticity
-                 'chromex2': ,            # high order non-linear horizontal chromaticity
-                 'chromey0': ,            # linear vertical chromaticity
-                 'chromey1': ,            # non-linear vertical chromaticity
-                 'chromey2': ,            # high order non-linear vertical chromaticity
+                 'chromX0': ,            # linear horizontal chromaticity
+                 'chromX1': ,            # non-linear horizontal chromaticity
+                 'chromX2': ,            # high order non-linear horizontal chromaticity
+                 'chromY0': ,            # linear vertical chromaticity
+                 'chromY1': ,            # non-linear vertical chromaticity
+                 'chromY2': ,            # high order non-linear vertical chromaticity
                  'finalEnergy': ,         # the final beam energy in GeV
                  'simulationCode': ,      # name of simulation code, 
                                           # Elegant and Tracy for example
@@ -1114,8 +1114,8 @@ A POST method is to save data into service, and API for post operation is list a
     
         'tunex': horizontal tune
         'tuney':  vertical tune
-        'chromex0': horizontal linear chromaticity
-        'chromey0': vertical linear chromaticity
+        'chromX0': horizontal linear chromaticity
+        'chromY0': vertical linear chromaticity
         'finalEnergy': beam energy in GeV
         'alphac': momentum compaction factor
         'simulationCode':  which is ``tracy3``
@@ -1145,12 +1145,12 @@ A POST method is to save data into service, and API for post operation is list a
     
         'tunex': , horizontal tune
         'tuney': , vertical tune
-        'chromex0': , horizontal linear chromaticity
-        'chromex1': , non-linear horizontal chromaticity
-        'chromex2': , high order non-linear horizontal chromaticity
-        'chromey0': , vertical linear chromaticity
-        'chromey1': , non-linear vertical chromaticity
-        'chromey2': , high order non-linear vertical chromaticity
+        'chromX0': , horizontal linear chromaticity
+        'chromX1': , non-linear horizontal chromaticity
+        'chromX2': , high order non-linear horizontal chromaticity
+        'chromY0': , vertical linear chromaticity
+        'chromY1': , non-linear vertical chromaticity
+        'chromY2': , high order non-linear vertical chromaticity
         'finalEnergy': beam energy in GeV, this value is recorded as beta*gamma
         'alphac': , momentum compaction factor
         'simulationCode': , which is ``elegant``
@@ -1320,12 +1320,12 @@ A POST method is to save data into service, and API for post operation is list a
             'tunex': ,               # horizontal tune
             'tuney': ,               # vertical tune
             'alphac':                # momentum compaction factor
-            'chromex0': ,            # linear horizontal chromaticity
-            'chromex1': ,            # non-linear horizontal chromaticity
-            'chromex2': ,            # high order non-linear horizontal chromaticity
-            'chromey0': ,            # linear vertical chromaticity
-            'chromey1': ,            # non-linear vertical chromaticity
-            'chromey2': ,            # high order non-linear vertical chromaticity
+            'chromX0': ,            # linear horizontal chromaticity
+            'chromX1': ,            # non-linear horizontal chromaticity
+            'chromX2': ,            # high order non-linear horizontal chromaticity
+            'chromY0': ,            # linear vertical chromaticity
+            'chromY1': ,            # non-linear vertical chromaticity
+            'chromY2': ,            # high order non-linear vertical chromaticity
             'finalEnergy': ,         # the final beam energy in GeV
             'simulationCode': ,      # name of simulation code, Elegant and Tracy for example
             'sumulationAlgorithm': , # algorithm used by simulation code, for example serial 

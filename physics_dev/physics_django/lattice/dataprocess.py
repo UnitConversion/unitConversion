@@ -557,12 +557,12 @@ def savemodel(params):
                             'updated': ,              # name who modified last time
                             'tunex': ,                # horizontal tune
                             'tuney': ,                # vertical tune
-                            'chromex0': ,             # linear horizontal chromaticity
-                            'chromex1': ,             # non-linear horizontal chromaticity
-                            'chromex2': ,             # high order non-linear horizontal chromaticity
-                            'chromey0': ,             # linear vertical chromaticity
-                            'chromey1': ,             # non-linear vertical chromaticity
-                            'chromey2': ,             # high order non-linear vertical chromaticity
+                            'chromX0': ,             # linear horizontal chromaticity
+                            'chromX1': ,             # non-linear horizontal chromaticity
+                            'chromX2': ,             # high order non-linear horizontal chromaticity
+                            'chromY0': ,             # linear vertical chromaticity
+                            'chromY1': ,             # non-linear vertical chromaticity
+                            'chromY2': ,             # high order non-linear vertical chromaticity
                             'finalEnergy': ,          # the final beam energy in GeV
                             'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
                             'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
@@ -684,12 +684,12 @@ def retrievemodel(params):
                             'lastModified': ,         # the date this model was modified last time
                             'tunex': ,                # horizontal tune
                             'tuney': ,                # vertical tune
-                            'chromex0': ,             # linear horizontal chromaticity
-                            'chromex1': ,             # non-linear horizontal chromaticity
-                            'chromex2': ,             # high order non-linear horizontal chromaticity
-                            'chromey0': ,             # linear vertical chromaticity
-                            'chromey1': ,             # non-linear vertical chromaticity
-                            'chromey2': ,             # high order non-linear vertical chromaticity
+                            'chromX0': ,             # linear horizontal chromaticity
+                            'chromX1': ,             # non-linear horizontal chromaticity
+                            'chromX2': ,             # high order non-linear horizontal chromaticity
+                            'chromY0': ,             # linear vertical chromaticity
+                            'chromY1': ,             # non-linear vertical chromaticity
+                            'chromY2': ,             # high order non-linear vertical chromaticity
                             'finalEnergy': ,          # the final beam energy in GeV
                             'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
                             'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,
