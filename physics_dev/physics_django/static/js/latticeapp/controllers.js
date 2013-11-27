@@ -538,19 +538,34 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 	}
 
 	$scope.diffDetails = function(device) {
-		$scope.raw.deviceName = device;
-		$location.hash("details");
-		$anchorScroll();
-		l(latticesKeys);
-		l(latticesData);
 
-		var detailsData = createLatticeComparisonDetails(latticesData, latticesKeys, latticesKeys[0], device);
-		l(latticesData[latticesKeys[0]].data[device]);
-		l(latticesData[latticesKeys[1]].data[device]);
-		detailsData = detailsData.concat(createLatticeComparisonDetails(latticesData, latticesKeys, latticesKeys[1], device));
+		var parent = $('.parent_' + device);
+		var children = $('.children_' + device);
 
-		//l(detailsData);
-		$scope.raw.latticeDetails = detailsData;
+		children.toggle();
+
+		if(parent.hasClass('icon-chevron-up')) {
+			parent.removeClass('icon-chevron-up');
+			parent.addClass('icon-chevron-down');
+
+		} else {
+			parent.removeClass('icon-chevron-down');
+			parent.addClass('icon-chevron-up');
+		}
+
+//		$scope.raw.deviceName = device;
+//		$location.hash("details");
+//		$anchorScroll();
+//		l(latticesKeys);
+//		l(latticesData);
+//
+//		var detailsData = createLatticeComparisonDetails(latticesData, latticesKeys, latticesKeys[0], device);
+//		//l(latticesData[latticesKeys[0]].data[device]);
+//		//l(latticesData[latticesKeys[1]].data[device]);
+//		detailsData = detailsData.concat(createLatticeComparisonDetails(latticesData, latticesKeys, latticesKeys[1], device));
+//
+//		l(detailsData);
+//		$scope.raw.latticeDetails = detailsData;
 	};
 
 	$scope.filterLattice = function() {
@@ -627,21 +642,24 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 			var name = transform[0];
 			$scope.raw.header[transform[0]] = transform[1];
 			$scope.raw.data[transform[0]] = transform[2];
-			$scope.raw.selection = createPropertySelectionTable(transform[1], transform[0], $scope.raw.selection);
+			$scope.raw.selection = filterPropertySelectionTable(transform[0], $scope.raw.header);
 			$scope.raw.selectionCount = Object.keys($scope.raw.selection).length;
+			$scope.raw.modelName = transform[0];
 
 			l($scope.raw.data);
 			l($scope.raw.header);
 			l(name);
+			l($scope.raw.selection);
 
 			if($scope.raw.data[transform[0]].transferMatrix !== undefined) {
 				$scope.raw.transferMatrix = data[name].transferMatrix;
 			}
 
-			l($scope.raw.transferMatrix);
+			//l($scope.raw.transferMatrix);
 		});
 	};
 
+	// Show matrices below the details
 	$scope.showMatrices = function() {
 
 		if($scope.raw.showMatrices) {
@@ -652,9 +670,10 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 		}
 	};
 
+	// Plot data when properties are selected
 	$scope.plotData = function() {
 		l($scope.compare.selection);
-		drawPlot(".placeholder", $scope.raw.selection, $scope.raw.data, undefined, "Position", "Property");
+		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.data, undefined, "Position", "Property");
 	};
 
 });
@@ -694,6 +713,8 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 			gets.push($http.get(query));
 		});
 
+		$scope.compare.nameToIdMap = nameToIdMap;
+
 		// Return all results
 		$q.all(gets).then(function(results) {
 
@@ -706,6 +727,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 				$scope.compare.data[transform[0]] = transform[2];
 
 				$scope.compare.selection = createPropertySelectionTable(transform[1], transform[0], $scope.compare.selection);
+				$scope.compare.modelName = transform[0];
 
 				$scope.compare.selectionCount = Object.keys($scope.compare.selection).length;
 			});
@@ -719,7 +741,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 
 	$scope.plotData = function() {
 		l($scope.compare.selection);
-		drawPlot(".placeholder", $scope.compare.selection, $scope.compare.data, nameToIdMap, "Position", "Property");
+		drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.data, nameToIdMap, "Position", "Property");
 	};
 
 	$scope.trim = function(input) {

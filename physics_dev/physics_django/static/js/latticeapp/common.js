@@ -310,6 +310,7 @@ function createLatticeComparinsonRows(latticesData, key) {
 	$.each(latticesData[key].data, function(i, latticeLine) {
 		var deviceKeys = [];
 		var deviceName = latticeLine.name;
+		var keysRaw = {};
 
 		if(deviceName === undefined) {
 			return;
@@ -322,8 +323,7 @@ function createLatticeComparinsonRows(latticesData, key) {
 
 		html += "<tr><td class='lattice_table2_row'>" + i + "</td>";
 
-		$.each(latticesData, function(j, lattice) {
-
+		$.each(latticesData, function(k, lattice) {
 			var keys = [];
 
 			$.each(lattice.keys, function(j, header) {
@@ -332,14 +332,27 @@ function createLatticeComparinsonRows(latticesData, key) {
 					return;
 				}
 
+				// Add property to object
+				if(!(header in keysRaw)) {
+					keysRaw[header] = {};
+					keysRaw[header]['valid'] = Object.keys(latticesData).length;
+				}
+
 				if(lattice.data[deviceName] !== undefined) {
 					lattice.data[deviceName]['compared'] = true;
 
 					if(lattice.data[deviceName][header] === undefined) {
 						keys.push(header + "=");
+						// Add lattice value
+						keysRaw[header][k] = "";
 
 					} else {
 						keys.push(header + "=" + lattice.data[deviceName][header]);
+						// Add lattice value
+						keysRaw[header][k] = lattice.data[deviceName][header];
+
+						// Every ok entry should substract 1 from valid. If we get 0 at the end, we got values from all lattices we compare
+						keysRaw[header]['valid'] = keysRaw[header]['valid'] - 1;
 					}
 				}
 			});
@@ -351,15 +364,74 @@ function createLatticeComparinsonRows(latticesData, key) {
 
 		var cssClass = checkDiff(deviceKeys);
 
-		html += "<td ng-click='diffDetails(\"" + deviceName + "\")' class='diff_details " + cssClass + "'><i class='icon-search'></i></td>";
+		html += "<td ng-click='diffDetails(\"" + deviceName + "\")' class='diff_details " + cssClass + "'><i class='parent_" + deviceName + " icon-chevron-up'></i></td>";
 
 		html += "</tr>";
+
+
+		l(keysRaw);
+
+		$.each(keysRaw, function(j, latticeData) {
+
+			if(j === "name" || j === "id") {
+				return;
+			}
+
+			if(latticeData['valid'] > 1) {
+				return;
+			}
+
+			var tds = "";
+			var tmpValue = "";
+			var diff = 0;
+
+			$.each(latticeData, function(latticeName, latticeValue) {
+
+				if(latticeName === "valid" || latticeName === "diff") {
+					return;
+				}
+
+				if(latticeValue !== tmpValue) {
+					diff ++;
+				}
+
+				tmpValue = latticeValue;
+
+				tds += "<td>" + latticeValue + "</td>";
+
+			});
+
+			var rowBackground = "compare_children";
+
+			if(diff > 1) {
+				rowBackground = "diff_orange";
+			}
+
+			html += "<tr class='" + rowBackground + " children_" + deviceName + "' style='display:none;'>";
+
+			html += "<td>" + j + "</td>";
+
+			html += tds;
+
+			html += "<td></td>";
+
+			html += "</tr>";
+		});
+
 
 	});
 
 	return html;
 }
 
+/**
+ * Compare particular device in both lattices and create array that will serve as basis for the table
+ * @param {type} latticesData
+ * @param {type} latticesKeys
+ * @param {type} key
+ * @param {type} device
+ * @returns {createLatticeComparisonDetails.detailsData|Array}
+ */
 function createLatticeComparisonDetails(latticesData, latticesKeys, key, device) {
 	var firstLatticeProperties = latticesData[key].keys;
 	var firstLatticeDeviceData = latticesData[key].data[device];
@@ -390,7 +462,9 @@ function createLatticeComparisonDetails(latticesData, latticesKeys, key, device)
 
 			var value = latticesData[key].data[device][property];
 			var valuesEqual = true;
+			var valueEmpty = 0;
 
+			// Go through all the lattices
 			$.each(latticesKeys, function(i, key) {
 
 				if(latticesData[key].data[device] !== undefined && latticesData[key].data[device].displayed === undefined) {
@@ -412,6 +486,11 @@ function createLatticeComparisonDetails(latticesData, latticesKeys, key, device)
 						latticesData[key].data[device].displayed[property] = true;
 					}
 				}
+
+				// Check if value is ampty or null or undefined
+				if(detailsDataEntry[key] === "" || detailsDataEntry[key] === undefined || detailsDataEntry[key] === null) {
+					valueEmpty += 1;
+				}
 			});
 
 			// Change color for row with equal values
@@ -419,7 +498,16 @@ function createLatticeComparisonDetails(latticesData, latticesKeys, key, device)
 				detailsDataEntry["color"] = "diff";
 			}
 
-			detailsData.push(detailsDataEntry);
+			l(valueEmpty);
+			l(detailsDataEntry[key]);
+
+			// Push not empty rows to array
+			//if(valueEmpty <= 1) {
+				detailsData.push(detailsDataEntry);
+			//}
+
+			// Reset empty counter
+			valueEmpty = 0;
 		});
 	}
 
@@ -484,16 +572,38 @@ function createPropertySelectionTable(headerRows, modelName, selection) {
 			return;
 		}
 
-		if(head in selection) {
-			selection[head][modelName] = false;
+		if(modelName in selection) {
+			selection[modelName][head] = false;
 
 		} else {
-			selection[head] = {};
-			selection[head][modelName] = false;
+			selection[modelName] = {};
+			selection[modelName][head] = false;
 		}
 	});
 
 	return selection;
+}
+
+/*
+ * Clean headers array of index, position and name headers and create selection object
+ * @param {type} headers array of headers that needs to be cleaned
+ * @returns {filterPropertySelectionTable.properties|Array} filtered properties
+ */
+function filterPropertySelectionTable(modelName, headers) {
+	var properties = {};
+	var modelHeaders = headers[modelName];
+	properties[modelName] = {};
+
+	$.each(modelHeaders, function(i, header) {
+
+		if(header === "index" || header === "position" || header === "name") {
+			return;
+		}
+
+		properties[modelName][header] = false;
+	});
+
+	return properties;
 }
 
 /**
@@ -560,6 +670,122 @@ function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
 		l(select);
 
 		$.each(select, function(moduleName, checked) {
+
+			// Property selected for specific module name
+			if(checked === true) {
+				var seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
+				// Add series of conversion points
+
+				var seriesLabel = "";
+
+				if(nameToIdMap !== undefined){
+					seriesLabel = nameToIdMap[moduleName] + ", " + prop;
+
+				} else {
+					seriesLabel = prop;
+				}
+				series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
+			}
+		});
+	});
+
+	l(series);
+
+	// Plot options
+	var optionsFlot = {
+		legend: {
+			show: true,
+			position: "nw"
+		},
+		xaxis: {
+			tickDecimals: 4
+		},
+		yaxis: {
+			tickDecimals: 4
+		},
+		zoom: {
+			interactive: true
+		},
+		pan: {
+			interactive: true
+		},
+		grid: {
+			hoverable: true
+		}
+	};
+
+	// We have at least one series
+	if(series.length > 0) {
+		container.removeClass("placeholder_hidden");
+
+		// Initialize plot
+		var flotPlot = $.plot(container, series, optionsFlot);
+
+		// Create y axis labe
+		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
+			.text(y_axis)
+			.appendTo(container);
+		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+
+		// Create x axis label
+		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
+			.text(x_axis)
+			.appendTo(container);
+		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
+
+		// Create zoom out button
+		$("<div class='zoom zoom_out'></div>")
+			.appendTo(container)
+			.click(function (event) {
+				event.preventDefault();
+				flotPlot.zoomOut();
+			}
+		);
+
+		// Create zoom in button
+		$("<div class='zoom zoom_in'></div>")
+			.appendTo(container)
+			.click(function (event) {
+				event.preventDefault();
+				flotPlot.zoom();
+			}
+		);
+
+		// Create pan arrows
+		addArrow("up", {top: -100}, container, flotPlot);
+		addArrow("left", {left: -100}, container, flotPlot);
+		addArrow("down", {top: 100}, container, flotPlot);
+		addArrow("right", {left: 100}, container, flotPlot);
+
+		// Create tooltips when hovering over points
+		container.bind("plothover", function (event, pos, item) {
+
+			if (item) {
+				$("#tooltip").remove();
+				var x = item.datapoint[0].toFixed(4);
+				var y = item.datapoint[1].toFixed(4);
+				showTooltip(item.pageX, item.pageY, x + ", " + y);
+
+			} else {
+				$("#tooltip").remove();
+			}
+		});
+
+	}
+}
+
+function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
+	l(data);
+
+	var container = $(placeholder);
+	container.addClass("placeholder_hidden");
+
+	var series = [];
+
+	$.each(selection, function(moduleName, select) {
+		l(select);
+
+		$.each(select, function(prop, checked) {
 
 			// Property selected for specific module name
 			if(checked === true) {

@@ -115,34 +115,6 @@ function createDeviceListQuery(search, returnUrl) {
 }
 
 /*
- * Create modal window on top of the web app
- * Example of use: createModal($modal, $scope);
- */
-function createModal(modal, scope) {
-	var modalInstance = modal.open({
-		template: '\n\
-		<div class="modal-header">\n\
-			<h3>Im a modal!</h3>\n\
-		</div>\n\
-		<div class="modal-body">\n\
-		body\n\
-		</div>\n\
-		<div class="modal-footer">\n\
-			<button class="btn btn-primary" ng-click="ok()">OK</button>\n\
-			<button class="btn btn-warning" ng-click="cancel()">Cancel</button>\n\
-		</div>\n\
-		',
-		controller: "modalCtrl"
-	});
-
-	modalInstance.result.then(function(selectedItem) {
-		scope.selected = selectedItem;
-	}, function() {
-		l("modal dismissed");
-	});
-}
-
-/*
  * Retun first X characters from the string.
  * @param {type} string input string
  * @param {type} count how many characters do we want to return
@@ -202,6 +174,7 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 	var series = [];
 	var preparedSeries = [];
 
+	// If we want to plot direction, make a line for every direction
 	if(scope.plot.direction_plot === "true") {
 
 		$.each(scope.plot.direction, function(i, dir) {
@@ -264,7 +237,7 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 	};
 
 	// We have at least one series
-	if(series.length > 0) {
+	if(series.length > 0 && $) {
 		container.removeClass("placeholder_hidden");
 
 		// Initialize plot
@@ -319,10 +292,16 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 				$("#tooltip").remove();
 			}
 		});
-
 	}
 }
 
+/*
+ * Add arrow image to plot. Arrow will be used for panning the plot
+ * @param {type} classNamePart part of the class name that will select the appropriate image
+ * @param {type} offset for how much do we wan't to move
+ * @param {type} placeholder id of the plot DOM element
+ * @param {type} plot plot object
+ */
 function addArrow(classNamePart, offset, placeholder, plot) {
 	$("<div class='pan pan_" + classNamePart + "'></div>")
 		.appendTo(placeholder)
@@ -332,6 +311,12 @@ function addArrow(classNamePart, offset, placeholder, plot) {
 		});
 }
 
+/*
+ * Show tooltip on a plot when hovering over the point
+ * @param {type} x x coordinate of plot position
+ * @param {type} y y coordinate of plot position
+ * @param {type} contents tooltip contents
+ */
 function showTooltip(x, y, contents) {
 	$("<div id='tooltip'>" + contents + "</div>").css({
 		position: "absolute",
@@ -346,7 +331,7 @@ function showTooltip(x, y, contents) {
 }
 
 /**
- * Represent jason data as a tree with <ul> and <li> elements.
+ * Represent json data as a tree with <ul> and <li> elements.
  * @param {type} html html code to start with
  * @param {type} data json data object
  * @returns {String} html with tree content

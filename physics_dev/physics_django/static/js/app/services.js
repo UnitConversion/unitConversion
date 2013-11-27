@@ -47,5 +47,4 @@ app.factory('detailsService', function($q, $http) {
 	return {
 		getDetails: getDetails
 	};
-
 });

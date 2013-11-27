@@ -400,3 +400,7 @@ html, body {
 /*
  * LOGIN end
  */
+
+.compare_children {
+	background-color: #f1f1f1;
+}

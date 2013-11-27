@@ -27,20 +27,17 @@
 				</tr>
 			</table>
 		</div>
-		
+
 		<div ng-if="raw.selectionCount > 0">
 			<h3>Select data to plot</h3>
-
 			<table class="table table-bordered table-condensed">
 				<tr>
-					<th>property</th>
-					<th>{{models["name"]}}</th>
+					<td ng-repeat="(propName, propValue) in raw.selection[raw.modelName]">{{propName}}</td>
 				</tr>
-				<tr ng-repeat="(i, row) in raw.selection">
-					<td>{{i}}</td>
-					<td ng-repeat="(j, cell) in row">
+				<tr ng-repeat="(modelName, headers) in raw.selection">
+					<td ng-repeat="(propName, propValue) in headers">
 						<label>
-							<input type="checkbox" ng-model="raw.selection[i][j]" />
+							<input type="checkbox" ng-model="raw.selection[modelName][propName]" />
 							<span class="hidden">hidden label</span>
 						</label>
 					</td>
@@ -49,7 +46,7 @@
 			<button class="btn" ng-click="plotData()">Plot data</button>
 
 			<br/>
-			<h3>Plot</h3>
+			<br/>
 			<div class="placeholder"></div>
 		</div>
 
@@ -114,15 +111,15 @@
 
 			<table class="table table-bordered table-condensed">
 				<tr>
-					<th>model name</th>
-					<th ng-repeat="name in compare.names">{{name}}</th>
+					<th>ids \ properties</th>
+					<th ng-repeat="(propName, propValue) in compare.selection[compare.modelName]">{{propName}}</th>
 				</tr>
-				<tr>
+<!--				<tr>
 					<th>model id</th>
 					<th ng-repeat="id in compare.ids">{{id}}</th>
-				</tr>
+				</tr>-->
 				<tr ng-repeat="(i, row) in compare.selection">
-					<td>{{i}}</td>
+					<td>{{compare.nameToIdMap[i]}}</td>
 					<td ng-repeat="(j, cell) in row">
 						<label>
 							<input type="checkbox" ng-model="compare.selection[i][j]" />
@@ -134,7 +131,6 @@
 			<button class="btn" ng-click="plotData()">Plot data</button>
 
 			<br/>
-			<h4>Plot</h4>
 			<div class="placeholder"></div>
 		</div>
 	</div>

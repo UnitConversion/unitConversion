@@ -4,6 +4,9 @@
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
 
+/*
+ * Controller is used for controlling the index page
+ */
 app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 
 	$scope.top = function() {
@@ -230,6 +233,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 
 		l(conversionQuery);
 
+		// Execute conversion query
 		$http.get(conversionQuery).success(function(data){
 			l(data[$routeParams.id]);
 			var details = data[$routeParams.id];
@@ -265,6 +269,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 					initialUnit = "";
 				}
 
+				// Push conversion result to conversion result table
 				$scope.results.convertedResult.push({
 					init_value: $scope.initial_value,
 					init_unit: initialUnit,
@@ -298,6 +303,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.scroll.scroll = $routeParams.id;
 	$location.hash($scope.scroll.scroll);
 
+	// Get and parse device details
 	detailsService.getDetails($routeParams).then(function(data) {
 		$scope.data = {};
 		$scope.data.detailsTabs = [];
@@ -311,20 +317,27 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 			}
 		}
 
-		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
+		// Only try to draw plot if in result subview
+		if($scope.subview === "results") {
+			drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
+		}
+
 		$anchorScroll();
 	});
 
+	// Clear results table
 	$scope.clearTable = function() {
 		l("clear");
 		$scope.results.convertedResult = [];
 	};
 
+	// Redraw plot
 	$scope.redraw = function() {
 		l("redraw");
 		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
 	};
 
+	// Show conversion point on a plot
 	$scope.showPoint = function(results) {
 		$scope.results.series = [];
 
@@ -338,6 +351,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 		drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
 	};
 
+	// Open new windows with measurement data
 	$scope.openNewVindow = function() {
 		var newWindowUrl = "measurement_data.html#?"
 		+ "type=" + $routeParams.type
@@ -345,18 +359,5 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 		+ "&view=" + $scope.data.detailsTabs[$routeParams.view]['first'] + "_" + $scope.data.detailsTabs[$routeParams.view]['second'];
 
 		$window.open(newWindowUrl);
-	};
-});
-
-/*
- * Modal window example
- */
-app.controller('modalCtrl', function($scope, $modalInstance) {
-	$scope.ok = function() {
-		$modalInstance.close();
-	};
-
-	$scope.cancel = function () {
-		$modalInstance.dismiss('cancel');
 	};
 });
