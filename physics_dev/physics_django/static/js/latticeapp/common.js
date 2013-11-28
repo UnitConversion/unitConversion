@@ -536,23 +536,39 @@ function createModelDetailsUrl(search, modelName) {
 	return serviceurl + 'lattice/?function=' + detail + '&modelname=' + modelName + '&from=' + from + '&to=' + to;
 }
 
+/*
+ * Change the model details object so they all have index in the first column
+ * and that name and position follow it
+ * @param {type} data details object
+ * @returns {Array}
+ */
 function transformModelDetails(data) {
 	var modelNames = Object.keys(data);
 	l(data[modelNames[0]]);
 	var header = [];
 
+	// All detail types should have index column. If not, copy them from order to index
 	if(data[modelNames[0]].index === undefined) {
 		data[modelNames[0]].index = data[modelNames[0]].order;
 	}
 
+	// In the property list, index, name and position should be on the start
 	header.push("index");
+	header.push("name");
+	header.push("position");
 
 	var columns = Object.keys(data[modelNames[0]]);
 
-
+	// Add other properties to the property list
 	$.each(columns, function(i, column) {
 
-		if(column === "transferMatrix" || column === "order" || column === "index") {
+		if(
+			column === "transferMatrix" ||
+			column === "order" ||
+			column === "index" ||
+			column === "name" ||
+			column === "position"
+		) {
 			return;
 		}
 
@@ -684,7 +700,13 @@ function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
 				} else {
 					seriesLabel = prop;
 				}
-				series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
+
+				if(prop === "betax" || prop === "betay") {
+					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 2});
+
+				} else {
+					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
+				}
 			}
 		});
 	});
@@ -700,9 +722,13 @@ function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
 		xaxis: {
 			tickDecimals: 4
 		},
-		yaxis: {
+		yaxes: [{
 			tickDecimals: 4
 		},
+		{
+			alignTicksWithAxis: 1,
+			position: "right"
+		}],
 		zoom: {
 			interactive: true
 		},
@@ -782,6 +808,9 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 
 	var series = [];
 
+	var yaxisLabel = [];
+	var yaxis2Label = [];
+
 	$.each(selection, function(moduleName, select) {
 		l(select);
 
@@ -795,12 +824,20 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 				var seriesLabel = "";
 
 				if(nameToIdMap !== undefined){
-					seriesLabel = nameToIdMap[moduleName] + ", " + prop;
+					seriesLabel = nameToIdMap[moduleName] + " - " + prop;
 
 				} else {
 					seriesLabel = prop;
 				}
-				series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
+
+				if(prop === "betax" || prop === "betay") {
+					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 2});
+					yaxis2Label.push(seriesLabel);
+
+				} else {
+					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
+					yaxisLabel.push(seriesLabel);
+				}
 			}
 		});
 	});
@@ -816,9 +853,13 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 		xaxis: {
 			tickDecimals: 4
 		},
-		yaxis: {
+		yaxes: [{
 			tickDecimals: 4
 		},
+		{
+			alignTicksWithAxis: null,
+			position: "right"
+		}],
 		zoom: {
 			interactive: true
 		},
@@ -837,11 +878,22 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 		// Initialize plot
 		var flotPlot = $.plot(container, series, optionsFlot);
 
+		// If there are too many element, just write all the rest
+		if(yaxisLabel.length > 2) {
+			yaxisLabel = ["All the rest"];
+		}
+
 		// Create y axis labe
 		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
-			.text(y_axis)
+			.text(yaxisLabel.join(",."))
 			.appendTo(container);
-		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+		//yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+
+		// Create second y axis labe
+		var yaxis2Label = $("<div class='axisLabel yaxis2Label'></div>")
+			.text(yaxis2Label.join(", "))
+			.appendTo(container);
+		//yaxis2Label.css("margin-top", yaxis2Label.width() / 2 - 20);
 
 		// Create x axis label
 		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")

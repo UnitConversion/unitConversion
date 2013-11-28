@@ -5,9 +5,15 @@
  */
 
 #placeholder {
-	width: 600px;
+	width: 700px;
 	height: 400px;
-	margin: 25px;
+	margin-left: 25px;
+}
+
+.placeholder {
+	width: 700px;
+	height: 400px;
+	margin-left: 25px;
 }
 
 .placeholder_hidden {
@@ -21,7 +27,7 @@
 }
 
 .yaxisLabel {
-	top: 50%;
+	top: 60%;
 	left: -25px;
 	transform: rotate(-90deg);
 	-o-transform: rotate(-90deg);
@@ -35,8 +41,24 @@
 	-webkit-transform-origin: 0 0;
 }
 
+.yaxis2Label {
+	top: 65%;
+	left: 720px;
+	width: 150px;
+	transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-webkit-transform:  rotate(-90deg);
+	transform-origin: 0 0;
+	-o-transform-origin: 0 0;
+	-ms-transform-origin: 0 0;
+	-moz-transform-origin: 0 0;
+	-webkit-transform-origin: 0 0;
+}
+
 .xaxisLabel {
-	left: 50%;
+	left: 60%;
 	top: 100%;
 }
 

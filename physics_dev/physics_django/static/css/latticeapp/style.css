@@ -378,10 +378,6 @@ html, body {
 	font-weight: bold;
 }
 
-.placeholder {
-	width: 700px;
-	height: 400px;
-}
 /*
  * LOGIN start
  */
@@ -390,8 +386,7 @@ html, body {
 }
 
 .login_error {
-	color: red;
-	display: none;
+	color: #b94a48;
 }
 
 #top_container {

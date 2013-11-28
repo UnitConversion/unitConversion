@@ -40,7 +40,9 @@ app.controller('mainCtrl', function($scope, $http, $route, $modal){
 	$scope.modelStatuses = modelStatuses;
 	setUpLoginForm();
 
-	$scope.loginData = {};
+	$scope.session = {};
+	$scope.authenticated = {};
+	$scope.authenticated.error = false;
 
 	$scope.login = function() {
 		l($scope.loginData);
@@ -48,13 +50,17 @@ app.controller('mainCtrl', function($scope, $http, $route, $modal){
 		$.ajax({
 			url: serviceurl + "user/login/",
 			method: "POST",
-			data: "username=" + $scope.loginData.username + "&password=" + $scope.loginData.password
+			data: "username=" + $scope.session.username + "&password=" + $scope.session.password
 		}).success(function(data, status, headers, config) {
 			l(data);
+			$scope.authenticated.error = false;
+			$scope.$apply();
 			location.reload();
 
 		}).error(function(data, status, headers, config) {
-
+			l("error");
+			$scope.authenticated.error = true;
+			$scope.$apply();
 		});
 	};
 
@@ -82,9 +88,8 @@ app.controller('mainCtrl', function($scope, $http, $route, $modal){
 				<div class="modal-body">\
 					<div class="alert alert-error" ng-show="modal.error.show">\
 						<button type="button" class="close" ng-click="closeAlert()">&times;</button>\
-						<strong>Warning!</strong> Best check yo self, you not looking too good.\
+						<strong>Error!</strong> Check parameters or object with same parameters already in the database.\
 					</div>\
-					{{modal.error.show}}\
 					<fieldset>\
 						<label>Name</label>\
 						<input ng-model="upload.name" type="text">\
@@ -585,6 +590,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
 	$scope.raw.search = {};
+	$scope.raw.search.precision = 4;
 	$scope.raw.data = {};
 	$scope.raw.header = {};
 	$scope.raw.show = true;
@@ -637,6 +643,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 		l(query);
 
 		$http.get(query).success(function(data){
+			l(data);
 
 			var transform = transformModelDetails(data);
 			var name = transform[0];
@@ -774,22 +781,19 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
 		l(JSON.stringify($scope.upload));
 
 		$.ajax({
-			url: serviceurl + "lattice/upload",
+			url: serviceurl + "lattice/savelatticeinfo/",
 			method: "POST",
 			contentType: 'application/json; charset=utf-8',
 			data: JSON.stringify($scope.upload)
 		}).success(function(data, status, headers, config) {
 			l(data);
-
-			if(data.result === "error") {
-				$scope.modal.error.show = true;
-			}
+			$modalInstance.close();
 
 		}).error(function(data, status, headers, config) {
+			l(data.status);
 			$scope.modal.error.show = true;
+			$scope.$apply();
 		});
-
-		//$modalInstance.close();
 	};
 
 	$scope.cancel = function () {

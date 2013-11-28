@@ -27,6 +27,8 @@ from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwi
 from django.contrib.auth.decorators import permission_required
 import requests
 
+from authentication import *
+
 def _retrievecmddict(httpcmd):
     '''
     Retrieve GET request parameters, lower all keys, and return parameter dictionary.
@@ -42,12 +44,11 @@ def _retrievecmddict(httpcmd):
             cmddict[k.lower()] = v
     return cmddict
 
-
 post_actions = (('saveLatticeType', savelatticetype),
                 ('saveLatticeInfo', savelatticeinfo),
                 ('updateLatticeInfo', updatelatticeinfo),
                 ('saveLattice', savelattice),
-                ('updateLattice', updatelattice),                
+                ('updateLattice', updatelattice),
                 ('saveLatticeStatus', savelatticestatus),
 
                 ('saveModelCodeInfo', savemodelcodeinfo),
@@ -123,6 +124,72 @@ def lattices(request):
         raise e
     return HttpResponse(finalres, mimetype="application/json")
 
+"""
+Call saveLatticeInfo but before that check if user is logged in and if he has needed permissions
+"""
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('lattice.can_upload')
+def saveLatticeInfo(request):
+    print "in"
+    
+    try:
+        params = json.loads(request.raw_post_data)
+        #params = _retrievecmddict(request.POST.copy())
+        print params
+        params['function'] = 'saveLatticeInfo'
+        res = savelatticeinfo(params)
+    except ValueError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+    except KeyError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+    except Exception as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(content=e, mimetype="application/json")
+    try:
+        finalres = json.dumps(res)
+    except Exception as e:
+        latticemodel_log.exception(e)
+        raise e
+
+    return HttpResponse(finalres, mimetype="application/json")
+
+#@require_http_methods(["GET", "POST"])
+#def models(request):
+#    try:
+#        res = {'message': 'Did not found any entry.'}
+#        if request.method == 'GET':
+#            params = _retrievecmddict(request.GET.copy())
+#            if params.has_key('function'):
+#                for p, _ in post_actions:
+#                    if re.match(p, params['function']): 
+#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
+#                res = dispatch(params, get_actions)
+#            else:
+#                res = {'message': 'No function specified.'}
+#            print res
+#            
+#        elif request.method == 'POST':
+#            params = _retrievecmddict(request.POST.copy())
+#            if params.has_key('function'):
+#                for p, _ in get_actions:
+#                    if re.match(p, params['function']): 
+#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
+#                res = dispatch(params, post_actions)
+#            else:
+#                res = {'message': 'No function specified.'}
+#        else:
+#            return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'))
+#    except ValueError as e:
+#        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+#    except KeyError as e:
+#        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+#    except Exception as e:
+#        return HttpResponseBadRequest(content=e, mimetype="application/json")
+#    
+#    return HttpResponse(json.dumps(res), mimetype="application/json")
+
 def lattice_home(request):
     return render_to_response("lattice/index.html")
 
@@ -144,12 +211,16 @@ def lattice_content_details(request):
 def lattice_content_model_details(request):
     return render_to_response("lattice/model_details.html")
 
-@permission_required('lattice.can_upload')
 def lattice_upload(request):
     
     # Define result
     result = {}
     data = {}
+    
+    result = saveLatticeInfo(request)
+    print result
+    
+    return HttpResponse(json.dumps(result), mimetype="application/json")
     
     try:
         data = json.loads(request.raw_post_data)
@@ -158,7 +229,7 @@ def lattice_upload(request):
     
     print data
     
-    url = 'http://localhost:8000/lattice/'
+    url = 'http://localhost:8000/lattice/savelatticeinfo/'
     
     # Define payload variables
     name = ''
@@ -176,23 +247,22 @@ def lattice_upload(request):
         version = int(data['version'])
 
     # Create payload
-    payload={'function': 'saveLatticeInfo',
-             'name': name,
+    payload={'name': name,
              'version': version,
              'branch': branch
     }
     
     # Make a request
+    """
     r = requests.post(url, data=payload)
     print r.headers
     
     # Check status, 200 is OK
     if(r.status_code == 200):
-        result['result'] = 'ok'
+        # Return response
+        return HttpResponse(json.dumps(result), mimetype="application/json")
     
     else:
-        result['result'] = 'error'
-        result['code'] = r.status_code
+        return HttpResponse('Unauthorized', status=401)
+    """
     
-    # Return response
-    return HttpResponse(json.dumps(result), mimetype="application/json")

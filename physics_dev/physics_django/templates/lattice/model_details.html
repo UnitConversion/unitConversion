@@ -52,15 +52,18 @@
 
 		<h3>Model details</h3>
 
-		<input ng-model="raw.search.from" type="text" placeholder="from ..." />
-		<input ng-model="raw.search.to" type="text" placeholder="to ..." />
-		<select ng-model="raw.search.detail">
+		<input ng-model="raw.search.from" title="From" type="text" placeholder="From ..." />
+		<input ng-model="raw.search.to" title="To" type="text" placeholder="To ..." />
+		<select ng-model="raw.search.detail" title="Details type">
 			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
 		</select>
 		<br/>
 		<button class="btn" ng-click="searchForModelDetails()">Search</button>
-
 		<br/>
+		<br/>
+		<label class="control-label" for="inputPrecision">Decimal precision</label>
+		<input class="input-mini" id="inputPrecision" ng-model="raw.search.precision" title="Decimal precision" type="text" />
+
 		<br/>
 
 		<table class="table table-bordered table-hover" ng-repeat="(name, cols) in raw.header">
@@ -68,7 +71,7 @@
 				<th ng-repeat="column in cols">{{column}}</th>
 			</tr>
 			<tr ng-repeat="row in raw.data[name].index">
-				<td ng-repeat="column in cols">{{raw.data[name][column][row]}}</td>
+				<td ng-repeat="column in cols">{{raw.data[name][column][row] | precision:raw.search.precision:column}}</td>
 			</tr>
 		</table>
 

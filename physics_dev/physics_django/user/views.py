@@ -28,16 +28,16 @@ def user_login(request):
         if user.is_active:
             login(request, user)
             result['result'] = 'ok'
+            return HttpResponse(json.dumps(result), mimetype="application/json")
             
         # User exists but is not active
         else:
-            result['result'] = 'error'
+            return HttpResponse('Unauthorized', status=401)
             
     # User doesnt exist in the database
     else:
-        result['result'] = 'error'
+        return HttpResponse('Unauthorized', status=401)
     
-    return HttpResponse(json.dumps(result), mimetype="application/json")
 
 @require_http_methods(["GET", "POST"])
 def user_logout(request):

@@ -46,17 +46,19 @@
 					</a>
 
 					<div class="dropdown-menu user_dropdown_menu">
-						<fieldset>
-							<legend>Sign in</legend>
-							<label>Username</label>
-							<input id="user_username" type="text" ng-model="loginData.username" placeholder="Your username ...">
+						<form>
+							<fieldset>
+								<legend>Sign in</legend>
+								<label>Username</label>
+								<input required="" type="text" ng-model="session.username" name="username" placeholder="Enter username ..."><br/>
 
-							<label>Password</label>
-							<input id="user_password" type="password" ng-model="loginData.password" placeholder="Your password ..."><br />
+								<label>Password</label>
+								<input required="" type="password" ng-model="session.password" name="password" placeholder="Enter password ..."><br />
+								<button class="btn btn-primary" ng-click="login()">Sign in</button>
+							</fieldset>
 
-							<button id="user_login" class="btn btn-primary" ng-click="login()">Sign in</button>
-						</fieldset>
-						<span id="login_error" class="login_error">The username or password is incorrect!</span>
+							<span class="login_error" ng-show="authenticated.error" class="login_error"><br/>The username or password is incorrect!</span>
+						</form>
 					</div>
 				{% endif %}
 				{% verbatim %}
