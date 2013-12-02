@@ -1,0 +1,32 @@
+<form data-file-upload="options" method="post">
+	<div class="modal-header">
+		<button type="button" class="close" ng-click="cancel()">&times;</button>
+		<h3>Upload lattice</h3>
+	</div>
+	<div class="modal-body">
+		<div class="alert alert-error" ng-show="modal.error.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			<strong>Error!</strong> Check parameters or object with same parameters already in the database.
+		</div>
+			<fieldset>
+				<label>Name</label>
+				<input ng-model="upload.name" name="name" type="text">
+				<label>Version</label>
+				<input ng-model="upload.version" name="version" type="text">
+				<label>Branch</label>
+				<input ng-model="upload.branch" name="branch" type="text">
+				<label>File</label>
+				<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+					<span>Add files...</span>
+					<input type="file" name="files[]" multiple="" ng-disabled="disabled">
+				</span>
+				<button type="button" class="btn btn-primary start" data-ng-click="submit()">
+					<span>Start upload</span>
+				</button>
+			</fieldset>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-primary" ng-click="ok()">Upload</button>
+		<button class="btn btn-primary" ng-click="cancel()">Cancel</button>
+	</div>
+</form>

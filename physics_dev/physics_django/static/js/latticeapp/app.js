@@ -3,7 +3,7 @@
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
-var app = angular.module('lattice', ['ui.bootstrap', 'ngResource', 'ngRoute', 'route-segment', 'view-segment']);
+var app = angular.module('lattice', ['ui.bootstrap', 'ngResource', 'ngRoute', 'route-segment', 'view-segment', 'blueimp.fileupload']);
 
 /*
  * Define routes for app module

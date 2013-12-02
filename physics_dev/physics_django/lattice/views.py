@@ -211,23 +211,25 @@ def lattice_content_details(request):
 def lattice_content_model_details(request):
     return render_to_response("lattice/model_details.html")
 
+'''
+Load modal window template
+'''
+def lattice_modal(request):
+    path_parts = request.path.split("/")
+    file_name = path_parts[len(path_parts)-1]
+    return render_to_response("lattice/modal/" + file_name)
+
 def lattice_upload(request):
-    
+    print "here!"
     # Define result
     result = {}
     data = {}
     
-    result = saveLatticeInfo(request)
-    print result
+    print request.FILES
+    print request.POST
     
     return HttpResponse(json.dumps(result), mimetype="application/json")
     
-    try:
-        data = json.loads(request.raw_post_data)
-    except ValueError as e:
-        result['result'] = 'error'
-    
-    print data
     
     url = 'http://localhost:8000/lattice/savelatticeinfo/'
     

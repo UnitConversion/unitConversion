@@ -80,31 +80,7 @@ app.controller('mainCtrl', function($scope, $http, $route, $modal){
 
 	$scope.uploadLattice = function() {
 		var modalInstance = $modal.open({
-			template: '\
-				<div class="modal-header">\
-					<button type="button" class="close" ng-click="cancel()">&times;</button>\
-					<h3>Upload lattice</h3>\
-				</div>\
-				<div class="modal-body">\
-					<div class="alert alert-error" ng-show="modal.error.show">\
-						<button type="button" class="close" ng-click="closeAlert()">&times;</button>\
-						<strong>Error!</strong> Check parameters or object with same parameters already in the database.\
-					</div>\
-					<fieldset>\
-						<label>Name</label>\
-						<input ng-model="upload.name" type="text">\
-						<label>Version</label>\
-						<input ng-model="upload.version" type="text">\
-						<label>Branch</label>\
-						<input ng-model="upload.branch" type="text">\
-						<label>File</label>\
-						<input type="file">\
-					</fieldset>\
-				</div>\
-				<div class="modal-footer">\
-					<button class="btn btn-primary" ng-click="ok()">Upload</button>\
-					<button class="btn btn-primary" ng-click="cancel()">Cancel</button>\
-				</div>',
+			templateUrl: 'modal/save_lattice.html',
 			controller: 'uploadLatticeModalCtrl'
 		});
 	};
@@ -767,33 +743,58 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 /*
  * Upload lattice controller
  */
-app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
+app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance) {
 	$scope.upload = {};
 	$scope.modal = {};
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
+
+	$scope.options = {
+		url: serviceurl + "lattice/upload",
+		maxFileSize: 5000000,
+		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
+	};
+
+//	l($('#fileupload'));
+//
+//	$('#fileupload').fileupload({
+//		url: serviceurl + "lattice/upload/",
+//		dataType: "json",
+//		done: function(e, data) {
+//			l("done");
+//		},
+//		progressall: function(e, data) {
+//			l("progress");
+//			var progress = parseInt(data.loaded / data.total * 100, 10);
+//			$('#progress .progress-bar').css('width', progress + '%');
+//		},
+//		error: function() {
+//			l("error");
+//		}
+//	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
 
 	$scope.closeAlert = function() {
 		$scope.modal.error.show = false;
 	};
 
 	$scope.ok = function() {
-		l(JSON.stringify($scope.upload));
-
-		$.ajax({
-			url: serviceurl + "lattice/savelatticeinfo/",
-			method: "POST",
-			contentType: 'application/json; charset=utf-8',
-			data: JSON.stringify($scope.upload)
-		}).success(function(data, status, headers, config) {
-			l(data);
-			$modalInstance.close();
-
-		}).error(function(data, status, headers, config) {
-			l(data.status);
-			$scope.modal.error.show = true;
-			$scope.$apply();
-		});
+		$scope.submit();
+//		l(JSON.stringify($scope.upload));
+//
+//		$.ajax({
+//			url: serviceurl + "lattice/savelatticeinfo/",
+//			method: "POST",
+//			contentType: 'application/json; charset=utf-8',
+//			data: JSON.stringify($scope.upload)
+//		}).success(function(data, status, headers, config) {
+//			l(data);
+//			$modalInstance.close();
+//
+//		}).error(function(data, status, headers, config) {
+//			l(data.status);
+//			$scope.modal.error.show = true;
+//			$scope.$apply();
+//		});
 	};
 
 	$scope.cancel = function () {
