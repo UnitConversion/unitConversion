@@ -376,6 +376,10 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 		var latticeKeys = Object.keys(data);
 		lattice = data[latticeKeys[0]].lattice;
 		$scope.raw.url = serviceurl + data[latticeKeys[0]].url;
+
+		var urlParts = $scope.raw.url.split("/");
+		$scope.raw.zipurl = urlParts.slice(0, urlParts.length-1).join("/") + '_' + urlParts[urlParts.length-1] + '.zip';
+
 		$scope.lattice = data[latticeKeys[0]];
 		$scope.lattice.latticeid = latticeKeys[0];
 
@@ -748,6 +752,8 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	$scope.modal = {};
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
+	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+	var uploadData = undefined;
 
 	$scope.options = {
 		url: serviceurl + "lattice/upload",
@@ -777,8 +783,39 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 		$scope.modal.error.show = false;
 	};
 
+	$scope.$on('fileuploadadd', function(e, data) {
+		l("add");
+		uploadData = data;
+	});
+
+	$scope.$on('fileuploaddone', function(e, data) {
+		l("done");
+	});
+
+	$scope.$on('fileuploadfail', function(e, data) {
+		l("fail");
+	});
+
 	$scope.ok = function() {
-		$scope.submit();
+
+		if(
+			$scope.upload.name === "" ||
+			$scope.upload.branch === "" ||
+			$scope.upload.version === "" ||
+			uploadData === undefined
+		) {
+			$scope.modal.error.message = "Parameters should not be empty!";
+			$scope.modal.error.show = true;
+
+			if ($scope.$root.$$phase !== '$apply' && $scope.$root.$$phase !== '$digest') {
+				$scope.$apply();
+			}
+
+		} else {
+			$scope.modal.error.show = false;
+			uploadData.submit();
+		}
+
 //		l(JSON.stringify($scope.upload));
 //
 //		$.ajax({

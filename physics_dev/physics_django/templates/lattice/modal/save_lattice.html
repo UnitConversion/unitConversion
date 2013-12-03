@@ -1,3 +1,6 @@
+{% load verbatim %}
+{% verbatim %}
+
 <form data-file-upload="options" method="post">
 	<div class="modal-header">
 		<button type="button" class="close" ng-click="cancel()">&times;</button>
@@ -6,7 +9,7 @@
 	<div class="modal-body">
 		<div class="alert alert-error" ng-show="modal.error.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
-			<strong>Error!</strong> Check parameters or object with same parameters already in the database.
+			<strong>Error!</strong> {{modal.error.message}}
 		</div>
 			<fieldset>
 				<label>Name</label>
@@ -17,12 +20,12 @@
 				<input ng-model="upload.branch" name="branch" type="text">
 				<label>File</label>
 				<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
-					<span>Add files...</span>
-					<input type="file" name="files[]" multiple="" ng-disabled="disabled">
+					<span>Select lattice file</span>
+					<input type="file" name="file" multiple="" ng-disabled="disabled">
 				</span>
-				<button type="button" class="btn btn-primary start" data-ng-click="submit()">
+<!--				<button type="button" class="btn btn-primary start" data-ng-click="submit()">
 					<span>Start upload</span>
-				</button>
+				</button>-->
 			</fieldset>
 	</div>
 	<div class="modal-footer">
@@ -30,3 +33,5 @@
 		<button class="btn btn-primary" ng-click="cancel()">Cancel</button>
 	</div>
 </form>
+
+{% endverbatim %}

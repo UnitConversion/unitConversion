@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 
 from physics_django.lattice.views import (lattices)
-from physics_django.lattice.views import (saveLatticeInfo)
+from physics_django.lattice.views import (saveLatticeInfo, saveLattice)
 from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_model_list, lattice_content_details, lattice_content_model_details)
 from physics_django.lattice.views import (lattice_modal, lattice_upload)
 
@@ -14,6 +14,9 @@ urlpatterns = patterns(
     url(r'^lattice/savelatticeinfo/$',
         saveLatticeInfo,
         name='saveLatticeInfo'),
+    url(r'^lattice/savelattice/$',
+        saveLattice,
+        name='saveLattice'),
 #    url(r'^lattice/model/$',
 #        models,
 #        name='model'),

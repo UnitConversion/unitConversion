@@ -155,6 +155,37 @@ def saveLatticeInfo(request):
 
     return HttpResponse(finalres, mimetype="application/json")
 
+"""
+Call saveLattice but before that check if user is logged in and if he has needed permissions
+"""
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('lattice.can_upload')
+def saveLattice(request):
+    print "in"
+    
+    try:
+        params = json.loads(request.raw_post_data)
+        #params = _retrievecmddict(request.POST.copy())
+        print params
+        params['function'] = 'saveLattice'
+        res = savelattice(params)
+    except ValueError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+    except KeyError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+    except Exception as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(content=e, mimetype="application/json")
+    try:
+        finalres = json.dumps(res)
+    except Exception as e:
+        latticemodel_log.exception(e)
+        raise e
+
+    return HttpResponse(finalres, mimetype="application/json")
+
 #@require_http_methods(["GET", "POST"])
 #def models(request):
 #    try:
@@ -219,6 +250,14 @@ def lattice_modal(request):
     file_name = path_parts[len(path_parts)-1]
     return render_to_response("lattice/modal/" + file_name)
 
+def handle_uploaded_file(f):
+    fileContent = ""
+    
+    for chunk in f.chunks():
+        fileContent += chunk
+    
+    return fileContent
+
 def lattice_upload(request):
     print "here!"
     # Define result
@@ -227,6 +266,9 @@ def lattice_upload(request):
     
     print request.FILES
     print request.POST
+    
+    fileContent = handle_uploaded_file(request.FILES['file'])
+    print fileContent
     
     return HttpResponse(json.dumps(result), mimetype="application/json")
     
