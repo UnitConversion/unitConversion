@@ -544,6 +544,7 @@ def savemodel(params):
     '''
     Save a model.
     parameters:
+        latticeid:      internal id of lattice this model belongs to
         latticename:    lattice name that this model belongs to
         latticeversion: the version of lattice
         latticebranch:  the branch of lattice
@@ -578,7 +579,7 @@ def savemodel(params):
             }
     
     '''
-    _checkkeys(params.keys(), ['function','latticename', 'latticeversion', 'latticebranch','modelname', 'model'])
+    _checkkeys(params.keys(), ['function','latticeid', 'latticename', 'latticeversion', 'latticebranch','modelname', 'model'])
 
     if params.has_key('latticeid'):
         # ignore lattice name, version, and branch information
