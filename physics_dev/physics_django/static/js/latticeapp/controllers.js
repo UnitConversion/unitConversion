@@ -176,7 +176,7 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 	};
 
 	query = serviceurl + 'lattice/?function=retrieveLattice&' + createLatticeListQuery($routeParams, false);
-	//l(query);
+	l(query);
 
 	$http.get(query).success(function(data){
 
@@ -753,6 +753,7 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
 	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+	$scope.modal.latticeTypes = latticeTypes;
 	var uploadData = undefined;
 
 	$scope.options = {
@@ -760,24 +761,6 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 		maxFileSize: 5000000,
 		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
 	};
-
-//	l($('#fileupload'));
-//
-//	$('#fileupload').fileupload({
-//		url: serviceurl + "lattice/upload/",
-//		dataType: "json",
-//		done: function(e, data) {
-//			l("done");
-//		},
-//		progressall: function(e, data) {
-//			l("progress");
-//			var progress = parseInt(data.loaded / data.total * 100, 10);
-//			$('#progress .progress-bar').css('width', progress + '%');
-//		},
-//		error: function() {
-//			l("error");
-//		}
-//	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
 
 	$scope.closeAlert = function() {
 		$scope.modal.error.show = false;
@@ -794,14 +777,18 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 
 	$scope.$on('fileuploadfail', function(e, data) {
 		l("fail");
+		$scope.modal.error.message = "Check parameters!";
+		$scope.modal.error.show = true;
 	});
 
 	$scope.ok = function() {
+		l($scope.upload);
 
 		if(
 			$scope.upload.name === "" ||
 			$scope.upload.branch === "" ||
 			$scope.upload.version === "" ||
+			$scope.upload.latticeType === undefined ||
 			uploadData === undefined
 		) {
 			$scope.modal.error.message = "Parameters should not be empty!";
@@ -815,23 +802,6 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 			$scope.modal.error.show = false;
 			uploadData.submit();
 		}
-
-//		l(JSON.stringify($scope.upload));
-//
-//		$.ajax({
-//			url: serviceurl + "lattice/savelatticeinfo/",
-//			method: "POST",
-//			contentType: 'application/json; charset=utf-8',
-//			data: JSON.stringify($scope.upload)
-//		}).success(function(data, status, headers, config) {
-//			l(data);
-//			$modalInstance.close();
-//
-//		}).error(function(data, status, headers, config) {
-//			l(data.status);
-//			$scope.modal.error.show = true;
-//			$scope.$apply();
-//		});
 	};
 
 	$scope.cancel = function () {

@@ -11,22 +11,50 @@
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>Error!</strong> {{modal.error.message}}
 		</div>
-			<fieldset>
-				<label>Name</label>
-				<input ng-model="upload.name" name="name" type="text">
-				<label>Version</label>
-				<input ng-model="upload.version" name="version" type="text">
-				<label>Branch</label>
-				<input ng-model="upload.branch" name="branch" type="text">
-				<label>File</label>
-				<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
-					<span>Select lattice file</span>
-					<input type="file" name="file" multiple="" ng-disabled="disabled">
-				</span>
-<!--				<button type="button" class="btn btn-primary start" data-ng-click="submit()">
-					<span>Start upload</span>
-				</button>-->
-			</fieldset>
+
+		<div class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label" for="inputName">Name</label>
+				<div class="controls">
+					<input id="inputName" ng-model="upload.name" name="name" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputVersion">Version</label>
+				<div class="controls">
+					<input id="inputVersion" ng-model="upload.version" name="version" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputBranch">Branch</label>
+				<div class="controls">
+					<input id="inputBranch" ng-model="upload.branch" name="branch" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputDescription">Description</label>
+				<div class="controls">
+					<textarea id="inputDescription" cols="10" rows="3" name="description" ng-model="upload.description"></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputLatticeType">Lattice type</label>
+				<div class="controls">
+					<select id="inputLatticeType" ng-model="upload.latticeType" name="latticetype">
+						<option ng-repeat="type in modal.latticeTypes" value="{{type['value']}}">{{type['name']}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">File</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<span>Select lattice file</span>
+						<input type="file" name="file" multiple="" ng-disabled="disabled">
+					</span>
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="modal-footer">
 		<button class="btn btn-primary" ng-click="ok()">Upload</button>

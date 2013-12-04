@@ -42,3 +42,8 @@ var modelDetails = [
 	{name:"Twiss", value:"retrieveTwiss"},
 	{name:"Beam Parameters", value:"retrieveBeamParameters"}
 ];
+
+// Lattice type
+var latticeTypes = [
+	{name:"plain/txt", value:JSON.stringify({'name': 'plain', 'format': 'txt'})}
+];

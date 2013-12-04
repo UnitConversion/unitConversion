@@ -13,27 +13,27 @@
 	<table ng-click="showDetails(lattice)">
 		<tr ng-if="lattice.latticeid">
 			<td><b>Id: </b></td>
-			<td><span class="text-info">{{lattice.latticeid}}</span></td>
+			<td class="lattice_list"><span class="text-info">{{lattice.latticeid}}</span></td>
 		</tr>
 		<tr ng-if="lattice.name">
 			<td><b>Name: </b></td>
-			<td><span class="text-info">{{lattice.name}}</span></td>
+			<td class="lattice_list"><span class="text-info">{{lattice.name}}</span></td>
 		</tr>
 		<tr ng-if="lattice.version">
 			<td><b>Version: </b></td>
-			<td><span class="text-info">{{lattice.version}}</span></td>
+			<td class="lattice_list"><span class="text-info">{{lattice.version}}</span></td>
 		</tr>
 		<tr ng-if="lattice.branch">
 			<td><b>Branch: </b></td>
-			<td><span class="text-info">{{lattice.branch}}</span></td>
+			<td class="lattice_list"><span class="text-info">{{lattice.branch}}</span></td>
 		</tr>
 		<tr ng-if="lattice.description">
 			<td><b>Desc: </b></td>
-			<td><span class="text-info">{{lattice.description}}</span></td>
+			<td class="lattice_list"><span class="text-info">{{lattice.description}}</span></td>
 		</tr>
 		<tr ng-if="lattice.latticeType">
 			<td><b>Type: </b></td>
-			<td><span class="text-info">{{lattice.latticeType}}</span></td>
+			<td class="lattice_list"><span class="text-info">{{lattice.latticeType}}</span></td>
 		</tr>
 	</table>
 </div>

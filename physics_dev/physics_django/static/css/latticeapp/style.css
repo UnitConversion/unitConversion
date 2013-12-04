@@ -399,3 +399,7 @@ html, body {
 .compare_children {
 	background-color: #f1f1f1;
 }
+
+.lattice_list {
+	width: 100%;
+}

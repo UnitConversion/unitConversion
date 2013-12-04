@@ -164,9 +164,9 @@ def saveLattice(request):
     print "in"
     
     try:
-        params = json.loads(request.raw_post_data)
-        #params = _retrievecmddict(request.POST.copy())
-        print params
+        #params = json.loads(request.raw_post_data)
+        params = _retrievecmddict(request.POST.copy())
+        #print params
         params['function'] = 'saveLattice'
         res = savelattice(params)
     except ValueError as e:
@@ -259,54 +259,31 @@ def handle_uploaded_file(f):
     return fileContent
 
 def lattice_upload(request):
-    print "here!"
+    #print "here!"
     # Define result
     result = {}
     data = {}
     
-    print request.FILES
-    print request.POST
+    #print request.FILES
+    #print request.POST
     
     fileContent = handle_uploaded_file(request.FILES['file'])
-    print fileContent
+    #print fileContent
     
-    return HttpResponse(json.dumps(result), mimetype="application/json")
+    lattice = {}
+    lattice['name'] = request.POST['name']
+    lattice['data'] = fileContent.splitlines()
     
+    latticeType = request.POST['latticetype']
+    request.POST['latticetype'] = json.dumps(json.loads(latticeType))
     
-    url = 'http://localhost:8000/lattice/savelatticeinfo/'
+    request.POST['lattice'] = json.dumps(lattice)
+    request.POST['creator'] = request.user.username
     
-    # Define payload variables
-    name = ''
-    branch = ''
-    version = -1
+    print request.POST['latticetype']
     
-    # Check if keys are defined
-    if('name' in data):
-        name = data['name']
+    #print request.POST
     
-    if('branch' in data):
-        branch = data['branch']
-    
-    if('version' in data):
-        version = int(data['version'])
-
-    # Create payload
-    payload={'name': name,
-             'version': version,
-             'branch': branch
-    }
-    
-    # Make a request
-    """
-    r = requests.post(url, data=payload)
-    print r.headers
-    
-    # Check status, 200 is OK
-    if(r.status_code == 200):
-        # Return response
-        return HttpResponse(json.dumps(result), mimetype="application/json")
-    
-    else:
-        return HttpResponse('Unauthorized', status=401)
-    """
-    
+    result = saveLattice(request);
+    #print result
+    return result
