@@ -258,17 +258,13 @@ def handle_uploaded_file(f):
     
     return fileContent
 
-def lattice_upload(request):
-    #print "here!"
-    # Define result
-    result = {}
-    data = {}
-    
-    #print request.FILES
-    #print request.POST
+'''
+Save lattice helper function that parses uploaded files and prepares data for saving lattice
+'''
+@require_http_methods(["POST"])
+def saveLatticeHelper(request):
     
     fileContent = handle_uploaded_file(request.FILES['file'])
-    #print fileContent
     
     lattice = {}
     lattice['name'] = request.POST['name']
@@ -282,8 +278,5 @@ def lattice_upload(request):
     
     print request.POST['latticetype']
     
-    #print request.POST
-    
     result = saveLattice(request);
-    #print result
     return result

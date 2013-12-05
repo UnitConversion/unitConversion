@@ -3,13 +3,17 @@
 
 <form data-file-upload="options" method="post">
 	<div class="modal-header">
-		<button type="button" class="close" ng-click="cancel()">&times;</button>
-		<h3>Upload lattice</h3>
+		<button type="button" class="close" ng-click="cancelButton()">&times;</button>
+		<h3>Create lattice</h3>
 	</div>
 	<div class="modal-body">
 		<div class="alert alert-error" ng-show="modal.error.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>Error!</strong> {{modal.error.message}}
+		</div>
+		<div class="alert alert-success" ng-show="modal.success.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.success.message}}
 		</div>
 
 		<div class="form-horizontal">
@@ -58,7 +62,7 @@
 	</div>
 	<div class="modal-footer">
 		<button class="btn btn-primary" ng-click="ok()">Upload</button>
-		<button class="btn btn-primary" ng-click="cancel()">Cancel</button>
+		<button class="btn btn-primary" ng-click="cancelButton()">Cancel</button>
 	</div>
 </form>
 

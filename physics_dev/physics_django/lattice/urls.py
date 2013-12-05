@@ -3,7 +3,7 @@ from django.conf.urls.defaults import patterns, url
 from physics_django.lattice.views import (lattices)
 from physics_django.lattice.views import (saveLatticeInfo, saveLattice)
 from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_model_list, lattice_content_details, lattice_content_model_details)
-from physics_django.lattice.views import (lattice_modal, lattice_upload)
+from physics_django.lattice.views import (lattice_modal, saveLatticeHelper)
 
 urlpatterns = patterns(
     '',
@@ -50,6 +50,6 @@ urlpatterns = patterns(
         name='lattice_modal'),
     
     url(r'^lattice/upload$',
-        lattice_upload,
-        name='lattice_upload'),
+        saveLatticeHelper,
+        name='saveLatticeHelper'),
 )

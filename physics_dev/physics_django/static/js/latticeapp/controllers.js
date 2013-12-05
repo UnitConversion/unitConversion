@@ -753,6 +753,10 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
 	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+
+	$scope.modal.success = {};
+	$scope.modal.success.show = false;
+	$scope.modal.success.message = "Lattice successfully created!";
 	$scope.modal.latticeTypes = latticeTypes;
 	var uploadData = undefined;
 
@@ -764,21 +768,29 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 
 	$scope.closeAlert = function() {
 		$scope.modal.error.show = false;
+		$scope.modal.success.show = false;
 	};
 
 	$scope.$on('fileuploadadd', function(e, data) {
-		l("add");
 		uploadData = data;
 	});
 
 	$scope.$on('fileuploaddone', function(e, data) {
-		l("done");
+		$scope.modal.success.show = true;;
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
-		l("fail");
-		$scope.modal.error.message = "Check parameters!";
+		l(data.jqXHR.status);
+
+		if(data.jqXHR.status === 401) {
+			$scope.modal.error.message = "You don't have permissions to create lattice!";
+
+		} else {
+			$scope.modal.error.message = "Check parameters!";
+		}
+
 		$scope.modal.error.show = true;
+		$scope.modal.success.show = false;
 	});
 
 	$scope.ok = function() {
@@ -794,9 +806,9 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 			$scope.modal.error.message = "Parameters should not be empty!";
 			$scope.modal.error.show = true;
 
-			if ($scope.$root.$$phase !== '$apply' && $scope.$root.$$phase !== '$digest') {
-				$scope.$apply();
-			}
+//			if ($scope.$root.$$phase !== '$apply' && $scope.$root.$$phase !== '$digest') {
+//				$scope.$apply();
+//			}
 
 		} else {
 			$scope.modal.error.show = false;
@@ -804,7 +816,8 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 		}
 	};
 
-	$scope.cancel = function () {
+	$scope.cancelButton = function () {
+		l("cancel");
 		$modalInstance.dismiss('cancel');
 	};
 });
