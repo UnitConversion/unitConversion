@@ -756,7 +756,13 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 
 	$scope.modal.success = {};
 	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Lattice successfully created!";
+	$scope.modal.success.message = "Lattice successfully uploaded!";
+
+	$scope.modal.simulation = {};
+	$scope.modal.simulation.show = false;
+	$scope.modal.simulation.spinnershow = false;
+	$scope.modal.simulation.message = "Waiting for simulation to finish";
+
 	$scope.modal.latticeTypes = latticeTypes;
 	var uploadData = undefined;
 
@@ -776,7 +782,22 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	});
 
 	$scope.$on('fileuploaddone', function(e, data) {
-		$scope.modal.success.show = true;;
+		$scope.modal.success.show = true;
+
+		$scope.modal.simulation.show = true;
+		$scope.modal.simulation.spinnershow = true;
+
+		$http({method:'POST', url:serviceurl + 'lattice/runsimulation/'}).success(
+			function(data, status, headers, config) {
+				l("simulation done");
+				$scope.modal.simulation.message = "Simulation completed!";
+				$scope.modal.simulation.spinnershow = false;
+
+		}).error(
+			function(data, status, headers, config) {
+				l("simulation error");
+			}
+		);
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -784,6 +805,9 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 
 		if(data.jqXHR.status === 401) {
 			$scope.modal.error.message = "You don't have permissions to create lattice!";
+
+		} else if(data.jqXHR.status === 404) {
+			$scope.modal.error.message = "Lattice with same parameters already exists!";
 
 		} else {
 			$scope.modal.error.message = "Check parameters!";

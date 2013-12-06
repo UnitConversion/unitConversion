@@ -4,7 +4,7 @@
 <form data-file-upload="options" method="post">
 	<div class="modal-header">
 		<button type="button" class="close" ng-click="cancelButton()">&times;</button>
-		<h3>Create lattice</h3>
+		<h3>Upload lattice</h3>
 	</div>
 	<div class="modal-body">
 		<div class="alert alert-error" ng-show="modal.error.show">
@@ -14,6 +14,10 @@
 		<div class="alert alert-success" ng-show="modal.success.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			{{modal.success.message}}
+		</div>
+		<div class="alert alert-success" ng-show="modal.simulation.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.simulation.message}} <img ng-if="modal.simulation.spinnershow" src="../../../static/img/ajax-loader.gif" />
 		</div>
 
 		<div class="form-horizontal">
@@ -50,11 +54,36 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label">File</label>
+				<div class="controls">
+					<label class="checkbox">
+						<input name="dosimulation" model="upload.doSimulation" type="checkbox"> Do simulation after successful upload
+					</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Lattice file</label>
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
 						<span>Select lattice file</span>
-						<input type="file" name="file" multiple="" ng-disabled="disabled">
+						<input type="file" name="lattice_file" multiple="" ng-disabled="disabled">
+					</span>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Control file</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<span>Select control file</span>
+						<input type="file" name="control_file" multiple="" ng-disabled="disabled">
+					</span>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Kickmap files</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<span>Select kickmap archive</span>
+						<input type="file" name="kickmap_file" multiple="" ng-disabled="disabled">
 					</span>
 				</div>
 			</div>
