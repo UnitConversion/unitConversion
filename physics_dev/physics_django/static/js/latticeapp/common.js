@@ -800,6 +800,15 @@ function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
 	}
 }
 
+/*
+ * Function will prepare configuration and draw plot
+ * @param {type} placeholder div selector where plot will be put
+ * @param {type} selection which checkboxes are selected in a property/model table
+ * @param {type} data data to be plotted
+ * @param {type} nameToIdMap object that maps model name to model id
+ * @param {type} x_axis fixed label on x axis
+ * @param {type} y_axis fixed label on y axis
+ */
 function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
 	l(data);
 
@@ -831,12 +840,12 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 				}
 
 				if(prop === "betax" || prop === "betay") {
-					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 2});
-					yaxis2Label.push(seriesLabel);
+					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 1});
+					yaxisLabel.push(seriesLabel);
 
 				} else {
-					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
-					yaxisLabel.push(seriesLabel);
+					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 2});
+					yaxis2Label.push(seriesLabel);
 				}
 			}
 		});
@@ -879,15 +888,15 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 		var flotPlot = $.plot(container, series, optionsFlot);
 
 		// If there are too many element, just write all the rest
-		if(yaxisLabel.length > 2) {
-			yaxisLabel = ["All the rest"];
+		if(yaxis2Label.length > 2) {
+			yaxis2Label = ["All the rest"];
 		}
 
 		// Create y axis labe
 		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
 			.text(yaxisLabel.join(",."))
 			.appendTo(container);
-		//yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 30);
 
 		// Create second y axis labe
 		var yaxis2Label = $("<div class='axisLabel yaxis2Label'></div>")
@@ -942,10 +951,13 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 	}
 }
 
+/*
+ * Create 2D array of points from two 1D data arrays
+ * @param {type} xData data on x axis
+ * @param {type} yData data on y axis
+ * @returns {createSeries.data|Array} 2D array of points to be plotted
+ */
 function createSeries(xData, yData) {
-	l(xData);
-	l(yData);
-
 	var data = [];
 
 	$.each(xData, function(i, x) {
@@ -955,6 +967,13 @@ function createSeries(xData, yData) {
 	return data;
 }
 
+/*
+ * Add pan arrow to the plot
+ * @param {type} classNamePart part of the name that represents the direction on an arrow
+ * @param {type} offset where should plot be panned ond for how much
+ * @param {type} placeholder position on a parent element
+ * @param {type} plot element
+ */
 function addArrow(classNamePart, offset, placeholder, plot) {
 	$("<div class='pan pan_" + classNamePart + "'></div>")
 		.appendTo(placeholder)
@@ -964,6 +983,13 @@ function addArrow(classNamePart, offset, placeholder, plot) {
 		});
 }
 
+/*
+ * Show tooltip next to the mouse cursor when mouse cursor is hovering over
+ * the point on a plot
+ * @param {type} x x position of tooltip
+ * @param {type} y y position of tooltip
+ * @param {type} contents contents on a tooltip
+ */
 function showTooltip(x, y, contents) {
 	$("<div id='tooltip'>" + contents + "</div>").css({
 		position: "absolute",
@@ -1010,6 +1036,10 @@ function drawDataTree(html, data){
 	return html;
 }
 
+/*
+ * Prepare form for login. Form is a part on a dropdown so some mesures should
+ * be taken to change the dropdown functionality.
+ */
 function setUpLoginForm() {
 	// Setup drop down menu
 	$('.dropdown-toggle').dropdown();

@@ -613,10 +613,6 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 		}
 	};
 
-	$scope.downloadFile = function() {
-
-	};
-
 	$scope.searchForModelDetails = function() {
 		$scope.raw.showMatrices = false;
 		query = createModelDetailsUrl($scope.raw.search, $routeParams.id);
@@ -763,8 +759,41 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	$scope.modal.simulation.spinnershow = false;
 	$scope.modal.simulation.message = "Waiting for simulation to finish";
 
+	$scope.modal.doSimulation = {};
+	$scope.modal.doSimulation.show = true;
+	$scope.modal.doSimulation.selected = false;
+
+	$scope.modal.controlFile = {};
+	$scope.modal.controlFile.show = false;
+
 	$scope.modal.latticeTypes = latticeTypes;
 	var uploadData = undefined;
+
+	// Watch lattice type
+	$scope.$watch('upload.latticeType', function(newValue, oldValue) {
+		var value = {};
+
+		if(newValue !== undefined) {
+			value = JSON.parse(newValue);
+
+			if(value.name === "plain") {
+				$scope.modal.doSimulation.show = false;
+				$scope.modal.doSimulation.selected = false;
+
+			} else {
+				$scope.modal.doSimulation.show = true;
+				$scope.modal.doSimulation.selected = true;
+			}
+
+			if(value.name === "elegant") {
+				$scope.modal.controlFile.show = true;
+
+			} else {
+				$scope.modal.controlFile.show = false;
+			}
+		}
+		l(value);
+	});
 
 	$scope.options = {
 		url: serviceurl + "lattice/upload",
@@ -784,20 +813,23 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	$scope.$on('fileuploaddone', function(e, data) {
 		$scope.modal.success.show = true;
 
-		$scope.modal.simulation.show = true;
-		$scope.modal.simulation.spinnershow = true;
+		// If so simulation was checked, do it
+		if($scope.modal.doSimulation.show) {
+			$scope.modal.simulation.show = true;
+			$scope.modal.simulation.spinnershow = true;
 
-		$http({method:'POST', url:serviceurl + 'lattice/runsimulation/'}).success(
-			function(data, status, headers, config) {
-				l("simulation done");
-				$scope.modal.simulation.message = "Simulation completed!";
-				$scope.modal.simulation.spinnershow = false;
+			$http({method:'POST', url:serviceurl + 'lattice/runsimulation/'}).success(
+				function(data, status, headers, config) {
+					l("simulation done");
+					$scope.modal.simulation.message = "Simulation completed!";
+					$scope.modal.simulation.spinnershow = false;
 
-		}).error(
-			function(data, status, headers, config) {
-				l("simulation error");
-			}
-		);
+			}).error(
+				function(data, status, headers, config) {
+					l("simulation error");
+				}
+			);
+		}
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {

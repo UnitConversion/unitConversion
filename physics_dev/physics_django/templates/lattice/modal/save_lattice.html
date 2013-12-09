@@ -56,7 +56,7 @@
 			<div class="control-group">
 				<div class="controls">
 					<label class="checkbox">
-						<input name="dosimulation" model="upload.doSimulation" type="checkbox"> Do simulation after successful upload
+						<input ng-disabled="!modal.doSimulation.show" name="dosimulation" ng-model="modal.doSimulation.selected" type="checkbox"> Do simulation after successful upload
 					</label>
 				</div>
 			</div>
@@ -69,7 +69,7 @@
 					</span>
 				</div>
 			</div>
-			<div class="control-group">
+			<div ng-if="modal.controlFile.show" class="control-group">
 				<label class="control-label">Control file</label>
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
