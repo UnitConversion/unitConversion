@@ -19,10 +19,6 @@ urlpatterns = patterns(
     url(r'^lattice/savelattice/$',
         saveLattice,
         name='saveLattice'),
-    
-    url(r'^lattice/runsimulation/$',
-        runSimulation,
-        name='runSimulation'),
 #    url(r'^lattice/model/$',
 #        models,
 #        name='model'),

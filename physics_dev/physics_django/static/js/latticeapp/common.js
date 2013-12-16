@@ -1055,3 +1055,27 @@ function setUpLoginForm() {
 		});
 	});
 }
+
+function doSimulation(scope, http) {
+	scope.modal.simulation = {};
+	scope.modal.simulation.success = {};
+	scope.modal.simulation.success.show = true;
+	scope.modal.simulation.success.spinnershow = true;
+	scope.modal.simulation.success.message = "Waiting for simulation to finish";
+
+	scope.modal.simulation.error = {};
+	scope.modal.simulation.error.show = false;
+	scope.modal.simulation.error.message = "Simulation failed";
+
+	http({method:'POST', url:serviceurl + 'lattice/runsimulation/'}).success(
+		function(data, status, headers, config) {
+			l("simulation done");
+			scope.modal.simulation.success.message = "Simulation completed!";
+			scope.modal.simulation.success.spinnershow = false;
+
+	}).error(
+		function(data, status, headers, config) {
+			l("simulation error");
+		}
+	);
+}

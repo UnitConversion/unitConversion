@@ -58,6 +58,12 @@
 		<br/>
 		<br/>
 
+		<div class="alert alert-success" ng-show="modal.simulation.success.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.simulation.success.message}} <img ng-if="modal.simulation.success.spinnershow" src="../../../static/img/ajax-loader.gif" />
+		</div>
+		<button class="btn btn-success" ng-click="runSimulation()">Run simulation</button>
+
 		<div ng-if="latticeModels[0]">
 			<h3>Lattice Models</h3>
 

@@ -1,7 +1,7 @@
 {% load verbatim %}
 {% verbatim %}
 
-<form data-file-upload="options" method="post">
+<form data-file-upload="options" method="post" enctype="multipart/form-data">
 	<div class="modal-header">
 		<button type="button" class="close" ng-click="cancelButton()">&times;</button>
 		<h3>Upload lattice</h3>
@@ -15,9 +15,13 @@
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			{{modal.success.message}}
 		</div>
-		<div class="alert alert-success" ng-show="modal.simulation.show">
+		<div class="alert alert-success" ng-show="modal.simulation.success.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
-			{{modal.simulation.message}} <img ng-if="modal.simulation.spinnershow" src="../../../static/img/ajax-loader.gif" />
+			{{modal.simulation.success.message}} <img ng-if="modal.simulation.success.spinnershow" src="../../../static/img/ajax-loader.gif" />
+		</div>
+		<div class="alert" ng-show="modal.waiting.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.waiting.message}} <img ng-if="true" src="../../../static/img/ajax-loader.gif" />
 		</div>
 
 		<div class="form-horizontal">
@@ -65,16 +69,16 @@
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
 						<span>Select lattice file</span>
-						<input type="file" name="lattice_file" multiple="" ng-disabled="disabled">
+						<input id="latticeFile" type="file" name="files" ng-disabled="disabled">
 					</span>
 				</div>
 			</div>
-			<div ng-if="modal.controlFile.show" class="control-group">
+			<div ng-show="modal.controlFile.show" class="control-group">
 				<label class="control-label">Control file</label>
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
 						<span>Select control file</span>
-						<input type="file" name="control_file" multiple="" ng-disabled="disabled">
+						<input id="controlFile" type="file" name="files" ng-disabled="disabled">
 					</span>
 				</div>
 			</div>
@@ -83,7 +87,7 @@
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
 						<span>Select kickmap archive</span>
-						<input type="file" name="kickmap_file" multiple="" ng-disabled="disabled">
+						<input id="kickmapFile" type="file" name="files" ng-disabled="disabled">
 					</span>
 				</div>
 			</div>
@@ -91,7 +95,7 @@
 	</div>
 	<div class="modal-footer">
 		<button class="btn btn-primary" ng-click="ok()">Upload</button>
-		<button class="btn btn-primary" ng-click="cancelButton()">Cancel</button>
+		<button class="btn btn-primary" ng-click="cancelButton()">Finish</button>
 	</div>
 </form>
 

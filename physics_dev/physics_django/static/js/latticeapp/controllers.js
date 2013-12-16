@@ -405,6 +405,16 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 			$scope.raw.table =  createLatticeTable(header, lattice, $scope.raw.url);
 		}, 100);
 	});
+
+	$scope.closeAlert = function() {
+		$scope.modal.simulation.success.show = false;
+	};
+
+	$scope.runSimulation = function() {
+		$scope.modal = {};
+		l("run simulation");
+		doSimulation($scope, $http);
+	};
 });
 
 /*
@@ -754,10 +764,9 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	$scope.modal.success.show = false;
 	$scope.modal.success.message = "Lattice successfully uploaded!";
 
-	$scope.modal.simulation = {};
-	$scope.modal.simulation.show = false;
-	$scope.modal.simulation.spinnershow = false;
-	$scope.modal.simulation.message = "Waiting for simulation to finish";
+	$scope.modal.waiting = {};
+	$scope.modal.waiting.show = false;
+	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
 
 	$scope.modal.doSimulation = {};
 	$scope.modal.doSimulation.show = true;
@@ -807,33 +816,29 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	};
 
 	$scope.$on('fileuploadadd', function(e, data) {
-		uploadData = data;
+
+		if(uploadData === undefined) {
+			uploadData = data;
+
+		} else {
+			uploadData.files.push(data.files[0]);
+		}
 	});
 
 	$scope.$on('fileuploaddone', function(e, data) {
+		uploadData = undefined;
 		$scope.modal.success.show = true;
+		$scope.modal.waiting.show = false;
 
-		// If so simulation was checked, do it
-		if($scope.modal.doSimulation.show) {
-			$scope.modal.simulation.show = true;
-			$scope.modal.simulation.spinnershow = true;
-
-			$http({method:'POST', url:serviceurl + 'lattice/runsimulation/'}).success(
-				function(data, status, headers, config) {
-					l("simulation done");
-					$scope.modal.simulation.message = "Simulation completed!";
-					$scope.modal.simulation.spinnershow = false;
-
-			}).error(
-				function(data, status, headers, config) {
-					l("simulation error");
-				}
-			);
-		}
+		// If simulation was checked, do it
+//		if($scope.modal.doSimulation.selected) {
+//			doSimulation($scope, $http);
+//		}
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
 		l(data.jqXHR.status);
+		$scope.modal.waiting.show = false;
 
 		if(data.jqXHR.status === 401) {
 			$scope.modal.error.message = "You don't have permissions to create lattice!";
@@ -861,18 +866,17 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 		) {
 			$scope.modal.error.message = "Parameters should not be empty!";
 			$scope.modal.error.show = true;
-
-//			if ($scope.$root.$$phase !== '$apply' && $scope.$root.$$phase !== '$digest') {
-//				$scope.$apply();
-//			}
+			$scope.modal.success.show = false;
 
 		} else {
 			$scope.modal.error.show = false;
+			$scope.modal.waiting.show = true;
+			l(uploadData);
 			uploadData.submit();
 		}
 	};
 
-	$scope.cancelButton = function () {
+	$scope.cancelButton = function() {
 		l("cancel");
 		$modalInstance.dismiss('cancel');
 	};

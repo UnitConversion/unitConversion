@@ -17,6 +17,7 @@ latticemodel_log = _setup_lattice_model_logger('latticemodel_view')
 from dataprocess import retrievelatticetype, savelatticetype
 from dataprocess import savelatticeinfo, retrievelatticeinfo, updatelatticeinfo
 from dataprocess import savelattice, retrievelattice, updatelattice
+from dataprocess import doSimulation
 from dataprocess import savelatticestatus, retrievelatticestatus
 
 from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo
@@ -26,6 +27,10 @@ from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwi
 
 from django.contrib.auth.decorators import permission_required
 import requests
+from cStringIO import StringIO
+import zipfile
+import sys, traceback
+import base64
 
 from authentication import *
 
@@ -133,8 +138,8 @@ def saveLatticeInfo(request):
     print "in"
     
     try:
-        params = json.loads(request.raw_post_data)
-        #params = _retrievecmddict(request.POST.copy())
+        #params = json.loads(request.raw_post_data)
+        params = _retrievecmddict(request.POST.copy())
         print params
         params['function'] = 'saveLatticeInfo'
         res = savelatticeinfo(params)
@@ -250,6 +255,9 @@ def lattice_modal(request):
     file_name = path_parts[len(path_parts)-1]
     return render_to_response("lattice/modal/" + file_name)
 
+"""
+Method reads the file, checks it and returns file contents
+"""
 def handle_uploaded_file(f):
     fileContent = ""
     
@@ -258,30 +266,118 @@ def handle_uploaded_file(f):
     
     return fileContent
 
-import time
+# Check if string has binary characters. Based on
+# https://github.com/hamilyon/status/blob/8d05f9b7d95caa1bd1e52966ae8be9b23c442972/grin.py#26
+textchars = ''.join(map(chr, [7,8,9,10,12,13,27] + range(0x20, 0x100)))
+is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
 
-def runSimulation(request):
-    time.sleep(10)
-    return HttpResponse({}, mimetype="application/json")
+"""
+Open kickmap archive and return file contents in an array. File contents
+can be plain text or binary. If files are plain text, they have to be split
+into lines and if they are binary they have to be encoded to base64 and returned
+"""
+def handle_uploaded_archive(f):
+    kmdict = {}
+    
+    try:
+        zip = zipfile.ZipFile(f)
+        print zip.namelist()
+        
+        # Go through files in a zip
+        for libitem in zip.namelist():
+            
+            # Skip directories
+            if libitem.endswith('/'):
+                continue
+
+            bytes = zip.read(libitem)
+            
+            if is_binary_string(bytes):
+                filecontent = base64.b64encode(bytes)
+            
+            else:
+                # Repair utf8 problems
+                zipContent = unicode(bytes, errors="ignore")
+                filecontent = zipContent.splitlines()
+            
+            kmdict[libitem] = filecontent
+        
+    except Exception as e:
+        print e
+        
+    return kmdict
     
 '''
 Save lattice helper function that parses uploaded files and prepares data for saving lattice
 '''
+import time
 @require_http_methods(["POST"])
 def saveLatticeHelper(request):
-    print request.POST
+    time.sleep(30)
     
-    fileContent = handle_uploaded_file(request.FILES['lattice_file'])
+    fileTypeMap = {}
+    fileTypeMap['lat'] = 'octet-stream'
+    fileTypeMap['lte'] = 'octet-stream'
+    fileTypeMap['txt'] = 'plain'
+    fileTypeMap['zip'] = 'x-zip-compressed'
+    
+    latticeType = json.loads(request.POST['latticetype'])
+    latticeFile = None
+    kickmapFile = None
+    controlFile = None
+    
+    # Go through all the uploaded files
+    for fileObject in request.FILES.getlist('files'):
+        fileName = fileObject.name
+        fileType = fileObject.content_type.split('/')[1]
+        print fileType
+        
+        # This can only be control file
+        if fileName.endswith('ele'):
+            controlFile = fileObject
+            continue
+        
+        # Find lattice file
+        if fileType == fileTypeMap[latticeType['format']]:
+            print 'equal'
+            latticeFile = fileObject
+            continue
+            
+        # Find kickmap archive
+        if fileType == fileTypeMap['zip']:
+            kickmapFile = fileObject
+            continue
+
+    fileContent = handle_uploaded_file(latticeFile)
     
     lattice = {}
     lattice['name'] = request.POST['name']
-    lattice['data'] = fileContent.splitlines()
     
-    latticeType = request.POST['latticetype']
-    request.POST['latticetype'] = json.dumps(json.loads(latticeType))
+    if latticeType['format'] == 'txt':
+        lattice['data'] = fileContent.splitlines()
     
+    else:
+        lattice['raw'] = fileContent.splitlines()
+    
+    # Handle kickmap archive
+    kmdict = handle_uploaded_archive(kickmapFile);
+    lattice['map'] = kmdict
+    
+    # Handle control file
+    if controlFile != None:
+        controlFileContent = handle_uploaded_file(controlFile)
+        lattice['control'] = {}
+        lattice['control']['name'] = controlFile.name
+        lattice['control']['data'] = unicode(controlFileContent, errors="ignore").splitlines()
+    
+    request.POST['latticetype'] = json.dumps(latticeType)
+    
+    # Prepare lattice data
     request.POST['lattice'] = json.dumps(lattice)
+    
+    # Prepare creator
     request.POST['creator'] = request.user.username
     
     result = saveLattice(request);
+    print result
     return result
