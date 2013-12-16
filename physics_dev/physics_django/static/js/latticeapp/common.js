@@ -180,34 +180,6 @@ function createModelListQuery(search, returnUrl) {
 }
 
 /*
- * Create modal window on top of the web app
- * Example of use: createModal($modal, $scope);
- */
-function createModal(modal, scope) {
-	var modalInstance = modal.open({
-		template: '\n\
-		<div class="modal-header">\n\
-			<h3>Im a modal!</h3>\n\
-		</div>\n\
-		<div class="modal-body">\n\
-		body\n\
-		</div>\n\
-		<div class="modal-footer">\n\
-			<button class="btn btn-primary" ng-click="ok()">OK</button>\n\
-			<button class="btn btn-warning" ng-click="cancel()">Cancel</button>\n\
-		</div>\n\
-		',
-		controller: "modalCtrl"
-	});
-
-	modalInstance.result.then(function(selectedItem) {
-		scope.selected = selectedItem;
-	}, function() {
-		l("modal dismissed");
-	});
-}
-
-/*
  * Retun first X characters from the string.
  * @param {type} string input string
  * @param {type} count how many characters do we want to return
@@ -223,6 +195,11 @@ function returnFirstXCharacters(string, count){
 	}
 }
 
+/*
+ * Check if all selected lattices have the same lattice format
+ * @param {type} lattices array of lattices
+ * @returns {Boolean} are lattices equal or not
+ */
 function checkLatticeFormat(lattices) {
 	var keys = Object.keys(lattices[0].data);
 	var format = lattices[0].data[keys[0]].latticeFormat;
@@ -239,9 +216,12 @@ function checkLatticeFormat(lattices) {
 	return equalFormat;
 }
 
+/*
+ * Check whether two lattices are the same or not and return css rule.
+ * @param {type} keys
+ * @returns {String}
+ */
 function checkDiff(keys) {
-
-	//l(keys);
 
 	if(JSON.stringify(keys[0]) === JSON.stringify(keys[1])) {
 		return "diff_green";
@@ -304,6 +284,12 @@ function createLatticeTable(header, lattice, url) {
 	return table;
 }
 
+/*
+ * Create lattice comparison row. It consists of two lattices.
+ * @param {type} latticesData object with lattice data
+ * @param {type} key lattice name
+ * @returns {String} prepared html to be put into the dom
+ */
 function createLatticeComparinsonRows(latticesData, key) {
 	var html = "";
 
@@ -365,11 +351,7 @@ function createLatticeComparinsonRows(latticesData, key) {
 		var cssClass = checkDiff(deviceKeys);
 
 		html += "<td ng-click='diffDetails(\"" + deviceName + "\")' class='diff_details " + cssClass + "'><i class='parent_" + deviceName + " icon-chevron-up'></i></td>";
-
 		html += "</tr>";
-
-
-		l(keysRaw);
 
 		$.each(keysRaw, function(j, latticeData) {
 
@@ -408,112 +390,22 @@ function createLatticeComparinsonRows(latticesData, key) {
 			}
 
 			html += "<tr class='" + rowBackground + " children_" + deviceName + "' style='display:none;'>";
-
 			html += "<td>" + j + "</td>";
-
 			html += tds;
-
 			html += "<td></td>";
-
 			html += "</tr>";
 		});
-
-
 	});
 
 	return html;
 }
 
-/**
- * Compare particular device in both lattices and create array that will serve as basis for the table
- * @param {type} latticesData
- * @param {type} latticesKeys
- * @param {type} key
- * @param {type} device
- * @returns {createLatticeComparisonDetails.detailsData|Array}
+/*
+ * Create REST URL to access model details
+ * @param {type} search scope object
+ * @param {type} modelName name of the selected model
+ * @returns {String} model details URL
  */
-function createLatticeComparisonDetails(latticesData, latticesKeys, key, device) {
-	var firstLatticeProperties = latticesData[key].keys;
-	var firstLatticeDeviceData = latticesData[key].data[device];
-	var detailsData = [];
-
-	// Go through properties from the first lattice
-	if(firstLatticeDeviceData !== undefined) {
-
-		$.each(firstLatticeProperties, function(i, property) {
-
-			// Continue if property was already displayed
-			if(
-				latticesData[key].data[device].displayed !== undefined &&
-				latticesData[key].data[device].displayed[property] !== undefined &&
-				latticesData[key].data[device].displayed[property] === true
-			) {
-				return;
-			}
-
-			// Continue if we are at id property
-			if(property === "id") {
-				return;
-			}
-
-			var detailsDataEntry = {};
-			detailsDataEntry["property"] = property;
-			detailsDataEntry["color"] = "";
-
-			var value = latticesData[key].data[device][property];
-			var valuesEqual = true;
-			var valueEmpty = 0;
-
-			// Go through all the lattices
-			$.each(latticesKeys, function(i, key) {
-
-				if(latticesData[key].data[device] !== undefined && latticesData[key].data[device].displayed === undefined) {
-					latticesData[key].data[device].displayed = {};
-				}
-
-				if(latticesData[key].data[device] !== undefined && latticesData[key].data[device][property] !== undefined) {
-					detailsDataEntry[key] = latticesData[key].data[device][property];
-					latticesData[key].data[device].displayed[property] = true;
-
-					if(detailsDataEntry[key] !== value) {
-						valuesEqual = false;
-					}
-
-				} else {
-					detailsDataEntry[key] = "";
-
-					if(latticesData[key].data[device] !== undefined) {
-						latticesData[key].data[device].displayed[property] = true;
-					}
-				}
-
-				// Check if value is ampty or null or undefined
-				if(detailsDataEntry[key] === "" || detailsDataEntry[key] === undefined || detailsDataEntry[key] === null) {
-					valueEmpty += 1;
-				}
-			});
-
-			// Change color for row with equal values
-			if(!valuesEqual) {
-				detailsDataEntry["color"] = "diff";
-			}
-
-			l(valueEmpty);
-			l(detailsDataEntry[key]);
-
-			// Push not empty rows to array
-			//if(valueEmpty <= 1) {
-				detailsData.push(detailsDataEntry);
-			//}
-
-			// Reset empty counter
-			valueEmpty = 0;
-		});
-	}
-
-	return detailsData;
-}
-
 function createModelDetailsUrl(search, modelName) {
 	var detail = search.detail;
 
@@ -544,7 +436,6 @@ function createModelDetailsUrl(search, modelName) {
  */
 function transformModelDetails(data) {
 	var modelNames = Object.keys(data);
-	l(data[modelNames[0]]);
 	var header = [];
 
 	// All detail types should have index column. If not, copy them from order to index
@@ -576,10 +467,17 @@ function transformModelDetails(data) {
 	});
 
 	var outputData = data[modelNames[0]];
-
 	return [modelNames[0], header, outputData];
 }
 
+/*
+ * Create table row with checkboxes for every property of each
+ * selected model
+ * @param {type} headerRows array of header rows
+ * @param {type} modelName name of the selected model
+ * @param {type} selection dictionary of checkbox selection values
+ * @returns {unresolved}
+ */
 function createPropertySelectionTable(headerRows, modelName, selection) {
 
 	$.each(headerRows, function(i, head) {
@@ -623,15 +521,13 @@ function filterPropertySelectionTable(modelName, headers) {
 }
 
 /**
+ * Filter lattice comparison table based on device name
  * @param {type} filters Object with filter data
  * @param {type} name of the element that contains data
  * @param {string} table selector of the table we are filtering
  */
 function filterTableItems(filters, name, table){
-
 	var filter = filters.deviceName.toLowerCase();
-	l(filter);
-
 	var cells = $(table).find(name);
 
 	$.each(cells, function(i, cell) {
@@ -639,10 +535,6 @@ function filterTableItems(filters, name, table){
 		var diffElement = parentElement.find('.diff_details');
 		var value = $(cell).text().toLowerCase();
 		var visible = true;
-
-		//l(parentElement);
-		//l(diffElement);
-		//l(value);
 
 		if(filters.showOnlyDifferent === true && diffElement[0].className.indexOf('diff_red') === -1) {
 			visible = false;
@@ -659,145 +551,6 @@ function filterTableItems(filters, name, table){
 			parentElement.slideUp();
 		}
 	});
-
-	// Slide up items that does not contain filters and are not selected
-	//$(table).find(name + ':not(:Contains(' + filter + ')):not(.multilist_clicked)').parent().slideUp();
-	//$(table).find(name + ':Contains(' + filter + ')').parent().slideDown();
-}
-
-/**
- * Create plot from the two vectors from measurement data table
- * @param {type} data measurement data object
- * @param {type} x_axis measurement data object property that should be put on the x axis
- * @param {type} y_axis measurement data object property that should be put on the y axis
- * @param {type} newSeries array of conversion result points that should be put on the plot together with measurement data
- * @param {type} scope $scope object
- */
-function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
-	l(data);
-
-	var container = $(placeholder);
-	container.addClass("placeholder_hidden");
-
-	var series = [];
-
-	$.each(selection, function(prop, select) {
-		l(prop);
-		l(select);
-
-		$.each(select, function(moduleName, checked) {
-
-			// Property selected for specific module name
-			if(checked === true) {
-				var seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
-				// Add series of conversion points
-
-				var seriesLabel = "";
-
-				if(nameToIdMap !== undefined){
-					seriesLabel = nameToIdMap[moduleName] + ", " + prop;
-
-				} else {
-					seriesLabel = prop;
-				}
-
-				if(prop === "betax" || prop === "betay") {
-					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 2});
-
-				} else {
-					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData});
-				}
-			}
-		});
-	});
-
-	l(series);
-
-	// Plot options
-	var optionsFlot = {
-		legend: {
-			show: true,
-			position: "nw"
-		},
-		xaxis: {
-			tickDecimals: 4
-		},
-		yaxes: [{
-			tickDecimals: 4
-		},
-		{
-			alignTicksWithAxis: 1,
-			position: "right"
-		}],
-		zoom: {
-			interactive: true
-		},
-		pan: {
-			interactive: true
-		},
-		grid: {
-			hoverable: true
-		}
-	};
-
-	// We have at least one series
-	if(series.length > 0) {
-		container.removeClass("placeholder_hidden");
-
-		// Initialize plot
-		var flotPlot = $.plot(container, series, optionsFlot);
-
-		// Create y axis labe
-		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
-			.text(y_axis)
-			.appendTo(container);
-		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
-
-		// Create x axis label
-		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
-			.text(x_axis)
-			.appendTo(container);
-		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
-
-		// Create zoom out button
-		$("<div class='zoom zoom_out'></div>")
-			.appendTo(container)
-			.click(function (event) {
-				event.preventDefault();
-				flotPlot.zoomOut();
-			}
-		);
-
-		// Create zoom in button
-		$("<div class='zoom zoom_in'></div>")
-			.appendTo(container)
-			.click(function (event) {
-				event.preventDefault();
-				flotPlot.zoom();
-			}
-		);
-
-		// Create pan arrows
-		addArrow("up", {top: -100}, container, flotPlot);
-		addArrow("left", {left: -100}, container, flotPlot);
-		addArrow("down", {top: 100}, container, flotPlot);
-		addArrow("right", {left: 100}, container, flotPlot);
-
-		// Create tooltips when hovering over points
-		container.bind("plothover", function (event, pos, item) {
-
-			if (item) {
-				$("#tooltip").remove();
-				var x = item.datapoint[0].toFixed(4);
-				var y = item.datapoint[1].toFixed(4);
-				showTooltip(item.pageX, item.pageY, x + ", " + y);
-
-			} else {
-				$("#tooltip").remove();
-			}
-		});
-
-	}
 }
 
 /*
@@ -810,18 +563,13 @@ function drawPlot(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
  * @param {type} y_axis fixed label on y axis
  */
 function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
-	l(data);
-
-	var container = $(placeholder);
-	container.addClass("placeholder_hidden");
+	//container.addClass("placeholder_hidden");
 
 	var series = [];
-
 	var yaxisLabel = [];
 	var yaxis2Label = [];
 
 	$.each(selection, function(moduleName, select) {
-		l(select);
 
 		$.each(select, function(prop, checked) {
 
@@ -880,9 +628,11 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 		}
 	};
 
+	var container = $(placeholder);
+
 	// We have at least one series
 	if(series.length > 0) {
-		container.removeClass("placeholder_hidden");
+		//container.removeClass("placeholder_hidden");
 
 		// Initialize plot
 		var flotPlot = $.plot(container, series, optionsFlot);
@@ -1054,28 +804,4 @@ function setUpLoginForm() {
 			$('#user_username').focus();
 		});
 	});
-}
-
-function doSimulation(scope, http) {
-	scope.modal.simulation = {};
-	scope.modal.simulation.success = {};
-	scope.modal.simulation.success.show = true;
-	scope.modal.simulation.success.spinnershow = true;
-	scope.modal.simulation.success.message = "Waiting for simulation to finish";
-
-	scope.modal.simulation.error = {};
-	scope.modal.simulation.error.show = false;
-	scope.modal.simulation.error.message = "Simulation failed";
-
-	http({method:'POST', url:serviceurl + 'lattice/runsimulation/'}).success(
-		function(data, status, headers, config) {
-			l("simulation done");
-			scope.modal.simulation.success.message = "Simulation completed!";
-			scope.modal.simulation.success.spinnershow = false;
-
-	}).error(
-		function(data, status, headers, config) {
-			l("simulation error");
-		}
-	);
 }

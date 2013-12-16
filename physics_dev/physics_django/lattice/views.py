@@ -17,7 +17,6 @@ latticemodel_log = _setup_lattice_model_logger('latticemodel_view')
 from dataprocess import retrievelatticetype, savelatticetype
 from dataprocess import savelatticeinfo, retrievelatticeinfo, updatelatticeinfo
 from dataprocess import savelattice, retrievelattice, updatelattice
-from dataprocess import doSimulation
 from dataprocess import savelatticestatus, retrievelatticestatus
 
 from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo

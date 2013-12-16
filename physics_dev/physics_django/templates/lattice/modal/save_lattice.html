@@ -15,13 +15,9 @@
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			{{modal.success.message}}
 		</div>
-		<div class="alert alert-success" ng-show="modal.simulation.success.show">
-			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
-			{{modal.simulation.success.message}} <img ng-if="modal.simulation.success.spinnershow" src="../../../static/img/ajax-loader.gif" />
-		</div>
 		<div class="alert" ng-show="modal.waiting.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
-			{{modal.waiting.message}} <img ng-if="true" src="../../../static/img/ajax-loader.gif" />
+			{{modal.waiting.message}} <img alt="" src="../../../static/img/ajax-loader.gif" />
 		</div>
 
 		<div class="form-horizontal">

@@ -12,12 +12,16 @@
 
 .placeholder {
 	width: 700px;
-	height: 400px;
+	height: 10px;
 	margin-left: 25px;
 }
 
 .placeholder_hidden {
 	display: none;
+}
+
+.placeholder_high {
+	height: 400px;
 }
 
 .axisLabel {
@@ -72,7 +76,7 @@
 .zoom_in {
 	margin: 0;
 	padding: 0;
-	right:45px;
+	right:65px;
 	top:20px;
 	background-image: url('../img/plus.png');
 	width: 16px;
@@ -83,7 +87,7 @@
 .zoom_out {
 	margin: 0;
 	padding: 0;
-	right:65px;
+	right:85px;
 	top:20px;
 	background-image: url('../img/minus.png');
 	width: 16px;
@@ -94,7 +98,7 @@
 .pan_up {
 	margin: 0;
 	padding: 0;
-	right:55px;
+	right:75px;
 	top:45px;
 	background-image: url('../img/icon_up.png');
 	width: 16px;
@@ -105,7 +109,7 @@
 .pan_left {
 	margin: 0;
 	padding: 0;
-	right:70px;
+	right:90px;
 	top:60px;
 	background-image: url('../img/icon_left.png');
 	width: 16px;
@@ -116,7 +120,7 @@
 .pan_down {
 	margin: 0;
 	padding: 0;
-	right:55px;
+	right:75px;
 	top:75px;
 	background-image: url('../img/icon_down.png');
 	width: 16px;
@@ -127,7 +131,7 @@
 .pan_right {
 	margin: 0;
 	padding: 0;
-	right:40px;
+	right:60px;
 	top:60px;
 	background-image: url('../img/icon_right.png');
 	width: 16px;
