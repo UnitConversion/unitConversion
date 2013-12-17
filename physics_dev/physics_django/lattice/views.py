@@ -11,6 +11,14 @@ try:
 except ImportError:
     import json
 
+from django.contrib.auth.decorators import permission_required
+#import requests
+#from cStringIO import StringIO
+import zipfile
+#import sys, traceback
+import base64
+from authentication import has_perm_or_basicauth
+
 from pylattice import _setup_lattice_model_logger
 latticemodel_log = _setup_lattice_model_logger('latticemodel_view')
 
@@ -23,15 +31,6 @@ from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo
 from dataprocess import savemodelstatus, retrievemodelstatus
 from dataprocess import savemodel, updatemodel, retrievemodel, retrievemodellist
 from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwiss, retrievebeamparameters
-
-from django.contrib.auth.decorators import permission_required
-import requests
-from cStringIO import StringIO
-import zipfile
-import sys, traceback
-import base64
-
-from authentication import *
 
 def _retrievecmddict(httpcmd):
     '''
@@ -190,41 +189,6 @@ def saveLattice(request):
 
     return HttpResponse(finalres, mimetype="application/json")
 
-#@require_http_methods(["GET", "POST"])
-#def models(request):
-#    try:
-#        res = {'message': 'Did not found any entry.'}
-#        if request.method == 'GET':
-#            params = _retrievecmddict(request.GET.copy())
-#            if params.has_key('function'):
-#                for p, _ in post_actions:
-#                    if re.match(p, params['function']): 
-#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-#                res = dispatch(params, get_actions)
-#            else:
-#                res = {'message': 'No function specified.'}
-#            print res
-#            
-#        elif request.method == 'POST':
-#            params = _retrievecmddict(request.POST.copy())
-#            if params.has_key('function'):
-#                for p, _ in get_actions:
-#                    if re.match(p, params['function']): 
-#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-#                res = dispatch(params, post_actions)
-#            else:
-#                res = {'message': 'No function specified.'}
-#        else:
-#            return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'))
-#    except ValueError as e:
-#        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
-#    except KeyError as e:
-#        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
-#    except Exception as e:
-#        return HttpResponseBadRequest(content=e, mimetype="application/json")
-#    
-#    return HttpResponse(json.dumps(res), mimetype="application/json")
-
 def lattice_home(request):
     return render_to_response("lattice/index.html")
 
@@ -268,7 +232,7 @@ def handle_uploaded_file(f):
 # Check if string has binary characters. Based on
 # https://github.com/hamilyon/status/blob/8d05f9b7d95caa1bd1e52966ae8be9b23c442972/grin.py#26
 textchars = ''.join(map(chr, [7,8,9,10,12,13,27] + range(0x20, 0x100)))
-is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
+is_binary_string = lambda isbytes: bool(bytes.translate(None, textchars))
 
 """
 Open kickmap archive and return file contents in an array. File contents
@@ -279,40 +243,41 @@ def handle_uploaded_archive(f):
     kmdict = {}
     
     try:
-        zip = zipfile.ZipFile(f)
-        print zip.namelist()
+        zipf = zipfile.ZipFile(f)
+        print zipf.namelist()
         
         # Go through files in a zip
-        for libitem in zip.namelist():
+        for libitem in zipf.namelist():
             
             # Skip directories
             if libitem.endswith('/'):
                 continue
 
-            bytes = zip.read(libitem)
+            bytesf = zip.read(libitem)
             
-            if is_binary_string(bytes):
-                filecontent = base64.b64encode(bytes)
+            if is_binary_string(bytesf):
+                filecontent = base64.b64encode(bytesf)
             
             else:
                 # Repair utf8 problems
-                zipContent = unicode(bytes, errors="ignore")
+                zipContent = unicode(bytesf, errors="ignore")
                 filecontent = zipContent.splitlines()
             
             kmdict[libitem] = filecontent
         
     except Exception as e:
         print e
+        raise e
         
     return kmdict
     
 '''
 Save lattice helper function that parses uploaded files and prepares data for saving lattice
 '''
-import time
+#import time
 @require_http_methods(["POST"])
 def saveLatticeHelper(request):
-    time.sleep(30)
+    #time.sleep(30)
     
     fileTypeMap = {}
     fileTypeMap['lat'] = 'octet-stream'

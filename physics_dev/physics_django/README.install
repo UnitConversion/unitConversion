@@ -180,4 +180,19 @@ WSGIApplicationGroup %{GLOBAL}
 		sudo /etc/init.d/apache2 restart 
 		
 		The site is available at http://phyweb
+
+
+3) add admin & auth support
+	1. run python manage.py syncdb
+	in some version of previous django (1.4.2 for example), there is a bug and user has to set LANG to en_US
+	export LANG=en_US
+	2. change configuration.js
+	unitConversion/physics_dev/physics_django/static/js/latticeapp/configuration.js
+	change line 12:
+	// For accessing the REST service
+	var serviceurl = "http://localhost:8000/";
+	to real server URL
+	
+	be careful about URL here. does not work http://127.0.0.1:8000
+
 		
