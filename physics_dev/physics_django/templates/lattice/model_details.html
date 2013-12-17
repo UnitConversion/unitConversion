@@ -36,10 +36,7 @@
 				</tr>
 				<tr ng-repeat="(modelName, headers) in raw.selection">
 					<td ng-repeat="(propName, propValue) in headers">
-						<label>
-							<input type="checkbox" ng-model="raw.selection[modelName][propName]" />
-							<span class="hidden">hidden label</span>
-						</label>
+						<input type="checkbox" ng-model="raw.selection[modelName][propName]" />
 					</td>
 				</tr>
 			</table>
@@ -47,7 +44,7 @@
 
 			<br/>
 			<br/>
-			<div ng-class="{placeholder_high: plotPlaceholder.show}" class="placeholder"></div>
+			<div class="placeholder"></div>
 		</div>
 
 		<h3>Model details</h3>

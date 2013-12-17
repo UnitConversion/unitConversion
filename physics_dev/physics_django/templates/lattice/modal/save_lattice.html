@@ -64,27 +64,30 @@
 				<label class="control-label">Lattice file</label>
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
-						<span>Select lattice file</span>
+						<i class="icon-file icon-white"></i>
 						<input id="latticeFile" type="file" name="files" ng-disabled="disabled">
 					</span>
+					{{upload.latticeFile}}
 				</div>
 			</div>
 			<div ng-show="modal.controlFile.show" class="control-group">
 				<label class="control-label">Control file</label>
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
-						<span>Select control file</span>
+						<i class="icon-file icon-white"></i>
 						<input id="controlFile" type="file" name="files" ng-disabled="disabled">
 					</span>
+					{{upload.controlFile}}
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label">Kickmap files</label>
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
-						<span>Select kickmap archive</span>
+						<i class="icon-file icon-white"></i>
 						<input id="kickmapFile" type="file" name="files" ng-disabled="disabled">
 					</span>
+					{{upload.kickmapFile}}
 				</div>
 			</div>
 		</div>

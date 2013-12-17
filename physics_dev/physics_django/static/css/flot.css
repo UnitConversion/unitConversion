@@ -12,16 +12,12 @@
 
 .placeholder {
 	width: 700px;
-	height: 10px;
+	height: 400px;
 	margin-left: 25px;
 }
 
 .placeholder_hidden {
 	display: none;
-}
-
-.placeholder_high {
-	height: 400px;
 }
 
 .axisLabel {
