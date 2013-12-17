@@ -27,7 +27,7 @@ from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwi
 from django.contrib.auth.decorators import permission_required
 import requests
 from cStringIO import StringIO
-import zipfile
+from zipfile import ZipFile
 import sys, traceback
 import base64
 
@@ -279,7 +279,7 @@ def handle_uploaded_archive(f):
     kmdict = {}
     
     try:
-        zip = zipfile.ZipFile(f)
+        zip = ZipFile(f)
         print zip.namelist()
         
         # Go through files in a zip

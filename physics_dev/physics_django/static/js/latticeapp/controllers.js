@@ -680,6 +680,10 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
  */
 app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance) {
 	$scope.upload = {};
+	$scope.upload.latticeFile = "";
+	$scope.upload.controlFile = "";
+	$scope.upload.kickmapFile = "";
+
 	$scope.modal = {};
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
@@ -740,6 +744,9 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	};
 
 	$scope.$on('fileuploadadd', function(e, data) {
+		l(data);
+		var id = data.fileInput.context.id;
+		$scope.upload[id] = data.files[0].name;
 
 		if(uploadData === undefined) {
 			uploadData = data;
@@ -754,6 +761,9 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 		$scope.modal.success.show = true;
 		$scope.modal.waiting.show = false;
 		$scope.modal.error.show = false;
+		$scope.upload.latticeFile = "";
+		$scope.upload.controlFile = "";
+		$scope.upload.kickmapFile = "";
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
