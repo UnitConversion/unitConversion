@@ -539,6 +539,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	$scope.raw.showMatrices = false;
 	$scope.raw.selection = {};
 	$scope.raw.selectionCount = 0;
+	$scope.raw.factor = {};
 
 	$scope.compare = {};
 	$scope.compare.show = false;
@@ -582,6 +583,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 			$scope.raw.header[transform[0]] = transform[1];
 			$scope.raw.data[transform[0]] = transform[2];
 			$scope.raw.selection = filterPropertySelectionTable(transform[0], $scope.raw.header);
+			$scope.raw.factor = filterPropertyFactorTable(transform[0], $scope.raw.header);
 			$scope.raw.selectionCount = Object.keys($scope.raw.selection).length;
 			$scope.raw.modelName = transform[0];
 
@@ -605,7 +607,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 	// Plot data when properties are selected
 	$scope.plotData = function() {
 		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.data, undefined, "Position", "Property");
+		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
 	};
 
 });
@@ -620,6 +622,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 	$scope.raw.search = {};
 	$scope.models = {};
 	$scope.compare = {};
+	$scope.compare.factor = {};
 	$scope.compare.show = true;
 	$scope.raw.modelDetails = modelDetails;
 	$scope.plotPlaceholder = {};
@@ -658,6 +661,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 
 				$scope.compare.selection = createPropertySelectionTable(transform[1], transform[0], $scope.compare.selection);
 				$scope.compare.modelName = transform[0];
+				$scope.compare.factor = createPropertyFactorTable(transform[1], transform[0], $scope.compare.factor);
 
 				$scope.compare.selectionCount = Object.keys($scope.compare.selection).length;
 			});
@@ -666,7 +670,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 
 	$scope.plotData = function() {
 		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.data, nameToIdMap, "Position", "Property");
+		drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
 	};
 
 	$scope.trim = function(input) {
@@ -703,6 +707,8 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 
 	$scope.modal.controlFile = {};
 	$scope.modal.controlFile.show = false;
+
+	$scope.modal.finishButton = "Cancel";
 
 	$scope.modal.latticeTypes = latticeTypes;
 	var uploadData = undefined;
@@ -764,6 +770,8 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 		$scope.upload.latticeFile = "";
 		$scope.upload.controlFile = "";
 		$scope.upload.kickmapFile = "";
+
+		$scope.modal.finishButton = "Finish";
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -775,6 +783,7 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 	});
 
 	$scope.ok = function() {
+		$scope.modal.finishButton = "Cancel";
 
 		if(
 			$scope.upload.name === "" ||

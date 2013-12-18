@@ -32,11 +32,12 @@
 			<h3>Select data to plot</h3>
 			<table class="table table-bordered table-condensed">
 				<tr>
-					<td ng-repeat="(propName, propValue) in raw.selection[raw.modelName]">{{propName}}</td>
+					<th ng-repeat="(propName, propValue) in raw.selection[raw.modelName]">{{propName}}</th>
 				</tr>
 				<tr ng-repeat="(modelName, headers) in raw.selection">
 					<td ng-repeat="(propName, propValue) in headers">
 						<input type="checkbox" ng-model="raw.selection[modelName][propName]" />
+						<input ng-show="raw.selection[modelName][propName]" title="Multiply {{propName}} by factor" type="text" ng-model="raw.factor[modelName][propName]" class="input-micro" />
 					</td>
 				</tr>
 			</table>
@@ -44,7 +45,12 @@
 
 			<br/>
 			<br/>
-			<div class="placeholder"></div>
+			<div class="resize_container ui-resizable">
+				<div class="placeholder"></div>
+				<div class='x_label axisLabel xaxisLabel'></div>
+				<div class='y2_label axisLabel yaxis2Label'></div>
+				<div class='y_label axisLabel yaxisLabel'></div>
+			</div>
 		</div>
 
 		<h3>Model details</h3>
@@ -119,12 +125,10 @@
 					<th ng-repeat="id in compare.ids">{{id}}</th>
 				</tr>-->
 				<tr ng-repeat="(i, row) in compare.selection">
-					<td>{{compare.nameToIdMap[i]}}</td>
+					<td><b>{{compare.nameToIdMap[i]}}</b></td>
 					<td ng-repeat="(j, cell) in row">
-						<label>
-							<input type="checkbox" ng-model="compare.selection[i][j]" />
-							<span class="hidden">hidden label</span>
-						</label>
+						<input type="checkbox" ng-model="compare.selection[i][j]" />
+						<input ng-show="compare.selection[i][j]" title="Multiply {{propName}} by factor"  ng-model="compare.factor[i][j]" type="text" class="input-micro" />
 					</td>
 				</tr>
 			</table>
@@ -132,7 +136,12 @@
 			<br/>
 
 			<br/>
-			<div class="placeholder"></div>
+			<div class="resize_container ui-resizable">
+				<div class="placeholder"></div>
+				<div class='x_label axisLabel xaxisLabel'></div>
+				<div class='y2_label axisLabel yaxis2Label'></div>
+				<div class='y_label axisLabel yaxisLabel'></div>
+			</div>
 		</div>
 	</div>
 </div>

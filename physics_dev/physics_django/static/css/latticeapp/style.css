@@ -404,5 +404,7 @@ html, body {
 	width: 100%;
 }
 
-.input_cell {
+.input-micro {
+	width: 35px !important;
+	margin-bottom: 0 !important;
 }

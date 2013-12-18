@@ -499,6 +499,34 @@ function createPropertySelectionTable(headerRows, modelName, selection) {
 }
 
 /*
+ * Create object with factors for multiplying data
+ * selected model
+ * @param {type} headerRows array of header rows
+ * @param {type} modelName name of the selected model
+ * @param {type} selection dictionary of checkbox selection values
+ * @returns {unresolved}
+ */
+function createPropertyFactorTable(headerRows, modelName, selection) {
+
+	$.each(headerRows, function(i, head) {
+
+		if(head === "index" || head === "position" || head === "name") {
+			return;
+		}
+
+		if(modelName in selection) {
+			selection[modelName][head] = 1;
+
+		} else {
+			selection[modelName] = {};
+			selection[modelName][head] = 1;
+		}
+	});
+
+	return selection;
+}
+
+/*
  * Clean headers array of index, position and name headers and create selection object
  * @param {type} headers array of headers that needs to be cleaned
  * @returns {filterPropertySelectionTable.properties|Array} filtered properties
@@ -515,6 +543,29 @@ function filterPropertySelectionTable(modelName, headers) {
 		}
 
 		properties[modelName][header] = false;
+	});
+
+	return properties;
+}
+
+/*
+ * Clean headers array of index, position and name headers and create object
+ * of factor values data arrays should be multiplied by
+ * @param {type} headers array of headers that needs to be cleaned
+ * @returns {filterPropertySelectionTable.properties|Array} filtered properties
+ */
+function filterPropertyFactorTable(modelName, headers) {
+	var properties = {};
+	var modelHeaders = headers[modelName];
+	properties[modelName] = {};
+
+	$.each(modelHeaders, function(i, header) {
+
+		if(header === "index" || header === "position" || header === "name") {
+			return;
+		}
+
+		properties[modelName][header] = 1;
 	});
 
 	return properties;
@@ -557,12 +608,13 @@ function filterTableItems(filters, name, table){
  * Function will prepare configuration and draw plot
  * @param {type} placeholder div selector where plot will be put
  * @param {type} selection which checkboxes are selected in a property/model table
+ * @param {type} factor multiply data array for a factor
  * @param {type} data data to be plotted
  * @param {type} nameToIdMap object that maps model name to model id
  * @param {type} x_axis fixed label on x axis
- * @param {type} y_axis fixed label on y axis
+ * @param {type} scope current controller scope
  */
-function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y_axis){
+function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x_axis, scope){
 	//container.addClass("placeholder_hidden");
 
 	var series = [];
@@ -575,9 +627,20 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 
 			// Property selected for specific module name
 			if(checked === true) {
-				var seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
-				// Add series of conversion points
+				l(factor);
 
+				var seriesData = [];
+
+				if(factor !== undefined) {
+					seriesData = createSeriesAndMultiply(data[moduleName]['position'], data[moduleName][prop], factor[moduleName][prop]);
+
+				} else {
+					seriesData = createSeries(data[moduleName]['position'], data[moduleName][prop]);
+				}
+
+				l(seriesData);
+
+				// Add series of conversion points
 				var seriesLabel = "";
 
 				if(nameToIdMap !== undefined){
@@ -585,6 +648,11 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 
 				} else {
 					seriesLabel = prop;
+				}
+
+				// If factor is defined write for how much did we multiply
+				if(factor !== undefined) {
+					seriesLabel += " " + factor[moduleName][prop] + "x";
 				}
 
 				if(prop === "betax" || prop === "betay") {
@@ -629,6 +697,7 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 	};
 
 	var container = $(placeholder);
+	var resizeContainer = $(".resize_container");
 
 	// We have at least one series
 	if(series.length > 0) {
@@ -637,28 +706,26 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 		// Initialize plot
 		var flotPlot = $.plot(container, series, optionsFlot);
 
+		resizeContainer.resizable({
+			maxWidth: 2000,
+			maxHeight: 700,
+			minWidth: 900,
+			minHeight: 400
+		});
+
 		// If there are too many element, just write all the rest
 		if(yaxis2Label.length > 2) {
 			yaxis2Label = ["All the rest"];
 		}
 
 		// Create y axis labe
-		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
-			.text(yaxisLabel.join(",."))
-			.appendTo(container);
-		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 30);
+		var yaxisLabel = $(".y_label").text(yaxisLabel.join(",."));
 
 		// Create second y axis labe
-		var yaxis2Label = $("<div class='axisLabel yaxis2Label'></div>")
-			.text(yaxis2Label.join(", "))
-			.appendTo(container);
-		//yaxis2Label.css("margin-top", yaxis2Label.width() / 2 - 20);
+		var yaxis2Label = $(".y2_label").text(yaxis2Label.join(", "));
 
 		// Create x axis label
-		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
-			.text(x_axis)
-			.appendTo(container);
-		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
+		var xaxisLabel = $(".x_label").text(x_axis);
 
 		// Create zoom out button
 		$("<div class='zoom zoom_out'></div>")
@@ -702,7 +769,8 @@ function drawPlotTransposed(placeholder, selection, data, nameToIdMap, x_axis, y
 }
 
 /*
- * Create 2D array of points from two 1D data arrays
+ * Create 2D array of points from two 1D data arrays and multiply data for a
+ * factor of factor
  * @param {type} xData data on x axis
  * @param {type} yData data on y axis
  * @returns {createSeries.data|Array} 2D array of points to be plotted
@@ -712,6 +780,23 @@ function createSeries(xData, yData) {
 
 	$.each(xData, function(i, x) {
 		data.push([x, yData[i]]);
+	});
+
+	return data;
+}
+
+/*
+ * Create 2D array of points from two 1D data arrays
+ * @param {type} xData data on x axis
+ * @param {type} yData data on y axis
+ * @param {type} factor multiply data for a factor
+ * @returns {createSeries.data|Array} 2D array of points to be plotted
+ */
+function createSeriesAndMultiply(xData, yData, factor) {
+	var data = [];
+
+	$.each(xData, function(i, x) {
+		data.push([x, yData[i] * factor]);
 	});
 
 	return data;
