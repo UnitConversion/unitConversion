@@ -256,8 +256,15 @@ def handle_uploaded_archive(f):
             
             else:
                 # Repair utf8 problems
-                zipContent = unicode(bytesf, errors="ignore")
-                filecontent = zipContent.splitlines()
+                #zipContent = unicode(bytesf, errors="ignore")
+                #filecontent = zipContent.splitlines()
+                filecontent = []
+                for line in bytesf.splitlines():
+                    tmp = unicode(line, errors="ignore")
+                    if tmp.endswith('\n'):
+                        filecontent.append(tmp)
+                    else:
+                        filecontent.append(tmp+'\n')
             
             kmdict[libitem] = filecontent
         
@@ -283,7 +290,7 @@ def saveLatticeHelper(request):
     latticeFile = None
     kickmapFile = None
     controlFile = None
-    latticeName = None
+    #latticeName = None
     
     # Go through all the uploaded files
     for fileObject in request.FILES.getlist('files'):
@@ -298,7 +305,6 @@ def saveLatticeHelper(request):
         # Find lattice file
         if fileType in latticeFileTypes:
             latticeFile = fileObject
-            latticeName = fileObject.name
             continue
             
         # Find kickmap archive
@@ -309,19 +315,25 @@ def saveLatticeHelper(request):
     try:
         lattice = {}
         #lattice['name'] = request.POST['name']
-        if latticeName == None:
-            raise ValueError("Cannot get lattice file name.")
-        lattice['name'] = latticeName
+        lattice['name'] = latticeFile.name
         
         # In plain lattice, data must be put into data parameter
         if latticeFile != None:
             fileContent = handle_uploaded_file(latticeFile)
+            newcontent = []
+            for line in fileContent.splitlines():
+                tmp=unicode(line, errors="ignore")
+                if tmp.endswith('\n'):
+                    newcontent.append(tmp)
+                else:
+                    newcontent.append(tmp+'\n')
 
             if latticeType['format'] == 'txt':
-                lattice['data'] = unicode(fileContent, errors="ignore").splitlines()
-
+                #lattice['data'] = unicode(fileContent, errors="ignore").splitlines()
+                lattice['data'] = newcontent
             else:
-                lattice['raw'] = unicode(fileContent, errors="ignore").splitlines()
+                #lattice['raw'] = unicode(fileContent, errors="ignore").splitlines()
+                lattice['raw'] = newcontent
         
         # Handle kickmap archive
         if kickmapFile != None:
@@ -333,7 +345,16 @@ def saveLatticeHelper(request):
             controlFileContent = handle_uploaded_file(controlFile)
             lattice['control'] = {}
             lattice['control']['name'] = controlFile.name
-            lattice['control']['data'] = unicode(controlFileContent, errors="ignore").splitlines()
+            #lattice['control']['data'] = unicode(controlFileContent, errors="ignore").splitlines()
+            newcontrolFileContent = []
+            for line in controlFileContent.splitlines():
+                tmp=unicode(line, errors="ignore")
+                if tmp.endswith('\n'):
+                    newcontrolFileContent.append(tmp)
+                else:
+                    newcontrolFileContent.append(tmp+'\n')
+                
+            lattice['control']['data'] = newcontrolFileContent
         
         # Prepare lattice type
         request.POST['latticetype'] = json.dumps(latticeType)
@@ -345,7 +366,7 @@ def saveLatticeHelper(request):
         request.POST['creator'] = request.user.username
         
         # Call the save lattice function
-        result = saveLattice(request);
+        result = saveLattice(request)
         return result
     
     except Exception as e:

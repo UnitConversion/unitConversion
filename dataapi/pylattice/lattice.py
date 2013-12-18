@@ -856,7 +856,10 @@ class lattice(object):
                         f.write(base64.b64decode(mapvalue))
                     else:
                         for data in mapvalue:
-                            f.write(data)
+                            if data.endswith('\n'):
+                                f.write(data)
+                            else:
+                                f.write(data+'\n')
 
     def _savetracylattice(self, cur, latticeid, params):
         '''
@@ -886,7 +889,10 @@ class lattice(object):
             furl = self.generateFilePath()
             with open('/'.join((furl, params['name'])), 'w') as f:
                 for data in params['raw']:
-                    f.write(data)
+                    if data.endswith('\n'):
+                        f.write(data)
+                    else:
+                        f.write(data+'\n')
 #            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
 #            with os.fdopen(fd,'w') as f:
 #                for data in params['raw']:
@@ -1271,7 +1277,10 @@ class lattice(object):
             furl = self.generateFilePath()
             with open('/'.join((furl, params['name'])), 'w') as f:
                 for data in params['raw']:
-                    f.write(data)
+                    if data.endswith('\n'):
+                        f.write(data)
+                    else:
+                        f.write(data+'\n')
                       
 #            fd, url = self._uniquefile('/'.join((dirname, params['name'])))
 #            with os.fdopen(fd,'w') as f:

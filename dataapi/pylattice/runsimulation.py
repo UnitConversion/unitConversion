@@ -258,7 +258,10 @@ def runtracy(latticedata, tracy='tracy3', flattenlat=False):
     if latticedata.has_key('raw') and latticedata['raw']!=None:
         with file('/'.join((runtracydir,latfile)), 'w') as f:
             for d in latticedata['raw']:
-                f.write(d)
+                if d.endswith('\n'):
+                    f.write(d)
+                else:
+                    f.write(d+'\n')
     if latticedata.has_key('map') and latticedata['map']!=None:
         for kmkey, kmdata in latticedata['map'].iteritems():
             dirname, _ = os.path.split(kmkey)
@@ -272,7 +275,11 @@ def runtracy(latticedata, tracy='tracy3', flattenlat=False):
                     raise Exception("Can not create a sub directory to store map")
             with file('/'.join((runtracydir, kmkey.lower())), 'w') as f:
                 for kmd in kmdata:
-                    f.write(kmd)
+                    if kmd.endswith('\n'):
+                        f.write(kmd)
+                    else:
+                        f.write(kmd+'\n')
+
     
     if latticedata.has_key('alignment'):
         # ignore mis-alignment error for now
@@ -610,7 +617,10 @@ def runelegant(latticedata, flattenlat=False):
     if latticedata.has_key('raw') and latticedata['raw']!=None:
         with file('/'.join((runelegantdir,latfile)), 'w') as f:
             for d in latticedata['raw']:
-                f.write(d)
+                if d.endswith('\n'):
+                    f.write(d)
+                else:
+                    f.write(d+'\n')
 
     if latticedata.has_key('map') and latticedata['map']!=None:
         for kmkey, kmdata in latticedata['map'].iteritems():

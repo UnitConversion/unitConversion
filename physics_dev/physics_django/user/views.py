@@ -14,11 +14,9 @@ def user_login(request):
     '''
     result = {'result': ''}
     
-    print request.POST
-    
     username = request.POST.getlist('username')[0]
     password = request.POST.getlist('password')[0]
-    print username, password
+
     user = authenticate(username=username, password=password)
     
     # Check if we got user object
