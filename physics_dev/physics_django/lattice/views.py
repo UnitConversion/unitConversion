@@ -236,7 +236,7 @@ def handle_uploaded_file(f):
 # Check if string has binary characters. Based on
 # https://github.com/hamilyon/status/blob/8d05f9b7d95caa1bd1e52966ae8be9b23c442972/grin.py#26
 textchars = ''.join(map(chr, [7,8,9,10,12,13,27] + range(0x20, 0x100)))
-is_binary_string = lambda isbytes: bool(bytes.translate(None, textchars))
+is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
 
 """
 Open kickmap archive and return file contents in an array. File contents
