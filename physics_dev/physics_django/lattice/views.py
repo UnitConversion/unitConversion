@@ -1,4 +1,9 @@
 import re
+import sys
+#from cStringIO import StringIO
+import zipfile
+import traceback
+import base64
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
@@ -10,6 +15,8 @@ try:
     from django.utils import simplejson as json
 except ImportError:
     import json
+
+#import requests
 
 from django.contrib.auth.decorators import permission_required
 from authentication import has_perm_or_basicauth
@@ -26,15 +33,6 @@ from dataprocess import savemodelcodeinfo, retrievemodelcodeinfo
 from dataprocess import savemodelstatus, retrievemodelstatus
 from dataprocess import savemodel, updatemodel, retrievemodel, retrievemodellist
 from dataprocess import retrievetransfermatrix, retrieveclosedorbit, retrievetwiss, retrievebeamparameters
-
-from django.contrib.auth.decorators import permission_required
-import requests
-from cStringIO import StringIO
-import zipfile
-import sys, traceback
-import base64
-
-from authentication import *
 
 def _retrievecmddict(httpcmd):
     '''
@@ -137,12 +135,9 @@ Call saveLatticeInfo but before that check if user is logged in and if he has ne
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('lattice.can_upload')
 def saveLatticeInfo(request):
-    print "in"
-    
     try:
         #params = json.loads(request.raw_post_data)
         params = _retrievecmddict(request.POST.copy())
-        print params
         params['function'] = 'saveLatticeInfo'
         res = savelatticeinfo(params)
     except ValueError as e:
@@ -168,8 +163,6 @@ Call saveLattice but before that check if user is logged in and if he has needed
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('lattice.can_upload')
 def saveLattice(request):
-    print "in"
-    
     try:
         #params = json.loads(request.raw_post_data)
         params = _retrievecmddict(request.POST.copy())
@@ -236,7 +229,7 @@ def handle_uploaded_file(f):
 # Check if string has binary characters. Based on
 # https://github.com/hamilyon/status/blob/8d05f9b7d95caa1bd1e52966ae8be9b23c442972/grin.py#26
 textchars = ''.join(map(chr, [7,8,9,10,12,13,27] + range(0x20, 0x100)))
-is_binary_string = lambda bytes: bool(bytes.translate(None, textchars))
+is_binary_string = lambda isbytes: bool(isbytes.translate(None, textchars))
 
 """
 Open kickmap archive and return file contents in an array. File contents
@@ -244,12 +237,10 @@ can be plain text or binary. If files are plain text, they have to be split
 into lines and if they are binary they have to be encoded to base64 and returned
 """
 def handle_uploaded_archive(f):
-    print f
     kmdict = {}
     
     try:
         zipf = zipfile.ZipFile(f)
-        print zipf.namelist()
         
         # Go through files in a zip
         for libitem in zipf.namelist():
@@ -271,8 +262,8 @@ def handle_uploaded_archive(f):
             kmdict[libitem] = filecontent
         
     except Exception as e:
-        print e
         traceback.print_exc(file=sys.stdout)
+        raise e
         
     return kmdict
     
@@ -292,13 +283,12 @@ def saveLatticeHelper(request):
     latticeFile = None
     kickmapFile = None
     controlFile = None
+    latticeName = None
     
     # Go through all the uploaded files
     for fileObject in request.FILES.getlist('files'):
-        fileName = fileObject.name
         fileNameParts = fileObject.name.split('.')
         fileType = fileNameParts[len(fileNameParts)-1]
-        print fileType
         
         # This can only be control file
         if fileType in controlFileFileTypes:
@@ -308,6 +298,7 @@ def saveLatticeHelper(request):
         # Find lattice file
         if fileType in latticeFileTypes:
             latticeFile = fileObject
+            latticeName = fileObject.name
             continue
             
         # Find kickmap archive
@@ -317,7 +308,10 @@ def saveLatticeHelper(request):
 
     try:
         lattice = {}
-        lattice['name'] = request.POST['name']
+        #lattice['name'] = request.POST['name']
+        if latticeName == None:
+            raise ValueError("Cannot get lattice file name.")
+        lattice['name'] = latticeName
         
         # In plain lattice, data must be put into data parameter
         if latticeFile != None:
@@ -354,5 +348,6 @@ def saveLatticeHelper(request):
         result = saveLattice(request);
         return result
     
-    except:
+    except Exception as e:
         traceback.print_exc(file=sys.stdout)
+        raise e
