@@ -81,12 +81,19 @@ app.controller('mainCtrl', function($scope, $http, $route, $modal){
 			controller: 'uploadLatticeModalCtrl'
 		});
 	};
+
+	$scope.uploadModel = function() {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/save_model.html',
+			controller: 'uploadLatticeModalCtrl'
+		});
+	};
 });
 
 /*
  * Controller for the left/search pane
  */
-app.controller('searchFormCtrl', function($scope, systemService, $window, $routeParams){
+app.controller('searchFormCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.systems = [];
 	$scope.search.displayLattice = "display_block";
@@ -307,7 +314,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 /*
  * Show lattice details in the right pane
  */
-app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $location, $sce, $q, $timeout){
+app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $sce, $q, $timeout){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -393,7 +400,7 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 /*
  * Show lattice compare view in the right pane
  */
-app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, $location, $q, $anchorScroll){
+app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, $q){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -525,7 +532,7 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 /*
  * Show model details in the right pane
  */
-app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $location, $sce){
+app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $window){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -610,12 +617,18 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $lo
 		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
 	};
 
+	// Export data to csv file
+	$scope.exportData = function() {
+		var output = createCsvString($scope.raw.data, $scope.raw.selection, $scope.raw.factor);
+		$window.open('data:application/download,' + encodeURIComponent(output));
+	};
+
 });
 
 /*
  * Show details in the right pane
  */
-app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $location, $q){
+app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $q){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -682,7 +695,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $l
 /*
  * Upload lattice controller
  */
-app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance) {
+app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
 	$scope.upload = {};
 	$scope.upload.latticeFile = "";
 	$scope.upload.controlFile = "";
@@ -789,6 +802,135 @@ app.controller('uploadLatticeModalCtrl', function($http, $scope, $modalInstance)
 			$scope.upload.name === "" ||
 			$scope.upload.branch === "" ||
 			$scope.upload.version === "" ||
+			$scope.upload.latticeType === undefined ||
+			uploadData === undefined
+		) {
+			$scope.modal.error.message = "Parameters should not be empty!";
+			$scope.modal.error.show = true;
+			$scope.modal.success.show = false;
+
+		} else {
+			$scope.modal.error.show = false;
+			$scope.modal.waiting.show = true;
+			$scope.modal.success.show = false;
+			l(uploadData);
+			uploadData.submit();
+		}
+	};
+
+	$scope.cancelButton = function() {
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Upload model controller
+ */
+app.controller('uploadModelModalCtrl', function($scope, $modalInstance) {
+	$scope.upload = {};
+	$scope.upload.latticeFile = "";
+	$scope.upload.controlFile = "";
+	$scope.upload.kickmapFile = "";
+
+	$scope.modal = {};
+	$scope.modal.error = {};
+	$scope.modal.error.show = false;
+	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+
+	$scope.modal.success = {};
+	$scope.modal.success.show = false;
+	$scope.modal.success.message = "Lattice successfully uploaded!";
+
+	$scope.modal.waiting = {};
+	$scope.modal.waiting.show = false;
+	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
+
+	$scope.modal.doSimulation = {};
+	$scope.modal.doSimulation.show = true;
+	$scope.modal.doSimulation.selected = false;
+
+	$scope.modal.controlFile = {};
+	$scope.modal.controlFile.show = false;
+
+	$scope.modal.finishButton = "Cancel";
+
+	$scope.modal.latticeTypes = latticeTypes;
+	var uploadData = undefined;
+
+	// Watch lattice type
+	$scope.$watch('upload.latticeType', function(newValue, oldValue) {
+		var value = {};
+
+		if(newValue !== undefined) {
+			value = JSON.parse(newValue);
+
+			if(value.name === "plain") {
+				$scope.modal.doSimulation.show = false;
+				$scope.modal.doSimulation.selected = false;
+
+			} else {
+				$scope.modal.doSimulation.show = true;
+				$scope.modal.doSimulation.selected = true;
+			}
+
+			if(value.name === "elegant") {
+				$scope.modal.controlFile.show = true;
+
+			} else {
+				$scope.modal.controlFile.show = false;
+			}
+		}
+	});
+
+	$scope.options = {
+		url: serviceurl + "lattice/upload",
+		maxFileSize: 5000000,
+		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
+	};
+
+	$scope.closeAlert = function() {
+		$scope.modal.error.show = false;
+		$scope.modal.success.show = false;
+	};
+
+	$scope.$on('fileuploadadd', function(e, data) {
+		l(data);
+		var id = data.fileInput.context.id;
+		$scope.upload[id] = data.files[0].name;
+
+		if(uploadData === undefined) {
+			uploadData = data;
+
+		} else {
+			uploadData.files.push(data.files[0]);
+		}
+	});
+
+	$scope.$on('fileuploaddone', function(e, data) {
+		uploadData = undefined;
+		$scope.modal.success.show = true;
+		$scope.modal.waiting.show = false;
+		$scope.modal.error.show = false;
+		$scope.upload.latticeFile = "";
+		$scope.upload.controlFile = "";
+		$scope.upload.kickmapFile = "";
+
+		$scope.modal.finishButton = "Finish";
+	});
+
+	$scope.$on('fileuploadfail', function(e, data) {
+		$scope.modal.waiting.show = false;
+		$scope.modal.success.show = false;
+		$scope.modal.error.message = data.jqXHR.responseText;
+		$scope.modal.error.show = true;
+		$scope.modal.success.show = false;
+	});
+
+	$scope.ok = function() {
+		$scope.modal.finishButton = "Cancel";
+
+		if(
+			$scope.upload.name === "" ||
 			$scope.upload.latticeType === undefined ||
 			uploadData === undefined
 		) {

@@ -890,3 +890,54 @@ function setUpLoginForm() {
 		});
 	});
 }
+
+/**
+ * Create CSV string that can be then downloaded as a CSV file
+ * @param {type} data model data
+ * @param {type} selection selection object (which checkboxes are checked)
+ * @param {type} factor factor object (what is the value of factor in an input)
+ * @returns {String} CSV string
+ */
+function createCsvString(data, selection, factor) {
+	var outputArr = [];
+	var mandatoryCols = ["index", "name", "position"];
+	var models = Object.keys(data);
+
+	// Add header row
+	var headerRowArr = [];
+
+	$.each(mandatoryCols, function(i, col) {
+		headerRowArr.push(col);
+	});
+
+	$.each(selection[models[0]], function(propName, propValue) {
+
+		if(propValue) {
+			headerRowArr.push(propName);
+		}
+	});
+
+	outputArr.push(headerRowArr.join("\t"));
+
+	// Add other rows
+	$.each(data[models[0]]['index'], function(indexKey, indexValue) {
+		var bodyRowArr = [];
+
+		$.each(mandatoryCols, function(i, propName) {
+			bodyRowArr.push(data[models[0]][propName][indexKey]);
+		});
+
+		$.each(selection[models[0]], function(propName, propValue) {
+
+			if(propValue) {
+				var value = data[models[0]][propName][indexKey];
+				var factorValue = factor[models[0]][propName];
+				bodyRowArr.push(value * factorValue);
+			}
+		});
+
+		outputArr.push(bodyRowArr.join("\t"));
+	});
+
+	return outputArr.join("\n");
+}

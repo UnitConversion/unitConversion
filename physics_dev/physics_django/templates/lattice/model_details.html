@@ -42,10 +42,11 @@
 				</tr>
 			</table>
 			<button class="btn" ng-click="plotData()">Plot data</button>
+			<button class="btn" ng-click="exportData()">Export data to CSV file</button>
 
 			<br/>
 			<br/>
-			<div class="resize_container ui-resizable">
+			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">
 				<div class="placeholder"></div>
 				<div class='x_label axisLabel xaxisLabel'></div>
 				<div class='y2_label axisLabel yaxis2Label'></div>
@@ -136,7 +137,7 @@
 			<br/>
 
 			<br/>
-			<div class="resize_container ui-resizable">
+			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">
 				<div class="placeholder"></div>
 				<div class='x_label axisLabel xaxisLabel'></div>
 				<div class='y2_label axisLabel yaxis2Label'></div>
