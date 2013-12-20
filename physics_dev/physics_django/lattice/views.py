@@ -52,13 +52,13 @@ def _retrievecmddict(httpcmd):
 post_actions = (('saveLatticeType', savelatticetype),
                 ('saveLatticeInfo', savelatticeinfo),
                 ('updateLatticeInfo', updatelatticeinfo),
-                ('saveLattice', savelattice),
+                #('saveLattice', savelattice),
                 ('updateLattice', updatelattice),
                 ('saveLatticeStatus', savelatticestatus),
 
                 ('saveModelCodeInfo', savemodelcodeinfo),
                 ('saveModelStatus', savemodelstatus),
-                ('saveModel', savemodel),
+                #('saveModel', savemodel),
                 ('updateModel', updatemodel),
                 )
 get_actions = (('retrieveLatticeType', retrievelatticetype),
@@ -164,11 +164,36 @@ Call saveLattice but before that check if user is logged in and if he has needed
 @has_perm_or_basicauth('lattice.can_upload')
 def saveLattice(request):
     try:
-        #params = json.loads(request.raw_post_data)
         params = _retrievecmddict(request.POST.copy())
-        #print params
         params['function'] = 'saveLattice'
         res = savelattice(params)
+    except ValueError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+    except KeyError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+    except Exception as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(content=e, mimetype="application/json")
+    try:
+        finalres = json.dumps(res)
+    except Exception as e:
+        latticemodel_log.exception(e)
+        raise e
+
+    return HttpResponse(finalres, mimetype="application/json")
+
+"""
+Call saveLattice but before that check if user is logged in and if he has needed permissions
+"""
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('lattice.can_upload')
+def saveModel(request):
+    try:
+        params = _retrievecmddict(request.POST.copy())
+        params['function'] = 'saveModel'
+        res = savemodel(params)
     except ValueError as e:
         latticemodel_log.exception(e)
         return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
@@ -202,10 +227,10 @@ def lattice_content_model_list(request):
     return render_to_response("lattice/model_list.html")
 
 def lattice_content_details(request):
-    return render_to_response("lattice/details.html")
+    return render_to_response("lattice/details.html", context_instance = RequestContext(request))
 
 def lattice_content_model_details(request):
-    return render_to_response("lattice/model_details.html")
+    return render_to_response("lattice/model_details.html", context_instance = RequestContext(request))
 
 '''
 Load modal window template
@@ -277,7 +302,6 @@ def handle_uploaded_archive(f):
 '''
 Save lattice helper function that parses uploaded files and prepares data for saving lattice
 '''
-#import time
 @require_http_methods(["POST"])
 def saveLatticeHelper(request):
     
@@ -372,3 +396,83 @@ def saveLatticeHelper(request):
     except Exception as e:
         traceback.print_exc(file=sys.stdout)
         raise e
+
+'''
+Save lattice helper function that parses uploaded files and prepares data for saving lattice
+'''
+@require_http_methods(["POST"])
+def saveModelHelper(request):
+    
+    print request.POST
+    print request.FILES
+    
+    # Define file types
+    resultFileFileTypes = ['pm']
+    controlFileFileTypes = ['ele']
+    
+    resultFile = None
+    controlFile = None
+    
+    # Go through all the uploaded files
+    for fileObject in request.FILES.getlist('files'):
+        fileNameParts = fileObject.name.split('.')
+        fileType = fileNameParts[len(fileNameParts)-1]
+        
+        # Find lattice file
+        if fileType in resultFileFileTypes:
+            resultFile = fileObject
+            continue
+        
+        # This can only be control file
+        if fileType in controlFileFileTypes:
+            controlFile = fileObject
+            continue
+
+    try:
+        modelName = request.POST['modelname']
+        simCodeAlg = request.POST['simcodealg'].split('/')
+        model = {}
+        model[modelName] = {}
+        model[modelName]['description'] = request.POST['description']
+        model[modelName]['creator'] = request.user.username
+        model[modelName]['simulationCode'] = simCodeAlg[0]
+        model[modelName]['sumulationAlgorithm'] = simCodeAlg[1]
+        
+        # Remove parameters from the first level of POST dictionary
+        del request.POST['description']
+        del request.POST['simcodealg']
+        
+        if resultFile != None:
+            fileContent = handle_uploaded_file(resultFile)
+            newcontent = []
+            for line in fileContent.splitlines():
+                tmp=unicode(line, errors="ignore")
+                if tmp.endswith('\n'):
+                    newcontent.append(tmp)
+                else:
+                    newcontent.append(tmp+'\n')
+        
+        # Handle control file
+        if controlFile != None:
+            controlFileContent = handle_uploaded_file(controlFile)
+            newcontrolFileContent = []
+            for line in controlFileContent.splitlines():
+                tmp=unicode(line, errors="ignore")
+                if tmp.endswith('\n'):
+                    newcontrolFileContent.append(tmp)
+                else:
+                    newcontrolFileContent.append(tmp+'\n')
+            
+            model[modelName]['simulationControlFile'] = controlFile.name
+            model[modelName]['simulationControl'] = newcontrolFileContent
+        
+        # Prepare model data
+        request.POST['model'] = json.dumps(model)
+        
+        # Call the save model function
+        result = saveModel(request)
+        return result
+    
+    except Exception as e:
+        traceback.print_exc(file=sys.stdout)
+        raise e1

@@ -8,6 +8,12 @@
 		<div id="raw"></div>
 		<h3>Model Info</h3>
 
+		{% endverbatim %}
+			{% if user.is_authenticated %}
+			<button ng-click="updateModel()" class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update model</button>
+			{% endif %}
+		{% verbatim %}
+
 		<table class="table table-hover">
 			<tr ng-repeat="(modelKey, modelValue) in models" ng-hide="modelKey == 'simulationControl' || modelKey == 'simulationControlParsed'">
 				<td><b>{{modelKey | firstLetterUppercase}}: </b></td>

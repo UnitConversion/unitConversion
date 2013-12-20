@@ -304,6 +304,7 @@ html, body {
 
 .details_data {
 	padding: 5px;
+	position: relative;
 }
 
 .details_data_tabs {
@@ -407,4 +408,10 @@ html, body {
 .input-micro {
 	width: 35px !important;
 	margin-bottom: 0 !important;
+}
+
+.model_update {
+	position: absolute;
+	right: 5px;
+	top: 15px;
 }

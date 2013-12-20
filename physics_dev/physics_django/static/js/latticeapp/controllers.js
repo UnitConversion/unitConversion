@@ -30,7 +30,7 @@ app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope, $http, $route, $modal){
+app.controller('mainCtrl', function($scope, $modal){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
@@ -85,7 +85,7 @@ app.controller('mainCtrl', function($scope, $http, $route, $modal){
 	$scope.uploadModel = function() {
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/save_model.html',
-			controller: 'uploadLatticeModalCtrl'
+			controller: 'uploadModelModalCtrl'
 		});
 	};
 });
@@ -532,7 +532,7 @@ app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, 
 /*
  * Show model details in the right pane
  */
-app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $window){
+app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $window, $modal){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -560,6 +560,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 	var query = serviceurl + 'lattice/?function=retrieveModel&name=' + $routeParams.id;
 
 	$http.get(query).success(function(data){
+		l(data);
 		keys = Object.keys(data);
 		privateModel = data[keys[0]];
 		privateModel.name = keys[0];
@@ -623,6 +624,12 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 		$window.open('data:application/download,' + encodeURIComponent(output));
 	};
 
+	$scope.updateModel = function() {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/update_model.html',
+			controller: 'updateModelModalCtrl'
+		});
+	};
 });
 
 /*
@@ -826,11 +833,10 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
 /*
  * Upload model controller
  */
-app.controller('uploadModelModalCtrl', function($scope, $modalInstance) {
+app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCodeInfoService) {
 	$scope.upload = {};
-	$scope.upload.latticeFile = "";
 	$scope.upload.controlFile = "";
-	$scope.upload.kickmapFile = "";
+	$scope.upload.resultFile = "";
 
 	$scope.modal = {};
 	$scope.modal.error = {};
@@ -845,45 +851,21 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance) {
 	$scope.modal.waiting.show = false;
 	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
 
-	$scope.modal.doSimulation = {};
-	$scope.modal.doSimulation.show = true;
-	$scope.modal.doSimulation.selected = false;
-
 	$scope.modal.controlFile = {};
 	$scope.modal.controlFile.show = false;
 
-	$scope.modal.finishButton = "Cancel";
-
-	$scope.modal.latticeTypes = latticeTypes;
-	var uploadData = undefined;
-
-	// Watch lattice type
-	$scope.$watch('upload.latticeType', function(newValue, oldValue) {
-		var value = {};
-
-		if(newValue !== undefined) {
-			value = JSON.parse(newValue);
-
-			if(value.name === "plain") {
-				$scope.modal.doSimulation.show = false;
-				$scope.modal.doSimulation.selected = false;
-
-			} else {
-				$scope.modal.doSimulation.show = true;
-				$scope.modal.doSimulation.selected = true;
-			}
-
-			if(value.name === "elegant") {
-				$scope.modal.controlFile.show = true;
-
-			} else {
-				$scope.modal.controlFile.show = false;
-			}
-		}
+	// Load Mode Code Info
+	modelCodeInfoService.transform(function(serviceData){
+		l("modelcodeinfo");
+		l(serviceData);
+		$scope.modal.modelCodeInfo = serviceData.data;
 	});
 
+	$scope.modal.finishButton = "Cancel";
+	var uploadData = undefined;
+
 	$scope.options = {
-		url: serviceurl + "lattice/upload",
+		url: serviceurl + "model/upload",
 		maxFileSize: 5000000,
 		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
 	};
@@ -911,9 +893,8 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance) {
 		$scope.modal.success.show = true;
 		$scope.modal.waiting.show = false;
 		$scope.modal.error.show = false;
-		$scope.upload.latticeFile = "";
 		$scope.upload.controlFile = "";
-		$scope.upload.kickmapFile = "";
+		$scope.upload.resultFile = "";
 
 		$scope.modal.finishButton = "Finish";
 	});
@@ -930,8 +911,8 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance) {
 		$scope.modal.finishButton = "Cancel";
 
 		if(
-			$scope.upload.name === "" ||
-			$scope.upload.latticeType === undefined ||
+			$scope.upload.modelname === "" ||
+			$scope.upload.simCodeAlg === undefined ||
 			uploadData === undefined
 		) {
 			$scope.modal.error.message = "Parameters should not be empty!";
@@ -944,6 +925,74 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance) {
 			$scope.modal.success.show = false;
 			l(uploadData);
 			uploadData.submit();
+		}
+	};
+
+	$scope.cancelButton = function() {
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Update model controller
+ */
+app.controller('updateModelModalCtrl', function($scope, $modalInstance) {
+	$scope.upload = {};
+	$scope.modelStatuses = modelStatuses;
+
+	$scope.modal = {};
+	$scope.modal.error = {};
+	$scope.modal.error.show = false;
+	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+
+	$scope.modal.success = {};
+	$scope.modal.success.show = false;
+	$scope.modal.success.message = "Lattice successfully uploaded!";
+
+	$scope.modal.waiting = {};
+	$scope.modal.waiting.show = false;
+	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
+
+	$scope.modal.controlFile = {};
+	$scope.modal.controlFile.show = false;
+
+	$scope.modal.finishButton = "Cancel";
+
+	$scope.closeAlert = function() {
+		$scope.modal.error.show = false;
+		$scope.modal.success.show = false;
+	};
+
+	$scope.$on('fileuploaddone', function(e, data) {
+		$scope.modal.success.show = true;
+		$scope.modal.waiting.show = false;
+		$scope.modal.error.show = false;
+
+		$scope.modal.finishButton = "Finish";
+	});
+
+	$scope.$on('fileuploadfail', function(e, data) {
+		$scope.modal.waiting.show = false;
+		$scope.modal.success.show = false;
+		$scope.modal.error.message = data.jqXHR.responseText;
+		$scope.modal.error.show = true;
+		$scope.modal.success.show = false;
+	});
+
+	$scope.ok = function() {
+		$scope.modal.finishButton = "Cancel";
+
+		if(
+			$scope.upload.status === ""
+		) {
+			$scope.modal.error.message = "Parameters should not be empty!";
+			$scope.modal.error.show = true;
+			$scope.modal.success.show = false;
+
+		} else {
+			$scope.modal.error.show = false;
+			$scope.modal.waiting.show = true;
+			$scope.modal.success.show = false;
 		}
 	};
 

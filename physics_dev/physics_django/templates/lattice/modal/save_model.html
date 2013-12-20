@@ -24,7 +24,7 @@
 			<div class="control-group">
 				<label class="control-label" for="inputName">Name</label>
 				<div class="controls">
-					<input id="inputName" ng-model="upload.name" name="name" type="text">
+					<input id="inputName" ng-model="upload.name" name="modelname" type="text">
 				</div>
 			</div>
 			<div class="control-group">
@@ -36,14 +36,14 @@
 			<div class="control-group">
 				<label class="control-label" for="inputId">Lattice ID</label>
 				<div class="controls">
-					<input id="inputId" ng-model="upload.latticeId" name="name" type="text">
+					<input id="inputId" ng-model="upload.latticeId" name="latticeid" type="text">
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="inputSimCodeAlg">Simulation code & Algorithm</label>
 				<div class="controls">
-					<select id="inputSimCodeAlg" ng-model="upload.latticeType" name="latticetype">
-						<option ng-repeat="type in modal.latticeTypes" value="{{type['value']}}">{{type['name']}}</option>
+					<select id="inputSimCodeAlg" ng-model="upload.simCodeAlg" name="simcodealg">
+						<option ng-repeat="(id, dataObject) in modal.modelCodeInfo" value="{{dataObject.name}}/{{dataObject.algorithm}}">{{dataObject.name}}/{{dataObject.algorithm}}</option>
 					</select>
 				</div>
 			</div>
@@ -52,9 +52,9 @@
 				<div class="controls">
 					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
 						<i class="icon-file icon-white"></i>
-						<input id="simulationFile" type="file" name="files" ng-disabled="disabled">
+						<input id="controlFile" type="file" name="files" ng-disabled="disabled">
 					</span>
-					{{upload.simulationFile}}
+					{{upload.controlFile}}
 				</div>
 			</div>
 			<div class="control-group">

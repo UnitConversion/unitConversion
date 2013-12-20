@@ -7,6 +7,11 @@
 	<div class="details_data">
 		<div id="raw"></div>
 		<h3>Lattice Info</h3>
+		{% endverbatim %}
+			{% if user.is_authenticated %}
+				<button class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update lattice</button>
+			{% endif %}
+		{% verbatim %}
 
 		<table class="table">
 			<tr ng-if="lattice.latticeid">
