@@ -560,7 +560,6 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 	var query = serviceurl + 'lattice/?function=retrieveModel&name=' + $routeParams.id;
 
 	$http.get(query).success(function(data){
-		l(data);
 		keys = Object.keys(data);
 		privateModel = data[keys[0]];
 		privateModel.name = keys[0];
@@ -624,10 +623,17 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 		$window.open('data:application/download,' + encodeURIComponent(output));
 	};
 
-	$scope.updateModel = function() {
+	$scope.updateModel = function(modelName) {
+		l(modelName);
+
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/update_model.html',
-			controller: 'updateModelModalCtrl'
+			controller: 'updateModelModalCtrl',
+			resolve: {
+				name: function() {
+					return modelName;
+				}
+			}
 		});
 	};
 });
@@ -936,7 +942,7 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCod
 /*
  * Update model controller
  */
-app.controller('updateModelModalCtrl', function($scope, $modalInstance) {
+app.controller('updateModelModalCtrl', function($scope, $modalInstance, $http, name) {
 	$scope.upload = {};
 	$scope.modelStatuses = modelStatuses;
 
@@ -963,27 +969,12 @@ app.controller('updateModelModalCtrl', function($scope, $modalInstance) {
 		$scope.modal.success.show = false;
 	};
 
-	$scope.$on('fileuploaddone', function(e, data) {
-		$scope.modal.success.show = true;
-		$scope.modal.waiting.show = false;
-		$scope.modal.error.show = false;
-
-		$scope.modal.finishButton = "Finish";
-	});
-
-	$scope.$on('fileuploadfail', function(e, data) {
-		$scope.modal.waiting.show = false;
-		$scope.modal.success.show = false;
-		$scope.modal.error.message = data.jqXHR.responseText;
-		$scope.modal.error.show = true;
-		$scope.modal.success.show = false;
-	});
-
 	$scope.ok = function() {
 		$scope.modal.finishButton = "Cancel";
 
 		if(
-			$scope.upload.status === ""
+			$scope.upload.status === undefined ||
+			$scope.upload.status === "-1"
 		) {
 			$scope.modal.error.message = "Parameters should not be empty!";
 			$scope.modal.error.show = true;
@@ -994,6 +985,21 @@ app.controller('updateModelModalCtrl', function($scope, $modalInstance) {
 			$scope.modal.waiting.show = true;
 			$scope.modal.success.show = false;
 		}
+		var query = serviceurl + "model/savestatus";
+
+		$http.post(query, "status=" + $scope.upload.status + "&name=" + name).success(function(data){
+			$scope.modal.success.show = true;
+			$scope.modal.waiting.show = false;
+			$scope.modal.error.show = false;
+			$scope.modal.finishButton = "Finish";
+
+		}).error(function(data, status, headers, config) {
+			$scope.modal.waiting.show = false;
+			$scope.modal.success.show = false;
+			$scope.modal.error.message = data;
+			$scope.modal.error.show = true;
+			$scope.modal.success.show = false;
+		});
 	};
 
 	$scope.cancelButton = function() {

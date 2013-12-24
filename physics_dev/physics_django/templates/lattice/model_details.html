@@ -10,7 +10,7 @@
 
 		{% endverbatim %}
 			{% if user.is_authenticated %}
-			<button ng-click="updateModel()" class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update model</button>
+			<button ng-click="updateModel(models['name'])" class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update model</button>
 			{% endif %}
 		{% verbatim %}
 

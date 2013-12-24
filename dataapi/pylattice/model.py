@@ -1312,7 +1312,7 @@ class model(object):
         from model
         left join lattice on lattice.lattice_id = model.lattice_id
         left join element on element.lattice_id = lattice.lattice_id
-        left join beam_parameter bp on bp.element_id = element.element_id
+        left join beam_parameter bp on bp.element_id = element.element_id and model.model_id = bp.model_id
         where model_name
         '''
         sqlvals = []
@@ -1332,6 +1332,8 @@ class model(object):
         elif end != None:
             sql += ' and element.s <= %s '
             sqlvals.append(end)
+            
+        
 
         try:
             cur=self.conn.cursor()

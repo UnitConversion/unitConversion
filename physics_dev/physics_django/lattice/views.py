@@ -57,7 +57,7 @@ post_actions = (('saveLatticeType', savelatticetype),
                 ('saveLatticeStatus', savelatticestatus),
 
                 ('saveModelCodeInfo', savemodelcodeinfo),
-                ('saveModelStatus', savemodelstatus),
+                #('saveModelStatus', savemodelstatus),
                 #('saveModel', savemodel),
                 ('updateModel', updatemodel),
                 )
@@ -185,7 +185,7 @@ def saveLattice(request):
     return HttpResponse(finalres, mimetype="application/json")
 
 """
-Call saveLattice but before that check if user is logged in and if he has needed permissions
+Call saveModel but before that check if user is logged in and if he has needed permissions
 """
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('lattice.can_upload')
@@ -194,6 +194,33 @@ def saveModel(request):
         params = _retrievecmddict(request.POST.copy())
         params['function'] = 'saveModel'
         res = savemodel(params)
+    except ValueError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+    except KeyError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+    except Exception as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(content=e, mimetype="application/json")
+    try:
+        finalres = json.dumps(res)
+    except Exception as e:
+        latticemodel_log.exception(e)
+        raise e
+
+    return HttpResponse(finalres, mimetype="application/json")
+
+"""
+Call saveModeStatus but before that check if user is logged in and if he has needed permissions
+"""
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('lattice.can_upload')
+def saveModelStatus(request):
+    try:
+        params = _retrievecmddict(request.POST.copy())
+        params['function'] = 'saveModelStatus'
+        res = savemodelstatus(params)
     except ValueError as e:
         latticemodel_log.exception(e)
         return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
@@ -398,13 +425,10 @@ def saveLatticeHelper(request):
         raise e
 
 '''
-Save lattice helper function that parses uploaded files and prepares data for saving lattice
+Save model helper function that parses uploaded files and prepares data for saving model
 '''
 @require_http_methods(["POST"])
 def saveModelHelper(request):
-    
-    print request.POST
-    print request.FILES
     
     # Define file types
     resultFileFileTypes = ['pm']
@@ -442,21 +466,71 @@ def saveModelHelper(request):
         del request.POST['description']
         del request.POST['simcodealg']
         
+        # Handle result file
         if resultFile != None:
             fileContent = handle_uploaded_file(resultFile)
-            newcontent = []
+            beamParametersHeaderLineParts = []
+            beamParameters = {}
+            
+            # For each liin in a result file, split it and prepare necessary objects
             for line in fileContent.splitlines():
-                tmp=unicode(line, errors="ignore")
-                if tmp.endswith('\n'):
-                    newcontent.append(tmp)
-                else:
-                    newcontent.append(tmp+'\n')
+                
+                # Skip comments, find beam parameter header line and save it
+                if line.startswith(('#', '!', '//')):
+                    commentLineParts = line.split()
+                    
+                    # Save header line for beam parameters and delete first element with # inside
+                    if len(commentLineParts) > 2 and commentLineParts[1] == 'i':
+                        beamParametersHeaderLineParts = commentLineParts
+                        del beamParametersHeaderLineParts[0]
+                    
+                    continue
+                
+                # Split every line
+                lineParts = line.split()
+                
+                # Insert model info
+                if len(lineParts) >= 2 and lineParts[0].isdigit() == False:
+                    model[modelName][lineParts[0]] = lineParts[1]
+                
+                # Insert beam parameters lines
+                if len(beamParametersHeaderLineParts) > 0:
+                    beamParametersRow = {}
+                    transferMatrix = []
+                    
+                    # Add all parameters that are in the header. Last parameter is transfer matrix which shoud be dealth with separately
+                    for column in range(1, len(beamParametersHeaderLineParts)-1):
+                        beamParametersRow[beamParametersHeaderLineParts[column]] = lineParts[column]
+                    
+                    # Create pos property
+                    beamParametersRow['position'] = beamParametersRow['s']
+                    
+                    # Add transfer matrix that should be at the end
+                    matrixIndex = 1
+                    transferMatrixRow = []
+                    
+                    # Last 36 values represent tranform matrix
+                    for column in range(len(beamParametersHeaderLineParts)-1, len(lineParts)):
+                        transferMatrixRow.append(float(lineParts[column]))
+                        
+                        # Make 6x6 matrix
+                        if matrixIndex%6 == 0:
+                            transferMatrix.append(transferMatrixRow)
+                            transferMatrixRow = []
+                            
+                        matrixIndex += 1
+                        
+                    beamParametersRow['transferMatrix'] = transferMatrix
+                    beamParameters[lineParts[0]] = beamParametersRow
+            
+        model[modelName]['beamParameter'] = beamParameters
         
         # Handle control file
         if controlFile != None:
             controlFileContent = handle_uploaded_file(controlFile)
             newcontrolFileContent = []
             for line in controlFileContent.splitlines():
+                
                 tmp=unicode(line, errors="ignore")
                 if tmp.endswith('\n'):
                     newcontrolFileContent.append(tmp)
@@ -475,4 +549,18 @@ def saveModelHelper(request):
     
     except Exception as e:
         traceback.print_exc(file=sys.stdout)
-        raise e1
+        
+'''
+Save model status helper function prepares data for saving model status
+'''
+@require_http_methods(["POST"])
+def saveModelStatusHelper(request):
+    print request.POST
+    
+    try:
+        # Call the save model status function
+        result = saveModelStatus(request)
+        return result
+
+    except Exception as e:
+        traceback.print_exc(file=sys.stdout)

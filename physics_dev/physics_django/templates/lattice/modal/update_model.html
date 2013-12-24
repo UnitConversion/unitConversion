@@ -22,7 +22,7 @@
 
 		<div class="form-horizontal">
 			<div class="control-group">
-				<label class="control-label" for="selectStatus">Set new status</label>
+				<label class="control-label" for="selectStatus">Set model status</label>
 				<div class="controls">
 					<select id="selectStatus" ng-model="upload.status" name="simcodealg">
 						<option ng-repeat="status in modelStatuses" value="{{status.id}}">{{status.value}}</option>
@@ -32,7 +32,7 @@
 		</div>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" ng-click="ok()">Upload</button>
+		<button class="btn btn-primary" ng-click="ok()">Update</button>
 		<button class="btn btn-primary" ng-click="cancelButton()">{{modal.finishButton}}</button>
 	</div>
 </form>
