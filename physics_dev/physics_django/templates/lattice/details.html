@@ -9,7 +9,7 @@
 		<h3>Lattice Info</h3>
 		{% endverbatim %}
 			{% if user.is_authenticated %}
-				<button class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update lattice</button>
+				<button ng-click="updateLattice(lattice.name, lattice.version, lattice.branch)" class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update lattice</button>
 			{% endif %}
 		{% verbatim %}
 

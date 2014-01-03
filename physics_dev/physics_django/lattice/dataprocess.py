@@ -395,15 +395,16 @@ def retrievelattice(params):
 def savelatticestatus(params):
     '''
     '''
-    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'status'])
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'status', 'creator'])
 
     name = params['name']
     version = params['version']
     branch=params['branch']
     status=params['status']
+    creator=params['creator']
     
     try:
-        result=latinst.savelatticestatus(name, version, branch, status=status)
+        result=latinst.savelatticestatus(name, version, branch, status=status, creator=creator)
         
         transaction.commit_unless_managed()
     except:
@@ -415,7 +416,7 @@ def savelatticestatus(params):
 def retrievelatticestatus(params):
     '''
     '''
-    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'status'])
+    _checkkeys(params.keys(), ['function','name', 'version', 'branch', 'status', 'creator', 'description'])
 
     name = params['name']
     version = params['version']
@@ -495,13 +496,14 @@ def retrievemodelcodeinfo(params):
 
 def savemodelstatus(params):
     ''''''
-    _checkkeys(params.keys(), ['function','name', 'status'])
+    _checkkeys(params.keys(), ['function','name', 'status', 'creator'])
 
     name = params['name']
-    status=params['status']
+    status = params['status']
+    creator = params['creator']
     
     try:
-        result=modelinst.savegoldenmodel(name, status=status)
+        result=modelinst.savegoldenmodel(name, status=status, creator=creator)
         
         transaction.commit_unless_managed()
     except:
@@ -526,7 +528,8 @@ def retrievemodelstatus(params):
     result = {}
     for res in results:
         result[res[7]] = {'name': res[1],
-                          'status': res[6]
+                          'status': res[6],
+                          'id': res[7]
                           }
         if res[2] !=None:
             result[res[7]]['creator'] = res[2]

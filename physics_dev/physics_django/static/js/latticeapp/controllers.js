@@ -178,7 +178,15 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 		$scope.comparison.length = 0;
 	};
 
-	query = serviceurl + 'lattice/?function=retrieveLattice&' + createLatticeListQuery($routeParams, false);
+
+	if($routeParams.status !== undefined && $routeParams.status !== "-1") {
+		l($routeParams.status);
+		query = serviceurl + 'lattice/?function=retrieveLatticeStatus&' + createLatticeListQuery($routeParams, false);
+
+	} else {
+		$routeParams.status = undefined;
+		query = serviceurl + 'lattice/?function=retrieveLattice&' + createLatticeListQuery($routeParams, false);
+	}
 
 	$http.get(query).success(function(data){
 
@@ -237,16 +245,22 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 	var previousModel = undefined;
 	var query = "";
 
-	query = serviceurl + 'lattice/?function=retrieveModel&' + createModelListQuery($routeParams, false);
+	if($routeParams.status !== undefined && $routeParams.status !== "-1") {
+		l($routeParams.status);
+		query = serviceurl + 'lattice/?function=retrieveModelStatus&' + createModelListQuery($routeParams, false);
+
+	} else {
+		$routeParams.status = undefined;
+		query = serviceurl + 'lattice/?function=retrieveModel&' + createModelListQuery($routeParams, false);
+	}
 
 	$http.get(query).success(function(data){
 		var index = 0;
 
 		$.each(data, function(i, item){
 
-			// Build customized Log object
+			// Build customized Model object
 			var newItem = item;
-			newItem.name = i;
 
 			// Alternate background colors
 			if(index%2 === 0) {
@@ -271,7 +285,8 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		var models = [];
 
 		$.each($scope.comparison.data, function(i, model){
-			var id = i + "||" + $scope.models[i].id;
+			var id = $scope.models[i].name + "||" + i;
+			l(id);
 
 			if(model === true) {
 				models.push(id);
@@ -305,7 +320,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		model.type = $routeParams.type;
 		$routeParams.click = "lattice_click";
 
-		var location = createModelListQuery($routeParams, true) + "/id/" + model.name;
+		var location = createModelListQuery($routeParams, true) + "/id/" + model.id;
 
 		$window.location = location;
 	};
@@ -314,7 +329,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 /*
  * Show lattice details in the right pane
  */
-app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $sce, $q, $timeout){
+app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $sce, $modal, $timeout){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -363,6 +378,8 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 
 	// Get lattice data and generate appropriate objects
 	$http.get(query).success(function(data){
+		l(data);
+
 		var latticeKeys = Object.keys(data);
 		lattice = data[latticeKeys[0]].lattice;
 		$scope.raw.url = serviceurl + data[latticeKeys[0]].url;
@@ -395,6 +412,25 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 			$scope.raw.table =  createLatticeTable(header, lattice, $scope.raw.url);
 		}, 100);
 	});
+
+	$scope.updateLattice = function(latticeName, latticeVersion, latticeBranch) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/update_lattice.html',
+			controller: 'updateLatticeModalCtrl',
+			resolve: {
+				name: function() {
+					return latticeName;
+				},
+				version: function() {
+					return latticeVersion;
+				},
+				branch: function() {
+					return latticeBranch;
+				}
+			}
+		});
+	};
 });
 
 /*
@@ -557,12 +593,12 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 	var keys = [];
 	var privateModel = {};
 
-	var query = serviceurl + 'lattice/?function=retrieveModel&name=' + $routeParams.id;
+	var query = serviceurl + 'lattice/?function=retrieveModel&name=*&id=' + $routeParams.id;
 
 	$http.get(query).success(function(data){
+		l(data);
 		keys = Object.keys(data);
 		privateModel = data[keys[0]];
-		privateModel.name = keys[0];
 		$scope.models = privateModel;
 	});
 
@@ -582,10 +618,13 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 
 	$scope.searchForModelDetails = function() {
 		$scope.raw.showMatrices = false;
-		query = createModelDetailsUrl($scope.raw.search, $routeParams.id);
+		query = createModelDetailsUrl($scope.raw.search, privateModel.name);
+		l(query);
 
 		$http.get(query).success(function(data){
+			l(data);
 			var transform = transformModelDetails(data);
+			l(transform);
 			var name = transform[0];
 			$scope.raw.header[transform[0]] = transform[1];
 			$scope.raw.data[transform[0]] = transform[2];
@@ -670,6 +709,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $q
 			var idParts = id.split("||");
 			nameToIdMap[idParts[0]] = idParts[1];
 			query = createModelDetailsUrl($scope.raw.search, idParts[0]);
+			l(query);
 			gets.push($http.get(query));
 		});
 
@@ -708,7 +748,7 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $q
 /*
  * Upload lattice controller
  */
-app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
+app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance, $window) {
 	$scope.upload = {};
 	$scope.upload.latticeFile = "";
 	$scope.upload.controlFile = "";
@@ -717,7 +757,7 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
 	$scope.modal = {};
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+	$scope.modal.error.message = "Lattice with the same parameters already exists in the database!";
 
 	$scope.modal.success = {};
 	$scope.modal.success.show = false;
@@ -833,13 +873,14 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance) {
 
 	$scope.cancelButton = function() {
 		$modalInstance.dismiss('cancel');
+		$window.location.reload();
 	};
 });
 
 /*
  * Upload model controller
  */
-app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCodeInfoService) {
+app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCodeInfoService, $window) {
 	$scope.upload = {};
 	$scope.upload.controlFile = "";
 	$scope.upload.resultFile = "";
@@ -847,15 +888,15 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCod
 	$scope.modal = {};
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+	$scope.modal.error.message = "Model with the same parameters already exists in the database!";
 
 	$scope.modal.success = {};
 	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Lattice successfully uploaded!";
+	$scope.modal.success.message = "Model successfully uploaded!";
 
 	$scope.modal.waiting = {};
 	$scope.modal.waiting.show = false;
-	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
+	$scope.modal.waiting.message = "Uploading model!";
 
 	$scope.modal.controlFile = {};
 	$scope.modal.controlFile.show = false;
@@ -936,6 +977,7 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCod
 
 	$scope.cancelButton = function() {
 		$modalInstance.dismiss('cancel');
+		$window.location.reload();
 	};
 });
 
@@ -949,15 +991,15 @@ app.controller('updateModelModalCtrl', function($scope, $modalInstance, $http, n
 	$scope.modal = {};
 	$scope.modal.error = {};
 	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Lattice with hte same parameters already exists in the database!";
+	$scope.modal.error.message = "Something went wrong during status saving!";
 
 	$scope.modal.success = {};
 	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Lattice successfully uploaded!";
+	$scope.modal.success.message = "Status successfully saved!";
 
 	$scope.modal.waiting = {};
 	$scope.modal.waiting.show = false;
-	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
+	$scope.modal.waiting.message = "Saving status";
 
 	$scope.modal.controlFile = {};
 	$scope.modal.controlFile.show = false;
@@ -988,6 +1030,74 @@ app.controller('updateModelModalCtrl', function($scope, $modalInstance, $http, n
 		var query = serviceurl + "model/savestatus";
 
 		$http.post(query, "status=" + $scope.upload.status + "&name=" + name).success(function(data){
+			$scope.modal.success.show = true;
+			$scope.modal.waiting.show = false;
+			$scope.modal.error.show = false;
+			$scope.modal.finishButton = "Finish";
+
+		}).error(function(data, status, headers, config) {
+			$scope.modal.waiting.show = false;
+			$scope.modal.success.show = false;
+			$scope.modal.error.message = data;
+			$scope.modal.error.show = true;
+			$scope.modal.success.show = false;
+		});
+	};
+
+	$scope.cancelButton = function() {
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Update lattice controller
+ */
+app.controller('updateLatticeModalCtrl', function($scope, $modalInstance, $http, name, version, branch) {
+	$scope.upload = {};
+	$scope.latticeStatuses = statuses;
+
+	$scope.modal = {};
+	$scope.modal.error = {};
+	$scope.modal.error.show = false;
+	$scope.modal.error.message = "Something went wrong during status saving!";
+
+	$scope.modal.success = {};
+	$scope.modal.success.show = false;
+	$scope.modal.success.message = "Status successfully saved!";
+
+	$scope.modal.waiting = {};
+	$scope.modal.waiting.show = false;
+	$scope.modal.waiting.message = "Saving status";
+
+	$scope.modal.controlFile = {};
+	$scope.modal.controlFile.show = false;
+
+	$scope.modal.finishButton = "Cancel";
+
+	$scope.closeAlert = function() {
+		$scope.modal.error.show = false;
+		$scope.modal.success.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.modal.finishButton = "Cancel";
+
+		if(
+			$scope.upload.status === undefined ||
+			$scope.upload.status === "-1"
+		) {
+			$scope.modal.error.message = "Parameters should not be empty!";
+			$scope.modal.error.show = true;
+			$scope.modal.success.show = false;
+
+		} else {
+			$scope.modal.error.show = false;
+			$scope.modal.waiting.show = true;
+			$scope.modal.success.show = false;
+		}
+		var query = serviceurl + "lattice/savestatus";
+
+		$http.post(query, "status=" + $scope.upload.status + "&name=" + name + "&version=" + version + "&branch=" + branch).success(function(data){
 			$scope.modal.success.show = true;
 			$scope.modal.waiting.show = false;
 			$scope.modal.error.show = false;

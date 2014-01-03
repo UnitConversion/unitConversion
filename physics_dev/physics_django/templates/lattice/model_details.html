@@ -80,7 +80,7 @@
 			<tr>
 				<th ng-repeat="column in cols">{{column}}</th>
 			</tr>
-			<tr ng-repeat="row in raw.data[name].index">
+			<tr ng-repeat="row in raw.data[name].index track by $index">
 				<td ng-repeat="column in cols">{{raw.data[name][column][row] | precision:raw.search.precision:column}}</td>
 			</tr>
 		</table>

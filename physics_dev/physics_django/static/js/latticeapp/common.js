@@ -64,6 +64,16 @@ function createLatticeListQuery(search, returnUrl) {
 
 	if(search.type === "lattice") {
 
+		// Add status part
+		if(search.status !== undefined) {
+			query += "status=" + search.status + "&";
+			url += "/status/" + search.status;
+
+		} else {
+			query += "";
+			url += "/status/";
+		}
+
 		// Add name part
 		if(search.name !== undefined) {
 			query += "name=" + search.name + '&';
@@ -123,16 +133,6 @@ function createLatticeListQuery(search, returnUrl) {
 			query += "";
 			url += "/latticetype/";
 		}
-
-		// Add status part
-//		if(search.status !== undefined) {
-//			query += "status=" + search.status;
-//			url += "/status/" + search.status;
-//
-//		} else {
-//			query += "status=*";
-//			url += "/status/";
-//		}
 	}
 
 	// Return URL or query
@@ -158,6 +158,16 @@ function createModelListQuery(search, returnUrl) {
 	url += "/type/" + search.type;
 
 	if(search.type === "model") {
+
+		// Add status part
+		if(search.status !== undefined) {
+			query += "status=" + search.status + "&";
+			url += "/status/" + search.status;
+
+		} else {
+			query += "";
+			url += "/status/";
+		}
 
 		// Add name part
 		if(search.name !== undefined) {
@@ -435,6 +445,7 @@ function createModelDetailsUrl(search, modelName) {
  * @returns {Array}
  */
 function transformModelDetails(data) {
+	l(data);
 	var modelNames = Object.keys(data);
 	var header = [];
 

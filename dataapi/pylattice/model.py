@@ -181,9 +181,10 @@ class model(object):
             modelid:        the id shows that which model this API will deal with
         
         return: a dictionary
-                {'model name':                            # model name
+                {'id':                                    # model name
                                {'id': ,                   # model id number
                                 'latticeId': ,            # id of the lattice which given model belongs to
+                                'name': ,                 # model name
                                 'description': ,          # description of this model
                                 'creator': ,              # name who create this model first time
                                 'originalDate': ,         # date when this model was created
@@ -265,7 +266,8 @@ class model(object):
             
             for res in results:
                 tempdict = {'id': res[0],
-                            'latticeId': res[1]}
+                            'latticeId': res[1],
+                            'name': res[2]}
                 keys=['description', 'creator', 'originalDate',
                       'updated', 'lastModified',
                       'tunex', 'tuney', 'alphac',
@@ -282,7 +284,7 @@ class model(object):
                         else:
                             tempdict[keys[i-3]] = res[i]
                 
-                modelres[res[2]]=tempdict
+                modelres[res[0]]=tempdict
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving model information:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -937,7 +939,7 @@ class model(object):
         from model
         left join lattice on lattice.lattice_id = model.lattice_id
         left join element on element.lattice_id = lattice.lattice_id
-        left join beam_parameter bp on bp.element_id = element.element_id
+        left join beam_parameter bp on bp.element_id = element.element_id and bp.model_id = model.model_id
         where model_name
         '''
         sqlvals = []
@@ -1043,7 +1045,7 @@ class model(object):
         from model
         left join lattice on lattice.lattice_id = model.lattice_id
         left join element on element.lattice_id = lattice.lattice_id
-        left join beam_parameter bp on bp.element_id = element.element_id
+        left join beam_parameter bp on bp.element_id = element.element_id and bp.model_id = model.model_id
         where model_name
         '''
         sqlvals = []
@@ -1154,7 +1156,7 @@ class model(object):
         from model
         left join lattice on lattice.lattice_id = model.lattice_id
         left join element on element.lattice_id = lattice.lattice_id
-        left join beam_parameter bp on bp.element_id = element.element_id
+        left join beam_parameter bp on bp.element_id = element.element_id and bp.model_id = model.model_id
         where model_name
         '''
         sqlvals = []

@@ -99,7 +99,7 @@
 		Status:
 		<br />
 		<select ng-model="search.status">
-			<option ng-repeat="status in modelStatuses" value="{{status.id}}">{{status.value}}</option>
+			<option ng-repeat="status in modelStatuses" value="{{status.id}}" ng-selected="status.value == search.selected">{{status.value}}</option>
 		</select>
 		<br />
 		<br />

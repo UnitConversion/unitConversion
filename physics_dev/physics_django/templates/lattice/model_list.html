@@ -6,7 +6,7 @@
 </div>
 <div ng-repeat="(key, modeldata) in models | filter:lattice_filter" class="lattice {{modeldata.click}} {{modeldata.color}}">
 	<label class="checkbox">
-		<input type="checkbox" ng-change="setCompareData()" ng-model="comparison.data[modeldata.name]"> Select for plotting
+		<input type="checkbox" ng-change="setCompareData()" ng-model="comparison.data[modeldata.id]"> Select for plotting
 	</label>
 
 	<table ng-click="showDetails(modeldata)">

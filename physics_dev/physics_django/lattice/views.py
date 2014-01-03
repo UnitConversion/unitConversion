@@ -54,7 +54,7 @@ post_actions = (('saveLatticeType', savelatticetype),
                 ('updateLatticeInfo', updatelatticeinfo),
                 #('saveLattice', savelattice),
                 ('updateLattice', updatelattice),
-                ('saveLatticeStatus', savelatticestatus),
+                #('saveLatticeStatus', savelatticestatus),
 
                 ('saveModelCodeInfo', savemodelcodeinfo),
                 #('saveModelStatus', savemodelstatus),
@@ -185,6 +185,33 @@ def saveLattice(request):
     return HttpResponse(finalres, mimetype="application/json")
 
 """
+Call saveLatticeStatus but before that check if user is logged in and if he has needed permissions
+"""
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('lattice.can_upload')
+def saveLatticeStatus(request):
+    try:
+        params = _retrievecmddict(request.POST.copy())
+        params['function'] = 'saveLatticeStatus'
+        res = savelatticestatus(params)
+    except ValueError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+    except KeyError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+    except Exception as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(content=e, mimetype="application/json")
+    try:
+        finalres = json.dumps(res)
+    except Exception as e:
+        latticemodel_log.exception(e)
+        raise e
+
+    return HttpResponse(finalres, mimetype="application/json")
+
+"""
 Call saveModel but before that check if user is logged in and if he has needed permissions
 """
 @require_http_methods(["POST"])
@@ -212,7 +239,7 @@ def saveModel(request):
     return HttpResponse(finalres, mimetype="application/json")
 
 """
-Call saveModeStatus but before that check if user is logged in and if he has needed permissions
+Call saveModelStatus but before that check if user is logged in and if he has needed permissions
 """
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('lattice.can_upload')
@@ -425,6 +452,23 @@ def saveLatticeHelper(request):
         raise e
 
 '''
+Save lattice status helper function prepares data for saving lattice status
+'''
+@require_http_methods(["POST"])
+def saveLatticeStatusHelper(request):
+    
+    try:
+        # Call the save lattice status function
+        request.POST = request.POST.copy()
+        request.POST['creator'] = request.user.username
+        print request.POST
+        result = saveLatticeStatus(request)
+        return result
+
+    except Exception as e:
+        traceback.print_exc(file=sys.stdout)
+
+'''
 Save model helper function that parses uploaded files and prepares data for saving model
 '''
 @require_http_methods(["POST"])
@@ -505,6 +549,12 @@ def saveModelHelper(request):
                     # Create pos property
                     beamParametersRow['position'] = beamParametersRow['s']
                     
+                    # Correct codx property
+                    beamParametersRow['codx'] = beamParametersRow['xcod']
+                    
+                    # Correct cody property
+                    beamParametersRow['cody'] = beamParametersRow['ycod']
+                    
                     # Add transfer matrix that should be at the end
                     matrixIndex = 1
                     transferMatrixRow = []
@@ -549,7 +599,7 @@ def saveModelHelper(request):
     
     except Exception as e:
         traceback.print_exc(file=sys.stdout)
-        
+
 '''
 Save model status helper function prepares data for saving model status
 '''
@@ -559,6 +609,8 @@ def saveModelStatusHelper(request):
     
     try:
         # Call the save model status function
+        request.POST = request.POST.copy()
+        request.POST['creator'] = request.user.username
         result = saveModelStatus(request)
         return result
 

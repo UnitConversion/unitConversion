@@ -4,7 +4,7 @@
 <form data-file-upload="options" method="post" enctype="multipart/form-data">
 	<div class="modal-header">
 		<button type="button" class="close" ng-click="cancelButton()">&times;</button>
-		<h3>Update model</h3>
+		<h3>Update lattice</h3>
 	</div>
 	<div class="modal-body">
 		<div class="alert alert-error" ng-show="modal.error.show">
@@ -22,10 +22,10 @@
 
 		<div class="form-horizontal">
 			<div class="control-group">
-				<label class="control-label" for="selectStatus">Set model status</label>
+				<label class="control-label" for="selectStatus">Set lattice status</label>
 				<div class="controls">
 					<select id="selectStatus" ng-model="upload.status" name="status">
-						<option ng-repeat="status in modelStatuses" value="{{status.id}}">{{status.value}}</option>
+						<option ng-repeat="status in latticeStatuses" value="{{status.id}}">{{status.value}}</option>
 					</select>
 				</div>
 			</div>
