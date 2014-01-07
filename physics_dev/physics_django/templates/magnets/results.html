@@ -61,7 +61,13 @@
 	</div>
 	<br/>
 	<div class="clear"></div>
-	<div id="placeholder"></div>
+	<div class="resize_container ui-resizable" ng-class="{resize_container_border: plot.numberOfDirections > 0}">
+		<div class="placeholder"></div>
+		<div class='x_label axisLabel xaxisLabel'></div>
+		<div class='y_label axisLabel yaxisLabel'></div>
+	</div>
+	<br/>
+	<br/>
 </div>
 
 <div ng-if="subview == 'properties'">

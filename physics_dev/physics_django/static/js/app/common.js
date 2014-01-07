@@ -142,8 +142,8 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 
 	var seriesData = {};
 	scope.plot.numberOfDirections = 0;
-	var container = $("#placeholder");
-	container.addClass("placeholder_hidden");
+	var container = $(".placeholder");
+	var resizeContainer = $(".resize_container");
 
 	if(scope.plot.direction === undefined) {
 		scope.plot.direction = {};
@@ -238,22 +238,22 @@ function drawPlot(data, x_axis, y_axis, newSeries, scope){
 
 	// We have at least one series
 	if(series.length > 0 && $) {
-		container.removeClass("placeholder_hidden");
 
 		// Initialize plot
 		var flotPlot = $.plot(container, series, optionsFlot);
 
+		resizeContainer.resizable({
+			maxWidth: 2000,
+			maxHeight: 700,
+			minWidth: 900,
+			minHeight: 400
+		});
+
 		// Create y axis labe
-		var yaxisLabel = $("<div class='axisLabel yaxisLabel'></div>")
-			.text(y_axis)
-			.appendTo(container);
-		yaxisLabel.css("margin-top", yaxisLabel.width() / 2 - 20);
+		var yaxisLabel = $(".y_label").text(y_axis);
 
 		// Create x axis label
-		var xaxisLabel = $("<div class='axisLabel xaxisLabel'></div>")
-			.text(x_axis)
-			.appendTo(container);
-		xaxisLabel.css("margin-left", xaxisLabel.width() / 2 - 30);
+		var xaxisLabel = $(".x_label").text(x_axis);
 
 		// Create zoom out button
 		$("<div class='zoom zoom_out'></div>")

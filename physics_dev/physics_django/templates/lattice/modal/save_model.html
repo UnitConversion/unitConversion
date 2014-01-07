@@ -34,16 +34,19 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="inputId">Lattice ID</label>
+				<label class="control-label" for="inputId">Select lattice</label>
 				<div class="controls">
-					<input id="inputId" ng-model="upload.latticeId" name="latticeid" type="text">
+<!--					<input id="inputId" ng-model="upload.latticeId" name="latticeid" type="text">-->
+					<select id="inputId" ng-model="upload.latticeId" name="latticeid">
+						<option ng-repeat="lattice in modal.lattices" value="{{lattice.id}}">{{lattice.label}}</option>
+					</select>
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="inputSimCodeAlg">Simulation code & Algorithm</label>
 				<div class="controls">
 					<select id="inputSimCodeAlg" ng-model="upload.simCodeAlg" name="simcodealg">
-						<option ng-repeat="(id, dataObject) in modal.modelCodeInfo" value="{{dataObject.name}}/{{dataObject.algorithm}}">{{dataObject.name}}/{{dataObject.algorithm}}</option>
+						<option ng-repeat="(id, dataObject) in modal.modelCodeInfo" value="{{dataObject.name}}/{{dataObject.algorithm}}">{{dataObject.name}} / {{dataObject.algorithm}}</option>
 					</select>
 				</div>
 			</div>

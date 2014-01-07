@@ -415,3 +415,7 @@ html, body {
 	right: 5px;
 	top: 15px;
 }
+
+ul.auto-complete-list {
+	z-index: 1500;
+}

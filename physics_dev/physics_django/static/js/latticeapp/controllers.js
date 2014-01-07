@@ -95,11 +95,11 @@ app.controller('mainCtrl', function($scope, $modal){
  */
 app.controller('searchFormCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
-	$scope.systems = [];
 	$scope.search.displayLattice = "display_block";
 	$scope.search.displayModel = "display_none";
 	$scope.search.type = "lattice";
 	$scope.search.selected = "-";
+	$scope.latticeTypes = latticeTypes;
 
 	// Set search type
 	if($routeParams.type !== undefined) {
@@ -118,8 +118,18 @@ app.controller('searchFormCtrl', function($scope, $window, $routeParams){
 		$window.location = newLocation;
 	};
 
+	$scope.$watch('search.status', function(newValue, oldValue) {
+
+		if(newValue !== "") {
+			$scope.search.desc = "";
+			$scope.search.creator = "";
+			$scope.search.latticetype = "";
+		}
+	});
+
 	// Watch for search type change
 	$scope.$watch('search.type', function(newValue, oldValue){
+		$scope.search.status = -1;
 
 		if(newValue === "lattice") {
 			$scope.search.displayLattice = "display_block";
@@ -880,10 +890,15 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance, $windo
 /*
  * Upload model controller
  */
-app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCodeInfoService, $window) {
+app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCodeInfoService, $window, $http) {
 	$scope.upload = {};
 	$scope.upload.controlFile = "";
 	$scope.upload.resultFile = "";
+	$scope.upload.latticeid = undefined;
+
+	$scope.$watch('upload.latticeid', function(newValue, oldValue) {
+		l(newValue);
+	});
 
 	$scope.modal = {};
 	$scope.modal.error = {};
@@ -900,6 +915,23 @@ app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCod
 
 	$scope.modal.controlFile = {};
 	$scope.modal.controlFile.show = false;
+
+	$scope.modal.lattices = [];
+
+	var query = serviceurl + 'lattice/?function=retrieveLatticeInfo&name=*&branch=*&version=*';
+
+	// Retrieve lattices
+	$http.get(query).success(function(data){
+
+		$.each(data, function(id, lattice) {
+			lattice.id = id;
+			lattice.label = lattice.name + " / " + lattice.branch + " / " + lattice.version;
+			lattice.value = lattice.id;
+			$scope.modal.lattices.push(lattice);
+		});
+
+		l($scope.modal.lattices);
+	});
 
 	// Load Mode Code Info
 	modelCodeInfoService.transform(function(serviceData){

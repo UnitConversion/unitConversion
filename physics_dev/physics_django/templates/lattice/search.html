@@ -57,7 +57,11 @@
 	<div class="{{search.displayLattice}}">
 		Lattice type:
 		<br />
-		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.latticetype" name="creator" />
+<!--		<input class="search_field" ng-enter="searchForLattice(search)" type="text" ng-model="search.latticetype" name="latticetype" />-->
+		<select ng-model="search.latticetype">
+			<option value="">-</option>
+			<option ng-repeat="latticeType in latticeTypes" value="{{latticeType.name.split('/')[0]}}">{{latticeType.name.split('/')[0]}}</option>
+		</select>
 		<br />
 		<br />
 	</div>

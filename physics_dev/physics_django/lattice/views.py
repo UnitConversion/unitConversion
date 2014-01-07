@@ -555,6 +555,12 @@ def saveModelHelper(request):
                     # Correct cody property
                     beamParametersRow['cody'] = beamParametersRow['ycod']
                     
+                    # Correct phasex property
+                    beamParametersRow['phasex'] = beamParametersRow['nux']
+                    
+                    # Correct phasey property
+                    beamParametersRow['phasey'] = beamParametersRow['nuy']
+                    
                     # Add transfer matrix that should be at the end
                     matrixIndex = 1
                     transferMatrixRow = []
