@@ -98,12 +98,23 @@ app.controller('searchFormCtrl', function($scope, $window, $routeParams){
 	$scope.search.displayLattice = "display_block";
 	$scope.search.displayModel = "display_none";
 	$scope.search.type = "lattice";
-	$scope.search.selected = "-";
+	$scope.search.selected = -1;
 	$scope.latticeTypes = latticeTypes;
 
 	// Set search type
 	if($routeParams.type !== undefined) {
 		$scope.search.type = $routeParams.type;
+	}
+
+	// Set search status
+	if($routeParams.status !== undefined) {
+		$scope.search.selected = $routeParams.status;
+	}
+
+	// Set search lattice type
+	if($routeParams.latticetype !== undefined) {
+		$scope.search.latticetype = $routeParams.latticetype;
+		l($scope.search.latticetype);
 	}
 
 	// Lattice search button click
@@ -159,8 +170,16 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 	var previousLattice = undefined;
 	var query = "";
 
+	// Set flag when lattice was selected
 	$scope.setCompareData = function() {
-		$scope.comparison.length = Object.keys($scope.comparison.data).length;
+		$scope.comparison.length = 0;
+
+		$.each($scope.comparison.data, function(name, selected) {
+
+			if(selected === true) {
+				$scope.comparison.length ++;
+			}
+		});
 	};
 
 	// Click on compare lattice button
@@ -179,6 +198,7 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 		$window.location = location;
 	};
 
+	// Clear selected lattices
 	$scope.clearSelection = function() {
 
 		$.each($scope.comparison.data, function(i, lattice){
@@ -286,8 +306,16 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		});
 	});
 
+	// Set flag when new model was selected
 	$scope.setCompareData = function() {
-		$scope.comparison.length = Object.keys($scope.comparison.data).length;
+		$scope.comparison.length = 0;
+
+		$.each($scope.comparison.data, function(name, selected) {
+
+			if(selected === true) {
+				$scope.comparison.length ++;
+			}
+		});
 	};
 
 	// Click on compare lattice button
@@ -307,6 +335,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 		$window.location = location;
 	};
 
+	// Clear selected models
 	$scope.clearSelection = function() {
 		$.each($scope.comparison.data, function(i, model){
 			$scope.comparison.data[i] = false;

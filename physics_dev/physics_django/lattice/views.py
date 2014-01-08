@@ -368,7 +368,6 @@ def saveLatticeHelper(request):
     latticeFile = None
     kickmapFile = None
     controlFile = None
-    #latticeName = None
     
     # Go through all the uploaded files
     for fileObject in request.FILES.getlist('files'):
@@ -392,7 +391,6 @@ def saveLatticeHelper(request):
 
     try:
         lattice = {}
-        #lattice['name'] = request.POST['name']
         lattice['name'] = latticeFile.name
         
         # In plain lattice, data must be put into data parameter
@@ -407,10 +405,8 @@ def saveLatticeHelper(request):
                     newcontent.append(tmp+'\n')
 
             if latticeType['format'] == 'txt':
-                #lattice['data'] = unicode(fileContent, errors="ignore").splitlines()
                 lattice['data'] = newcontent
             else:
-                #lattice['raw'] = unicode(fileContent, errors="ignore").splitlines()
                 lattice['raw'] = newcontent
         
         # Handle kickmap archive
@@ -423,7 +419,6 @@ def saveLatticeHelper(request):
             controlFileContent = handle_uploaded_file(controlFile)
             lattice['control'] = {}
             lattice['control']['name'] = controlFile.name
-            #lattice['control']['data'] = unicode(controlFileContent, errors="ignore").splitlines()
             newcontrolFileContent = []
             for line in controlFileContent.splitlines():
                 tmp=unicode(line, errors="ignore")
