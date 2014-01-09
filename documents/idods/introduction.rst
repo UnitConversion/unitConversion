@@ -225,6 +225,7 @@ Here is description for the requirements to save data into data service.
 
         - An installed device could belong to a beam-line
         - A beam-line could belong to a project
+    - An installed device has some properties like section description, and beam optics description
 
     - An installed device can have multiple online data sets
     - Online data could be a binary (HDF5 for example), or ASCII
