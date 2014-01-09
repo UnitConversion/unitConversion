@@ -654,12 +654,12 @@ class model(object):
                                 'description': ,          # description of this model
                                 'tunex': ,                # horizontal tune
                                 'tuney': ,                # vertical tune
-                                'chromX0': ,             # linear horizontal chromaticity
-                                'chromX1': ,             # non-linear horizontal chromaticity
-                                'chromX2': ,             # high order non-linear horizontal chromaticity
-                                'chromY0': ,             # linear vertical chromaticity
-                                'chromY1': ,             # non-linear vertical chromaticity
-                                'chromY2': ,             # high order non-linear vertical chromaticity
+                                'chromX0': ,              # linear horizontal chromaticity
+                                'chromX1': ,              # non-linear horizontal chromaticity
+                                'chromX2': ,              # high order non-linear horizontal chromaticity
+                                'chromY0': ,              # linear vertical chromaticity
+                                'chromY1': ,              # non-linear vertical chromaticity
+                                'chromY2': ,              # high order non-linear vertical chromaticity
                                 'finalEnergy': ,          # the final beam energy in GeV
                                 'simulationCode': ,       # name of simulation code, Elegant and Tracy for example
                                 'sumulationAlgorithm': ,  # algorithm used by simulation code, for example serial or parallel,

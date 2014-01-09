@@ -1838,8 +1838,8 @@ class lattice(object):
             version: lattice version
             branch:  lattice branch
             status:  0: current golden lattice
-                     1: alternative golden lattice
-                     2: lattice from live machine
+                     1: lattice from live machine
+                     2: alternative golden lattice
                      3: previous golden lattice, but not any more
                      other number can be defined by a user
             ignorestatus: get all lattice no matter whatever its status is.
@@ -1884,7 +1884,7 @@ class lattice(object):
             branch:  lattice branch
             creator: who craeted it, or changed the status last time
             status:  0: current golden lattice [by default]
-                     1: current live lattice
+                     1: live lattice
                      2: alternative golden lattice
                      3: previous golden lattice, but not any more
                      other number can be defined by a user

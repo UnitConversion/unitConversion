@@ -16,7 +16,7 @@ def install():
     
     # Create user user
     try:
-        user = User.objects.create_user('user', 'admin@gmail.com', 'user')
+        user = User.objects.create_user('test', 'admin@gmail.com', 'test')
 
     except IntegrityError:
         sys.stderr.write("User user already exists in the database\n")
@@ -59,11 +59,12 @@ def install():
         sys.stderr.write("user already in unit_conversion group\n")
         
     # Create lattice content type
-    contentType = ContentType.objects.get(name='lattice_type')
-    
-    if(contentType == None):
+    #if(contentType == None):
+    try: 
         ContentType.objects.create(name='lattice_type', app_label='lattice', model='')
-    
+    except:
+        pass
+    #contentType = ContentType.objects.get(name='lattice_type')
     # Get lattice content type
     contentType = ContentType.objects.get(name='lattice_type')
     
