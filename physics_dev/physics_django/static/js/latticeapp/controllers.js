@@ -272,6 +272,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 	$scope.comparison.show = 'false';
 
 	$scope.models = {};
+	$scope.modelsArray = [];
 	var previousModel = undefined;
 	var query = "";
 
@@ -301,6 +302,7 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 			}
 
 			$scope.models[i] = newItem;
+			$scope.modelsArray.push(newItem);
 
 			index ++;
 		});

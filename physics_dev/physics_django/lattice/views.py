@@ -498,12 +498,53 @@ def saveModelHelper(request):
         model[modelName] = {}
         model[modelName]['description'] = request.POST['description']
         model[modelName]['creator'] = request.user.username
+        
+        if request.POST['tunex'] != "":
+            model[modelName]['tunex'] = request.POST['tunex']
+            
+        if request.POST['tuney'] != "":
+            model[modelName]['tuney'] = request.POST['tuney']
+            
+        if request.POST['alphac'] != "":
+            model[modelName]['alphac'] = request.POST['alphac']
+            
+        if request.POST['chromX0'] != "":
+            model[modelName]['chromX0'] = request.POST['chromX0']
+            
+        if request.POST['chromX1'] != "":
+            model[modelName]['chromX1'] = request.POST['chromX1']
+            
+        if request.POST['chromX2'] != "":
+            model[modelName]['chromX2'] = request.POST['chromX2']
+            
+        if request.POST['chromY0'] != "":
+            model[modelName]['chromY0'] = request.POST['chromY0']
+            
+        if request.POST['chromY1'] != "":
+            model[modelName]['chromY1'] = request.POST['chromY1']
+            
+        if request.POST['chromY2'] != "":
+            model[modelName]['chromY2'] = request.POST['chromY2']
+            
+        if request.POST['finalEnergy'] != "":
+            model[modelName]['finalEnergy'] = request.POST['finalEnergy']
+            
         model[modelName]['simulationCode'] = simCodeAlg[0]
         model[modelName]['sumulationAlgorithm'] = simCodeAlg[1]
         
         # Remove parameters from the first level of POST dictionary
         del request.POST['description']
         del request.POST['simcodealg']
+        del request.POST['tunex']
+        del request.POST['tuney']
+        del request.POST['alphac']
+        del request.POST['chromX0']
+        del request.POST['chromX1']
+        del request.POST['chromX2']
+        del request.POST['chromY0']
+        del request.POST['chromY1']
+        del request.POST['chromY2']
+        del request.POST['finalEnergy']
         
         # Handle result file
         if resultFile != None:
@@ -529,8 +570,8 @@ def saveModelHelper(request):
                 lineParts = line.split()
                 
                 # Insert model info
-                if len(lineParts) >= 2 and lineParts[0].isdigit() == False:
-                    model[modelName][lineParts[0]] = lineParts[1]
+                #if len(lineParts) >= 2 and lineParts[0].isdigit() == False:
+                #    model[modelName][lineParts[0]] = lineParts[1]
                 
                 # Insert beam parameters lines
                 if len(beamParametersHeaderLineParts) > 0:
