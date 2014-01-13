@@ -48,14 +48,19 @@ class idods(object):
         return: vendor
         '''
 
+        # Generate SQL statement
+        sql = '''
+        select vendor_id, name from vendor where name = %s
+        '''
+
+        # Check for vendor name parameter
+        if vendorname == None:
+            raise AttributeError("Vendor name parameter is missing!")
+
         try:
             cur = self.conn.cursor()
-
-            # Generate SQL statement
-            sql = '''
-            select vendor_id, vendor_name, vendor_description from vendor where vendor_name = %s
-            '''
             cur.execute(sql, (vendorname,))
+
             # get any one since it should be unique
             res = cur.fetchall()
 
@@ -64,6 +69,48 @@ class idods(object):
             raise Exception('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
         return res
+
+
+    def _savevendor(self, vendorname):
+        '''
+        Save vendor in the database
+
+        parameters:
+            vendorname:     name of the vendor we are looking for
+
+        return: new vendor id
+        '''
+
+        # Generate SQL statement
+        sql = '''
+        insert into vendor (name) values (%s)
+        '''
+
+        # Check for vendor name parameter
+        if vendorname == None:
+            raise AttributeError("Vendor name parameter is missing!")
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (vendorname,))
+
+            # Get last row id
+            vendorid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+
+        except MySQLdb.Error as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+
+        return vendorid
 
     def saveinventory(self, name, **kws):
         '''
@@ -163,10 +210,10 @@ class idods(object):
 
         if kws.has_key('vendor') and kws['vendor'] != None:
             vendor = kws['vendor']
-            res = self._retrievevendor(vendor);
+            res = self._retrievevendor(vendor)
 
             if(len(res) == 0):
-                raise ValueError("Vendor with name (%s) doen't exist." % (vendor));
+                raise ValueError("Vendor with name (%s) doen't exist." % (vendor))
 
         # Check properties parameter
         props=None
@@ -253,6 +300,7 @@ class idods(object):
                 cur.execute(sql, (invname,))
             # get any one since it should be unique
             res = cur.fetchall()
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -654,6 +702,39 @@ class idods(object):
 
         '''
 
+        # Check device type
+        if dtype == None:
+            raise AttributeError("Device type parameter is missing!")
+
+        # Check if component type already exists
+        componenttype = self.retrievecomponenttype(dtype, description);
+        keys = componenttype.keys()
+
+        # If it exists, return its id
+        if len(componenttype) > 0:
+            return {'id': keys[0]}
+
+        # Save it into database and return its new id
+        else:
+            sql = ''' INSERT into cmpnt_type (name, description) VALUES (%s, %s) '''
+
+            try:
+                cur = self.conn.cursor()
+                cur.execute(sql, (dtype, description))
+                componenttypeid = cur.lastrowid
+
+                # Commit transaction
+                if self.transaction == None:
+                    self.conn.commit()
+
+            except MySQLError as e:
+
+                # Rollback changes
+                if self.transaction == None:
+                    self.conn.rollback()
+
+            return componenttypeid
+
     def retrievecomponenttype(self, dtype, description=None):
         '''Retrieve a component type using the key words:
 
@@ -677,20 +758,54 @@ class idods(object):
         :Raises: KeyError, AttributeError
         '''
 
+        # Start SQL
         sql = '''
-        SELECT cmpnt_type_id, cmpnt_type_name, description FROM converter.cmpnt_type WHERE
+        SELECT cmpnt_type_id, name, description FROM cmpnt_type WHERE 1=1
         '''
 
-        if dtype != None:
-            raise AttributeError("Device type parameter (%s) doesn't exist." % (dtype));
+        # Append device type
+        if dtype == None:
+            raise AttributeError("Device type parameter is missing!")
 
-        if '*' in description or '?' in description:
-            sql += ''' description like %s '''
-            cur.execute(sql, (_wildcardformat(description), ))
+        if dtype == '*':
+            sql += ''' '''
+
+        elif '*' in dtype or '?' in dtype:
+            sql += ''' AND name like "%s" ''' % (_wildcardformat(dtype))
 
         else:
-            sql += ''' description = %s '''
-            cur.execute(sql, (description,))
+            sql += ''' AND name = "%s" ''' % (dtype)
+
+        # Append desciprtion
+        if description != None:
+
+            if '*' in description or '?' in description:
+                sql += ''' AND description like "%s" ''' % (_wildcardformat(description))
+
+            else:
+                sql += ''' AND description = "%s" ''' % (description)
+
+        # Execute SQL
+        try:
+            print sql
+            cur = self.conn.cursor()
+            cur.execute(sql)
+
+            res = cur.fetchall()
+
+            # Create return dictionry
+            resdict = {}
+
+            for r in res:
+                resdict[r[0]] = {}
+                resdict[r[0]]['name'] = r[1]
+                resdict[r[0]]['description'] = r[2]
+
+            return resdict
+
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updatecomponenttype(self, dtype, description):
         '''Update description of a device type.

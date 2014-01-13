@@ -5,6 +5,7 @@ this model is developed to help idods unit test since some functions might not b
 thru web service.
 
 @author: shengb
+@update: dejan.dezman@cosylab.com
 '''
 
 import MySQLdb
@@ -18,16 +19,34 @@ def connect():
         conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=3306)
     return conn
 
-def cleanlatticetype(typecollection):
+def cleanvendor(namelist):
     '''
+    Clean vendor table
     '''
     conn=connect()
-    if len(typecollection) > 0:
+
+    if len(namelist) > 0:
         cur = conn.cursor()
-        for col in typecollection:
-            sql = 'delete from lattice_type where lattice_type_name = %s and lattice_type_format = %s'
-            cur.execute(sql, (col['name'], col['format']))
+
+        sql = 'DELETE FROM vendor WHERE name IN (%s)'
+        cur.execute(sql, (namelist))
         conn.commit()
+
+    conn.close()
+
+def cleancomponenttype(namelist):
+    '''
+    Clean componenttype table
+    '''
+    conn=connect()
+
+    if len(namelist) > 0:
+        cur = conn.cursor()
+
+        sql = 'DELETE FROM cmpnt_type WHERE name IN (%s)'
+        cur.execute(sql, (namelist))
+        conn.commit()
+
     conn.close()
 
 def deletelattice(name, version, branch):
