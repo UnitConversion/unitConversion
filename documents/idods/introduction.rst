@@ -166,7 +166,7 @@ Data Access API
 
 All the information are saved into underneath RDB. Currently, its schema is as Fig. 1.2.
 
-.. figure:: _static/id_commissioning_db_V03_R41.jpg
+.. figure:: _static/id_commissioning_db_V03_R45.jpg
     :width: 734px
     :height: 325px
     :align: center

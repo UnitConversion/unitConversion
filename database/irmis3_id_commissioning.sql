@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0.3
--- Created on: 1/8/2014 10:22:43 AM
--- Diagram Version: 41
+-- Created on: 1/13/2014 9:41:50 AM
+-- Diagram Version: 45
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -62,6 +62,28 @@ CREATE TABLE `id_data_method` (
   PRIMARY KEY(`id_data_method_id`)
 )
 ENGINE=INNODB;
+
+-- Drop table inventory_prop_tmplt
+DROP TABLE IF EXISTS `inventory_prop_tmplt`;
+
+CREATE TABLE `inventory_prop_tmplt` (
+  `inventory_prop_tmplt_id` int(11) NOT NULL AUTO_INCREMENT,
+  `cmpnt_type_id` int(11),
+  `inventory_prop_tmplt_name` varchar(255),
+  `inventory_prop_tmplt_desc` varchar(255),
+  `inventory_prop_tmplt_default` varchar(255),
+  `inventory_prop_tmplt_unit` varchar(50),
+  PRIMARY KEY(`inventory_prop_tmplt_id`),
+  INDEX `FKIndex1`(`inventory_prop_tmplt_name`),
+  INDEX `FKIndex2`(`cmpnt_type_id`),
+  CONSTRAINT `( cmpnt_type_id=cmpnt_type_id )` FOREIGN KEY (`cmpnt_type_id`)
+    REFERENCES `cmpnt_type`(`cmpnt_type_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+)
+ENGINE=INNODB
+CHARACTER SET latin1 
+COLLATE latin1_swedish_ci ;
 
 -- Drop table install
 DROP TABLE IF EXISTS `install`;
@@ -135,6 +157,30 @@ ENGINE=INNODB
 CHARACTER SET latin1 
 COLLATE latin1_swedish_ci ;
 
+-- Drop table inventory_prop
+DROP TABLE IF EXISTS `inventory_prop`;
+
+CREATE TABLE `inventory_prop` (
+  `inventory_prop_id` int(11) NOT NULL AUTO_INCREMENT,
+  `inventory_id` int(11),
+  `inventory_prop_tmplt_id` int(11),
+  `inventory_prop_value` varchar(255),
+  PRIMARY KEY(`inventory_prop_id`),
+  INDEX `FKIndex1`(`inventory_id`),
+  INDEX `FKIndex2`(`inventory_prop_tmplt_id`),
+  CONSTRAINT `(inventory_id=inventory_id)` FOREIGN KEY (`inventory_id`)
+    REFERENCES `inventory`(`inventory_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `(inventory_prop_tmplt_id=inventory_prop_tmplt_id)` FOREIGN KEY (`inventory_prop_tmplt_id`)
+    REFERENCES `inventory_prop_tmplt`(`inventory_prop_tmplt_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+)
+ENGINE=INNODB
+CHARACTER SET latin1 
+COLLATE latin1_swedish_ci ;
+
 -- Drop table id_offline_data
 DROP TABLE IF EXISTS `id_offline_data`;
 
@@ -172,44 +218,6 @@ CREATE TABLE `id_offline_data` (
     ON UPDATE NO ACTION,
   CONSTRAINT `(id_raw_data_id=id_raw_data_id)` FOREIGN KEY (`id_raw_data_id`)
     REFERENCES `id_raw_data`(`id_raw_data_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION
-)
-ENGINE=INNODB
-CHARACTER SET latin1 
-COLLATE latin1_swedish_ci ;
-
--- Drop table inventory_prop
-DROP TABLE IF EXISTS `inventory_prop`;
-
-CREATE TABLE `inventory_prop` (
-  `inventory_prop_id` int(11) NOT NULL AUTO_INCREMENT,
-  `inventory_id` int(11),
-  `length` float,
-  `up_corrector_position` float(9,3),
-  `middle_corrector_position` float(9,3),
-  `down_corrector_position` float,
-  `gap_min` float,
-  `gap_max` float,
-  `gap_tolerance` float,
-  `phase1_min` float,
-  `phase1_max` float,
-  `phase2_min` float,
-  `phase2_max` float,
-  `phase3_min` float,
-  `phase3_max` float,
-  `phase4_min` float,
-  `phase4_max` float,
-  `phase_tolerance` float,
-  `k_max_linear` float,
-  `k_max_circular` float,
-  `phase_mode_p` varchar(1),
-  `phase_mode_a1` varchar(1),
-  `phase_mode_a2` varchar(1),
-  PRIMARY KEY(`inventory_prop_id`),
-  INDEX `FKIndex1`(`inventory_id`),
-  CONSTRAINT `(inventory_id=inventory_id)` FOREIGN KEY (`inventory_id`)
-    REFERENCES `inventory`(`inventory_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 )
