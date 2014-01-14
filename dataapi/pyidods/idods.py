@@ -38,64 +38,192 @@ class idods(object):
         # use django transaction manager
         self.transaction = transaction
 
-    def _retrievevendor(self, vendorname):
+    def _retrieveVendor(self, vendorName):
         '''
         Retrieve vendor by its name
 
         parameters:
-            vendorname:     name of the vendor we are looking for
+            vendorName:     name of the vendor we are looking for
 
         return: vendor
         '''
 
         # Generate SQL statement
         sql = '''
-        select vendor_id, name from vendor where name = %s
+        SELECT vendor_id, name FROM vendor WHERE name = %s
         '''
 
         # Check for vendor name parameter
-        if vendorname == None:
+        if vendorName == None:
             raise AttributeError("Vendor name parameter is missing!")
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (vendorname,))
+            cur.execute(sql, (vendorName))
 
             # get any one since it should be unique
             res = cur.fetchall()
+            print res
+            resdict = {}
+
+            if len(res) != 0:
+                resdict = {'id': res[0][0], 'name': res[0][1]}
+
+            return resdict
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
-        return res
-
-
-    def _savevendor(self, vendorname):
+    def _saveVendor(self, vendorName):
         '''
         Save vendor in the database
 
         parameters:
-            vendorname:     name of the vendor we are looking for
+            vendorName:     name of the vendor we are looking for
 
         return: new vendor id
         '''
 
+        # Try to retrieve vendor by its name
+        # TODO raise exception if vendor exists
+        existingVendor = self._retrieveVendor(vendorName)
+
+        if len(existingVendor) != 0:
+            return {'id': existingVendor['id']}
+
         # Generate SQL statement
         sql = '''
-        insert into vendor (name) values (%s)
+        INSERT INTO vendor (name) VALUES (%s)
         '''
 
         # Check for vendor name parameter
-        if vendorname == None:
+        if vendorName == None:
             raise AttributeError("Vendor name parameter is missing!")
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (vendorname,))
+            cur.execute(sql, (vendorName))
 
             # Get last row id
             vendorid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+
+            return {'id': vendorid}
+
+        except MySQLdb.Error as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def _retrieveInventoryPropertyTemplate(self, name):
+        '''
+        Retrieve inventory property template by its name
+
+        - name: Inventory property name
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': ,             # int
+                    'cmpnt_type_id': ,  # int
+                    'name': ,           # string
+                    'desc': ,           # string
+                    'default': ,        # string
+                    'unit':             # string
+                }
+
+        :Raises: ValueError, AttributeError
+        '''
+
+        # Construct SQL
+        sql = '''
+        SELECT * FROM inventory_prop_tmplt WHERE name = %s
+        '''
+
+        # Check name
+        if name == None:
+            raise AttributeError("Name parameter is missing!")
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (name))
+
+            # get any one since it should be unique
+            res = cur.fetchall()
+
+            # Construct return dict
+            resdict = {
+                'id': res[0],
+                'cmpnt_type_id': res[1],
+                'name': res[2],
+                'desc': res[3],
+                'default': res[4],
+                'unit': res[5]
+            }
+
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+
+        return resdict
+
+    def _saveInventoryPropertyTemplate(self, cmpntType, name, description = None, default = None, unit = None):
+        '''
+        Insert new inventory property template into database
+
+        - cmpnttype: component type name M
+        - name: property template name M
+        - description: property template description O
+        - default: property template default value O
+        - unit: property template unit O
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': propertytemplateid}
+
+        :Raises: ValueError, AttributeError
+        '''
+
+        # TODO Raise an error if inventory property template exists
+
+        # Check component type
+        result = self.retrieveComponentType(cmpntType);
+
+        if len(result) == 0:
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpntType))
+
+        cmpnttypeid = result.keys()[0]
+
+        # Check name
+        if name == None:
+            raise AttributeError("Name parameter is missing!")
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO inventory_prop_tmplt
+        (cmpnt_type_id, inventory_prop_tmplt_name, inventory_prop_tmplt_desc, inventory_prop_tmplt_default, inventory_prop_tmplt_unit)
+        VALUES
+        (%s, %s, %s, %s, %s)
+        '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (cmpnttypeid, name, description, default, unit))
+
+            # Get last row id
+            templateid = cur.lastrowid
 
             # Create transaction
             if self.transaction == None:
@@ -107,12 +235,12 @@ class idods(object):
             if self.transaction == None:
                 self.conn.rollback()
 
-            self.logger.info('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
-        return vendorid
+        return {'id': templateid}
 
-    def saveinventory(self, name, **kws):
+    def saveInventory(self, name, **kws):
         '''
         save insertion device into inventory using any of the acceptable key words:
 
@@ -680,7 +808,7 @@ class idods(object):
         :Raises: KeyError, AttributeError
         '''
 
-    def savecomponenttype(self, dtype, description=None):
+    def saveComponentType(self, dtype, description=None):
         '''Save a component type using the key words:
 
         - dtype
@@ -707,10 +835,11 @@ class idods(object):
             raise AttributeError("Device type parameter is missing!")
 
         # Check if component type already exists
-        componenttype = self.retrievecomponenttype(dtype, description);
+        componenttype = self.retrieveComponentType(dtype, description);
         keys = componenttype.keys()
 
         # If it exists, return its id
+        # TODO reaise an error if component type exists
         if len(componenttype) > 0:
             return {'id': keys[0]}
 
@@ -733,9 +862,9 @@ class idods(object):
                 if self.transaction == None:
                     self.conn.rollback()
 
-            return componenttypeid
+            return {'id': componenttypeid}
 
-    def retrievecomponenttype(self, dtype, description=None):
+    def retrieveComponentType(self, dtype, description=None):
         '''Retrieve a component type using the key words:
 
         - dtype
@@ -787,7 +916,6 @@ class idods(object):
 
         # Execute SQL
         try:
-            print sql
             cur = self.conn.cursor()
             cur.execute(sql)
 

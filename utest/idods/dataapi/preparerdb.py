@@ -19,7 +19,7 @@ def connect():
         conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=3306)
     return conn
 
-def cleanvendor(namelist):
+def cleanVendor(namelist):
     '''
     Clean vendor table
     '''
@@ -34,7 +34,7 @@ def cleanvendor(namelist):
 
     conn.close()
 
-def cleancomponenttype(namelist):
+def cleanComponentType(namelist):
     '''
     Clean componenttype table
     '''
@@ -43,65 +43,10 @@ def cleancomponenttype(namelist):
     if len(namelist) > 0:
         cur = conn.cursor()
 
-        sql = 'DELETE FROM cmpnt_type WHERE name IN (%s)'
-        cur.execute(sql, (namelist))
-        conn.commit()
-
-    conn.close()
-
-def deletelattice(name, version, branch):
-    '''
-    '''
-    conn=connect()
-    sql = '''select lattice_id from lattice where lattice_name=%s and lattice_version=%s and lattice_branch=%s'''
-    cur=conn.cursor()
-    cur.execute(sql, (name, version, branch))
-    latticeid = cur.fetchone()
-    if latticeid != None:
-        latticeid = latticeid[0]
-        sql = '''delete from lattice where lattice_id = %s'''
-
-        cur.execute(sql, (latticeid))
-        conn.commit()
-
-    conn.close()
-
-
-def truncatelattice():
-    '''
-    '''
-    sql = '''
-    delete from beam_parameter;
-    delete from gold_model;
-    delete from model;
-    delete from element_prop;
-    delete from element;
-    delete from element_type_prop;
-    delete from element_type;
-    delete from gold_lattice;
-    delete from lattice;
-    '''
-    conn=connect()
-
-    conn.cursor().execute(sql)
-    conn.commit()
-    conn.close()
-
-def cleanmodelcode(codeinfo):
-    '''
-    '''
-    conn=connect()
-    if len(codeinfo) > 0:
-        cur = conn.cursor()
-        for col in codeinfo:
-            if col.has_key('algorithm') and col['algorithm']!=None:
-                sql = 'delete from model_code where code_name = %s and algorithm = %s'
-                cur.execute(sql, (col['name'], col['algorithm']))
-            else:
-                sql = 'delete from model_code where code_name = %s and algorithm is NULL'
-                cur.execute(sql, (col['name']))
+        for name in namelist:
+            sql = 'DELETE FROM cmpnt_type WHERE name IN (%s)'
+            cur.execute(sql, (name))
 
         conn.commit()
+
     conn.close()
-
-
