@@ -2,7 +2,7 @@ import logging
 import MySQLdb
 
 from collections import OrderedDict
-from dataapi.utils import (_wildcardformat)
+from utils import (_wildcardformat)
 from _mysql_exceptions import MySQLError
 
 __all__ = []
@@ -38,36 +38,65 @@ class idods(object):
         # use django transaction manager
         self.transaction = transaction
 
-    def _retrieveVendor(self, vendorName):
+    def _retrieveVendor(self, name, description=None):
         '''
-        Retrieve vendor by its name
+        Retrieve vendor by its name and description
+        Wildcast matching are supported for both name and description.
 
-        parameters:
-            vendorName:     name of the vendor we are looking for
+        :param name: vendor name
+        :type name: str
+        
+        :param description: description for a vendor
+        :type description: str
+        
+        :return: a map with structure like:
 
-        return: vendor
-        '''
+            .. code-block:: python
 
-        # Generate SQL statement
-        sql = '''
-        SELECT vendor_id, name FROM vendor WHERE name = %s
+                {'id': {'name': ,
+                        'description': }
+                 ...
+                }
+
+        :Raises: AttributeError, exception
         '''
 
         # Check for vendor name parameter
-        if vendorName == None:
+        if name == None:
             raise AttributeError("Vendor name parameter is missing!")
+
+        # Generate SQL statement
+        vals = []
+        sql = '''
+        SELECT vendor_id, vendor_name, vendor_description FROM vendor WHERE vendor_name
+        '''
+
+        if "*" in name or "?" in name:
+            sql += " like %s "
+            vals.append(_wildcardformat(name))
+        else:
+            sql += " = %s "
+            vals.append(name)
+
+        if description != None:
+            if "*" in description or "?" in description:
+                sql += " and vendor_description like %s "
+                vals.append(_wildcardformat(description))
+            else:
+                sql += " and vendor_description = %s "
+                vals.append(description)
+            
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (vendorName))
+            cur.execute(sql, vals)
 
             # get any one since it should be unique
             res = cur.fetchall()
-            print res
             resdict = {}
 
-            if len(res) != 0:
-                resdict = {'id': res[0][0], 'name': res[0][1]}
+            for r in res:
+                resdict[r[0]] = {'name': res[1], 'description': res[2]}
 
             return resdict
 
@@ -75,35 +104,53 @@ class idods(object):
             self.logger.info('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def _saveVendor(self, vendorName):
-        '''
-        Save vendor in the database
+    def _saveVendor(self, name, description=None):
+        '''Save vendor and its description into database
 
-        parameters:
-            vendorName:     name of the vendor we are looking for
+        :param name: vendor name
+        :type name: str
+        
+        :param dtype: device type
 
-        return: new vendor id
+        :param description: a brief description which could have up to 255 characters
+        :type description: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': vendor_id}
+
+        :Raises: ValueError, Exception
         '''
 
         # Try to retrieve vendor by its name
         # TODO raise exception if vendor exists
-        existingVendor = self._retrieveVendor(vendorName)
+        existingVendor = self._retrieveVendor(name, description=description)
 
         if len(existingVendor) != 0:
             return {'id': existingVendor['id']}
 
         # Generate SQL statement
-        sql = '''
-        INSERT INTO vendor (name) VALUES (%s)
-        '''
+        if description != None:
+            sql = '''
+            INSERT INTO vendor (vendor_name, vendor_description) VALUES (%s, %s)
+            '''
+            vals=[name, description]
+        else:
+            sql = '''
+            INSERT INTO vendor (name) VALUES (%s)
+            '''
+            vals=[name]
+            
 
         # Check for vendor name parameter
-        if vendorName == None:
+        if name == None:
             raise AttributeError("Vendor name parameter is missing!")
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (vendorName))
+            cur.execute(sql, vals)
 
             # Get last row id
             vendorid = cur.lastrowid
