@@ -28,7 +28,7 @@ def cleanVendor(namelist):
     if len(namelist) > 0:
         cur = conn.cursor()
 
-        sql = 'DELETE FROM vendor WHERE name IN (%s)'
+        sql = 'DELETE FROM vendor WHERE vendor_name = %s'
         cur.execute(sql, (namelist))
         conn.commit()
 
@@ -44,9 +44,59 @@ def cleanComponentType(namelist):
         cur = conn.cursor()
 
         for name in namelist:
-            sql = 'DELETE FROM cmpnt_type WHERE name IN (%s)'
+            sql = 'DELETE FROM cmpnt_type WHERE cmpnt_type_name = %s'
             cur.execute(sql, (name))
 
         conn.commit()
 
+    conn.close()
+
+def cleanInventory(namelist):
+    '''
+    Clean inventory table of specific entries
+    '''
+    conn=connect()
+
+    if len(namelist) > 0:
+        cur = conn.cursor()
+
+        for name in namelist:
+            sql = 'DELETE FROM inventory WHERE name = %s'
+            cur.execute(sql, (name))
+
+        conn.commit()
+
+    conn.close()
+
+def cleanInventoryPropertyTemplate(namelist):
+    '''
+    Clean inventory property template
+    '''
+    conn=connect()
+
+    if len(namelist) > 0:
+        cur = conn.cursor()
+
+        for name in namelist:
+            sql = 'DELETE FROM inventory_prop_tmplt WHERE inventory_prop_tmplt_name = %s'
+            cur.execute(sql, (name))
+
+        conn.commit()
+
+    conn.close()
+
+def cleanInventoryProperty(ivnentoryIn, templateId):
+    '''
+    Clean inventory property entry
+    '''
+    conn=connect()
+    cur = conn.cursor()
+
+    sql = '''
+    DELETE FROM inventory_prop WHERE
+    inventory_id = (SELECT inventory_id FROM inventory WHERE name = %s)
+    AND inventory_prop_tmplt_id = (SELECT inventory_prop_tmplt_id FROM inventory_prop_tmplt WHERE inventory_prop_tmplt_name = %s)'''
+    cur.execute(sql, (ivnentoryIn, templateId))
+
+    conn.commit()
     conn.close()
