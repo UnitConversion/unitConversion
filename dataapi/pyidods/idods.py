@@ -1,7 +1,6 @@
 import logging
 import MySQLdb
 
-from collections import OrderedDict
 from utils import (_wildcardformat)
 from _mysql_exceptions import MySQLError
 
@@ -380,13 +379,13 @@ class idods(object):
             self.logger.info('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName = None, value = None, checkForInventory = True):
+    def _retrieveInventoryProperty(self, inventoryId, inventoryPropertyTemplateId = None, value = None):
         '''
         Retrieve id and value from inventory property table
         
         parameters:
-            - inventoryName: name of the inventory entry
-            - inventoryPropertyTemplateName: name of the inventory property template
+            - inventoryId: id of the inventory entry
+            - inventoryPropertyTemplateId: id of the inventory property template
             - value: value of the property template
             
         returns:
@@ -402,42 +401,28 @@ class idods(object):
             ValueError, Exception
         '''
         
-        # Check inventory
-        if checkForInventory:
-            retrieveInventory = self.retrieveInventory(inventoryName)
-            
-            if len(retrieveInventory) == 0:
-                raise ValueError("Inventory (%s) doesn't exist in the database!" % inventoryName)
-
-            retrieveInventoryKeys = retrieveInventory.keys()
-            inventoryId = retrieveInventory[retrieveInventoryKeys[0]]['id']
-
-        # Check inventory property template
-        # of a specific inventory
-        if inventoryPropertyTemplateName:
-            retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName)
-            
-            if len(retrieveInventoryPropertyTemplate) == 0:
-                raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName);
-    
-            retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
-            inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
-
         # Generate SQL
         sql = '''
         SELECT 
-            inventory_prop_id, inventory_prop_value, inventory_prop_tmplt_id, inventory_id
-        FROM inventory_prop
+            ip.inventory_prop_id,
+            ip.inventory_prop_value,
+            ip.inventory_prop_tmplt_id,
+            ip.inventory_id,
+            ipt.inventory_prop_tmplt_name,
+            inv.name
+        FROM inventory_prop ip
+        LEFT JOIN inventory_prop_tmplt ipt ON (ip.inventory_prop_tmplt_id = ipt.inventory_prop_tmplt_id)
+        LEFT JOIN inventory inv ON (ip.inventory_id = inv.inventory_id)
         WHERE
         '''
         
         # Add inventory_id parameter
-        sql += ' inventory_id = %s '
+        sql += ' ip.inventory_id = %s '
         vals = [inventoryId]
 
         # Add inventory_prop_tmplt_id parameter
-        if inventoryPropertyTemplateName:
-            sql += ' AND inventory_prop_tmplt_id = %s '
+        if inventoryPropertyTemplateId:
+            sql += ' AND ip.inventory_prop_tmplt_id = %s '
             vals.append(inventoryPropertyTemplateId)
         
         sqlVals = (sql, vals)
@@ -457,8 +442,8 @@ class idods(object):
                 resdict[r[0]] = {
                     'id': r[0],
                     'value': r[1],
-                    'inventoryname': inventoryName,
-                    'templatename': inventoryPropertyTemplateName
+                    'inventoryname': r[5],
+                    'templatename': r[4]
                 }
                 
             return resdict
@@ -467,10 +452,66 @@ class idods(object):
             self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
             raise Exception('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
 
-    def saveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName, value):
+    def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName = None, value = None):
+        '''
+        Retrieve id and value from inventory property table
         
-        # Check value parameter
-        self._checkParameter('value', value)
+        parameters:
+            - inventoryName: name of the inventory entry
+            - inventoryPropertyTemplateName: name of the inventory property template
+            - value: value of the property template
+            
+        returns:
+            { 'id': {
+                    'id': #int,
+                    'value': #string,
+                    'inventoryname': #string,
+                    'templatename': #string
+                }
+            }
+            
+        '''
+        
+        # Check inventory
+        retrieveInventory = self.retrieveInventory(inventoryName)
+        
+        if len(retrieveInventory) == 0:
+            raise ValueError("Inventory (%s) doesn't exist in the database!" % inventoryName)
+
+        retrieveInventoryKeys = retrieveInventory.keys()
+        inventoryId = retrieveInventory[retrieveInventoryKeys[0]]['id']
+
+        # Check inventory property template
+        # of a specific inventory
+        
+        inventoryPropertyTemplateId = None
+        
+        if inventoryPropertyTemplateName:
+            retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName)
+            
+            if len(retrieveInventoryPropertyTemplate) == 0:
+                raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName);
+    
+            retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
+            inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
+
+        return self._retrieveInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
+
+    def saveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName, value):
+        '''
+        Save inventory property into database
+        
+        params:
+            - inventoryName: name of the inventory we are saving property for
+            - inventoryPropertyTemplateName: name of the property template/inventory property key name
+            - value: value of the property template/property key name
+            
+        returns:
+            {'id': new inventory property id}
+            
+        raises:
+            ValueError, Exception
+        '''
         
         # Check for previous inventory property
         retrieveInventoryProperty = self.retrieveInventoryProperty(inventoryName, inventoryPropertyTemplateName)
@@ -641,19 +682,6 @@ class idods(object):
             
             resKeys = res.keys()
             vendor = res[resKeys[0]]['id']
-
-        # Check properties parameter
-        props=None
-
-        if kws.has_key('props') and kws['props'] != None:
-            props = kws['props']
-            
-            # Save all the properties
-            for key in props:
-                value = props[key]
-                
-                # Save it into database
-                self.saveInventoryProperty(name, key, value)
             
         # Generate SQL
         sql = '''
@@ -672,6 +700,17 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
+                
+            # Inventory is saved, now we can save properties into database
+            if kws.has_key('props') and kws['props'] != None:
+                props = kws['props']
+                
+                # Save all the properties
+                for key in props:
+                    value = props[key]
+                    
+                    # Save it into database
+                    self.saveInventoryProperty(name, key, value)
                 
             return {'id': invid}
             
@@ -770,12 +809,12 @@ class idods(object):
                 }
                 
                 # Get the rest of the properties
-                #properties = self.retrieveInventoryProperty(r[1], checkForInventory = False)
+                properties = self._retrieveInventoryProperty(r[0])
                 
                 # Append properties to existing object
-                #for property in properties:
-                #    object = properties[property]
-                #    resdict[r[0]][object['templatename']] = object['value']
+                for prop in properties:
+                    obj = properties[prop]
+                    resdict[r[0]][obj['templatename']] = obj['value']
             
             return resdict
 
@@ -1076,7 +1115,7 @@ class idods(object):
 
         '''
 
-    def savedatamethod(self, name, desc=None):
+    def saveDataMethod(self, name, desc=None):
         '''Save a method with its description which is used when producing data set for an insertion device.
 
         :param name: name of the method
@@ -1091,11 +1130,49 @@ class idods(object):
 
                 {'id': method_id}
 
-        :Raises: KeyError, AttributeError
-
+        :Raises: ValueError, Exception
         '''
+        
+        # Raise and error if data method with the same name already exists in the database
+        existingDataMethod = self.retrieveDataMethod(name, desc)
+        
+        if len(existingDataMethod):
+            raise ValueError("Data method (%s) already exists in the database!" % name)
 
-    def retrievedatamethod(self, name, desc=None):
+        # Check name parameter
+        self._checkParameter('name', name)
+        
+        # Generate SQL
+        sql = '''
+        INSERT INTO id_data_method
+            (method_name, description)
+        VALUES
+            (%s, %s)
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (name, desc))
+            
+            # Get last id
+            dataMethodId = cur.lastrowid
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+            
+            return {'id': dataMethodId}
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def retrieveDataMethod(self, name, desc=None):
         '''Retrieve a method name and its description which is used when producing data set for an insertion device.
 
         :param name: name of the method
@@ -1107,13 +1184,58 @@ class idods(object):
         :return: a map with structure like:
 
             .. code-block:: python
-
-                {'name': method name,
-                 'description': description of this method
+                {'id':
+                    {'id': data method id,
+                     'name': method name,
+                     'description': description of this method
+                    }
                 }
 
-        :Raises: KeyError, AttributeError
+        :Raises: ValueError, Exception
         '''
+        
+        # Check name
+        self._checkParameter('name', name)
+        
+        # Contruct SQL
+        sql = '''
+        SELECT
+            id_data_method_id,
+            method_name,
+            description
+        FROM id_data_method
+        WHERE
+        '''
+        
+        vals = []
+        
+        # Append name
+        sqlAndVals = self._checkWildcardAndAppend('method_name', name, sql, vals)
+        
+        if desc:
+            sqlAndVals = self._checkWildcardAndAppend('description', desc, sqlAndVals[0], sqlAndVals[1], 'AND')
+
+        try:
+            # Execute SQL
+            cur = self.conn.cursor()
+            cur.execute(sqlAndVals[0], sqlAndVals[1])
+            
+            res = cur.fetchall()
+            resdict = {}
+            
+            # Construct return dict
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'name': r[1],
+                    'description': r[2]
+                }
+                
+            return resdict
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveinventorytoinstall(self, installname, invname):
         '''Link a device as installed once it is installed into field using the key words:
@@ -1156,59 +1278,307 @@ class idods(object):
         :Raises: KeyError, AttributeError
         '''
 
-    def saveComponentType(self, dtype, description=None):
-        '''Save a component type using the key words:
+    def retrieveComponentTypePropertyType(self, name):
+        '''
+        Retrieve component type property type by its name
 
-        - dtype
-        - description
-
-        :param dtype: device type name
-        :type dtype: str
-
-        :param description: description for this device
-        :type desctiprion: str
+        - name: property type name
 
         :return: a map with structure like:
 
-            .. code-block: python
+            .. code-block:: python
 
-                {'id': device type id}
+                {
+                    'id': {
+                        'id': ,              # int
+                        'name': ,           # string
+                        'description': ,    # string
+                    }
+                }
 
         :Raises: ValueError, Exception
-
         '''
 
-        # Check device type
-        self._checkParameter("component type", dtype)
+        # Check name
+        self._checkParameter("name", name)
 
-        # Check if component type already exists
-        componenttype = self.retrieveComponentType(dtype, description);
+        # Construct SQL
+        sql = '''
+        SELECT
+            cmpnt_type_prop_type_id, cmpnt_type_prop_type_name, cmpnt_type_prop_type_desc
+        FROM
+            cmpnt_type_prop_type
+        WHERE
+        '''
+        vals = []
         
-        if len(componenttype):
-            raise ValueError("Component type (%s) already exists in the database!" % dtype);
-
-        # Save it into database and return its new id
-        sql = ''' INSERT into cmpnt_type (cmpnt_type_name, description) VALUES (%s, %s) '''
+        # Append name
+        sqlAndVals = self._checkWildcardAndAppend("cmpnt_type_prop_type_name", name, sql, vals)
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (dtype, description))
-            componenttypeid = cur.lastrowid
+            cur.execute(sqlAndVals[0], sqlAndVals[1])
 
-            # Commit transaction
+            # Get any one since it should be unique
+            res = cur.fetchall()
+            resdict = {}
+
+            # Construct return dict
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'name': r[1],
+                    'description': r[2]
+                }
+            
+            return resdict
+
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def saveComponentTypePropertyType(self, name, description = None):
+        '''
+        Insert new component type property type into database
+
+        - name: name of the component type property type M
+        - description: description of the component type property tpye O
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': propertytypeid}
+
+        :Raises: ValueError, Exception
+        '''
+
+        # Raise an error if component type property type exists
+        existingComponentTypePropertyType = self.retrieveComponentTypePropertyType(name)
+        
+        if len(existingComponentTypePropertyType):
+            raise ValueError("Component type property type (%s) already exists in the database!" % name)
+
+        # Check name
+        self._checkParameter("name", name)
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO cmpnt_type_prop_type
+            (cmpnt_type_prop_type_name, cmpnt_type_prop_type_desc)
+        VALUES
+            (%s, %s)
+        '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (name, description))
+
+            # Get last row id
+            typeid = cur.lastrowid
+
+            # Create transaction
             if self.transaction == None:
                 self.conn.commit()
                 
-            return {'id': componenttypeid}
+            return {'id': typeid}
 
-        except MySQLError as e:
+        except MySQLdb.Error as e:
 
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
+
+            self.logger.info('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+
+
+    def _retrieveComponentTypeProperty(self, componentTypeId, componentTypePropertyTypeId = None, value = None):
+        '''
+        Retrieve component type property from the database
+        
+        parameters:
+            - componentTypeId: id of the component type entry
+            - componentTypePropertyTypeId: id of the property type
+            - value: value of the property
+            
+        returns:
+            { 'id': {
+                    'id': #int,
+                    'value': #string,
+                    'cmpnttypename': #string,
+                    'typename': #string
+                }
+            }
+            
+        raises:
+            ValueError, Exception
+        '''
+        
+        # Generate SQL
+        sql = '''
+        SELECT 
+            cp.cmpnt_type_prop_id,
+            cp.cmpnt_type_id,
+            cp.cmpnt_type_prop_type_id,
+            cp.cmpnt_type_prop_value,
+            cpt.cmpnt_type_prop_type_name,
+            ct.cmpnt_type_name
+        FROM cmpnt_type_prop cp
+        LEFT JOIN cmpnt_type_prop_type cpt ON (cp.cmpnt_type_prop_type_id = cpt.cmpnt_type_prop_type_id)
+        LEFT JOIN cmpnt_type ct ON (cp.cmpnt_type_id = ct.cmpnt_type_id)
+        WHERE
+        '''
+        
+        # Add component type id parameter
+        sql += ' cp.cmpnt_type_id = %s '
+        vals = [componentTypeId]
+
+        # Add component type property type parameter
+        if componentTypePropertyTypeId:
+            sql += ' AND cp.cmpnt_type_prop_type_id = %s '
+            vals.append(componentTypePropertyTypeId)
+        
+        sqlVals = (sql, vals)
+
+        # Add value parameter if exists
+        if value:
+            sqlVals = self._checkWildcardAndAppend('cmpnt_type_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
+
+        try:
+            # Retrieve objects from the database
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            res = cur.fetchall()
+            resdict = {}
+            
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'value': r[3],
+                    'cmpnttypename': r[5],
+                    'typename': r[4]
+                }
                 
-            self.logger.info('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            return resdict
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
+            raise Exception('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
+
+    def retrieveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName = None, value = None):
+        '''
+        Retrieve component type property from the database by name
+        
+        parameters:
+            - componentTypeName: name of the component type
+            - componentTypePropertyTypeName: name of the component type property type
+            - value: value of the component type property type
+            
+        returns:
+            { 'id': {
+                    'id': #int,
+                    'value': #string,
+                    'cmpnttypename': #string,
+                    'typename': #string
+                }
+            }
+        '''
+        
+        # Check component type
+        retrieveComponentType = self.retrieveComponentType(componentTypeName)
+        
+        if len(retrieveComponentType) == 0:
+            raise ValueError("Component type (%s) doesn't exist in the database!" % componentTypeName)
+
+        retrieveComponentTypeKeys = retrieveComponentType.keys()
+        componentTypeId = retrieveComponentType[retrieveComponentTypeKeys[0]]['id']
+
+        # Check component type property type
+        # of a specific component tpye
+        
+        componentTypePropertyTypeId = None
+        
+        if componentTypePropertyTypeName:
+            retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
+            
+            if len(retrieveComponentTypePropertyType) == 0:
+                raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName);
+    
+            retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
+            componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
+
+        return self._retrieveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
+
+    def saveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName, value):
+        '''
+        Save inventory property into database
+        
+        params:
+            - componentTypeName: name of the component type
+            - componentTypePropertyTypeName: name of the component type property type
+            - value: value of the component type property
+            
+        returns:
+            {'id': new component type property id}
+            
+        raises:
+            ValueError, Exception
+        '''
+        
+        # Check for previous component type property
+        retrieveComponentTypeProperty = self.retrieveComponentTypeProperty(componentTypeName, componentTypePropertyTypeName)
+        
+        if len(retrieveComponentTypeProperty) != 0:
+            raise ValueError("Component type property for component type (%s) and property type (%s) already exists in the database!" % (componentTypeName, componentTypePropertyTypeName));
+        
+        # Check component type
+        retrieveComponentType = self.retrieveComponentType(componentTypeName)
+        
+        if len(retrieveComponentType) == 0:
+            raise ValueError("Component type (%s) doesn't exist in the database!" % componentTypeName)
+
+        retrieveComponentTypeKeys = retrieveComponentType.keys()
+        componentTypeId = retrieveComponentType[retrieveComponentTypeKeys[0]]['id']
+
+        # Check component type property type
+        retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
+        
+        if len(retrieveComponentTypePropertyType) == 0:
+            raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName);
+
+        retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
+        componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO cmpnt_type_prop
+            (cmpnt_type_id, cmpnt_type_prop_type_id, cmpnt_type_prop_value)
+        VALUES
+            (%s, %s, %s)
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (componentTypeId, componentTypePropertyTypeId, value))
+            
+            # Get last row id
+            propid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return {'id': propid}
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveComponentType(self, dtype, description=None):
         '''Retrieve a component type using the key words:
@@ -1226,7 +1596,14 @@ class idods(object):
 
             .. code-block: python
 
-                {'id1': {'id': device type id, 'name': device type name, 'description': device type description},
+                {'id1':
+                    {'id': device type id,
+                    'name': device type name,
+                    'description': device type description,
+                    'prop1key': prop1value
+                    ...
+                    'propNkey': propNvalue
+                    },
                  ...
                 }
 
@@ -1264,12 +1641,88 @@ class idods(object):
                 resdict[r[0]]['id'] = r[0]
                 resdict[r[0]]['name'] = r[1]
                 resdict[r[0]]['description'] = r[2]
+                
+                # Get the rest of the properties
+                properties = self._retrieveComponentTypeProperty(r[0])
+                
+                # Append properties to existing object
+                for prop in properties:
+                    obj = properties[prop]
+                    resdict[r[0]][obj['typename']] = obj['value']
 
             return resdict
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def saveComponentType(self, componentTypeName, description=None, props=None):
+        '''Save a component type using the key words:
+
+        - componentTypeName
+        - description
+        - props
+
+        :param componentTypeName: device type name
+        :type componentTypeName: str
+
+        :param description: description for this device
+        :type desctiprion: str
+        
+        :param props: component type properties
+        :type props: python dict
+
+        :return: a map with structure like:
+
+            .. code-block: python
+
+                {'id': device type id}
+
+        :Raises: ValueError, Exception
+
+        '''
+
+        # Check device type
+        self._checkParameter("component type", componentTypeName)
+
+        # Check if component type already exists
+        componenttype = self.retrieveComponentType(componentTypeName, description);
+        
+        if len(componenttype):
+            raise ValueError("Component type (%s) already exists in the database!" % componentTypeName);
+
+        # Save it into database and return its new id
+        sql = ''' INSERT into cmpnt_type (cmpnt_type_name, description) VALUES (%s, %s) '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (componentTypeName, description))
+            componenttypeid = cur.lastrowid
+
+            # Commit transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            # Component type is saved, now we can save properties into database
+            if props != None:
+                
+                # Save all the properties
+                for key in props:
+                    value = props[key]
+                    
+                    # Save it into database
+                    self.saveComponentTypeProperty(componentTypeName, key, value)
+                
+            return {'id': componenttypeid}
+
+        except MySQLError as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+                
+            self.logger.info('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updatecomponenttype(self, dtype, description):
         '''Update description of a device type.
@@ -1293,10 +1746,10 @@ class idods(object):
         :Raises: KeyError, AttributeError
         '''
 
-    def saveinstall(self, installname, **kws):
+    def saveInstall(self, installName, **kws):
         '''Save insertion device installation using any of the acceptable key words:
 
-        - installname: installation name, which is its label on field
+        - installName: installation name, which is its label on field
         - beamline: name of beamline
         - beamlinedesc: description of beamline
         - beamlineproject: project name what this beamline belongs to
