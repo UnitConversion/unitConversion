@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_6
--- Created on: 1/14/2014 11:28:17 AM
--- Diagram Version: 528
+-- Created on: 1/21/2014 12:28:42 PM
+-- Diagram Version: 529
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -134,7 +134,7 @@ DROP TABLE IF EXISTS `id_raw_data`;
 
 CREATE TABLE `id_raw_data` (
   `id_raw_data_id` int(11) NOT NULL AUTO_INCREMENT,
-  `data` blob,
+  `data` mediumblob,
   PRIMARY KEY(`id_raw_data_id`)
 )
 ENGINE=INNODB;
@@ -334,14 +334,13 @@ DROP TABLE IF EXISTS `install_rel`;
 
 CREATE TABLE `install_rel` (
   `install_rel_id` int(11) NOT NULL AUTO_INCREMENT,
-  `install_rel_type_id` int(11),
   `parent_install_id` int(11) NOT NULL DEFAULT '0',
   `child_install_id` int(11) NOT NULL DEFAULT '0',
   `logical_desc` varchar(60),
   `logical_order` int(11),
   `install_date` datetime,
   PRIMARY KEY(`install_rel_id`),
-  INDEX `idx_cmpnt_rel_type_id`(`install_rel_type_id`),
+  INDEX `idx_cmpnt_rel_type_id`(),
   CONSTRAINT `Ref_100` FOREIGN KEY (`parent_install_id`)
     REFERENCES `install`(`install_id`)
     ON DELETE NO ACTION
@@ -414,7 +413,7 @@ CREATE TABLE `id_offline_data` (
   `result_file_name` varchar(255) NOT NULL,
   `result_file_time` datetime,
   `script_file_name` varchar(255),
-  `script_file_content` mediumtext,
+  `script_file_content` mediumblob,
   PRIMARY KEY(`id_offline_data_id`),
   INDEX `FKIndex1`(`id_data_method_id`),
   INDEX `FKIndex2`(`inventory_id`),
