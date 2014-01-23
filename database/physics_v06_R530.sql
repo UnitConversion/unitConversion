@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_6
--- Created on: 1/21/2014 12:28:42 PM
--- Diagram Version: 529
+-- Created on: 1/23/2014 1:08:33 PM
+-- Diagram Version: 530
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -340,7 +340,6 @@ CREATE TABLE `install_rel` (
   `logical_order` int(11),
   `install_date` datetime,
   PRIMARY KEY(`install_rel_id`),
-  INDEX `idx_cmpnt_rel_type_id`(),
   CONSTRAINT `Ref_100` FOREIGN KEY (`parent_install_id`)
     REFERENCES `install`(`install_id`)
     ON DELETE NO ACTION
