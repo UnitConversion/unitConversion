@@ -265,5 +265,26 @@ class TestIdods(unittest.TestCase):
         # Try to get both methods back from the database
         self.assertTrue(len(dataMethod2) == 2, "We got back two methods")
 
+    def testSaveOfflineData(self):
+        
+        # Prepare data method
+        savedDataMethod = self.api.saveDataMethod('method', 'description')
+        
+        # Prepare component type
+        savedComponentType = self.api.saveComponentType('Magnet')
+
+        # Prepare inventory
+        savedInventory = self.api.saveInventory('name', compnttype='Magnet', alias='name2')
+        
+        # Prepare raw data
+        with open('download_4', 'rb') as f:
+            savedData = self.api.saveRawData(f.read())
+        
+        # Create save offline data
+        savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='test', status=1, data_file_name='datafile', gap=3.4)
+        
+        # Delete offline data
+        cleanOfflineData([savedOfflineData['id']])
+
 if __name__ == '__main__':
     unittest.main()

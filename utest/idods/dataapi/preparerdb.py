@@ -150,3 +150,20 @@ def cleanDataMethod(namelist):
         conn.commit()
 
     conn.close()
+    
+def cleanOfflineData(idlist):
+    '''
+    Clean offline data table of specific entries
+    '''
+    conn=connect()
+
+    if len(idlist) > 0:
+        cur = conn.cursor()
+
+        for dataId in idlist:
+            sql = 'DELETE FROM id_offline_data WHERE id_offline_data_id = %s'
+            cur.execute(sql, (dataId))
+
+        conn.commit()
+
+    conn.close()
