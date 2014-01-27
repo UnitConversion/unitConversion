@@ -151,19 +151,86 @@ def cleanDataMethod(namelist):
 
     conn.close()
     
-def cleanOfflineData(idlist):
+def cleanOfflineData(descriptionList):
     '''
     Clean offline data table of specific entries
     '''
     conn=connect()
 
-    if len(idlist) > 0:
+    if len(descriptionList) > 0:
         cur = conn.cursor()
 
-        for dataId in idlist:
-            sql = 'DELETE FROM id_offline_data WHERE id_offline_data_id = %s'
+        for dataId in descriptionList:
+            sql = 'DELETE FROM id_offline_data WHERE description = %s'
             cur.execute(sql, (dataId))
 
         conn.commit()
 
+    conn.close()
+    
+def cleanInstall(namelist):
+    '''
+    Clean install table of specific entries
+    '''
+    conn=connect()
+
+    if len(namelist) > 0:
+        cur = conn.cursor()
+
+        for name in namelist:
+            sql = 'DELETE FROM install WHERE field_name = %s'
+            cur.execute(sql, (name))
+
+        conn.commit()
+
+    conn.close()
+
+def cleanInstallRel(dates):
+    '''
+    Clean install relationships table of specific entries
+    '''
+    conn=connect()
+
+    if len(dates) > 0:
+        cur = conn.cursor()
+
+        for date in dates:
+            sql = 'DELETE FROM install_rel WHERE install_date = %s'
+            cur.execute(sql, (date))
+
+        conn.commit()
+
+    conn.close()
+
+def cleanInstallRelPropType(namelist):
+    '''
+    Clean install rel property type
+    '''
+    conn=connect()
+
+    if len(namelist) > 0:
+        cur = conn.cursor()
+
+        for name in namelist:
+            sql = 'DELETE FROM install_rel_prop_type WHERE install_rel_prop_type_name = %s'
+            cur.execute(sql, (name))
+
+        conn.commit()
+
+    conn.close()
+
+def cleanInstallRelProp(typeName):
+    '''
+    Clean install rel property entry identified by special property type name
+    '''
+    conn=connect()
+    cur = conn.cursor()
+
+    sql = '''
+    DELETE FROM install_rel_prop WHERE
+    install_rel_prop_type_id = (SELECT install_rel_prop_type_id FROM install_rel_prop_type WHERE install_rel_prop_type_name = %s)
+    '''
+    cur.execute(sql, (typeName))
+
+    conn.commit()
     conn.close()

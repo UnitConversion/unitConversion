@@ -1304,6 +1304,7 @@ class idods(object):
         - polarmode
         - status
         - method_name
+        - inventory_name
 
         :param description: a brief description for this data entry
         :type description: str
@@ -1335,6 +1336,9 @@ class idods(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
+        :param inventory_name: name of inventory used to produce the data
+        :type inventory_name: str
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -1351,13 +1355,14 @@ class idods(object):
                         'phasemode':,      # string
                         'polarmode':,      # string
                         'status':,         # int
-                        'resultfile':,     # string
-                        'resultfiletime':, # string
-                        'scriptfile':,     # string
-                        'script':,         # string
+                        'data_file_name':, # string
+                        'data_file_ts':,   # string
                         'data':,           # string
-                        'methodname':,     # string
+                        'script_name':,    # string
+                        'script':,         # string
+                        'method_name':,    # string
                         'methoddesc':,     # string
+                        'inventory_name':, # string
                     }
                 }
 
@@ -1383,14 +1388,118 @@ class idods(object):
             iod.phase_mode,
             iod.polar_mode,
             iod.data_status,
-            iod.resutl_file_name,
+            iod.result_file_name,
             iod.result_file_time,
             iod.script_file_name,
             iod.script_file_content,
-            idm.method_name
+            idm.method_name,
+            idm.description,
+            inv.name
         FROM id_offline_data iod
         LEFT JOIN id_data_method idm ON (iod.id_data_method_id = idm.id_data_method_id)
+        LEFT JOIN inventory inv ON (iod.inventory_id = inv.inventory_id)
+        WHERE 1=1
         '''
+        
+        vals = []
+        
+        # Append description parameter
+        if 'description' in kws and kws['description'] != None:
+            sqlVal = self._checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
+        # Append gap parameter
+        if 'gap' in kws and kws['gap'] != None:
+            sqlVal = self._checkRangeAndAppend('iod.gap', kws['gap'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
+        # Append phase1 parameter
+        if 'phase1' in kws and kws['phase1'] != None:
+            sqlVal = self._checkRangeAndAppend('iod.phase1', kws['phase1'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
+        # Append phase2 parameter
+        if 'phase2' in kws and kws['phase2'] != None:
+            sqlVal = self._checkRangeAndAppend('iod.phase2', kws['phase2'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
+        # Append phase3 parameter
+        if 'phase3' in kws and kws['phase3'] != None:
+            sqlVal = self._checkRangeAndAppend('iod.phase3', kws['phase3'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
+        # Append phase4 parameter
+        if 'phase4' in kws and kws['phase4'] != None:
+            sqlVal = self._checkRangeAndAppend('iod.phase4', kws['phase4'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+            
+        # Append phasemode parameter
+        if 'phasemode' in kws and kws['phasemode'] != None:
+            sqlVal = self._checkWildcardAndAppend('iod.phase_mode', kws['phasemode'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+            
+        # Append polarmode parameter
+        if 'polarmode' in kws and kws['polarmode'] != None:
+            sqlVal = self._checkWildcardAndAppend('iod.polar_mode', kws['polarmode'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+            
+        # Append status parameter
+        if 'status' in kws and kws['status'] != None:
+            sql += ' AND iod.status = %s '
+            vals.append(kws['status'])
+            
+        # Append method name parameter
+        if 'method_name' in kws and kws['method_name'] != None:
+            sqlVal = self._checkWildcardAndAppend('idm.method_name', kws['method_name'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
+        try:
+            # Execute SQL
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Get all records
+            res = cur.fetchall()
+            resdict = {}
+            
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'username': r[4],
+                    'description': r[5],
+                    'date': r[6].strftime("%Y-%m-%d %H:%M:%S"),
+                    'gap': r[7],
+                    'phase1': r[8],
+                    'phase2': r[9],
+                    'phase3': r[10],
+                    'phase4': r[11],
+                    'phasemode': r[12],
+                    'polarmode': r[13],
+                    'status': r[14],
+                    'data_file_name': r[15],
+                    'data_file_ts': r[16],
+                    'data': 0,
+                    'script_name': r[17],
+                    'script': r[18],
+                    'method_name': r[19],
+                    'methoddesc': r[20],
+                    'inventory_name': r[21]
+                }
+
+            return resdict
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveDataMethod(self, name, desc=None):
         '''Save a method with its description which is used when producing data set for an insertion device.
@@ -2167,10 +2276,10 @@ class idods(object):
             ip.install_rel__prop_id,
             ip.install_rel_id,
             ip.install_rel_prop_type_id,
-            ip.install_rel_prop_type_value,
+            ip.install_rel_prop_value,
             ipt.install_rel_prop_type_name
         FROM install_rel_prop ip
-        LEFT JOIN install_rel_prop_type ipt ON (ip.install_rel_prop_type_id = cpt.install_rel_prop_type_id)
+        LEFT JOIN install_rel_prop_type ipt ON (ip.install_rel_prop_type_id = ipt.install_rel_prop_type_id)
         WHERE
         '''
         
@@ -2187,7 +2296,7 @@ class idods(object):
 
         # Add value parameter if exists
         if value:
-            sqlVals = self._checkWildcardAndAppend('install_rel_prop_type_value', value, sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = self._checkWildcardAndAppend('install_rel_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
 
         try:
             # Retrieve objects from the database
@@ -2343,6 +2452,12 @@ class idods(object):
                 }
         '''
         
+        # Check if the same relationship already exists in the database
+        existingRel = self.retrieveInstallRel(None, parentInstallId, childInstallId)
+        
+        if len(existingRel):
+            raise ValueError("Same relationship already exists in the database!")
+        
         # Check if parent exists in install
         existingParent = self._retrieveInstallById(parentInstallId)
         
@@ -2362,13 +2477,13 @@ class idods(object):
             child_install_id,
             logical_desc,
             logical_order,
-            istall_date
+            install_date
         ) VALUES (%s, %s, %s, %s, %s)
         '''
        
         try:
             # Insert entity
-            cur = self.con.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql, (parentInstallId, childInstallId, description, order, date))
             
             # Get last row id
@@ -2386,7 +2501,7 @@ class idods(object):
                     value = props[key]
                     self.saveInstallRelProperty(idrel, key, value)
                 
-            return {'id', idrel}
+            return {'id': idrel}
            
         except MySQLdb.Error as e:
             
@@ -2471,7 +2586,7 @@ class idods(object):
             
         # Check installRelId parameter
         if installRelId:
-            sql += ' AND ir.instal_rel_id = %s '
+            sql += ' AND ir.install_rel_id = %s '
             vals.append(installRelId)
             
         # Check parentInstallId
@@ -2518,7 +2633,7 @@ class idods(object):
                     'childid': r[2],
                     'description': r[3],
                     'order': r[4],
-                    'date': r[5]
+                    'date': r[5].strftime("%Y-%m-%d %H:%M:%S")
                 }
                 
                 # Get the rest of the properties
@@ -2575,7 +2690,7 @@ class idods(object):
         self._checkParameter('name', installname)
         
         # Check component type
-        if 'cmpnttype' in kws:
+        if 'cmpnttype' in kws and kws['cmpnttype'] != None:
             componentType = self.retrieveComponentType(kws['cmpnttype'])
             componentTypeKeys = componentType.keys()
         
@@ -2605,7 +2720,7 @@ class idods(object):
         try:
             # Insert record into database
             cur = self.conn.cursor()
-            cur.execute(sql, componentType[componentTypeKeys[0]]['id'], installname, description, coordinate)
+            cur.execute(sql, (componentType[componentTypeKeys[0]]['id'], installname, description, coordinate))
         
             # Get last row id
             invid = cur.lastrowid
@@ -2682,7 +2797,7 @@ class idods(object):
                 raise ValueError("Install with id (%s) doesn't exist in the database!" % installid)
             
             # Get install name
-            installname = res[0][1]
+            installname = res[0][0]
             return self.retrieveInstall(installname)
             
         except MySQLdb.Error as e:

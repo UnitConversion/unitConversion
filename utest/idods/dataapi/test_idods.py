@@ -17,11 +17,20 @@ from pyidods.idods import idods
 class TestIdods(unittest.TestCase):
     
     def cleanTables(self):
+        # Clean offline data
+        cleanOfflineData(['spec1234desc'])
+        
+        # Clean install rel
+        cleanInstallRel(['2014-01-27'])
+        
+        # Clean install table
+        cleanInstall(['test parent', 'test child'])
+        
         # Clean vendor table
         cleanVendor(['test vendor']);
         
         # Clean data method
-        cleanDataMethod(['method', 'method2'])
+        cleanDataMethod(['method', 'method2', 'test'])
         
         # Clean inventory property
         cleanInventoryProperty('name', 'alpha')
@@ -247,11 +256,17 @@ class TestIdods(unittest.TestCase):
         # Test saving data method without name
         self.assertRaises(ValueError, self.api.saveDataMethod, None)
     
+    '''
+    Try to retrieve offline data method
+    '''
     def testRetrieveDataMethod(self):
         
         # Prepare table
         saveDataMethod = self.api.saveDataMethod('method', 'description')
         self.api.saveDataMethod('method2', 'description')
+        
+        # Try to save data method with the same name
+        self.assertRaises(ValueError, self.api.saveDataMethod, 'method')
         
         # Try to get data method with the same parameters
         dataMethod = self.api.retrieveDataMethod('method', 'description')
@@ -265,6 +280,9 @@ class TestIdods(unittest.TestCase):
         # Try to get both methods back from the database
         self.assertTrue(len(dataMethod2) == 2, "We got back two methods")
 
+    '''
+    Save offline data
+    '''
     def testSaveOfflineData(self):
         
         # Prepare data method
@@ -276,15 +294,75 @@ class TestIdods(unittest.TestCase):
         # Prepare inventory
         savedInventory = self.api.saveInventory('name', compnttype='Magnet', alias='name2')
         
+        # Prepare method
+        savedMethod = self.api.saveDataMethod('test')
+        
         # Prepare raw data
         with open('download_4', 'rb') as f:
             savedData = self.api.saveRawData(f.read())
         
         # Create save offline data
-        savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='test', status=1, data_file_name='datafile', gap=3.4)
+        savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
         
-        # Delete offline data
-        cleanOfflineData([savedOfflineData['id']])
+        # Retrieve offline data by gap range
+        offlineData = self.api.retrieveOfflineData(gap=(3, 4))
+        offlineDataKeys = offlineData.keys()
+        offlineDataObject = offlineData[offlineDataKeys[0]]
+        
+        # Check if we get back one or more offline data
+        self.assertTrue(len(offlineData) > 0, "One or more offline data should be returned")
+        
+        # Test inventory name
+        self.assertEqual(offlineDataObject['inventory_name'], 'name')
+        
+        # Test method name
+        self.assertEqual(offlineDataObject['method_name'], 'test')
+        
+        # Test status
+        self.assertEqual(offlineDataObject['status'], 1)
+        
+        # Test data file name
+        self.assertEqual(offlineDataObject['data_file_name'], 'datafile')
+        
+        # Test gap
+        self.assertEqual(offlineDataObject['gap'], 3.4)
+        
+        # Test description
+        self.assertEqual(offlineDataObject['description'], 'spec1234desc')
+
+    '''
+    Test saving install relationship
+    '''
+    def testSaveInstallRel(self):
+        
+        # Prepare component type
+        savedComponentType = self.api.saveComponentType('Magnet')
+        
+        # Prepare install parent
+        savedInstallParent = self.api.saveInstall('test parent', cmpnttype='Magnet', installdescription = 'desc', coordinatecenter = 2.2)
+        
+        # Prepare install child
+        savedInstallChild = self.api.saveInstall('test child', cmpnttype='Magnet')
+        
+        # Save rel
+        rel = self.api.saveInstallRel(savedInstallParent['id'], savedInstallChild['id'], 'desc', 1, '2014-01-27')
+        
+        # Retrieve rel
+        retrievedRel = self.api.retrieveInstallRel(rel['id'])
+        retrievedRelKeys = retrievedRel.keys()
+        retrievedRelObject = retrievedRel[retrievedRelKeys[0]]
+        
+        # Check description
+        self.assertEqual(retrievedRelObject['description'], 'desc')
+        
+        # Check order
+        self.assertEqual(retrievedRelObject['order'], 1)
+        
+        # Check date
+        self.assertEqual(retrievedRelObject['date'], '2014-01-27 00:00:00')
+        
+        # Test saving another rel with same parent and child
+        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallParent['id'], savedInstallChild['id'], None, None, '2014-01-27')
 
 if __name__ == '__main__':
     unittest.main()
