@@ -117,7 +117,7 @@ class idods(object):
             
         return (sqlString, valsList)
     
-    def _checkParameter(self, parameterKey, parematerValue, parameterTypeWeAreCheckingFor = "string"):
+    def _checkParameter(self, parameterKey, paramaterValue, parameterTypeWeAreCheckingFor = "string"):
         '''
         Check different types of input parameters. Parameter should match agreed criteria or exception will be thrown
         
@@ -125,6 +125,8 @@ class idods(object):
             - parameterKey: name of the parameter
             - parameterValue: value of the parameter
             - parameterTypeWeAreCheckingFor: which type are we chacking
+                * string: if we are checking string value
+                * prim: if we are checking primary key value
             
         raise:
             ValueError if parameter don'r match agreed criteria
@@ -133,8 +135,67 @@ class idods(object):
         # Check string
         if parameterTypeWeAreCheckingFor == "string":
             
-            if not isinstance(parematerValue, (str, unicode)):
+            if not isinstance(paramaterValue, (str, unicode)):
                 raise ValueError("Parameter %s is missing!" % parameterKey)
+            
+        # Check primary key
+        elif parameterTypeWeAreCheckingFor == "prim":
+            
+            if not isinstance(paramaterValue, (int, long)):
+                raise ValueError("Parameter %s cannot be None" % parameterKey)
+
+    def _generateUpdateQuery(self, tableName, queryDict, whereKey, whereValue, whereDict = None):
+        '''
+        Check number of parameters that are set and generate update SQL
+        
+        params:
+            - tableName: name of the table we are updating
+            - queryDict: dictionary where every key is an attribute name and every value new attribute value
+            - whereKey: attribute by which we are updating
+            - whereValue: attribute value by which we are updating
+            - whereDict: dictionary of where keys and values
+        
+        raises:
+            ValueError if no attributes are set
+        '''
+        
+        # Create value list
+        vals = []
+        
+        # Check the number of attributes that are set
+        if len(queryDict) < 1:
+            raise ValueError("At least one attribute has to be set to a new value!")
+        
+        # Generate SQL
+        sql = 'UPDATE ' + tableName + ' SET '
+        sqlList = []
+        
+        # Go through parameters
+        for attr in queryDict.keys():
+            value = queryDict[attr]
+            sqlList.append(' ' + attr + ' = %s ')
+            vals.append(value)
+        
+        sql += ','.join(sqlList)
+        
+        if whereDict == None:
+            # Append where condition
+            sql += ' WHERE ' + whereKey + ' = %s '
+            vals.append(whereValue)
+            
+        else:
+            sql += ' WHERE '
+            sqlList = []
+            
+            # Go through where keys
+            for whereKey in whereDict.keys():
+                whereValue = whereDict[whereKey]
+                sqlList.append(' ' + whereKey + ' = %s ')
+                vals.append(whereValue)
+                
+            sql += " AND ".join(sqlList)
+        
+        return (sql, vals)
 
     def retrieveVendor(self, name, description=None):
         '''
@@ -151,8 +212,11 @@ class idods(object):
 
             .. code-block:: python
 
-                {'id': {'name': ,
-                        'description': }
+                {'id': {
+                    'id': ,
+                    'name': ,
+                    'description': 
+                    }
                  ...
                 }
 
@@ -186,7 +250,11 @@ class idods(object):
 
             # Generate return dictionary
             for r in res:
-                resdict[r[0]] = {'name': r[1], 'description': r[2]}
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'name': r[1],
+                    'description': r[2]
+                }
 
             return resdict
 
@@ -215,8 +283,7 @@ class idods(object):
         '''
         
         # Check for vendor name parameter
-        if not isinstance(name, (str, unicode)):
-            raise ValueError("Vendor name parameter is missing!")
+        self._checkParameter('name', name)
 
         # Try to retrieve vendor by its name
         existingVendor = self.retrieveVendor(name, description=description)
@@ -259,6 +326,81 @@ class idods(object):
 
             self.logger.info('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateVendor(self, vendorId, oldName, name, **kws):
+        '''Update vendor and its description
+
+        :param vendorId: vendor id needed for updating
+        :type vendorId: id
+
+        :param name: vendor name
+        :type name: str
+
+        :param oldName: update vendor by its old name
+        :type oldName: str
+        
+        :param dtype: device type
+
+        :param description: a brief description which could have up to 255 characters
+        :type description: str
+
+        :return: True or Exception
+
+        :Raises: ValueError, Exception
+        '''
+        
+        # Set properties
+        queryDict = {}
+        whereKey = None
+        whereValue = None
+        
+        # Check id
+        if vendorId:
+            self._checkParameter('id', vendorId, 'prim')
+            whereKey = 'vendor_id'
+            whereValue = vendorId
+            
+        # Check old name
+        if oldName:
+            self._checkParameter('name', oldName)
+            whereKey = 'vendor_name'
+            whereValue = oldName
+            
+        # Check where condition
+        if whereKey == None:
+            raise ValueError("Vendor id or old vendor name should be present to execute an update!")
+        
+        # Check for vendor name parameter
+        self._checkParameter('name', name)
+        queryDict['vendor_name'] = name
+
+        
+        # Append description
+        if 'description' in kws:
+            queryDict['vendor_description'] = kws['description']
+
+        # Generate SQL
+        sqlVals = self._generateUpdateQuery('vendor', queryDict, whereKey, whereValue)
+
+        try:
+            # Execute sql
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+
+            return True
+
+        except MySQLdb.Error as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInventoryPropertyTemplate(self, name):
         '''
@@ -392,6 +534,77 @@ class idods(object):
 
             self.logger.info('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateInventoryPropertyTemplate(self, tmpltId, cmpntType, name, **kws):
+        '''
+        Update inventory property template in a database
+
+        - tmpltId: property template id M
+        - cmpnttype: component type name M
+        - name: property template name M
+        - description: property template description O
+        - default: property template default value O
+        - unit: property template unit O
+
+        :return: True if update succeeded
+
+        :Raises: ValueError, Exception
+        '''
+
+        # Set query dict
+        queryDict = {}
+        whereKey = 'inventory_prop_tmplt_id'
+
+        # Check id
+        self._checkParameter('id', tmpltId, 'prim')
+        whereValue = tmpltId
+
+        # Check component type
+        result = self.retrieveComponentType(cmpntType);
+
+        if len(result) == 0:
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpntType))
+
+        cmpnttypeid = result.keys()[0]
+        queryDict['cmpnt_type_id'] = cmpnttypeid
+
+        # Check name
+        self._checkParameter("name", name)
+        queryDict['inventory_prop_tmplt_name'] = name
+
+        # Check description parameter
+        if 'description' in kws:
+            queryDict['inventory_prop_tmplt_desc'] = kws['description']
+
+        # Check default parameter
+        if 'default' in kws:
+            queryDict['inventory_prop_tmplt_default'] = kws['default']
+
+        # Check unit parameter
+        if 'unit' in kws:
+            queryDict['inventory_prop_tmplt_units'] = kws['unit']
+
+        # Generate SQL
+        sqlVals = self._generateUpdateQuery('inventory_prop_tmplt', queryDict, whereKey, whereValue)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+
+        except MySQLdb.Error as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def _retrieveInventoryProperty(self, inventoryId, inventoryPropertyTemplateId = None, value = None):
         '''
@@ -581,6 +794,71 @@ class idods(object):
             self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
             raise Exception('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def updateInventoryProperty(self, oldInventoryName, oldInventoryPropertyTemplateName, value):
+        '''
+        Update inventory property in a database
+        
+        params:
+            - oldInventoryName: name of the inventory we are saving property for
+            - oldInventoryPropertyTemplateName: name of the property template/inventory property key name
+            - value: value of the property template/property key name
+            
+        returns:
+            True if everything is ok
+            
+        raises:
+            ValueError, Exception
+        '''
+        
+        # Set query dict
+        queryDict = {}
+        whereDict = {}
+        
+        # Check inventory
+        retrieveInventory = self.retrieveInventory(oldInventoryName)
+        
+        if len(retrieveInventory) == 0:
+            raise ValueError("Inventory (%s) doesn't exist in the database!" % oldInventoryName)
+
+        retrieveInventoryKeys = retrieveInventory.keys()
+        inventoryId = retrieveInventory[retrieveInventoryKeys[0]]['id']
+        whereDict['inventory_id'] = inventoryId
+
+        # Check inventory property template
+        retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(oldInventoryPropertyTemplateName)
+        
+        if len(retrieveInventoryPropertyTemplate) == 0:
+            raise ValueError("Inventory property template (%s) doesn't exist in the database!" % oldInventoryPropertyTemplateName);
+
+        retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
+        inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
+        whereDict['inventory_prop_tmplt_id'] = inventoryPropertyTemplateId
+
+        # Set value parameter
+        queryDict['inventory_prop_value'] = value
+
+        # Generate SQL
+        sqlVals = self._generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def saveInventory(self, name, **kws):
         '''
         save insertion device into inventory using any of the acceptable key words:
@@ -737,6 +1015,159 @@ class idods(object):
             self.logger.info('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def updateInventory(self, inventoryId, oldName, name, **kws):
+        '''
+        Update inventory using any of the acceptable key words:
+
+        - inventoryId:  inventory id from the database table
+        - oldName:  name of the inventory we want to update by
+        - name:  name to identify that device from vendor
+        - compnttype: device type name
+        - alias: alias name if it has
+        - serialno: serial number
+        - vendor: vendor name
+        - props: properties with structure as below
+
+        .. code-block:: python
+
+            {
+                'length': ,                    # float
+                'up_corrector_position': ,     # float
+                'middle_corrector_position': , # float
+                'down_corrector_position':,    # float
+                'gap_min': ,                   # float
+                'gap_max': ,                   # float
+                'gap_tolerance':,              # float
+                'phase1_min':,                 # float
+                'phase1_max':,                 # float
+                'phase2_min':,                 # float
+                'phase2_max':,                 # float
+                'phase3_min':,                 # float
+                'phase3_max':,                 # float
+                'phase4_min':,                 # float
+                'phase4_max':,                 # float
+                'phase_tolerance':,            # float
+                'k_max_linear':,               # float
+                'k_max_circular':,             # float
+                'phase_mode_p':,               # string
+                'phase_mode_a1':,              # string
+                'phase_mode_a2':               # string
+            }
+
+        :param name: insertion device name, which is usually different from its field name (the name after installation).
+        :type name: str
+
+        :param dtype: device type
+        :type dtype: str
+
+        :param alias: alias name if it has
+        :type alias: str
+
+        :param serialno: serial number
+        :type serialno: str
+
+        :param vendor: name of vendor
+        :type vendor: str
+
+        :param props: a map to describe the property of an insertion device as described above
+        :type props: object
+
+        :return: True if everything is ok
+
+        :Raises: ValueError, Exception
+
+        '''
+
+        # Set query dict
+        queryDict = {}
+        whereKey = None
+        whereValue = None
+        
+        # Check id
+        if inventoryId:
+            self._checkParameter('id', inventoryId, 'prim')
+            whereKey = 'inventory_id'
+            whereValue = inventoryId
+            
+        # Check old name
+        if oldName:
+            self._checkParameter('name', oldName)
+            whereKey = 'name'
+            whereValue = oldName
+        
+        if whereKey == None:
+            raise ValueError("Id or old name should be present to execute an update!")
+
+        # Check device type parameter
+        if kws.has_key('compnttype') and kws['compnttype'] != None:
+            
+            # Check component type parameter
+            self._checkParameter("component type", kws['compnttype'])
+            
+            res = self.retrieveComponentType(kws['compnttype'])
+            reskeys = res.keys()
+
+            if len(res) != 1:
+                raise ValueError("Insertion device type (%s) does not exist."%(kws['dtype']))
+            
+            else:
+                compnttypeid = res[reskeys[0]]['id']
+
+            queryDict['cmpnt_type_id'] = compnttypeid
+
+        # Check alias parameter
+        if kws.has_key('alias'):
+            queryDict['alias'] = kws['alias']
+
+        # Check serial number parameter
+        if kws.has_key('serialno'):
+            queryDict['serial_no'] = kws['serialno']
+
+        # Check vendor parameter
+        if kws.has_key('vendor') and kws['vendor'] != None:
+            
+            # Check parameter
+            self._checkParameter("vendor name", kws['vendor'])
+            
+            res = self.retrieveVendor(kws['vendor'])
+
+            if len(res) == 0:
+                raise ValueError("Vendor with name (%s) doesn't exist." % kws['vendor'])
+            
+            resKeys = res.keys()
+            vendor = res[resKeys[0]]['id']
+            queryDict['vendor_id'] = vendor
+            
+        sqlVals = self._generateUpdateQuery('inventory', queryDict, whereKey, whereValue)
+        
+        try:
+            # Insert inventory into database
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            # Inventory is updated, now we can update properties
+            if kws.has_key('props') and kws['props'] != None:
+                props = kws['props']
+                
+                # Update all properties
+                for key in props:
+                    value = props[key]
+                    self.updateInventoryProperty(name, key, value)
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInventory(self, invname):
         '''Retrieve an insertion device from inventory by device inventory name and type.
@@ -809,7 +1240,7 @@ class idods(object):
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
             
-            # get any one since it should be unique
+            # Get any one since it should be unique
             res = cur.fetchall()
             resdict = {}
             
@@ -835,69 +1266,6 @@ class idods(object):
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-
-    def updateinventory(self, name, **kws):
-        '''Update an insertion device properties in its inventory using any of the acceptable key words:
-
-        - name:  name to identify that device from vendor
-        - dtype: device type name
-        - alias: alias name if it has
-        - serialno: serial number
-        - vendor: vendor name
-        - props: properties with structure as below
-
-        .. code-block:: python
-
-            {
-                'length': ,                    # float
-                'up_corrector_position': ,     # float
-                'middle_corrector_position': , # float
-                'down_corrector_position':,    # float
-                'gap_min': ,                   # float
-                'gap_max': ,                   # float
-                'gap_tolerance':,              # float
-                'phase1_min':,                 # float
-                'phase1_max':,                 # float
-                'phase2_min':,                 # float
-                'phase2_max':,                 # float
-                'phase3_min':,                 # float
-                'phase3_max':,                 # float
-                'phase4_min':,                 # float
-                'phase4_max':,                 # float
-                'phase_tolerance':,            # float
-                'k_max_linear':,               # float
-                'k_max_circular':,             # float
-                'phase_mode_a1':,              # string
-                'phase_mode_a2':               # string
-            }
-
-        :param name: insertion device name, which is usually different from its field name (the name after installation).
-        :type name: str
-
-        :param dtype: device type
-        :type dtype: str
-
-        :param alias: alias name if it has
-        :type alias: str
-
-        :param serialno: serial number
-        :type serialno: str
-
-        :param vendor: name of vendor
-        :type vendor: str
-
-        :param props: a map to describe the property of an insertion device as described above
-        :type props: object
-
-        :return: a map with structure like:
-
-            .. code-block:: python
-
-                {'status': True/False}
-
-        :Raises: KeyError, AttributeError
-
-        '''
 
     def saveRawData(self, data):
         '''
@@ -941,6 +1309,56 @@ class idods(object):
 
             self.logger.info('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateRawData(self, rawDataId, data):
+        '''
+        Update raw data
+        
+        params:
+            - rawDataId: id of the raw data we want to update by
+            - data: data we want to save in a blob
+        
+        raises:
+            ValueError, Exception
+            
+        returns:
+            True
+        
+        '''
+        
+        # Define properties
+        queryDict = {}
+        
+        # Check id
+        self._checkParameter('id', rawDataId, 'prim')
+        whereKey = 'id_raw_data_id'
+        whereValue = rawDataId
+        
+        # Set data parameter
+        queryDict['data'] = data
+        
+        # Generate SQL
+        sqlVals = self._generateUpdateQuery('id_raw_data', queryDict, whereKey, whereValue)
+        
+        try:
+            # Insert data into database
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            
+            # Handle transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveOfflineData(self, **kws):
         '''
@@ -1213,10 +1631,12 @@ class idods(object):
             self.logger.info('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateofflinedata(self, **kws):
+    def updateOfflineData(self, offlineDataId, **kws):
         '''
-        update insertion device offline data using any of the acceptable key words:
+        Update insertion device offline data by its id
 
+        parameters:
+        - inventory_name
         - username
         - description
         - gap
@@ -1234,7 +1654,10 @@ class idods(object):
         - script
         - method_name
 
-        :param username: author who updated this data entry
+        :param inventory_name: name of the inventory offline data is connected to
+        :type inventory_name: str
+
+        :param username: author who created this data entry originally
         :type username: str
 
         :param description: a brief description for this data entry
@@ -1282,14 +1705,199 @@ class idods(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :return: a map with structure like:
+        :return: True
 
-            .. code-block:: python
-
-                {'status': True/False}
-
-        :Raises: KeyError, AttributeError
+        :Raises: ValueError, exception
         '''
+        
+        # Check inventoryname
+        inventoryname = None
+        inventoryid = None
+        
+        if 'inventory_name' in kws and kws['inventory_name'] != None:
+            inventoryname = kws['inventory_name']
+            
+            returnedInventory = self.retrieveInventory(inventoryname)
+            
+            if len(returnedInventory) == 0:
+                raise ValueError("Invnetory (%s) does not exist in the database!" % inventoryname)
+            
+            returnedInventoryKeys = returnedInventory.keys()
+            inventoryid = returnedInventory[returnedInventoryKeys[0]]['id']
+        
+        # Check username parameter
+        username = None
+        
+        if 'username' in kws and kws['username'] != None:
+            username = kws['username']
+            self._checkParameter('username', username)
+            
+        # Check description
+        description = None
+        
+        if 'description' in kws and kws['description'] != None:
+            description = kws['description']
+            
+        # Check gap
+        gap = None
+        
+        if 'gap' in kws and kws['gap'] != None:
+            gap = kws['gap']
+            
+        # Check phase1
+        phase1 = None
+        
+        if 'phase1' in kws and kws['phase1'] != None:
+            phase1 = kws['phase1']
+            
+        # Check phase2
+        phase2 = None
+        
+        if 'phase2' in kws and kws['phase2'] != None:
+            phase2 = kws['phase2']
+            
+        # Check phase3
+        phase3 = None
+        
+        if 'phase3' in kws and kws['phase3'] != None:
+            phase3 = kws['phase3']
+            
+        # Check phase4
+        phase4 = None
+        
+        if 'phase4' in kws and kws['phase4'] != None:
+            phase4 = kws['phase4']
+            
+        # Check phasemode
+        phasemode = None
+        
+        if 'phasemode' in kws and kws['phasemode'] != None:
+            phasemode = kws['phasemode']
+            
+        # Check polarmode
+        polarmode = None
+        
+        if 'polarmode' in kws and kws['polarmode'] != None:
+            polarmode = kws['polarmode']
+            
+        # Check status
+        status = None
+        
+        if 'status' in kws and kws['status'] != None:
+            status = kws['status']
+            
+        # Check data_file_name
+        datafilename = None
+        
+        if 'data_file_name' in kws and kws['data_file_name'] != None:
+            datafilename = kws['data_file_name']
+            
+        # Check data_file_ts
+        datafilets = None
+        
+        if 'data_file_ts' in kws and kws['data_file_ts'] != None:
+            datafilets = kws['data_file_ts']
+            
+        # Check data
+        data = None
+        
+        if 'data' in kws and kws['data'] != None:
+            data = kws['data']
+            
+        # Check script_name
+        scriptname = None
+        
+        if 'script_name' in kws and kws['script_name'] != None:
+            scriptname = kws['scriptname']
+            
+        # Check script
+        script = None
+        
+        if 'script' in kws and kws['script'] != None:
+            script = kws['script']
+            
+        # Check method_name
+        methodname = None
+        methodid = None
+        
+        if 'method_name' in kws and kws['method_name'] != None:
+            methodname = kws['method_name']
+            
+            retrievedMethod = self.retrieveDataMethod(methodname)
+            
+            if len(retrievedMethod) == 0:
+                raise ValueError("Data method (%s) doesn't exist in the database!" % methodname)
+
+            retrievedMethodKeys = retrievedMethod.keys()
+            methodid = retrievedMethod[retrievedMethodKeys[0]]['id']
+
+        # Genreate SQL
+        sql = '''
+        INSERT INTO id_offline_data (
+            inventory_id,
+            id_data_method_id,
+            id_raw_data_id,
+            login_name,
+            description,
+            date,
+            gap,
+            phase1,
+            phase2,
+            phase3,
+            phase4,
+            phase_mode,
+            polar_mode,
+            data_status,
+            result_file_name,
+            result_file_time,
+            script_file_name,
+            script_file_content
+        ) VALUES (
+            %s,%s,1,%s,%s,NOW(),%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+        )
+        '''
+        
+        try:
+            vals = [
+                inventoryid,
+                methodid,
+                username,
+                description,
+                gap,
+                phase1,
+                phase2,
+                phase3,
+                phase4,
+                phasemode,
+                polarmode,
+                status,
+                datafilename,
+                datafilets,
+                scriptname,
+                script
+            ]
+            
+            # Insert offline data into database
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Get last row id
+            offlinedataid = cur.lastrowid
+            
+            # Create transactions
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return {'id': offlinedataid}
+        
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveOfflineData(self, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
@@ -1623,27 +2231,161 @@ class idods(object):
             self.logger.info('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveinventorytoinstall(self, installname, invname):
-        '''Link a device as installed once it is installed into field using the key words:
-        - installname
-        - invname
+    def retrieveInventoryToInstall(self, inventoryToInstallId, installName, invName):
+        '''
+        Return installed devices or psecific map
+        
+        params:
+        - installName
+        - invName
 
-        :param installname: label name after installation
-        :type installname: str
+        :param installName: label name after installation
+        :type installName: str
 
-        :param invname: name in its inventory
-        :type invname: str
+        :param invName: name in its inventory
+        :type invName: str
 
         :return: a map with structure like:
 
             .. code-block:: python
 
-                {'result': True/False}
+                {'id': {
+                        'id': #int,
+                        'installid': #int,
+                        'installname': #string,
+                        'inventoryid': #int,
+                        'inventoryname': #string
+                    }
+                }
 
-        :Raises: KeyError, AttributeError
+        :Raises: ValueError, Exception
         '''
+        
+        # Generate SQL
+        sql = '''
+        SELECT
+            ii.inventory__install_id,
+            ii.install_id,
+            ii.inventory_id,
+            inst.field_name,
+            inv.name
+        FROM inventory__install ii
+        LEFT JOIN install inst ON(ii.install_id = inst.install_id)
+        LEFT JOIN inventory inv ON(ii.inventory_id = inv.inventory_id)
+        WHERE 1=1
+        '''
+        
+        vals = []
+        
+        # Check primary key
+        if inventoryToInstallId:
+            sql += ' AND ii.inventory__install_id = %s '
+            vals.append(inventoryToInstallId)
+            
+        # Check inventory name
+        if invName:
+            sql += ' AND inv.name = %s '
+            vals.append(invName)
+            
+        # Check install name
+        if installName:
+            sql += ' AND inst.field_name = %s '
+            vals.append(installName)
+            
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            res = cur.fetchall()
+            resdict = {}
+            
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'installid': r[1],
+                    'installname': r[3],
+                    'inventoryid': r[2],
+                    'inventoryname': r[4]
+                }
+                
+            return resdict
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateinstalledinventory(self, installname, invname):
+    def saveInventoryToInstall(self, installName, invName):
+        '''Link a device as installed once it is installed into field using the key words:
+        - installName
+        - invName
+
+        :param installName: label name after installation
+        :type installName: str
+
+        :param invName: name in its inventory
+        :type invName: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': id of new inventorytoinstall record}
+
+        :Raises: ValueError, Exception
+        '''
+        
+        # Check install name
+        install = self.retrieveInstall(installName)
+        
+        if len(install) < 1:
+            raise ValueError("Install with name (%s) doesn't exist in the database!" % installName)
+        
+        installKeys = install.keys()
+        installObject = install[installKeys[0]]
+        
+        # Check inventory name
+        inventory = self.retrieveInventory(invName)
+        
+        if len(inventory) < 1:
+            raise ValueError("Inventory with name (%s) doesn't exist in the database!" % invName)
+        
+        inventoryKeys = inventory.keys()
+        inventoryObject = inventory[inventoryKeys[0]]
+        
+        # Check if map already exists
+        existing = self.retrieveInventoryToInstall(None, installName, invName)
+        
+        if len(existing):
+            raise ValueError("Inventory already installed!")
+        
+        # Generate SQL
+        sql = '''
+        INSERT INTO inventory__install (install_id, inventory_id)
+        VALUES (%s, %s)
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (installObject['id'], inventoryObject['id']))
+            
+            # Get last id
+            lastid = cur.lastrowid
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+            
+            return {'id': lastid}
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateInventoryToInstall(self, installname, invname):
         '''Update a device as installed when its installation has been changed using the key words:
 
         - installname
@@ -2434,7 +3176,7 @@ class idods(object):
             self.logger.info('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise Exception('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def saveInstallRel(self, parentInstallId, childInstallId, description = None, order = None, date = None, props = None):
+    def saveInstallRel(self, parentInstallId, childInstallId, description = None, order = None, props = None):
         '''
         Save isntall relationship in the database.
         
@@ -2443,7 +3185,6 @@ class idods(object):
             - childInstallId: id of the child element
             - description: description of the relationship
             - order: order of the child in the relationship
-            - date: date when relationship was made
             - props :
                 {
                     'key1': 'value1',
@@ -2478,13 +3219,13 @@ class idods(object):
             logical_desc,
             logical_order,
             install_date
-        ) VALUES (%s, %s, %s, %s, %s)
+        ) VALUES (%s, %s, %s, %s, NOW())
         '''
        
         try:
             # Insert entity
             cur = self.conn.cursor()
-            cur.execute(sql, (parentInstallId, childInstallId, description, order, date))
+            cur.execute(sql, (parentInstallId, childInstallId, description, order))
             
             # Get last row id
             idrel = cur.lastrowid

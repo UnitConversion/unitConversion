@@ -28,8 +28,9 @@ def cleanVendor(namelist):
     if len(namelist) > 0:
         cur = conn.cursor()
 
-        sql = 'DELETE FROM vendor WHERE vendor_name = %s'
-        cur.execute(sql, (namelist))
+        for name in namelist:
+            sql = 'DELETE FROM vendor WHERE vendor_name = %s'
+            cur.execute(sql, (name))
         conn.commit()
 
     conn.close()
@@ -185,20 +186,24 @@ def cleanInstall(namelist):
 
     conn.close()
 
-def cleanInstallRel(dates):
+def cleanInstallRel(parentName, childName):
     '''
     Clean install relationships table of specific entries
     '''
     conn=connect()
 
-    if len(dates) > 0:
-        cur = conn.cursor()
+    cur = conn.cursor()
 
-        for date in dates:
-            sql = 'DELETE FROM install_rel WHERE install_date = %s'
-            cur.execute(sql, (date))
+    sql = '''
+    DELETE FROM install_rel
+    WHERE parent_install_id = 
+    (SELECT install_id FROM install WHERE field_name = %s)
+    AND child_install_id =
+    (SELECT install_id FROM install WHERE field_name = %s)
+    '''
+    cur.execute(sql, (parentName, childName))
 
-        conn.commit()
+    conn.commit()
 
     conn.close()
 
@@ -219,18 +224,23 @@ def cleanInstallRelPropType(namelist):
 
     conn.close()
 
-def cleanInstallRelProp(typeName):
+def cleanInstallRelProp(typeNameList):
     '''
     Clean install rel property entry identified by special property type name
     '''
     conn=connect()
-    cur = conn.cursor()
+    
+    if len(typeNameList) > 0:
+        cur = conn.cursor()
 
-    sql = '''
-    DELETE FROM install_rel_prop WHERE
-    install_rel_prop_type_id = (SELECT install_rel_prop_type_id FROM install_rel_prop_type WHERE install_rel_prop_type_name = %s)
-    '''
-    cur.execute(sql, (typeName))
+        for name in typeNameList:
 
-    conn.commit()
+            sql = '''
+            DELETE FROM install_rel_prop WHERE
+            install_rel_prop_type_id = (SELECT install_rel_prop_type_id FROM install_rel_prop_type WHERE install_rel_prop_type_name = %s)
+            '''
+            cur.execute(sql, (name))
+
+        conn.commit()
+        
     conn.close()

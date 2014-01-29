@@ -20,14 +20,21 @@ class TestIdods(unittest.TestCase):
         # Clean offline data
         cleanOfflineData(['spec1234desc'])
         
+        # Clean install rel prop
+        cleanInstallRelProp(['testprop'])
+        
+        # Clean install rel prop type
+        cleanInstallRelPropType(['testprop'])
+        
         # Clean install rel
-        cleanInstallRel(['2014-01-27'])
+        cleanInstallRel('test child', 'test parent')
+        cleanInstallRel('test parent', 'test child')
         
         # Clean install table
         cleanInstall(['test parent', 'test child'])
         
         # Clean vendor table
-        cleanVendor(['test vendor']);
+        cleanVendor(['test vendor', 'test vendor2']);
         
         # Clean data method
         cleanDataMethod(['method', 'method2', 'test'])
@@ -72,7 +79,44 @@ class TestIdods(unittest.TestCase):
         # Test retrieving vendor without a name
         self.assertRaises(ValueError, self.api.retrieveVendor, None)
         
+    '''
+    Test vendor update functionality
+    '''
+    def testUpdateVendor(self):
         
+        # Save new vendor
+        idObject = self.api.saveVendor('test vendor', 'desc')
+        
+        # Update vendor name and description
+        self.assertTrue(self.api.updateVendor(idObject['id'], None, 'test vendor2', description = 'desc2'))
+        
+        # Try to update without vendor id
+        self.assertRaises(ValueError, self.api.updateVendor, None, None, 'test vendor2', description = 'desc2')
+        
+        # Retrieve updated vendor
+        vendor = self.api.retrieveVendor('test vendor2')
+        vendorKeys = vendor.keys()
+        vendorObject = vendor[vendorKeys[0]]
+        
+        # Check if id is still the same
+        self.assertEqual(idObject['id'], vendorObject['id'], "Ids should be the same")
+        
+        # Check new name
+        self.assertEqual(vendorObject['name'], 'test vendor2')
+        
+        # Check new description
+        self.assertEqual(vendorObject['description'], 'desc2')
+        
+        # Test updating by name
+        self.assertTrue(self.api.updateVendor(None, 'test vendor2', 'test vendor', description=None))
+        
+        # Retrieve updated vendor
+        vendor = self.api.retrieveVendor('test vendor')
+        vendorKeys = vendor.keys()
+        vendorObject = vendor[vendorKeys[0]]
+        
+        # Check new description
+        self.assertEqual(vendorObject['description'], None, "New description should be set to None")
 
     '''
     Test different options of retrieving component type
@@ -184,6 +228,30 @@ class TestIdods(unittest.TestCase):
         , "Check all the properties in the returned object")
     
     '''
+    Test updating inventory property template
+    '''
+    def testUpadateInventoryPropertyTemplate(self):
+        # Prepare component type
+        componentType = self.api.saveComponentType('Magnet')
+
+        # Try to save new inventory property template
+        idObject = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha', 'desc', 'default', 'units')
+        
+        # Update template
+        self.assertTrue(self.api.updateInventoryPropertyTemplate(idObject['id'], 'Magnet', 'beta'))
+        
+        # Retrieve updated template
+        template = self.api.retrieveInventoryPropertyTemplate('beta')
+        templateKeys = template.keys()
+        templateObject = template[templateKeys[0]]
+        
+        # Check if ids are the same
+        self.assertEqual(idObject['id'], templateObject['id'], "Ids should be the same")
+        
+        # Check if description stayed the same
+        self.assertEqual(templateObject['description'], 'desc')
+    
+    '''
     Try a couple of scenarios of saving inventory property into database
     '''
     def testSaveInventoryProperty(self):
@@ -204,6 +272,35 @@ class TestIdods(unittest.TestCase):
         retrievePropertyKeys = retrieveProperty.keys()
         
         self.assertEqual('value', retrieveProperty[retrievePropertyKeys[0]]['value'], "Property save and property retrieved have the same value.")
+    
+    '''
+    Test updating inventory property
+    '''
+    def testUpdateInventoryProperty(self):
+        # Prepare component type
+        componentType = self.api.saveComponentType('Magnet')
+        # Try to save new inventory property template
+        template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
+        
+        # Create inventory
+        inventory = self.api.saveInventory('name', compnttype='Magnet')
+        
+        # Create property
+        prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
+        
+        # Try to update
+        self.assertTrue(self.api.updateInventoryProperty('name', 'alpha', 'newvalue'), "Set new value to alpha property")
+        
+        # Retrieve property
+        retrieveProperty = self.api.retrieveInventoryProperty('name', 'alpha')
+        retrievePropertyKeys = retrieveProperty.keys()
+        propertyObject = retrieveProperty[retrievePropertyKeys[0]]
+        
+        # Check if id stayed the same
+        self.assertEqual(prop['id'], propertyObject['id'], "Id should be the same after updating!")
+        
+        # Check new value
+        self.assertEqual(propertyObject['value'], 'newvalue')
     
     '''
     Try  to save new inventory into database
@@ -233,6 +330,34 @@ class TestIdods(unittest.TestCase):
         
         # Exception should be raised if inventory property template doesn't exist
         self.assertRaises(ValueError, self.api.saveInventory, 'name', compnttype='Magnet', props={'beta': 43})
+        
+    '''
+    Try to update inventory
+    '''
+    def testUpdateInventory(self):
+        
+        # Prepare component type
+        componentType = self.api.saveComponentType('Magnet')
+        
+        # Try to save new inventory property template
+        template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
+        
+        # Create inventory
+        idObject = self.api.saveInventory('name', compnttype='Magnet', alias='name2', props={'alpha': 42})
+        
+        # Update inventory
+        self.assertTrue(self.api.updateInventory(None, 'name', 'name', compnttype='Magnet', alias='name3', props={'alpha': 43}))
+        
+        # Get updated inventory
+        inventory = self.api.retrieveInventory('name')
+        inventoryKeys = inventory.keys()
+        inventoryObject = inventory[inventoryKeys[0]]
+        
+        # Check if ids are the same
+        self.assertEqual(inventoryObject['id'], idObject['id'], "Ids should stay the same!")
+        
+        # Check if alpha property value has changed
+        self.assertEqual(inventoryObject['alpha'], '43', "Check if property has changed")
         
     '''
     Try to save offline data method
@@ -344,8 +469,11 @@ class TestIdods(unittest.TestCase):
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnttype='Magnet')
         
+        # Prepare prop type
+        propType = self.api.saveInstallRelPropertyType('testprop')
+        
         # Save rel
-        rel = self.api.saveInstallRel(savedInstallParent['id'], savedInstallChild['id'], 'desc', 1, '2014-01-27')
+        rel = self.api.saveInstallRel(savedInstallParent['id'], savedInstallChild['id'], 'desc', 1, {'testprop': 'testvalue'})
         
         # Retrieve rel
         retrievedRel = self.api.retrieveInstallRel(rel['id'])
@@ -358,11 +486,14 @@ class TestIdods(unittest.TestCase):
         # Check order
         self.assertEqual(retrievedRelObject['order'], 1)
         
-        # Check date
-        self.assertEqual(retrievedRelObject['date'], '2014-01-27 00:00:00')
+        # Check test property
+        self.assertEqual(retrievedRelObject['testprop'], 'testvalue')
         
         # Test saving another rel with same parent and child
-        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallParent['id'], savedInstallChild['id'], None, None, '2014-01-27')
+        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallParent['id'], savedInstallChild['id'], None, None)
+        
+        # Test saving install rel with property that is not defined
+        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallChild['id'], savedInstallParent['id'], None, None, {'testprop2': 'testvalue'})
 
 if __name__ == '__main__':
     unittest.main()
