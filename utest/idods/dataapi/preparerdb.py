@@ -244,3 +244,19 @@ def cleanInstallRelProp(typeNameList):
         conn.commit()
         
     conn.close()
+    
+def cleanInventoryToInstall(installName, ivnentoryName):
+    '''
+    Clean inventory - install entry
+    '''
+    conn=connect()
+    cur = conn.cursor()
+
+    sql = '''
+    DELETE FROM inventory__install WHERE
+    inventory_id = (SELECT inventory_id FROM inventory WHERE name = %s)
+    AND install_id = (SELECT install_id FROM install WHERE field_name = %s)'''
+    cur.execute(sql, (ivnentoryName, installName))
+
+    conn.commit()
+    conn.close()
