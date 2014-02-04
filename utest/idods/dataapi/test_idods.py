@@ -580,6 +580,40 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(offlineDataObject['description'], 'spec1234desc')
 
     '''
+    Try to update offline data
+    '''
+    def testUpdateOfflineData(self):
+        
+        # Prepare data method
+        savedDataMethod = self.api.saveDataMethod('method', 'description')
+        
+        # Prepare component type
+        savedComponentType = self.api.saveComponentType('Magnet')
+
+        # Prepare inventory
+        savedInventory = self.api.saveInventory('name', compnttype='Magnet', alias='name2')
+        
+        # Create offline data
+        savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
+        
+        # Update offline data
+        self.assertTrue(self.api.updateOfflineData(savedOfflineData['id'], status=2, phase1=2.4, phasemode='p', data_file_ts='2014-02-03'))
+        
+        # Retrieve updated offline data by id
+        updatedData = self.api.retrieveOfflineData(offlineid=savedOfflineData['id'])
+        updatedDataKeys = updatedData.keys()
+        updatedDataObject = updatedData[updatedDataKeys[0]]
+        
+        # Check status
+        self.assertEqual(updatedDataObject['status'], 2)
+        
+        # Check gap
+        self.assertEqual(updatedDataObject['gap'], 3.4)
+        
+        # Check phase mode
+        self.assertEqual(updatedDataObject['phasemode'], 'p')
+
+    '''
     Test saving, retrieving and updating install
     '''
     def testInstall(self):
@@ -658,7 +692,7 @@ class TestIdods(unittest.TestCase):
         prop = self.api.saveInstallRelProperty(rel['id'], 'testprop', 4)
         
         # Try to update install rel property
-        self.assertTrue(self.api.updateInstallRelProperty(rel['id'], 'testprop', value=5))
+        self.assertTrue(self.api.updateInstallRelProperty(savedInstallParent['id'], savedInstallChild['id'], 'testprop', value=5))
         
         # Retrieve updated install rel property
         updatedProp = self.api.retrieveInstallRelProperty(rel['id'], 'testprop')
@@ -742,8 +776,7 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(retrievedRelObject['order'], 2)
         
         # Check test property
-        # !!! error
-        self.assertEqual(retrievedRelObject['testprop'], 'testvalue')
+        self.assertEqual(retrievedRelObject['testprop'], 'value')
         
         # Test saving another rel with same parent and child
         self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallParent['id'], savedInstallChild['id'], None, None)

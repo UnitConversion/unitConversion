@@ -1714,10 +1714,15 @@ class idods(object):
         :Raises: ValueError, exception
         '''
         
-        # Check inventoryname
-        inventoryname = None
-        inventoryid = None
+        # Define query dict
+        queryDict = {}
         
+        # Check id
+        self._checkParameter('id', offlineDataId, 'prim')
+        whereKey = 'id_offline_data_id'
+        whereValue = offlineDataId
+        
+        # Check inventoryname
         if 'inventory_name' in kws and kws['inventory_name'] != None:
             inventoryname = kws['inventory_name']
             
@@ -1728,102 +1733,70 @@ class idods(object):
             
             returnedInventoryKeys = returnedInventory.keys()
             inventoryid = returnedInventory[returnedInventoryKeys[0]]['id']
+            queryDict['inventory_id'] = inventoryid
         
         # Check username parameter
-        username = None
-        
-        if 'username' in kws and kws['username'] != None:
-            username = kws['username']
-            self._checkParameter('username', username)
+        if 'username' in kws:
+            queryDict['login_name'] = kws['username']
             
         # Check description
-        description = None
-        
-        if 'description' in kws and kws['description'] != None:
-            description = kws['description']
+        if 'description' in kws:
+            queryDict['description'] = kws['description']
             
         # Check gap
-        gap = None
-        
-        if 'gap' in kws and kws['gap'] != None:
-            gap = kws['gap']
+        if 'gap' in kws:
+            queryDict['gap'] = kws['gap']
             
         # Check phase1
-        phase1 = None
-        
-        if 'phase1' in kws and kws['phase1'] != None:
-            phase1 = kws['phase1']
+        if 'phase1' in kws:
+            queryDict['phase1'] = kws['phase1']
             
         # Check phase2
-        phase2 = None
-        
-        if 'phase2' in kws and kws['phase2'] != None:
-            phase2 = kws['phase2']
+        if 'phase2' in kws:
+            queryDict['phase2'] = kws['phase2']
             
         # Check phase3
-        phase3 = None
-        
-        if 'phase3' in kws and kws['phase3'] != None:
-            phase3 = kws['phase3']
+        if 'phase3' in kws:
+            queryDict['phase3'] = kws['phase3']
             
         # Check phase4
-        phase4 = None
-        
-        if 'phase4' in kws and kws['phase4'] != None:
-            phase4 = kws['phase4']
+        if 'phase4' in kws:
+            queryDict['phase4'] = kws['phase4']
             
         # Check phasemode
-        phasemode = None
-        
-        if 'phasemode' in kws and kws['phasemode'] != None:
-            phasemode = kws['phasemode']
+        if 'phasemode' in kws:
+            queryDict['phase_mode'] = kws['phasemode']
             
         # Check polarmode
-        polarmode = None
-        
-        if 'polarmode' in kws and kws['polarmode'] != None:
-            polarmode = kws['polarmode']
+        if 'polarmode' in kws:
+            queryDict['polar_mode'] = kws['polarmode']
             
         # Check status
-        status = None
-        
-        if 'status' in kws and kws['status'] != None:
-            status = kws['status']
+        if 'status' in kws:
+            queryDict['data_status'] = kws['status']
             
         # Check data_file_name
-        datafilename = None
-        
-        if 'data_file_name' in kws and kws['data_file_name'] != None:
-            datafilename = kws['data_file_name']
+        if 'data_file_name' in kws:
+            queryDict['result_file_name'] = kws['data_file_name']
             
         # Check data_file_ts
-        datafilets = None
-        
         if 'data_file_ts' in kws and kws['data_file_ts'] != None:
-            datafilets = kws['data_file_ts']
+            queryDict['result_file_time'] = kws['data_file_ts']
             
         # Check data
-        data = None
-        
         if 'data' in kws and kws['data'] != None:
             data = kws['data']
+            # !!! save data
             
         # Check script_name
-        scriptname = None
-        
-        if 'script_name' in kws and kws['script_name'] != None:
-            scriptname = kws['scriptname']
+        if 'script_name' in kws:
+            queryDict['script_file_name'] = kws['scriptname']
             
         # Check script
-        script = None
-        
-        if 'script' in kws and kws['script'] != None:
-            script = kws['script']
+        if 'script' in kws:
+            queryDict['script_file_content'] = kws['script']
             
         # Check method_name
-        methodname = None
-        methodid = None
-        
         if 'method_name' in kws and kws['method_name'] != None:
             methodname = kws['method_name']
             
@@ -1834,65 +1807,22 @@ class idods(object):
 
             retrievedMethodKeys = retrievedMethod.keys()
             methodid = retrievedMethod[retrievedMethodKeys[0]]['id']
+            queryDict['id_data_method_id'] = methodid
 
         # Genreate SQL
-        sql = '''
-        INSERT INTO id_offline_data (
-            inventory_id,
-            id_data_method_id,
-            id_raw_data_id,
-            login_name,
-            description,
-            date,
-            gap,
-            phase1,
-            phase2,
-            phase3,
-            phase4,
-            phase_mode,
-            polar_mode,
-            data_status,
-            result_file_name,
-            result_file_time,
-            script_file_name,
-            script_file_content
-        ) VALUES (
-            %s,%s,1,%s,%s,NOW(),%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
-        )
-        '''
+        sqlVals = self._generateUpdateQuery('id_offline_data', queryDict, whereKey, whereValue)
         
         try:
-            vals = [
-                inventoryid,
-                methodid,
-                username,
-                description,
-                gap,
-                phase1,
-                phase2,
-                phase3,
-                phase4,
-                phasemode,
-                polarmode,
-                status,
-                datafilename,
-                datafilets,
-                scriptname,
-                script
-            ]
             
             # Insert offline data into database
             cur = self.conn.cursor()
-            cur.execute(sql, vals)
-            
-            # Get last row id
-            offlinedataid = cur.lastrowid
+            cur.execute(sqlVals[0], sqlVals[1])
             
             # Create transactions
             if self.transaction == None:
                 self.conn.commit()
                 
-            return {'id': offlinedataid}
+            return True
         
         except MySQLdb.Error as e:
             
@@ -1900,12 +1830,13 @@ class idods(object):
             if self.transaction == None:
                 self.conn.rollback()
 
-            self.logger.info('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when updating offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveOfflineData(self, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
 
+        - offlineid
         - description
         - gap
         - phase1
@@ -1917,6 +1848,9 @@ class idods(object):
         - status
         - method_name
         - inventory_name
+
+        :param offlineid: id of the offline data we want to retrieve
+        :type offlineid: int
 
         :param description: a brief description for this data entry
         :type description: str
@@ -2015,6 +1949,12 @@ class idods(object):
         
         vals = []
         
+        # Append offline if
+        if 'offlineid' in kws and kws['offlineid'] != None:
+            self._checkParameter('id', kws['offlineid'], 'prim')
+            sql += ' AND id_offline_data_id = %s '
+            vals.append(kws['offlineid'])
+        
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
             sqlVal = self._checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
@@ -2098,7 +2038,7 @@ class idods(object):
                     'polarmode': r[13],
                     'status': r[14],
                     'data_file_name': r[15],
-                    'data_file_ts': r[16],
+                    'data_file_ts': None,
                     'data': 0,
                     'script_name': r[17],
                     'script': r[18],
@@ -2106,6 +2046,10 @@ class idods(object):
                     'methoddesc': r[20],
                     'inventory_name': r[21]
                 }
+                
+                # Format time if it is not null
+                if r[16] != None:
+                    resdict[r[0]]['data_file_ts'] = r[16].strftime("%Y-%m-%d %H:%M:%S")
 
             return resdict
             
@@ -3562,12 +3506,13 @@ class idods(object):
             self.logger.info('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise Exception('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def updateInstallRelProperty(self, installRelId, installRelPropertyTypeName, **kws):
+    def updateInstallRelProperty(self, installRelParentId, installRelChildId, installRelPropertyTypeName, **kws):
         '''
         Update install rel property
         
         params:
-            - installRelId: id of the install rel
+            - installRelParentId: id of the parent in the install rel
+            - installRelChildId: id of the child in the install rel
             - installRelPropertyTypeName: name of the install rel property type
             - value: value of the install rel property
             
@@ -3582,12 +3527,15 @@ class idods(object):
         whereDict = {}
         
         # Check install rel
-        retrieveInstallRel = self.retrieveInstallRel(installRelId)
+        retrieveInstallRel = self.retrieveInstallRel(None, installRelParentId, installRelChildId)
         
         if len(retrieveInstallRel) == 0:
-            raise ValueError("Install rel (%s) doesn't exist in the database!" % installRelId)
+            raise ValueError("Install rel doesn't exist in the database!")
 
-        whereDict['install_rel_id'] = installRelId
+        retrieveInstallRelKeys = retrieveInstallRel.keys()
+        retrieveInstallRelObject = retrieveInstallRel[retrieveInstallRelKeys[0]]
+
+        whereDict['install_rel_id'] = retrieveInstallRelObject['id']
         
         # Check install rel property type
         retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
@@ -3755,9 +3703,6 @@ class idods(object):
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
             
-            # Get last row id
-            idrel = cur.lastrowid
-            
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
@@ -3769,7 +3714,7 @@ class idods(object):
                 # Save each property
                 for key in props:
                     value = props[key]
-                    self.updateInstallRelProperty(idrel, key, value=value)
+                    self.updateInstallRelProperty(parentInstallId, childInstallId, key, value=value)
                 
             return True
            
@@ -4220,15 +4165,14 @@ class idods(object):
             self.logger.info('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveonlinedata(self, **kws):
+    def saveOnlineData(self, **kws):
         '''Save insertion device online data using any of the acceptable key words:
 
         - installname
         - username
         - description
         - url
-        - data
-        - meastime
+        - date
         - status
 
         The data itself is stored on server's harddisk because its size might blow up to GB level.
@@ -4246,11 +4190,8 @@ class idods(object):
         :param url: external url of the data file is stored
         :type url: str
 
-        :param data: real data file, which could be in binary or ASCII format
-        :type data: object
-
-        :param meastime: time when this data is measured
-        :type meastime: timestamp
+        :param date: time when this data is measured
+        :type date: timestamp
 
         :param status: status of this data set
         :type status: int
@@ -4261,7 +4202,7 @@ class idods(object):
 
                 {'id': data id}
 
-        :Raises: KeyError, AttributeError
+        :Raises: ValueError, Exception
         '''
 
     def updateonlinedata(self, **kws):
