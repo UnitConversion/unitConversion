@@ -31,6 +31,9 @@ class TestIdods(unittest.TestCase):
         cleanInstallRel('test child', 'test parent')
         cleanInstallRel('test parent', 'test child')
         
+        # Clean online data
+        cleanOnlineData(['desc1234'])
+        
         # Clean inventory install map
         cleanInventoryToInstall('test parent', 'name')
         cleanInventoryToInstall('test parent', 'name2')
@@ -815,6 +818,71 @@ class TestIdods(unittest.TestCase):
         
         # Set install to a new inventory
         self.assertTrue(self.api.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
+
+    '''
+    Test saving online data
+    '''
+    def testSaveOnlineData(self):
+        
+        # Prepare component type
+        componentType = self.api.saveComponentType('Magnet')
+        
+        # Prepare install parent
+        savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        
+        # Save online data
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+        
+        # Retrieve online data
+        retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
+        retrievedOnlineDataKeys = retrievedOnlineData.keys()
+        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
+        
+        # Test install name
+        self.assertEqual('test parent', retrievedOnlineDataObject['install_name'])
+        
+        # Test description
+        self.assertEqual('desc1234', retrievedOnlineDataObject['description'])
+        
+        # Test username
+        self.assertEqual('username', retrievedOnlineDataObject['username'])
+        
+        # Test URL
+        self.assertEqual('url', retrievedOnlineDataObject['url'])
+        
+        # Test status
+        self.assertEqual(1, retrievedOnlineDataObject['status'])
+
+    '''
+    Test update online data
+    '''
+    def testUpdateOnlineData(self):
+        
+        # Prepare component type
+        componentType = self.api.saveComponentType('Magnet')
+        
+        # Prepare install parent
+        savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        
+        # Save online data
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+        
+        # Update online data
+        self.assertTrue(self.api.updateOnlineData(onlineid['id'], username='username2'))
+        
+        # Retrieve online data
+        retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
+        retrievedOnlineDataKeys = retrievedOnlineData.keys()
+        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
+        
+        # Test username
+        self.assertEqual('username2', retrievedOnlineDataObject['username'])
+        
+        # Test URL
+        self.assertEqual('url', retrievedOnlineDataObject['url'])
+        
+        # Test status
+        self.assertEqual(1, retrievedOnlineDataObject['status'])
 
 if __name__ == '__main__':
     unittest.main()

@@ -1635,7 +1635,7 @@ class idods(object):
             self.logger.info('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateOfflineData(self, offlineDataId, **kws):
+    def updateOfflineData(self, offline_data_id, **kws):
         '''
         Update insertion device offline data by its id
 
@@ -1709,18 +1709,18 @@ class idods(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :return: True
+        :return: True if everything is ok
 
-        :Raises: ValueError, exception
+        :Raises: ValueError, Exception
         '''
         
         # Define query dict
         queryDict = {}
         
         # Check id
-        self._checkParameter('id', offlineDataId, 'prim')
+        self._checkParameter('id', offline_data_id, 'prim')
         whereKey = 'id_offline_data_id'
-        whereValue = offlineDataId
+        whereValue = offline_data_id
         
         # Check inventoryname
         if 'inventory_name' in kws and kws['inventory_name'] != None:
@@ -1949,7 +1949,7 @@ class idods(object):
         
         vals = []
         
-        # Append offline if
+        # Append offline id
         if 'offlineid' in kws and kws['offlineid'] != None:
             self._checkParameter('id', kws['offlineid'], 'prim')
             sql += ' AND id_offline_data_id = %s '
@@ -2013,6 +2013,11 @@ class idods(object):
             sqlVal = self._checkWildcardAndAppend('idm.method_name', kws['method_name'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
+        
+        # Append inventory name
+        if 'inventory_name' in kws and kws['inventory_name'] != None:
+            sqlVal = self._checkWildcardAndAppend('inv.name', kws['inventory_name'], sql, vals, 'AND')
+            sql = sqlVal[0]
         
         try:
             # Execute SQL
@@ -4084,10 +4089,10 @@ class idods(object):
             self.logger.info('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveInstall(self, installname, **kws):
+    def retrieveInstall(self, install_name, **kws):
         '''Retrieve insertion device installation using any of the acceptable key words:
 
-        - installname: installation name, which is its label on field
+        - install_name: installation name, which is its label on field
         - description: installation description
         - cmpnttype: component type name of the device
         - coordinatecenter: coordinate center number
@@ -4107,7 +4112,7 @@ class idods(object):
         '''
         
         # Check name
-        self._checkParameter('name', installname)
+        self._checkParameter('name', install_name)
         
         # Generate SQL
         sql = '''
@@ -4126,7 +4131,7 @@ class idods(object):
         vals = []
         
         # Append name parameter
-        sqlVals = self._checkWildcardAndAppend('inst.field_name', installname, sql, vals)
+        sqlVals = self._checkWildcardAndAppend('inst.field_name', install_name, sql, vals)
         
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
@@ -4165,21 +4170,20 @@ class idods(object):
             self.logger.info('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
             raise Exception('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveOnlineData(self, **kws):
+    def saveOnlineData(self, install_name, **kws):
         '''Save insertion device online data using any of the acceptable key words:
 
-        - installname
+        - install_name
         - username
         - description
         - url
-        - date
         - status
 
         The data itself is stored on server's harddisk because its size might blow up to GB level.
         Ths file url is stored in the database.
 
-        :param installname: device name that the data belongs to
-        :type installname: str
+        :param install_name: device name that the data belongs to
+        :type install_name: str
 
         :param username: author who updated this data entry
         :type username: str
@@ -4189,9 +4193,6 @@ class idods(object):
 
         :param url: external url of the data file is stored
         :type url: str
-
-        :param date: time when this data is measured
-        :type date: timestamp
 
         :param status: status of this data set
         :type status: int
@@ -4204,23 +4205,94 @@ class idods(object):
 
         :Raises: ValueError, Exception
         '''
+        
+        # Check install name
+        self._checkParameter('name', install_name)
+            
+        returnedInstall = self.retrieveInstall(install_name)
+        
+        if len(returnedInstall) == 0:
+            raise ValueError("Install (%s) does not exist in the database!" % install_name)
+        
+        returnedInstallKeys = returnedInstall.keys()
+        installid = returnedInstall[returnedInstallKeys[0]]['id']
+            
+        # Check username
+        username = None
+        
+        if 'username' in kws and kws['username'] != None:
+            username = kws['username']
+            
+        # Check description
+        description = None
+        
+        if 'description' in kws and kws['description'] != None:
+            description = kws['description']
+            
+        # Check url
+        url = None
+        
+        if 'url' in kws and kws['url'] != None:
+            url = kws['url']
+            
+        # Check status
+        status = None
+        
+        if 'status' in kws and kws['status'] != None:
+            status = kws['status']
+            
+        # Generate SQL
+        sql = '''
+        INSERT INTO id_online_data (
+            install_id,
+            login_name,
+            description,
+            data_url,
+            date,
+            status
+        ) VALUES (
+            %s, %s, %s, %s, NOW(), %s
+        )
+        '''
+        
+        try:
+            # Insert data into database
+            cur = self.conn.cursor()
+            cur.execute(sql, (installid, username, description, url, status))
+            
+            # Get last row id
+            onlinedataid = cur.lastrowid
+            
+            # Create transactions
+            if self.transaction == None:
+                self.conn.commit()
+            
+            return {'id': onlinedataid}
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
 
-    def updateonlinedata(self, **kws):
-        '''update insertion device online data using any of the acceptable key words:
+            self.logger.info('Error when saving new online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when saving new online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
-        - installname
+    def retrieveOnlineData(self, **kws):
+        '''Retrieve insertion device online data using any of the acceptable key words:
+
+        - onlineid
+        - install_name
         - username
         - description
         - url
-        - data
-        - meastime
         - status
 
-        The data itself is stored on server's harddisk because its size might blow up to GB level.
-        Ths file url is stored in the database.
+        :param onlineid: id of the online data we want to update by
+        :type onlineid: int
 
-        :param installname: device name that the data belongs to
-        :type installname: str
+        :param install_name: device name that the data belongs to
+        :type install_name: str
 
         :param username: author who updated this data entry
         :type username: str
@@ -4231,12 +4303,6 @@ class idods(object):
         :param url: external url of the data file is stored
         :type url: str
 
-        :param data: real data file, which could be in binary or ASCII format
-        :type data: object
-
-        :param meastime: time when this data is measured
-        :type meastime: timestamp
-
         :param status: status of this data set
         :type status: int
 
@@ -4244,51 +4310,198 @@ class idods(object):
 
             .. code-block:: python
 
-                {'status': True/False}
+                {'id': {
+                        'id':,            #int
+                        'installid':,     #int
+                        'install_name':,  #string
+                        'username':,      #string
+                        'description':,   #string
+                        'url':,           #url
+                        'date':,          #date
+                        'status':,        #int
+                    }
+                }
 
-        :Raises: KeyError, AttributeError
+        :Raises: ValueError, Exception
         '''
+        
+        # Generate SQL
+        sql = '''
+        SELECT
+            iod.id_online_data_id,
+            iod.install_id,
+            iod.login_name,
+            iod.description,
+            iod.data_url,
+            iod.date,
+            iod.status,
+            inst.field_name
+        FROM id_online_data iod
+        LEFT JOIN install inst ON(iod.install_id = inst.install_id)
+        WHERE 1=1
+        '''
+        
+        vals = []
+        
+        # Append online id
+        if 'onlineid' in kws and kws['onlineid'] != None:
+            self._checkParameter('id', kws['onlineid'], 'prim')
+            sql += ' AND id_online_data_id = %s '
+            vals.append(kws['onlineid'])
+            
+        # Append username
+        if 'username' in kws and kws['username'] != None:
+            sqlVals = self._checkWildcardAndAppend('iod.login_name', kws['username'], sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+            
+        # Append description
+        if 'description' in kws and kws['description'] != None:
+            sqlVals = self._checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+            
+        # Append url
+        if 'url' in kws and kws['url'] != None:
+            sqlVals = self._checkWildcardAndAppend('iod.data_url', kws['url'], sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+            
+        # Append status
+        if 'status' in kws and kws['status'] != None:
+            sqlVals = self._checkRangeAndAppend('iod.status', kws['status'], sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+            
+        # Append install name
+        if 'install_name' in kws and kws['install_name'] != None:
+            sqlVals = self._checkWildcardAndAppend('inst.field_name', kws['install_name'], sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+            
+        try:
+            # Execute SQL
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Get all records
+            res = cur.fetchall()
+            resdict = {}
+            
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'installid': r[1],
+                    'install_name': r[7],
+                    'username': r[2],
+                    'description': r[3],
+                    'url': r[4],
+                    'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
+                    'status': r[6]
+                }
+            
+            return resdict
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveonlinedata(self, **kws):
-        '''Retrieve insertion device online data using any of the acceptable key words:
+    def updateOnlineData(self, online_data_id, **kws):
+        '''update insertion device online data using any of the acceptable key words:
 
-        - installname
+        - install_name
+        - username
         - description
-        - meastime
+        - url
         - status
 
-        :param installname: name of installed device on field
-        :type installname: str
+        The data itself is stored on server's harddisk because its size might blow up to GB level.
+        Ths file url is stored in the database.
+
+        :param install_name: device name that the data belongs to
+        :type install_name: str
+
+        :param username: author who updated this data entry
+        :type username: str
 
         :param description: a brief description for this data entry
         :type description: str
 
-        :param meastime: time when this data is measured
-        :type meastime: timestamp
+        :param url: external url of the data file is stored
+        :type url: str
 
         :param status: status of this data set
         :type status: int
 
-        :return: a map with structure like:
+        :return: True if everything is ok
 
-            .. code-block:: python
-
-                {'data id': {'username': ,
-                             'description': ,
-                             'meastime': ,
-                             'date':
-                             'status':,
-                             'data': , # should it be an file url?
-                            }
-                }
-
-        :Raises: KeyError, AttributeError
+        :Raises: ValueError, Exception
         '''
+        
+        # Define query dict
+        queryDict = {}
+        
+        # Check id
+        self._checkParameter('id', online_data_id, 'prim')
+        whereKey = 'id_online_data_id'
+        whereValue = online_data_id
+        
+        # Check install name
+        if 'install_name' in kws and kws['install_name'] != None:
+            installname = kws['install_name']
+            
+            returnedInstall = self.retrieveInstall(installname)
+            
+            if len(returnedInstall) == 0:
+                raise ValueError("Install (%s) does not exist in the database!" % installname)
+            
+            returnedInstallKeys = returnedInstall.keys()
+            installid = returnedInstall[returnedInstallKeys[0]]['id']
+            queryDict['install_id'] = installid
+            
+        # Check username
+        if 'username' in kws:
+            queryDict['login_name'] = kws['username']
+            
+        # Check description
+        if 'description' in kws:
+            queryDict['description'] = kws['description']
+            
+        # Check url
+        if 'url' in kws:
+            queryDict['url'] = kws['url']
+            
+        # Check status
+        if 'status' in kws:
+            queryDict['status'] = kws['status']
+            
+        # Generate SQL
+        sqlVals = self._generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)
+        
+        try:
+            # Insert offline data into database
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            
+            # Create transactions
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+        
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
 
-    def retrievinstalleofflinedata(self, **kws):
+            self.logger.info('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def retrieveInstallOfflineData(self, install_name, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
 
-        - installname
+        - install_name
         - description
         - gap
         - phase1
@@ -4299,8 +4512,8 @@ class idods(object):
         - polarmode
         - status
 
-        :param installname: name of installed device on field
-        :type installname: str
+        :param install_name: name of installed device on field
+        :type install_name: str
 
         :param description: a brief description for this data entry
         :type description: str
@@ -4334,27 +4547,90 @@ class idods(object):
             .. code-block:: python
 
                 {'data_id': {
-                            'username': ,      # string
-                            'description': ,   # string
-                            'date': ,          # timestamp
-                            'gap':,            # float
-                            'phase1': ,        # float
-                            'phase2': ,        # float
-                            'phase3':,         # float
-                            'phase4':,         # float
-                            'phasemode':,      # string
-                            'polarmode':,      # string
-                            'status':,         # int
-                            'resultfile':,     # string
-                            'resultfiletime':, # string
-                            'scriptfile':,     # string
-                            'script':,         # string
-                            'data':,           # JSON string
-                            'methodname':,     # string
-                            'methoddesc':,     # string
-                            }
+                        'username': ,      # string
+                        'description': ,   # string
+                        'date': ,          # timestamp
+                        'gap':,            # float
+                        'phase1': ,        # float
+                        'phase2': ,        # float
+                        'phase3':,         # float
+                        'phase4':,         # float
+                        'phasemode':,      # string
+                        'polarmode':,      # string
+                        'status':,         # int
+                        'resultfile':,     # string
+                        'resultfiletime':, # string
+                        'scriptfile':,     # string
+                        'script':,         # string
+                        'data':,           # JSON string
+                        'methodname':,     # string
+                        'methoddesc':,     # string
+                    }
                 }
 
-        :Raises: KeyError, AttributeError
-
+        :Raises: ValueError, Exception
         '''
+        
+        # Check name
+        self._checkParameter('name', install_name)
+        
+        # Generate select SQL
+        sql = '''
+        SELECT
+            inst.install_id,
+            ii.inventory_id,
+            inv.name
+        FROM install inst
+        LEFT JOIN inventory__install ii ON(inst.install_id = ii.install_id)
+        LEFT JOIN inventory inv ON(ii.inventory_id = inv.inventory_id)
+        WHERE
+        '''
+        
+        # Check description
+        description = None
+        
+        if 'description' in kws and kws['description'] != None:
+            description = kws['description']
+        
+        # Check gap
+        gap = None
+        
+        if 'gap' in kws and kws['gap'] != None:
+            gap = kws['gap']
+        
+        # Check phase1
+        if 'phase1' in kws and kws['phase1'] != None:
+            phase1 = kws['phase1']
+        
+        # Check phase2
+        if 'phase2' in kws and kws['phase2'] != None:
+            phase2 = kws['phase2']
+        
+        vals = []
+        
+        # Append name parameter
+        sqlVals = self._checkWildcardAndAppend('inst.field_name', install_name, sql, vals)
+        
+        try:
+            # Execute SQL
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            
+            # Get last id
+            res = cur.fetchall()
+            resdict = {}
+            
+            # Construct return dict
+            for r in res:
+                inventoryname = r[2]
+                results = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2)
+        #- phase2
+        #- phase3
+        #- phase4
+        #- phasemode
+        #- polarmode
+        #- status
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise Exception('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))

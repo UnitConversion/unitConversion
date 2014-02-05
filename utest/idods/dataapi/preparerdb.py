@@ -169,6 +169,23 @@ def cleanOfflineData(descriptionList):
 
     conn.close()
     
+def cleanOnlineData(descriptionList):
+    '''
+    Clean online data table of specific entries
+    '''
+    conn=connect()
+
+    if len(descriptionList) > 0:
+        cur = conn.cursor()
+
+        for dataId in descriptionList:
+            sql = 'DELETE FROM id_online_data WHERE description = %s'
+            cur.execute(sql, (dataId))
+
+        conn.commit()
+
+    conn.close()
+    
 def cleanInstall(namelist):
     '''
     Clean install table of specific entries
