@@ -123,7 +123,7 @@ INSTALLED_APPS_DEV = (
     'lattice',
     'activeinterlock',
     'user',
-
+	'idods',
 )
 
 if PRODUCTION:

@@ -13,6 +13,7 @@ urlpatterns = patterns('',
     (r'^', include('physics_django.magnets.urls')),
     (r'^', include('physics_django.lattice.urls')),
     (r'^', include('physics_django.user.urls')),
+	(r'^', include('physics_django.idods.urls')),
     (r'^', include('physics_django.activeinterlock.urls')),
     
     
