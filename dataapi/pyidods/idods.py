@@ -260,7 +260,7 @@ class idods(object):
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveVendor(self, name, description = None):
         '''Save vendor and its description into database
@@ -279,7 +279,7 @@ class idods(object):
 
                 {'id': vendor_id}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Check for vendor name parameter
@@ -325,28 +325,26 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateVendor(self, vendorId, oldName, name, **kws):
+    def updateVendor(self, vendor_id, old_name, name, **kws):
         '''Update vendor and its description
 
-        :param vendorId: vendor id needed for updating
-        :type vendorId: id
+        :param vendor_id: vendor id needed for updating
+        :type vendor_id: id
 
         :param name: vendor name
         :type name: str
 
-        :param oldName: update vendor by its old name
-        :type oldName: str
-        
-        :param dtype: device type
+        :param old_name: update vendor by its old name
+        :type old_name: str
 
         :param description: a brief description which could have up to 255 characters
         :type description: str
 
-        :return: True or Exception
+        :return: True or MySQLError
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Set properties
@@ -355,16 +353,16 @@ class idods(object):
         whereValue = None
         
         # Check id
-        if vendorId:
-            self._checkParameter('id', vendorId, 'prim')
+        if vendor_id:
+            self._checkParameter('id', vendor_id, 'prim')
             whereKey = 'vendor_id'
-            whereValue = vendorId
+            whereValue = vendor_id
             
         # Check old name
-        if oldName:
-            self._checkParameter('name', oldName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'vendor_name'
-            whereValue = oldName
+            whereValue = old_name
             
         # Check where condition
         if whereKey == None:
@@ -400,7 +398,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInventoryPropertyTemplate(self, name):
         '''
@@ -423,7 +421,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Check name
@@ -467,7 +465,7 @@ class idods(object):
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveInventoryPropertyTemplate(self, cmpntType, name, description = None, default = None, unit = None):
         '''
@@ -485,7 +483,7 @@ class idods(object):
 
                 {'id': propertytemplateid}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Raise an error if inventory property template exists
@@ -533,7 +531,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInventoryPropertyTemplate(self, tmpltId, cmpntType, name, **kws):
         '''
@@ -548,7 +546,7 @@ class idods(object):
 
         :return: True if update succeeded
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Set query dict
@@ -604,7 +602,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def _retrieveInventoryProperty(self, inventoryId, inventoryPropertyTemplateId = None, value = None):
         '''
@@ -625,7 +623,7 @@ class idods(object):
             }
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Generate SQL
@@ -677,7 +675,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
-            raise Exception('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
 
     def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName = None, value = None):
         '''
@@ -737,7 +735,7 @@ class idods(object):
             {'id': new inventory property id}
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Check for previous inventory property
@@ -792,7 +790,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def updateInventoryProperty(self, oldInventoryName, oldInventoryPropertyTemplateName, value):
         '''
@@ -807,7 +805,7 @@ class idods(object):
             True if everything is ok
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Define query dict
@@ -857,7 +855,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveInventory(self, name, **kws):
         '''
@@ -920,7 +918,7 @@ class idods(object):
 
                 {'id': inventory_id}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
 
         '''
 
@@ -1013,7 +1011,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInventory(self, inventoryId, oldName, name, **kws):
         '''
@@ -1074,7 +1072,7 @@ class idods(object):
 
         :return: True if everything is ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
 
         '''
 
@@ -1171,7 +1169,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInventory(self, invname):
         '''Retrieve an insertion device from inventory by device inventory name and type.
@@ -1218,7 +1216,7 @@ class idods(object):
                         }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Check name parameter
@@ -1269,7 +1267,7 @@ class idods(object):
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveRawData(self, data):
         '''
@@ -1279,7 +1277,7 @@ class idods(object):
             - data: data we want to save in a blob
         
         raises:
-            Exception
+            MySQLError
             
         returns:
             {'id': new raw data id}
@@ -1312,7 +1310,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateRawData(self, rawDataId, data):
         '''
@@ -1323,7 +1321,7 @@ class idods(object):
             - data: data we want to save in a blob
         
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
             
         returns:
             True
@@ -1362,7 +1360,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveOfflineData(self, **kws):
         '''
@@ -1633,7 +1631,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateOfflineData(self, offline_data_id, **kws):
         '''
@@ -1711,7 +1709,7 @@ class idods(object):
 
         :return: True if everything is ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Define query dict
@@ -1831,7 +1829,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating offline data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveOfflineData(self, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
@@ -2060,7 +2058,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveDataMethod(self, name, description=None):
         '''Save a method with its description which is used when producing data set for an insertion device.
@@ -2077,7 +2075,7 @@ class idods(object):
 
                 {'id': method_id}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Raise and error if data method with the same name already exists in the database
@@ -2117,7 +2115,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateDataMethod(self, dataMethodId, oldName, name, **kws):
         '''Update data method by id or name.
@@ -2136,7 +2134,7 @@ class idods(object):
 
         :return: True if everything was ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Define query dictionary
@@ -2188,7 +2186,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when updating data method:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating data method:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveDataMethod(self, name, description = None):
         '''Retrieve a method name and its description which is used when producing data set for an insertion device.
@@ -2209,7 +2207,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Check name
@@ -2254,7 +2252,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInventoryToInstall(self, inventoryToInstallId, installName, invName):
         '''
@@ -2283,7 +2281,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Generate SQL
@@ -2336,7 +2334,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveInventoryToInstall(self, installName, invName):
         '''Link a device as installed once it is installed into field using the key words:
@@ -2355,7 +2353,7 @@ class idods(object):
 
                 {'id': id of new inventorytoinstall record}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Check install name
@@ -2408,7 +2406,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInventoryToInstall(self, inventoryToInstallId, installName, invName):
         '''Update a device as installed when its installation has been changed using the key words:
@@ -2424,7 +2422,7 @@ class idods(object):
 
         :return: True if everything was ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Define query dict
@@ -2475,7 +2473,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveComponentTypePropertyType(self, name):
         '''
@@ -2495,7 +2493,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Check name
@@ -2534,7 +2532,7 @@ class idods(object):
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveComponentTypePropertyType(self, name, description = None):
         '''
@@ -2549,7 +2547,7 @@ class idods(object):
 
                 {'id': propertytypeid}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Raise an error if component type property type exists
@@ -2589,7 +2587,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateComponentTypePropertyType(self, propertyTypeId, oldName, name, **kws):
         '''
@@ -2602,7 +2600,7 @@ class idods(object):
 
         :return: True if everything is ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Define query dict
@@ -2653,7 +2651,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def _retrieveComponentTypeProperty(self, componentTypeId, componentTypePropertyTypeId = None, value = None):
         '''
@@ -2674,7 +2672,7 @@ class idods(object):
             }
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Generate SQL
@@ -2726,7 +2724,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
-            raise Exception('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
 
     def retrieveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName = None, value = None):
         '''
@@ -2785,7 +2783,7 @@ class idods(object):
             {'id': new component type property id}
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Check for previous component type property
@@ -2840,7 +2838,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
     
     def updateComponentTypeProperty(self, oldComponentTypeName, oldComponentTypePropertyTypeName, value):
         '''
@@ -2855,7 +2853,7 @@ class idods(object):
             True if everything is ok
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Define query dict
@@ -2905,7 +2903,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveComponentType(self, dtype, description = None):
         '''Retrieve a component type using the key words:
@@ -2934,7 +2932,7 @@ class idods(object):
                  ...
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Check component type parameter
@@ -2981,7 +2979,7 @@ class idods(object):
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveComponentType(self, componentTypeName, description=None, props=None):
         '''Save a component type using the key words:
@@ -3005,7 +3003,7 @@ class idods(object):
 
                 {'id': device type id}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
 
         '''
 
@@ -3049,7 +3047,7 @@ class idods(object):
                 self.conn.rollback()
                 
             self.logger.info('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateComponentType(self, componentTypeId, oldComponentTypeName, componentTypeName, **kws):
         '''Update description of a device type.
@@ -3074,7 +3072,7 @@ class idods(object):
 
         :return: True if everything is ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Set query dictionary
@@ -3137,7 +3135,7 @@ class idods(object):
                 self.conn.rollback()
                 
             self.logger.info('Error when updating component type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInstallRelPropertyType(self, name):
         '''
@@ -3158,7 +3156,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Check name
@@ -3198,7 +3196,7 @@ class idods(object):
 
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching installation relationship property type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching installation ralationship property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching installation ralationship property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveInstallRelPropertyType(self, name, description = None, units = None):
         '''
@@ -3214,7 +3212,7 @@ class idods(object):
 
                 {'id': propertytypeid}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
 
         # Raise an error if install relationship property type exists
@@ -3254,7 +3252,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInstallRelPropertyType(self, typeId, oldName, name, **kws):
         '''
@@ -3268,7 +3266,7 @@ class idods(object):
 
         :return: True if everything is ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Define query dictionary
@@ -3324,7 +3322,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def _retrieveInstallRelProperty(self, installRelId, installRelPropertyTypeId = None, value = None):
         '''
@@ -3344,7 +3342,7 @@ class idods(object):
             }
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Generate SQL
@@ -3393,7 +3391,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving install rel property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
-            raise Exception('Error when retrieving install rel property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when retrieving install rel property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
 
     def retrieveInstallRelProperty(self, installRelId, installRelPropertyTypeName = None, value = None):
         '''
@@ -3454,7 +3452,7 @@ class idods(object):
             {'id': new install rel property id}
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Check for previous install rel property
@@ -3509,7 +3507,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def updateInstallRelProperty(self, installRelParentId, installRelChildId, installRelPropertyTypeName, **kws):
         '''
@@ -3524,7 +3522,7 @@ class idods(object):
         returns: True if everything was ok
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Define query dictionary
@@ -3576,7 +3574,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveInstallRel(self, parentInstallId, childInstallId, description = None, order = None, props = None):
         '''
@@ -3653,7 +3651,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInstallRel(self, parentInstallId, childInstallId, **kws):
         '''
@@ -3730,7 +3728,7 @@ class idods(object):
                 self.conn.rollback()
             
             self.logger.info('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInstallRel(self, installRelId = None, parentInstallId = None, childInstallId = None, description = None, order = None, date = None, expectedProperty = None):
         '''
@@ -3764,7 +3762,7 @@ class idods(object):
             }
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
         '''
         
         # Create vals list
@@ -3868,7 +3866,7 @@ class idods(object):
         
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveInsertionDevice(self, installName, **kws):
         '''Save insertion device installation using any of the acceptable key words:
@@ -3900,7 +3898,7 @@ class idods(object):
         - coordinatecenter: coordinate center number
         
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
             
         returns:
             {'id': new install id}
@@ -3958,7 +3956,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInstall(self, installId, oldInstallName, installName, **kws):
         '''Update insertion device installation using any of the acceptable key words:
@@ -3969,7 +3967,7 @@ class idods(object):
         - coordinatecenter: coordinate center number
         
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
             
         returns:
             True if everything is ok
@@ -4037,7 +4035,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def _retrieveInstallById(self, installid):
         '''
@@ -4047,7 +4045,7 @@ class idods(object):
             - installid: id of the install entity
             
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
             
         returns:
             {'id': {
@@ -4087,7 +4085,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInstall(self, install_name, **kws):
         '''Retrieve insertion device installation using any of the acceptable key words:
@@ -4098,7 +4096,7 @@ class idods(object):
         - coordinatecenter: coordinate center number
         
         raises:
-            ValueError, Exception
+            ValueError, MySQLError
             
         returns:
             {'id': {
@@ -4168,7 +4166,7 @@ class idods(object):
         
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveOnlineData(self, install_name, **kws):
         '''Save insertion device online data using any of the acceptable key words:
@@ -4203,7 +4201,7 @@ class idods(object):
 
                 {'id': data id}
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Check install name
@@ -4276,7 +4274,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when saving new online data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when saving new online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveOnlineData(self, **kws):
         '''Retrieve insertion device online data using any of the acceptable key words:
@@ -4322,7 +4320,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Generate SQL
@@ -4404,7 +4402,7 @@ class idods(object):
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateOnlineData(self, online_data_id, **kws):
         '''update insertion device online data using any of the acceptable key words:
@@ -4435,7 +4433,7 @@ class idods(object):
 
         :return: True if everything is ok
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Define query dict
@@ -4496,7 +4494,7 @@ class idods(object):
                 self.conn.rollback()
 
             self.logger.info('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInstallOfflineData(self, install_name, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
@@ -4568,7 +4566,7 @@ class idods(object):
                     }
                 }
 
-        :Raises: ValueError, Exception
+        :Raises: ValueError, MySQLError
         '''
         
         # Check name
@@ -4606,6 +4604,26 @@ class idods(object):
         if 'phase2' in kws and kws['phase2'] != None:
             phase2 = kws['phase2']
         
+        # Check phase3
+        if 'phase3' in kws and kws['phase3'] != None:
+            phase3 = kws['phase3']
+        
+        # Check phase4
+        if 'phase4' in kws and kws['phase4'] != None:
+            phase4 = kws['phase4']
+        
+        # Check phasemode
+        if 'phasemode' in kws and kws['phasemode'] != None:
+            phasemode = kws['phasemode']
+        
+        # Check polarmode
+        if 'polarmode' in kws and kws['polarmode'] != None:
+            polarmode = kws['polarmode']
+        
+        # Check status
+        if 'status' in kws and kws['status'] != None:
+            status = kws['status']
+        
         vals = []
         
         # Append name parameter
@@ -4623,14 +4641,8 @@ class idods(object):
             # Construct return dict
             for r in res:
                 inventoryname = r[2]
-                results = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2)
-        #- phase2
-        #- phase3
-        #- phase4
-        #- phasemode
-        #- polarmode
-        #- status
+                results = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status)
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))

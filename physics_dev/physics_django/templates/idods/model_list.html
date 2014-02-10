@@ -1,0 +1,27 @@
+{% load verbatim %} {% verbatim %}
+<div class="form_search" id="form-search">
+	<input type="text" placeholder="Filter models ..." id="search-query" ng-model="model_filter" class="search_input">
+	<button ng-show="comparison.length > 1" class="btn compare_btn" ng-click="compareModel()">Plot multiple models</button>
+	<button ng-show="comparison.length > 1" class="btn compare_btn" ng-click="clearSelection()">Clear selection</button>
+</div>
+<div ng-repeat="modeldata in modelsArray | filter: model_filter" class="lattice {{modeldata.click}} {{modeldata.color}}">
+	<label class="checkbox">
+		<input type="checkbox" ng-change="setCompareData()" ng-model="comparison.data[modeldata.id]"> Select for plotting
+	</label>
+
+	<table ng-click="showDetails(modeldata)">
+		<tr ng-if="modeldata.id">
+			<td><b> Mod Id: </b></td>
+			<td class="lattice_list"><span class="text-info">{{modeldata.id}}</span></td>
+		</tr>
+		<tr ng-if="modeldata.name">
+			<td><b>Name: </b></td>
+			<td class="lattice_list"><span class="text-info">{{modeldata.name}}</span></td>
+		</tr>
+		<tr ng-if="modeldata.description">
+			<td><b>Desc: </b></td>
+			<td class="lattice_list"><span class="text-info">{{modeldata.description}}</span></td>
+		</tr>
+	</table>
+</div>
+{% endverbatim %}

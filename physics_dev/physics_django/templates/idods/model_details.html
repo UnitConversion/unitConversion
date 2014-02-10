@@ -1,0 +1,156 @@
+{% load verbatim %}
+{% verbatim %}
+
+<a name="{{scroll.scroll}}"></a>
+
+<div ng-if="compare.show == false">
+	<div class="details_data">
+		<div id="raw"></div>
+		<h3>Model Info</h3>
+
+		{% endverbatim %}
+			{% if user.is_authenticated %}
+			<button ng-click="updateModel(models['name'])" class="model_update btn btn-success"><i class="icon-edit icon-white"></i> Update model</button>
+			{% endif %}
+		{% verbatim %}
+
+		<table class="table table-hover">
+			<tr ng-repeat="(modelKey, modelValue) in models" ng-hide="modelKey == 'simulationControl' || modelKey == 'simulationControlParsed'">
+				<td><b>{{modelKey | firstLetterUppercase}}: </b></td>
+				<td><span class="text-info">{{modelValue}}</span></td>
+			</tr>
+		</table>
+
+		<button ng-if="models.simulationControl" ng-class="{'active': models.simulationControlParsed}" class="btn btn-info" ng-click="showSimulationControlData()">Show simulation control data</button>
+		<br/>
+
+		<div ng-if="models.simulationControlParsed">
+			<h3>Simulation Control</h3>
+
+			<table class="table table-hover">
+				<tr ng-repeat="simulation in models.simulationControlParsed track by $index" ng-hide="trim(simulation) == ''">
+					<td><span class="text-info">{{simulation | clean}}</span></td>
+				</tr>
+			</table>
+		</div>
+
+		<div ng-if="raw.selectionCount > 0">
+			<h3>Select data to plot</h3>
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<th ng-repeat="(propName, propValue) in raw.selection[raw.modelName]">{{propName}}</th>
+				</tr>
+				<tr ng-repeat="(modelName, headers) in raw.selection">
+					<td ng-repeat="(propName, propValue) in headers">
+						<input type="checkbox" ng-model="raw.selection[modelName][propName]" />
+						<input ng-show="raw.selection[modelName][propName]" title="Multiply {{propName}} by factor" type="text" ng-model="raw.factor[modelName][propName]" class="input-micro" />
+					</td>
+				</tr>
+			</table>
+			<button class="btn" ng-click="plotData()">Plot data</button>
+			<button class="btn" ng-click="exportData()">Export data to CSV file</button>
+
+			<br/>
+			<br/>
+			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">
+				<div class="placeholder"></div>
+				<div class='x_label axisLabel xaxisLabel'></div>
+				<div class='y2_label axisLabel yaxis2Label'></div>
+				<div class='y_label axisLabel yaxisLabel'></div>
+			</div>
+		</div>
+
+		<h3>Model details</h3>
+
+		<input ng-model="raw.search.from" title="From" type="text" placeholder="From ..." />
+		<input ng-model="raw.search.to" title="To" type="text" placeholder="To ..." />
+		<select ng-model="raw.search.detail" title="Details type">
+			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
+		</select>
+		<br/>
+		<button class="btn" ng-click="searchForModelDetails()">Search</button>
+		<br/>
+		<br/>
+		<label class="control-label" for="inputPrecision">Decimal precision</label>
+		<input class="input-mini" id="inputPrecision" ng-model="raw.search.precision" title="Decimal precision" type="text" />
+
+		<br/>
+
+		<table class="table table-bordered table-hover" ng-repeat="(name, cols) in raw.header">
+			<tr>
+				<th ng-repeat="column in cols">{{column}}</th>
+			</tr>
+			<tr ng-repeat="row in raw.data[name].index track by $index">
+				<td ng-repeat="column in cols">{{raw.data[name][column][row] | precision:raw.search.precision:column}}</td>
+			</tr>
+		</table>
+
+		<br />
+
+		<button ng-if="raw.transferMatrix" ng-class="{'active': raw.showMatrices}" class="btn btn-info" ng-click="showMatrices()">Show matrices</button>
+
+		<div ng-if="raw.showMatrices">
+			<h3>Transfer matrices</h3>
+
+			<div ng-repeat="(i, table) in raw.transferMatrix">
+				<h4>Matrix {{i}}</h4>
+
+				<table class="table table-bordered table-hover table-condensed">
+					<tr ng-repeat="row in table">
+						<td ng-repeat="column in row track by $index" ng-class="{matrix_bold: (column != 0)}">{{column}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<div ng-if="compare.show == true">
+	<div class="details_data">
+		<h3>Plot multiple models</h3>
+
+		<input ng-model="raw.search.from" type="text" placeholder="from ..." />
+		<input ng-model="raw.search.to" type="text" placeholder="to ..." />
+		<select ng-model="raw.search.detail">
+			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
+		</select>
+		<br/>
+		<button class="btn" ng-click="searchForModelDetails()">Search</button>
+
+		<div ng-if="compare.selectionCount > 0">
+			<br/>
+			<h4>Select data to plot</h4>
+
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<th>ids \ properties</th>
+					<th ng-repeat="(propName, propValue) in compare.selection[compare.modelName]">{{propName}}</th>
+				</tr>
+<!--				<tr>
+					<th>model id</th>
+					<th ng-repeat="id in compare.ids">{{id}}</th>
+				</tr>-->
+				<tr ng-repeat="(i, row) in compare.selection">
+					<td><b>{{compare.nameToIdMap[i]}}</b></td>
+					<td ng-repeat="(j, cell) in row">
+						<input type="checkbox" ng-model="compare.selection[i][j]" />
+						<input ng-show="compare.selection[i][j]" title="Multiply {{propName}} by factor"  ng-model="compare.factor[i][j]" type="text" class="input-micro" />
+					</td>
+				</tr>
+			</table>
+			<button class="btn" ng-click="plotData()">Plot data</button>
+			<br/>
+
+			<br/>
+			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">
+				<div class="placeholder"></div>
+				<div class='x_label axisLabel xaxisLabel'></div>
+				<div class='y2_label axisLabel yaxis2Label'></div>
+				<div class='y_label axisLabel yaxisLabel'></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endverbatim %}

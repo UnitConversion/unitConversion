@@ -1,0 +1,101 @@
+{% load verbatim %}
+{% verbatim %}
+
+<form data-file-upload="options" method="post" enctype="multipart/form-data">
+	<div class="modal-header">
+		<button type="button" class="close" ng-click="cancelButton()">&times;</button>
+		<h3>Upload lattice</h3>
+	</div>
+	<div class="modal-body">
+		<div class="alert alert-error" ng-show="modal.error.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			<strong>Error!</strong> {{modal.error.message}}
+		</div>
+		<div class="alert alert-success" ng-show="modal.success.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.success.message}}
+		</div>
+		<div class="alert" ng-show="modal.waiting.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.waiting.message}} <img alt="" src="../../../static/img/ajax-loader.gif" />
+		</div>
+
+		<div class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label" for="inputName">Name</label>
+				<div class="controls">
+					<input id="inputName" ng-model="upload.name" name="name" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputVersion">Version</label>
+				<div class="controls">
+					<input id="inputVersion" ng-model="upload.version" name="version" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputBranch">Branch</label>
+				<div class="controls">
+					<input id="inputBranch" ng-model="upload.branch" name="branch" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputDescription">Description</label>
+				<div class="controls">
+					<textarea id="inputDescription" cols="10" rows="3" name="description" ng-model="upload.description"></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputLatticeType">Lattice type</label>
+				<div class="controls">
+					<select id="inputLatticeType" ng-model="upload.latticeType" name="latticetype">
+						<option ng-repeat="type in modal.latticeTypes" value="{{type['value']}}">{{type['name']}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<label class="checkbox">
+						<input ng-disabled="!modal.doSimulation.show" name="dosimulation" ng-model="modal.doSimulation.selected" type="checkbox"> Do simulation after successful upload
+					</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Lattice file</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<i class="icon-file icon-white"></i>
+						<input id="latticeFile" type="file" name="files" ng-disabled="disabled">
+					</span>
+					{{upload.latticeFile}}
+				</div>
+			</div>
+			<div ng-show="modal.controlFile.show" class="control-group">
+				<label class="control-label">Control file</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<i class="icon-file icon-white"></i>
+						<input id="controlFile" type="file" name="files" ng-disabled="disabled">
+					</span>
+					{{upload.controlFile}}
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Kickmap files</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<i class="icon-file icon-white"></i>
+						<input id="kickmapFile" type="file" name="files" ng-disabled="disabled">
+					</span>
+					{{upload.kickmapFile}}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-primary" ng-click="ok()">Upload</button>
+		<button class="btn btn-primary" ng-click="cancelButton()">{{modal.finishButton}}</button>
+	</div>
+</form>
+
+{% endverbatim %}

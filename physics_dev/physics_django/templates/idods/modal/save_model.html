@@ -1,0 +1,141 @@
+{% load verbatim %}
+{% verbatim %}
+
+<form data-file-upload="options" method="post" enctype="multipart/form-data">
+	<div class="modal-header">
+		<button type="button" class="close" ng-click="cancelButton()">&times;</button>
+		<h3>Upload model</h3>
+	</div>
+	<div class="modal-body">
+		<div class="alert alert-error" ng-show="modal.error.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			<strong>Error!</strong> {{modal.error.message}}
+		</div>
+		<div class="alert alert-success" ng-show="modal.success.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.success.message}}
+		</div>
+		<div class="alert" ng-show="modal.waiting.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			{{modal.waiting.message}} <img alt="" src="../../../static/img/ajax-loader.gif" />
+		</div>
+
+		<div class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label" for="inputName">Name</label>
+				<div class="controls">
+					<input id="inputName" ng-model="upload.name" name="modelname" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputDescription">Description</label>
+				<div class="controls">
+					<textarea id="inputDescription" cols="10" rows="3" name="description" ng-model="upload.description"></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputTunex">Tunex</label>
+				<div class="controls">
+					<input id="inputTunex" ng-model="upload.tunex" name="tunex" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputTuney">Tuney</label>
+				<div class="controls">
+					<input id="inputTuney" ng-model="upload.tuney" name="tuney" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputAlphac">Alphac</label>
+				<div class="controls">
+					<input id="inputAlphac" ng-model="upload.alphac" name="alphac" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputChromX0">ChromX0</label>
+				<div class="controls">
+					<input id="inputChromX0" ng-model="upload.chromX0" name="chromX0" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputChromX1">ChromX1</label>
+				<div class="controls">
+					<input id="inputChromX1" ng-model="upload.chromX1" name="chromX1" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputChromX2">ChromX2</label>
+				<div class="controls">
+					<input id="inputChromX2" ng-model="upload.chromX2" name="chromX2" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputChromY0">ChromY0</label>
+				<div class="controls">
+					<input id="inputChromY0" ng-model="upload.chromY0" name="chromY0" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputChromY1">ChromY1</label>
+				<div class="controls">
+					<input id="inputChromY1" ng-model="upload.chromY1" name="chromY1" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputChromY2">ChromY2</label>
+				<div class="controls">
+					<input id="inputChromY2" ng-model="upload.chromY2" name="chromY2" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputFinalEnergy">FinalEnergy</label>
+				<div class="controls">
+					<input id="inputFinalEnergy" ng-model="upload.finalEnergy" name="finalEnergy" type="text">
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputId">Select lattice</label>
+				<div class="controls">
+<!--					<input id="inputId" ng-model="upload.latticeId" name="latticeid" type="text">-->
+					<select id="inputId" ng-model="upload.latticeId" name="latticeid">
+						<option ng-repeat="lattice in modal.lattices" value="{{lattice.id}}">{{lattice.label}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="inputSimCodeAlg">Simulation code & Algorithm</label>
+				<div class="controls">
+					<select id="inputSimCodeAlg" ng-model="upload.simCodeAlg" name="simcodealg">
+						<option ng-repeat="(id, dataObject) in modal.modelCodeInfo" value="{{dataObject.name}}/{{dataObject.algorithm}}">{{dataObject.name}} / {{dataObject.algorithm}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Simulation control data file</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<i class="icon-file icon-white"></i>
+						<input id="controlFile" type="file" name="files" ng-disabled="disabled">
+					</span>
+					{{upload.controlFile}}
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Model result file</label>
+				<div class="controls">
+					<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+						<i class="icon-file icon-white"></i>
+						<input id="resultFile" type="file" name="files" ng-disabled="disabled">
+					</span>
+					{{upload.resultFile}}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-primary" ng-click="ok()">Upload</button>
+		<button class="btn btn-primary" ng-click="cancelButton()">{{modal.finishButton}}</button>
+	</div>
+</form>
+
+{% endverbatim %}

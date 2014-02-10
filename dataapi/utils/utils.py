@@ -73,6 +73,14 @@ def _assemblesql(sql, data, strpattern, res, connector=""):
     return res, sql
 
 def _checkkeys(keys, expectedkeys):
+    '''
+    Check if all the keys are in the expected keys list
+    
+    params:
+        - keys: keys found in the method call
+        - expectedkeys: list of keys that need to be present
+    '''
+    
     illegalkey = [] 
     for key in keys:
         if key not in expectedkeys:
@@ -82,3 +90,17 @@ def _checkkeys(keys, expectedkeys):
     else:
         return True
 
+def _retrievecmddict(httpcmd):
+    '''
+    Retrieve GET/POST/PUT/DELETE request parameters, lower all keys, and return parameter dictionary.
+    '''
+
+    # multiple values support.
+    httpdict = {}
+    for k, v in httpcmd.iteritems():
+        vlist = httpcmd.getlist(k)
+        if len(vlist) > 1:
+            httpdict[k.lower()] = list(set(vlist))
+        else:
+            httpdict[k.lower()] = v
+    return httpdict

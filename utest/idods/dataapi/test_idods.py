@@ -8,7 +8,6 @@ import unittest
 import os, sys
 
 from preparerdb import *
-from idods.dataapi.preparerdb import cleanInventoryToInstall
 
 libPath = os.path.abspath("../../../dataapi/")
 sys.path.append(libPath)
