@@ -4,6 +4,11 @@ import MySQLdb
 from utils import (_wildcardformat)
 from _mysql_exceptions import MySQLError
 
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
+
 __all__ = []
 __version__ = [1, 0, 0]
 
@@ -141,8 +146,11 @@ class idods(object):
         # Check primary key
         elif parameterTypeWeAreCheckingFor == "prim":
             
-            if not isinstance(paramaterValue, (int, long)):
-                raise ValueError("Parameter %s cannot be None" % parameterKey)
+            try:
+                paramaterValue = int(paramaterValue)
+                
+            except ValueError as e:
+                raise ValueError("Parameter %s cannot be None. %s." % (parameterKey, e.args[0]))
 
     def _generateUpdateQuery(self, tableName, queryDict, whereKey, whereValue, whereDict = None):
         '''
@@ -467,11 +475,11 @@ class idods(object):
             self.logger.info('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveInventoryPropertyTemplate(self, cmpntType, name, description = None, default = None, unit = None):
+    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description = None, default = None, unit = None):
         '''
         Insert new inventory property template into database
 
-        - cmpnttype: component type name M
+        - cmpnt_type: component type name M
         - name: property template name M
         - description: property template description O
         - default: property template default value O
@@ -493,10 +501,10 @@ class idods(object):
             raise ValueError("Inventory property template (%s) already exists in the database!" % name)
 
         # Check component type
-        result = self.retrieveComponentType(cmpntType);
+        result = self.retrieveComponentType(cmpnt_type);
 
         if len(result) == 0:
-            raise ValueError("Component type (%s) does not exist in the database." % (cmpntType))
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
 
         cmpnttypeid = result.keys()[0]
 
@@ -533,12 +541,12 @@ class idods(object):
             self.logger.info('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateInventoryPropertyTemplate(self, tmpltId, cmpntType, name, **kws):
+    def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type, name, **kws):
         '''
         Update inventory property template in a database
 
-        - tmpltId: property template id M
-        - cmpnttype: component type name M
+        - tmplt_id: property template id M
+        - cmpnt_type: component type name M
         - name: property template name M
         - description: property template description O
         - default: property template default value O
@@ -553,15 +561,17 @@ class idods(object):
         queryDict = {}
         whereKey = 'inventory_prop_tmplt_id'
 
+        self.logger.info(tmplt_id)
+
         # Check id
-        self._checkParameter('id', tmpltId, 'prim')
-        whereValue = tmpltId
+        self._checkParameter('id', tmplt_id, 'prim')
+        whereValue = tmplt_id
 
         # Check component type
-        result = self.retrieveComponentType(cmpntType);
+        result = self.retrieveComponentType(cmpnt_type);
 
         if len(result) == 0:
-            raise ValueError("Component type (%s) does not exist in the database." % (cmpntType))
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
 
         cmpnttypeid = result.keys()[0]
         queryDict['cmpnt_type_id'] = cmpnttypeid
@@ -862,7 +872,7 @@ class idods(object):
         save insertion device into inventory using any of the acceptable key words:
 
         - name:  name to identify that device from vendor
-        - compnttype: device type name
+        - cmpnt_type: device type name
         - alias: alias name if it has
         - serialno: serial number
         - vendor: vendor name
@@ -931,12 +941,12 @@ class idods(object):
         # Check device type parameter
         compnttypeid=None
 
-        if kws.has_key('compnttype') and kws['compnttype'] != None:
+        if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
             
             # Check component type parameter
-            self._checkParameter("component type", kws['compnttype'])
+            self._checkParameter("component type", kws['cmpnt_type'])
             
-            res = self.retrieveComponentType(kws['compnttype'])
+            res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
 
             if len(res) != 1:
@@ -1013,14 +1023,14 @@ class idods(object):
             self.logger.info('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateInventory(self, inventoryId, oldName, name, **kws):
+    def updateInventory(self, inventory_id, old_name, name, **kws):
         '''
         Update inventory using any of the acceptable key words:
 
-        - inventoryId:  inventory id from the database table
-        - oldName:  name of the inventory we want to update by
+        - inventory_id:  inventory id from the database table
+        - old_name:  name of the inventory we want to update by
         - name:  name to identify that device from vendor
-        - compnttype: device type name
+        - cmpnt_type: device type name
         - alias: alias name if it has
         - serialno: serial number
         - vendor: vendor name
@@ -1082,16 +1092,16 @@ class idods(object):
         whereValue = None
         
         # Check id
-        if inventoryId:
-            self._checkParameter('id', inventoryId, 'prim')
+        if inventory_id:
+            self._checkParameter('id', inventory_id, 'prim')
             whereKey = 'inventory_id'
-            whereValue = inventoryId
+            whereValue = inventory_id
             
         # Check old name
-        if oldName:
-            self._checkParameter('name', oldName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'name'
-            whereValue = oldName
+            whereValue = old_name
         
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
@@ -1101,12 +1111,12 @@ class idods(object):
         queryDict['name'] = name
 
         # Check device type parameter
-        if kws.has_key('compnttype') and kws['compnttype'] != None:
+        if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
             
             # Check component type parameter
-            self._checkParameter("component type", kws['compnttype'])
+            self._checkParameter("component type", kws['cmpnt_type'])
             
-            res = self.retrieveComponentType(kws['compnttype'])
+            res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
 
             if len(res) != 1:
@@ -1171,7 +1181,7 @@ class idods(object):
             self.logger.info('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveInventory(self, invname):
+    def retrieveInventory(self, name):
         '''Retrieve an insertion device from inventory by device inventory name and type.
         Wildcard matching is supported for inventory name and device type. ::
 
@@ -1179,8 +1189,8 @@ class idods(object):
             ? for single character matching
 
 
-        :param invname: insertion device inventory name, which is usually different from its field name (the name after installation).
-        :type invname: str
+        :param name: insertion device inventory name, which is usually different from its field name (the name after installation).
+        :type name: str
 
         :return: a map with structure like:
 
@@ -1220,7 +1230,7 @@ class idods(object):
         '''
 
         # Check name parameter
-        self._checkParameter('name', invname)
+        self._checkParameter('name', name)
         
         # Generate SQL
         sql = '''
@@ -1236,7 +1246,7 @@ class idods(object):
         vals = []
         
         # Append inv.name parameter
-        sqlVals = self._checkWildcardAndAppend('inv.name', invname, sql, vals)
+        sqlVals = self._checkWildcardAndAppend('inv.name', name, sql, vals)
 
         try:
             cur = self.conn.cursor()
@@ -2589,12 +2599,12 @@ class idods(object):
             self.logger.info('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateComponentTypePropertyType(self, propertyTypeId, oldName, name, **kws):
+    def updateComponentTypePropertyType(self, property_type_id, old_name, name, **kws):
         '''
         Insert new component type property type into database
 
-        - propertyTypeId: id of the property type we want to update by M
-        - oldName: name of the component type property type we want to update by M
+        - property_type_id: id of the property type we want to update by M
+        - old_name: name of the component type property type we want to update by M
         - name: name of the component type property type M
         - description: description of the component type property tpye O
 
@@ -2609,16 +2619,16 @@ class idods(object):
         whereValue = None
 
         # Check id
-        if propertyTypeId:
-            self._checkParameter('id', propertyTypeId, 'prim')
+        if property_type_id:
+            self._checkParameter('id', property_type_id, 'prim')
             whereKey = 'cmpnt_type_prop_type_id'
-            whereValue = propertyTypeId
+            whereValue = property_type_id
             
         # Check old name
-        if oldName:
-            self._checkParameter('name', oldName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'cmpnt_type_prop_type_name'
-            whereValue = oldName
+            whereValue = old_name
         
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
@@ -2905,14 +2915,14 @@ class idods(object):
             self.logger.info('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def retrieveComponentType(self, dtype, description = None):
+    def retrieveComponentType(self, name, description = None):
         '''Retrieve a component type using the key words:
 
-        - dtype
+        - name
         - description
 
-        :param dtype: device type name
-        :type dtype: str
+        :param name: component type type name
+        :type name: str
 
         :param description: description for this device
         :type desctiprion: str
@@ -2936,7 +2946,7 @@ class idods(object):
         '''
 
         # Check component type parameter
-        self._checkParameter("component type", dtype)
+        self._checkParameter("component type", name)
 
         # Start SQL
         sql = '''
@@ -2946,7 +2956,7 @@ class idods(object):
         vals = []
 
         # Append component type
-        sqlAndVals = self._checkWildcardAndAppend("cmpnt_type_name", dtype, sql, vals)
+        sqlAndVals = self._checkWildcardAndAppend("cmpnt_type_name", name, sql, vals)
 
         # Append desciprtion if exists
         if description != None:
@@ -2981,15 +2991,15 @@ class idods(object):
             self.logger.info('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveComponentType(self, componentTypeName, description=None, props=None):
+    def saveComponentType(self, name, description=None, props=None):
         '''Save a component type using the key words:
 
-        - componentTypeName
+        - name
         - description
         - props
 
-        :param componentTypeName: device type name
-        :type componentTypeName: str
+        :param name: component type name
+        :type name: str
 
         :param description: description for this device
         :type desctiprion: str
@@ -3008,20 +3018,20 @@ class idods(object):
         '''
 
         # Check device type
-        self._checkParameter("component type", componentTypeName)
+        self._checkParameter("component type", name)
 
         # Check if component type already exists
-        componenttype = self.retrieveComponentType(componentTypeName);
+        componenttype = self.retrieveComponentType(name);
         
         if len(componenttype):
-            raise ValueError("Component type (%s) already exists in the database!" % componentTypeName);
+            raise ValueError("Component type (%s) already exists in the database!" % name);
 
         # Save it into database and return its new id
         sql = ''' INSERT into cmpnt_type (cmpnt_type_name, description) VALUES (%s, %s) '''
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (componentTypeName, description))
+            cur.execute(sql, (name, description))
             componenttypeid = cur.lastrowid
 
             # Commit transaction
@@ -3031,12 +3041,16 @@ class idods(object):
             # Component type is saved, now we can save properties into database
             if props != None:
                 
+                # Convert to json
+                if isinstance(props, (dict)) == False:
+                    props = json.loads(props)
+                
                 # Save all the properties
                 for key in props:
                     value = props[key]
                     
                     # Save it into database
-                    self.saveComponentTypeProperty(componentTypeName, key, value)
+                    self.saveComponentTypeProperty(name, key, value)
                 
             return {'id': componenttypeid}
 
@@ -3049,26 +3063,30 @@ class idods(object):
             self.logger.info('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateComponentType(self, componentTypeId, oldComponentTypeName, componentTypeName, **kws):
+    def updateComponentType(self, component_type_id, old_name, name, **kws):
         '''Update description of a device type.
         Once a device type is saved, it is not allowed to change it again since it will cause potential colflict.
 
-        - componentTypeId
-        - oldComponentTypeName
-        - componentTypeName
+        - component_type_id
+        - old_name
+        - name
         - description
+        - props
 
-        :param componentTypeId: component type id we want to update by
-        :type componentTypeId: int
+        :param component_type_id: component type id we want to update by
+        :type component_type_id: int
 
-        :param oldComponentTypeName: component type name we want to update by
-        :type oldComponentTypeName: str
+        :param old_name: component type name we want to update by
+        :type old_name: str
 
-        :param componentTypeName: device type name
-        :type componentTypeName: str
+        :param name: device type name
+        :type name: str
 
         :param description: description for this device
         :type desctiprion: str
+        
+        :param props: component type properties
+        :type props: python dict
 
         :return: True if everything is ok
 
@@ -3081,24 +3099,24 @@ class idods(object):
         whereValue = None
         
         # Check id
-        if componentTypeId:
-            self._checkParameter('id', componentTypeId, 'prim')
+        if component_type_id:
+            self._checkParameter('id', component_type_id, 'prim')
             whereKey = 'cmpnt_type_id'
-            whereValue = componentTypeId
+            whereValue = component_type_id
             
         # Check old name
-        if oldComponentTypeName:
-            self._checkParameter('name', oldComponentTypeName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'cmpnt_type_name'
-            whereValue = oldComponentTypeName
+            whereValue = old_name
             
         # Check where condition
         if whereKey == None:
             raise ValueError("Vendor id or old vendor name should be present to execute an update!")
         
         # Check device type
-        self._checkParameter("component type", componentTypeName)
-        queryDict['cmpnt_type_name']= componentTypeName
+        self._checkParameter("component type", name)
+        queryDict['cmpnt_type_name']= name
         
         # Add description
         if 'description' in kws:
@@ -3119,12 +3137,17 @@ class idods(object):
             if 'props' in kws and kws['props'] != None:
                 props = kws['props']
                 
+                # Convert to json
+                if isinstance(props, (dict)) == False:
+                    props = json.loads(props)
+                
+                
                 # Update all the properties
                 for key in props:
                     value = props[key]
                     
                     # Save it into database
-                    self.updateComponentTypeProperty(componentTypeName, key, value)
+                    self.updateComponentTypeProperty(name, key, value)
                 
             return True
 

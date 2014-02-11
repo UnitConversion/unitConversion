@@ -351,7 +351,7 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
         
         # Create inventory
-        inventory = self.api.saveInventory('name', compnttype='Magnet')
+        inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
         
         # Create property
         prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
@@ -372,7 +372,7 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
         
         # Create inventory
-        inventory = self.api.saveInventory('name', compnttype='Magnet')
+        inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
         
         # Create property
         prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
@@ -403,7 +403,7 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
         
         # Create inventory
-        idObject = self.api.saveInventory('name', compnttype='Magnet', alias='name2', props={'alpha': 42})
+        idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
         
         inventory = self.api.retrieveInventory('name')
         inventoryKeys = inventory.keys()
@@ -432,10 +432,10 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
         
         # Create inventory
-        idObject = self.api.saveInventory('name', compnttype='Magnet', alias='name2', props={'alpha': 42})
+        idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
         
         # Update inventory
-        self.assertTrue(self.api.updateInventory(None, 'name', 'name2', compnttype='Magnet', alias='name3', props={'alpha': 43}))
+        self.assertTrue(self.api.updateInventory(None, 'name', 'name2', cmpnt_type='Magnet', alias='name3', props={'alpha': 43}))
         
         # Get updated inventory
         inventory = self.api.retrieveInventory('name2')
@@ -547,7 +547,7 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare inventory
-        savedInventory = self.api.saveInventory('name', compnttype='Magnet', alias='name2')
+        savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
         
         # Prepare method
         savedMethod = self.api.saveDataMethod('test')
@@ -593,7 +593,7 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare inventory
-        savedInventory = self.api.saveInventory('name', compnttype='Magnet', alias='name2')
+        savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
         
         # Create offline data
         savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
@@ -798,8 +798,8 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
         
         # Create inventory
-        idObject = self.api.saveInventory('name', compnttype='Magnet', alias='name2', props={'alpha': 42})
-        idObject2 = self.api.saveInventory('name2', compnttype='Magnet', alias='name2')
+        idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
+        idObject2 = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
         
         # Prepare install parent
         savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
