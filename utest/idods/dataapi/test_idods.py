@@ -41,7 +41,7 @@ class TestIdods(unittest.TestCase):
         cleanInstall(['test parent', 'test child'])
         
         # Clean vendor table
-        cleanVendor(['test vendor', 'test vendor2']);
+        cleanVendor(['test vendor', 'test vendor2'])
         
         # Clean data method
         cleanDataMethod(['method', 'method2', 'test'])
@@ -313,7 +313,7 @@ class TestIdods(unittest.TestCase):
             result[resultKeys[0]]['description'] == 'description' and
             result[resultKeys[0]]['default'] == 'default' and
             result[resultKeys[0]]['unit'] == 'm' and
-            result[resultKeys[0]]['cmpnttype'] == 'Magnet'
+            result[resultKeys[0]]['cmpnt_type'] == 'Magnet'
         , "Check all the properties in the returned object")
     
     '''
@@ -623,13 +623,13 @@ class TestIdods(unittest.TestCase):
         self.api.saveComponentType('Magnet')
         
         # Prepare install
-        savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Try to update
         self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description = 'desc2'))
         
         # Try to update by setting component type to None
-        self.assertRaises(self.api.updateInstall, None, 'test child', 'test child', cmpnttype=None)
+        self.assertRaises(self.api.updateInstall, None, 'test child', 'test child', cmpnt_type=None)
         
         # Retrieve successfully updated component type
         componentType = self.api.retrieveInstall('test child')
@@ -654,7 +654,7 @@ class TestIdods(unittest.TestCase):
         propType = self.api.saveInstallRelPropertyType('testprop')
         
         # Try to update
-        self.assertTrue(self.api.updateInstallRelPropertyType(None, 'testprop', 'prop2', description='desc', units='units'))
+        self.assertTrue(self.api.updateInstallRelPropertyType(None, 'testprop', 'prop2', description='desc', unit='units'))
         
         # Retrieve updated property type
         updatedPropType = self.api.retrieveInstallRelPropertyType('prop2')
@@ -665,7 +665,7 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(propType['id'], updatedPropTypeObject['id'])
         
         # Check if units are still the same
-        self.assertEqual(updatedPropTypeObject['units'], 'units')
+        self.assertEqual(updatedPropTypeObject['unit'], 'units')
         
         # Check if description is still the same
         self.assertEqual(updatedPropTypeObject['description'], 'desc')
@@ -682,19 +682,19 @@ class TestIdods(unittest.TestCase):
         propType = self.api.saveInstallRelPropertyType('testprop')
         
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Prepare install child
-        savedInstallChild = self.api.saveInstall('test child', cmpnttype='Magnet')
+        savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
 
         # Save rel
-        rel = self.api.saveInstallRel(savedInstallParent['id'], savedInstallChild['id'], 'desc', 1)
+        rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1)
         
         # Save install rel property
         prop = self.api.saveInstallRelProperty(rel['id'], 'testprop', 4)
         
         # Try to update install rel property
-        self.assertTrue(self.api.updateInstallRelProperty(savedInstallParent['id'], savedInstallChild['id'], 'testprop', value=5))
+        self.assertTrue(self.api.updateInstallRelProperty('test parent', 'test child', 'testprop', value=5))
         
         # Retrieve updated install rel property
         updatedProp = self.api.retrieveInstallRelProperty(rel['id'], 'testprop')
@@ -713,16 +713,16 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
         
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Prepare install child
-        savedInstallChild = self.api.saveInstall('test child', cmpnttype='Magnet')
+        savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
         
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
         
         # Save rel
-        rel = self.api.saveInstallRel(savedInstallParent['id'], savedInstallChild['id'], 'desc', 1, {'testprop': 'testvalue'})
+        rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1, {'testprop': 'testvalue'})
         
         # Retrieve rel
         retrievedRel = self.api.retrieveInstallRel(rel['id'])
@@ -739,10 +739,10 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(retrievedRelObject['testprop'], 'testvalue')
         
         # Test saving another rel with same parent and child
-        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallParent['id'], savedInstallChild['id'], None, None)
+        self.assertRaises(ValueError, self.api.saveInstallRel, 'test parent', 'test child', None, None)
         
         # Test saving install rel with property that is not defined
-        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallChild['id'], savedInstallParent['id'], None, None, {'testprop2': 'testvalue'})
+        self.assertRaises(ValueError, self.api.saveInstallRel, 'test child', 'test parent', None, None, {'testprop2': 'testvalue'})
 
     '''
     Test updating install relationship
@@ -753,18 +753,18 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
         
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Prepare install child
-        savedInstallChild = self.api.saveInstall('test child', cmpnttype='Magnet')
+        savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
         
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
         
         # Save rel
-        rel = self.api.saveInstallRel(savedInstallParent['id'], savedInstallChild['id'], 'desc', 1, {'testprop': 'testvalue'})
+        rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1, {'testprop': 'testvalue'})
         
-        self.assertTrue(self.api.updateInstallRel(savedInstallParent['id'], savedInstallChild['id'], description='descupd', order=2, props={'testprop': 'value'}))
+        self.assertTrue(self.api.updateInstallRel('test parent', 'test child', description='descupd', order=2, props={'testprop': 'value'}))
         
         # Retrieve rel
         retrievedRel = self.api.retrieveInstallRel(rel['id'])
@@ -781,10 +781,10 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(retrievedRelObject['testprop'], 'value')
         
         # Test saving another rel with same parent and child
-        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallParent['id'], savedInstallChild['id'], None, None)
+        self.assertRaises(ValueError, self.api.saveInstallRel, 'test parent', 'test child', None, None)
         
         # Test saving install rel with property that is not defined
-        self.assertRaises(ValueError, self.api.saveInstallRel, savedInstallChild['id'], savedInstallParent['id'], None, None, {'testprop2': 'testvalue'})
+        self.assertRaises(ValueError, self.api.saveInstallRel, 'test child', 'test parent', None, None, {'testprop2': 'testvalue'})
 
     '''
     Test saving, retrieving and updating inventory to install map
@@ -802,7 +802,7 @@ class TestIdods(unittest.TestCase):
         idObject2 = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
         
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Map install to inventory
         map = self.api.saveInventoryToInstall('test parent', 'name')
@@ -827,7 +827,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
         
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
@@ -861,7 +861,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
         
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnttype='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)

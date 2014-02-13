@@ -26,13 +26,13 @@ from utils.utils import _checkkeys, _retrievecmddict
 '''
 Private template for the retrieve functions
 '''
-def _retrieveData(request, fun, propList):
+def _retrieveData(request, fun, propList, customDict = {}):
     params = _retrievecmddict(request.GET.copy())
     res = {}
     
     try:
         _checkkeys(params.keys(), propList)
-        res = fun(**params)
+        res = fun(**dict(customDict, **params))
     
     except TypeError as e:
         idods_log.exception(e)
@@ -226,6 +226,153 @@ Update inventory property template
 @require_http_methods(["POST"])
 def updateInventoryPropTmpltWS(request):
     return _updateData(request, idodsi.updateInventoryPropertyTemplate, ['tmplt_id', 'cmpnt_type', 'name', 'description', 'default', 'unit'])
+
+'''
+Retrieve install
+'''
+@require_http_methods(["GET"])
+def retrieveInstallWS(request):
+    return _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
+
+'''
+Save install
+'''
+@require_http_methods(["POST"])
+def saveInstallWS(request):
+    return _saveData(request, idodsi.saveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
+
+'''
+Update install
+'''
+@require_http_methods(["POST"])
+def updateInstallWS(request):
+    return _updateData(request, idodsi.updateInstall, ['old_name', 'name', 'description', 'cmpnt_type', 'coordinatecenter'], {'install_id': None})
+
+'''
+Retrieve install rel
+'''
+@require_http_methods(["GET"])
+def retrieveInstallRelWS(request):
+    return _retrieveData(request, idodsi.retrieveInstallRel, ['parent_install', 'child_install', 'description', 'order', 'date', 'expected_property'], {'install_rel_id': None})
+
+'''
+Save install rel
+'''
+@require_http_methods(["POST"])
+def saveInstallRelWS(request):
+    return _saveData(request, idodsi.saveInstallRel, ['parent_install', 'child_install', 'description', 'order', 'props'])
+
+'''
+Update install rel
+'''
+@require_http_methods(["POST"])
+def updateInstallRelWS(request):
+    return _updateData(request, idodsi.updateInstallRel, ['parent_install', 'child_install', 'description', 'order', 'props'])
+
+'''
+Retrieve install rel property type
+'''
+@require_http_methods(["GET"])
+def retrieveInstallRelPropTypeWS(request):
+    return _retrieveData(request, idodsi.retrieveInstallRelPropertyType, ['name'])
+
+'''
+Save install rel property type
+'''
+@require_http_methods(["POST"])
+def saveInstallRelPropTypeWS(request):
+    return _saveData(request, idodsi.saveInstallRelPropertyType, ['name', 'description', 'unit'])
+
+'''
+Update install rel property type
+'''
+@require_http_methods(["POST"])
+def updateInstallRelPropTypeWS(request):
+    return _updateData(request, idodsi.updateInstallRelPropertyType, ['old_name', 'name', 'description', 'unit'], {'type_id': None})
+
+'''
+Retrieve inventory to install
+'''
+@require_http_methods(["GET"])
+def retrieveInventoryToInstallWS(request):
+    return _retrieveData(request, idodsi.retrieveInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inv_name'], {'inventory_to_install_id': None})
+
+'''
+Save inventory to install
+'''
+@require_http_methods(["POST"])
+def saveInventoryToInstallWS(request):
+    return _saveData(request, idodsi.saveInventoryToInstall, ['install_name', 'inv_name'])
+
+'''
+Update inventory to install
+'''
+@require_http_methods(["POST"])
+def updateInventoryToInstallWS(request):
+    return _updateData(request, idodsi.updateInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inv_name'])
+
+'''
+Retrieve data method
+'''
+@require_http_methods(["GET"])
+def retrieveDataMethodWS(request):
+    return _retrieveData(request, idodsi.retrieveDataMethod, ['name', 'description'])
+
+'''
+Save data method
+'''
+@require_http_methods(["POST"])
+def saveDataMethodWS(request):
+    return _saveData(request, idodsi.saveDataMethod, ['name', 'description'])
+
+'''
+Update data method
+'''
+@require_http_methods(["POST"])
+def updateDataMethodWS(request):
+    return _updateData(request, idodsi.updateDataMethod, ['old_name', 'name', 'description'], {'datamethod_id': None})
+
+'''
+Retrieve offline data
+'''
+@require_http_methods(["GET"])
+def retrieveOfflineDataWS(request):
+    return _retrieveData(request, idodsi.retrieveOfflineData, ['offlineid', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'method_name', 'inventory_name'])
+
+'''
+Save offline data
+'''
+@require_http_methods(["POST"])
+def saveDataOfflineDataWS(request):
+    return _saveData(request, idodsi.saveOfflineData, ['inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data', 'script_name', 'script', 'method_name'])
+
+'''
+Update offline data
+'''
+@require_http_methods(["POST"])
+def updateOfflineDataWS(request):
+    return _updateData(request, idodsi.updateOfflineData, ['offline_data_id', 'inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data', 'script_name', 'script', 'method_name'])
+
+'''
+Retrieve online data
+'''
+@require_http_methods(["GET"])
+def retrieveOnlineDataWS(request):
+    return _retrieveData(request, idodsi.retrieveOnlineData, ['onlineid', 'install_name', 'username', 'description', 'url', 'status'])
+
+'''
+Save online data
+'''
+@require_http_methods(["POST"])
+def saveDataOnlineDataWS(request):
+    return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'url', 'status'])
+
+'''
+Update online data
+'''
+@require_http_methods(["POST"])
+def updateOnlineDataWS(request):
+    return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status'])
 
 '''
 Load index html file

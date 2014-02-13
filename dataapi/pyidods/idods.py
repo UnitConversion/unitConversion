@@ -421,7 +421,7 @@ class idods(object):
                 {
                     'id': {
                         'id': ,              # int
-                        'cmpnttype': ,      # int
+                        'cmpnt_type': ,      # int
                         'name': ,           # string
                         'description': ,    # string
                         'default': ,        # string
@@ -462,7 +462,7 @@ class idods(object):
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
-                    'cmpnttype': r[1],
+                    'cmpnt_type': r[1],
                     'name': r[2],
                     'description': r[3],
                     'default': r[4],
@@ -506,7 +506,7 @@ class idods(object):
         if len(result) == 0:
             raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
 
-        cmpnttypeid = result.keys()[0]
+        cmpnt_typeid = result.keys()[0]
 
         # Check name
         self._checkParameter("name", name)
@@ -521,7 +521,7 @@ class idods(object):
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (cmpnttypeid, name, description, default, unit))
+            cur.execute(sql, (cmpnt_typeid, name, description, default, unit))
 
             # Get last row id
             templateid = cur.lastrowid
@@ -561,8 +561,6 @@ class idods(object):
         queryDict = {}
         whereKey = 'inventory_prop_tmplt_id'
 
-        self.logger.info(tmplt_id)
-
         # Check id
         self._checkParameter('id', tmplt_id, 'prim')
         whereValue = tmplt_id
@@ -573,8 +571,8 @@ class idods(object):
         if len(result) == 0:
             raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
 
-        cmpnttypeid = result.keys()[0]
-        queryDict['cmpnt_type_id'] = cmpnttypeid
+        cmpnt_typeid = result.keys()[0]
+        queryDict['cmpnt_type_id'] = cmpnt_typeid
 
         # Check name
         self._checkParameter("name", name)
@@ -1005,6 +1003,10 @@ class idods(object):
             if kws.has_key('props') and kws['props'] != None:
                 props = kws['props']
                 
+                # Convert to json
+                if isinstance(props, (dict)) == False:
+                    props = json.loads(props)
+                
                 # Save all the properties
                 for key in props:
                     value = props[key]
@@ -1165,6 +1167,10 @@ class idods(object):
             if kws.has_key('props') and kws['props'] != None:
                 props = kws['props']
                 
+                # Convert to json
+                if isinstance(props, (dict)) == False:
+                    props = json.loads(props)
+                
                 # Update all properties
                 for key in props:
                     value = props[key]
@@ -1198,7 +1204,7 @@ class idods(object):
 
                 {'id': { 'name':,                       # string
                          'serialno':,                   # string
-                         'cmpnttype':                   # string
+                         'cmpnt_type':                   # string
                          'typeinto':                    # string
                          'vendor':,                     # string
                          'length': ,                    # float
@@ -1261,7 +1267,7 @@ class idods(object):
                     'id': r[0],
                     'name': r[1],
                     'serialno': r[3],
-                    'cmpnttype': r[4],
+                    'cmpnt_type': r[4],
                     'vendor': r[6]
                 }
                 
@@ -2127,14 +2133,14 @@ class idods(object):
             self.logger.info('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateDataMethod(self, dataMethodId, oldName, name, **kws):
+    def updateDataMethod(self, datamethod_id, old_name, name, **kws):
         '''Update data method by id or name.
 
-        :param dataMethodId id of the data method we want to update by
-        :type dataMethodId: int
+        :param datamethod_id id of the data method we want to update by
+        :type datamethod_id: int
 
-        :param oldName: name of the method we want to update by
-        :type oldName: str
+        :param old_name: name of the method we want to update by
+        :type old_name: str
 
         :param name: name of the method
         :type name: str
@@ -2153,16 +2159,16 @@ class idods(object):
         whereValue = None
         
         # Check if
-        if dataMethodId:
-            self._checkParameter('id', dataMethodId, 'prim')
+        if datamethod_id:
+            self._checkParameter('id', datamethod_id, 'prim')
             whereKey = 'id_data_method_id'
-            whereValue = dataMethodId
+            whereValue = datamethod_id
             
         # Check name
-        if oldName:
-            self._checkParameter('name', oldName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'method_name'
-            whereValue = oldName
+            whereValue = old_name
             
         # Check if id or name is present
         if whereKey == None:
@@ -2264,19 +2270,23 @@ class idods(object):
             self.logger.info('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveInventoryToInstall(self, inventoryToInstallId, installName, invName):
+    def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''
         Return installed devices or psecific map
         
         params:
-        - installName
-        - invName
+            - inventory_to_install_id
+            - install_name
+            - inv_name
 
-        :param installName: label name after installation
-        :type installName: str
+        :param inventory_to_install_id: id of the inventory to install map
+        :type inventory_to_install_id: int
 
-        :param invName: name in its inventory
-        :type invName: str
+        :param install_name: label name after installation
+        :type install_name: str
+
+        :param inv_name: name in its inventory
+        :type inv_name: str
 
         :return: a map with structure like:
 
@@ -2311,19 +2321,19 @@ class idods(object):
         vals = []
         
         # Check primary key
-        if inventoryToInstallId:
+        if inventory_to_install_id:
             sql += ' AND ii.inventory__install_id = %s '
-            vals.append(inventoryToInstallId)
+            vals.append(inventory_to_install_id)
             
         # Check inventory name
-        if invName:
+        if inv_name:
             sql += ' AND inv.name = %s '
-            vals.append(invName)
+            vals.append(inv_name)
             
         # Check install name
-        if installName:
+        if install_name:
             sql += ' AND inst.field_name = %s '
-            vals.append(installName)
+            vals.append(install_name)
             
         try:
             cur = self.conn.cursor()
@@ -2346,16 +2356,16 @@ class idods(object):
             self.logger.info('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveInventoryToInstall(self, installName, invName):
+    def saveInventoryToInstall(self, install_name, inv_name):
         '''Link a device as installed once it is installed into field using the key words:
-        - installName
-        - invName
+        - install_name
+        - inv_name
 
-        :param installName: label name after installation
-        :type installName: str
+        :param install_name: label name after installation
+        :type install_name: str
 
-        :param invName: name in its inventory
-        :type invName: str
+        :param inv_name: name in its inventory
+        :type inv_name: str
 
         :return: a map with structure like:
 
@@ -2367,25 +2377,25 @@ class idods(object):
         '''
         
         # Check install name
-        install = self.retrieveInstall(installName)
+        install = self.retrieveInstall(install_name)
         
         if len(install) < 1:
-            raise ValueError("Install with name (%s) doesn't exist in the database!" % installName)
+            raise ValueError("Install with name (%s) doesn't exist in the database!" % install_name)
         
         installKeys = install.keys()
         installObject = install[installKeys[0]]
         
         # Check inventory name
-        inventory = self.retrieveInventory(invName)
+        inventory = self.retrieveInventory(inv_name)
         
         if len(inventory) < 1:
-            raise ValueError("Inventory with name (%s) doesn't exist in the database!" % invName)
+            raise ValueError("Inventory with name (%s) doesn't exist in the database!" % inv_name)
         
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
         
         # Check if map already exists
-        existing = self.retrieveInventoryToInstall(None, installName, invName)
+        existing = self.retrieveInventoryToInstall(None, install_name, inv_name)
         
         if len(existing):
             raise ValueError("Inventory already installed!")
@@ -2418,17 +2428,17 @@ class idods(object):
             self.logger.info('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateInventoryToInstall(self, inventoryToInstallId, installName, invName):
+    def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''Update a device as installed when its installation has been changed using the key words:
 
-        - installName
-        - invName
+        - install_name
+        - inv_name
 
-        :param installName: label name after installation
-        :type installName: str
+        :param install_name: label name after installation
+        :type install_name: str
 
-        :param invName: name in its inventory
-        :type invName: str
+        :param inv_name: name in its inventory
+        :type inv_name: str
 
         :return: True if everything was ok
 
@@ -2439,25 +2449,25 @@ class idods(object):
         queryDict = {}
         
         # Check id
-        self._checkParameter('id', inventoryToInstallId, 'prim')
+        self._checkParameter('id', inventory_to_install_id, 'prim')
         whereKey = 'inventory__install_id'
-        whereValue = inventoryToInstallId
+        whereValue = inventory_to_install_id
         
         # Check install name
-        install = self.retrieveInstall(installName)
+        install = self.retrieveInstall(install_name)
         
         if len(install) < 1:
-            raise ValueError("Install with name (%s) doesn't exist in the database!" % installName)
+            raise ValueError("Install with name (%s) doesn't exist in the database!" % install_name)
         
         installKeys = install.keys()
         installObject = install[installKeys[0]]
         queryDict['install_id'] = installObject['id']
         
         # Check inventory name
-        inventory = self.retrieveInventory(invName)
+        inventory = self.retrieveInventory(inv_name)
         
         if len(inventory) < 1:
-            raise ValueError("Inventory with name (%s) doesn't exist in the database!" % invName)
+            raise ValueError("Inventory with name (%s) doesn't exist in the database!" % inv_name)
         
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
@@ -2676,7 +2686,7 @@ class idods(object):
             { 'id': {
                     'id': #int,
                     'value': #string,
-                    'cmpnttypename': #string,
+                    'cmpnt_typename': #string,
                     'typename': #string
                 }
             }
@@ -2726,7 +2736,7 @@ class idods(object):
                 resdict[r[0]] = {
                     'id': r[0],
                     'value': r[3],
-                    'cmpnttypename': r[5],
+                    'cmpnt_typename': r[5],
                     'typename': r[4]
                 }
                 
@@ -2749,7 +2759,7 @@ class idods(object):
             { 'id': {
                     'id': #int,
                     'value': #string,
-                    'cmpnttypename': #string,
+                    'cmpnt_typename': #string,
                     'typename': #string
                 }
             }
@@ -3175,7 +3185,7 @@ class idods(object):
                         'id': ,             # int
                         'name': ,           # string
                         'description': ,    # string
-                        'units': ,          # string
+                        'unit': ,          # string
                     }
                 }
 
@@ -3212,7 +3222,7 @@ class idods(object):
                     'id': r[0],
                     'name': r[1],
                     'description': r[2],
-                    'units': r[3]
+                    'unit': r[3]
                 }
             
             return resdict
@@ -3221,13 +3231,13 @@ class idods(object):
             self.logger.info('Error when fetching installation relationship property type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching installation ralationship property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveInstallRelPropertyType(self, name, description = None, units = None):
+    def saveInstallRelPropertyType(self, name, description = None, unit = None):
         '''
         Insert new install relationship property type into database
 
         - name: name of the install relationship property type M
         - description: description of the install relationship property type O
-        - units: units used for this property type O
+        - unit: unit used for this property type O
 
         :return: a map with structure like:
 
@@ -3257,7 +3267,7 @@ class idods(object):
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (name, description, units))
+            cur.execute(sql, (name, description, unit))
 
             # Get last row id
             typeid = cur.lastrowid
@@ -3277,15 +3287,15 @@ class idods(object):
             self.logger.info('Error when saving new install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new install rel property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateInstallRelPropertyType(self, typeId, oldName, name, **kws):
+    def updateInstallRelPropertyType(self, type_id, old_name, name, **kws):
         '''
         Update install relationship property type
 
-        - typeId: id of the install rellationship property type we want to update by O
-        - oldName: name of the install relationship property type we want to update by O
+        - type_id: id of the install rellationship property type we want to update by O
+        - old_name: name of the install relationship property type we want to update by O
         - name: name of the install relationship property type M
         - description: description of the install relationship property type O
-        - units: units used for this property type O
+        - unit: units used for this property type O
 
         :return: True if everything is ok
 
@@ -3298,16 +3308,16 @@ class idods(object):
         whereValue = None
         
         # Check if
-        if typeId:
-            self._checkParameter('id', typeId, 'prim')
+        if type_id:
+            self._checkParameter('id', type_id, 'prim')
             whereKey = 'install_rel_prop_type_id'
-            whereValue = typeId
+            whereValue = type_id
             
         # Check name
-        if oldName:
-            self._checkParameter('name', oldName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'install_rel_prop_type_name'
-            whereValue = oldName
+            whereValue = old_name
             
         # Check if where key is set
         if whereKey == None:
@@ -3322,8 +3332,8 @@ class idods(object):
             queryDict['install_rel_prop_type_desc'] = kws['description']
             
         # Check units
-        if 'units' in kws:
-            queryDict['install_rel_prop_type_units'] = kws['units']
+        if 'unit' in kws:
+            queryDict['install_rel_prop_type_units'] = kws['unit']
 
         # Generate SQL
         sqlVals = self._generateUpdateQuery('install_rel_prop_type', queryDict, whereKey, whereValue)
@@ -3532,13 +3542,13 @@ class idods(object):
             self.logger.info('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def updateInstallRelProperty(self, installRelParentId, installRelChildId, installRelPropertyTypeName, **kws):
+    def updateInstallRelProperty(self, install_rel_parent, install_rel_child, installRelPropertyTypeName, **kws):
         '''
         Update install rel property
         
         params:
-            - installRelParentId: id of the parent in the install rel
-            - installRelChildId: id of the child in the install rel
+            - install_rel_parent: name of the parent in the install rel
+            - install_rel_child: id of the child in the install rel
             - installRelPropertyTypeName: name of the install rel property type
             - value: value of the install rel property
             
@@ -3553,7 +3563,7 @@ class idods(object):
         whereDict = {}
         
         # Check install rel
-        retrieveInstallRel = self.retrieveInstallRel(None, installRelParentId, installRelChildId)
+        retrieveInstallRel = self.retrieveInstallRel(None, install_rel_parent, install_rel_child)
         
         if len(retrieveInstallRel) == 0:
             raise ValueError("Install rel doesn't exist in the database!")
@@ -3599,13 +3609,13 @@ class idods(object):
             self.logger.info('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def saveInstallRel(self, parentInstallId, childInstallId, description = None, order = None, props = None):
+    def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
         '''
         Save isntall relationship in the database.
         
         params:
-            - parentInstallId: id of the parent element
-            - childInstallId: id of the child element
+            - parent_install: id of the parent element
+            - child_install: id of the child element
             - description: description of the relationship
             - order: order of the child in the relationship
             - props :
@@ -3617,22 +3627,28 @@ class idods(object):
         '''
         
         # Check if the same relationship already exists in the database
-        existingRel = self.retrieveInstallRel(None, parentInstallId, childInstallId)
+        existingRel = self.retrieveInstallRel(None, parent_install, child_install)
         
         if len(existingRel):
             raise ValueError("Same relationship already exists in the database!")
         
         # Check if parent exists in install
-        existingParent = self._retrieveInstallById(parentInstallId)
+        existingParent = self.retrieveInstall(parent_install)
         
         if len(existingParent) == 0:
-            raise ValueError("Parent with id (%s) does not exist in the database!" % parentInstallId)
+            raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
+        
+        parentKeys = existingParent.keys()
+        parentObject = existingParent[parentKeys[0]]
         
         # Check if child exists in install
-        existingChild = self._retrieveInstallById(childInstallId)
+        existingChild = self.retrieveInstall(child_install)
         
         if len(existingChild) == 0:
-            raise ValueError("Child with id (%s) does not exist in the database!" % childInstallId)
+            raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
+        
+        childKeys = existingChild.keys()
+        childObject = existingChild[childKeys[0]]
     
         # Generate SQL
         sql = '''
@@ -3648,7 +3664,7 @@ class idods(object):
         try:
             # Insert entity
             cur = self.conn.cursor()
-            cur.execute(sql, (parentInstallId, childInstallId, description, order))
+            cur.execute(sql, (parentObject['id'], childObject['id'], description, order))
             
             # Get last row id
             idrel = cur.lastrowid
@@ -3659,6 +3675,10 @@ class idods(object):
                 
             # Install rel is saved, now we can save properties
             if props:
+                
+                # Convert to json
+                if isinstance(props, (dict)) == False:
+                    props = json.loads(props)
                 
                 # Save each property
                 for key in props:
@@ -3676,13 +3696,13 @@ class idods(object):
             self.logger.info('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateInstallRel(self, parentInstallId, childInstallId, **kws):
+    def updateInstallRel(self, parent_install, child_install, **kws):
         '''
         Update install relationship.
         
         params:
-            - parentInstallId: id of the parent element we want ot update by
-            - childInstallId: id of the child element we want ot update by
+            - parent_install: name of the parent element we want ot update by
+            - child_install: name of the child element we want ot update by
             - description: description of the relationship
             - order: order of the child in the relationship
             - props :
@@ -3698,20 +3718,26 @@ class idods(object):
         whereDict = {}
         
         # Check if parent exists in install
-        existingParent = self._retrieveInstallById(parentInstallId)
+        existingParent = self.retrieveInstall(parent_install)
         
         if len(existingParent) == 0:
-            raise ValueError("Parent with id (%s) does not exist in the database!" % parentInstallId)
+            raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
         
-        whereDict['parent_install_id'] = parentInstallId
+        parentKeys = existingParent.keys()
+        parentObject = existingParent[parentKeys[0]]
+        
+        whereDict['parent_install_id'] = parentObject['id']
         
         # Check if child exists in install
-        existingChild = self._retrieveInstallById(childInstallId)
+        existingChild = self.retrieveInstall(child_install)
         
         if len(existingChild) == 0:
-            raise ValueError("Child with id (%s) does not exist in the database!" % childInstallId)
+            raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
         
-        whereDict['child_install_id'] = childInstallId
+        childKeys = existingChild.keys()
+        childObject = existingChild[childKeys[0]]
+        
+        whereDict['child_install_id'] = childObject['id']
         
         # Add description
         if 'description' in kws:
@@ -3737,10 +3763,14 @@ class idods(object):
             if 'props' in kws and kws['props'] != None:
                 props = kws['props']
                 
+                # Convert to json
+                if isinstance(props, (dict)) == False:
+                    props = json.loads(props)
+                
                 # Save each property
                 for key in props:
                     value = props[key]
-                    self.updateInstallRelProperty(parentInstallId, childInstallId, key, value=value)
+                    self.updateInstallRelProperty(parent_install, child_install, key, value=value)
                 
             return True
            
@@ -3753,15 +3783,15 @@ class idods(object):
             self.logger.info('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveInstallRel(self, installRelId = None, parentInstallId = None, childInstallId = None, description = None, order = None, date = None, expectedProperty = None):
+    def retrieveInstallRel(self, install_rel_id = None, parent_install = None, child_install = None, description = None, order = None, date = None, expected_property = None):
         '''
         Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
         all the parents of specific child.
         
         params:
-            - installRelId: id of the install_rel table
-            - parentInstallId: id of the parent element
-            - childInstallId: id of the child element
+            - install_rel_id: id of the install_rel table
+            - parent_install: name of the parent install element
+            - child_install: name of the child install element
             - description: description of a relationship
             - order: order number of child element in the parent element; accepts a range in a tuple
             - date: date of the device installation; accepts a range in a tuple
@@ -3774,7 +3804,9 @@ class idods(object):
                 'id': {
                     'id':           #int,
                     'parentid':     #int,
+                    'parentname':   #string,
                     'childid':      #int,
+                    'childname':    #string,
                     'description':  #string,
                     'order':        #int,
                     'date':         #string,
@@ -3792,17 +3824,29 @@ class idods(object):
         vals = []
         
         # Generate SQL
-        if expectedProperty == None:
+        if expected_property == None:
             sql = '''
-            SELECT * FROM install_rel ir WHERE 1=1
+            SELECT
+                ir.install_rel_id,
+                ir.parent_install_id,
+                ir.child_install_id,
+                ir.logical_desc,
+                ir.logical_order,
+                ir.install_date,
+                insp.field_name,
+                insc.field_name
+            FROM install_rel ir
+            LEFT JOIN install insp ON(ir.parent_install_id = insp.install_id)
+            LEFT JOIN install insc ON(ir.child_install_id = insc.install_id)
+            WHERE 1=1
             '''
         else:
             
             # Check expected property parameter
-            if len(expectedProperty) > 1:
-                raise ValueError("Expected property dictionary can contain only one key. Current dictionary contains (%s) keys." % len(expectedProperty))
+            if len(expected_property) > 1:
+                raise ValueError("Expected property dictionary can contain only one key. Current dictionary contains (%s) keys." % len(expected_property))
             
-            expectedPropertyKeys = expectedProperty.keys()
+            expectedPropertyKeys = expected_property.keys()
             
             sql = '''
             SELECT
@@ -3811,34 +3855,38 @@ class idods(object):
                 ir.child_install_id,
                 ir.logical_desc,
                 ir.logical_order,
-                ir.install_date
+                ir.install_date,
+                insp.field_name,
+                insc.field_name
             FROM install_rel ir
             LEFT JOIN install_rel_prop irp ON(ir.install_rel_id = irp.install_rel_id)
             LEFT JOIN install_rel_prop_type irpt ON(irp.install_rel_prop_type_id = irpt.install_rel_prop_type_id)
+            LEFT JOIN install insp ON(ir.parent_install_id = insp.install_id)
+            LEFT JOIN install insc ON(ir.child_install_id = insc.install_id)
             WHERE irpt.install_rel_prop_type_name = %s
             '''
             
             vals.append(expectedPropertyKeys[0])
             
             # Check if expected property value is not None and append it
-            if expectedProperty[expectedPropertyKeys[0]] != None:
+            if expected_property[expectedPropertyKeys[0]] != None:
                 sql = ' AND irp.install_rel_prop_value = %s '
-                vals.append(expectedProperty[expectedPropertyKeys[0]])
+                vals.append(expected_property[expectedPropertyKeys[0]])
             
-        # Check installRelId parameter
-        if installRelId:
+        # Check install_rel_id parameter
+        if install_rel_id:
             sql += ' AND ir.install_rel_id = %s '
-            vals.append(installRelId)
+            vals.append(install_rel_id)
             
-        # Check parentInstallId
-        if parentInstallId:
-            sql += ' AND ir.parent_install_id = %s '
-            vals.append(parentInstallId)
+        # Check parent_install
+        if parent_install:
+            sql += ' AND insp.field_name = %s '
+            vals.append(parent_install)
             
-        # Check childInstallId
-        if childInstallId:
-            sql += ' AND ir.child_install_id = %s '
-            vals.append(childInstallId)
+        # Check child_install
+        if child_install:
+            sql += ' AND insc.field_name = %s '
+            vals.append(child_install)
             
         # Check description parameter
         if description:
@@ -3871,7 +3919,9 @@ class idods(object):
                 resdict[r[0]] = {
                     'id': r[0],
                     'parentid': r[1],
+                    'parentname': r[6],
                     'childid': r[2],
+                    'childname': r[7],
                     'description': r[3],
                     'order': r[4],
                     'date': r[5].strftime("%Y-%m-%d %H:%M:%S")
@@ -3888,6 +3938,7 @@ class idods(object):
             return resdict
         
         except MySQLdb.Error as e:
+            
             self.logger.info('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -3912,12 +3963,12 @@ class idods(object):
         7. install place (up, center, or down);
         '''
 
-    def saveInstall(self, installname, **kws):
+    def saveInstall(self, name, **kws):
         '''Save insertion device installation using any of the acceptable key words:
 
-        - installname: installation name, which is its label on field
+        - name: installation name, which is its label on field
         - description: installation description
-        - cmpnttype: component type of the device
+        - cmpnt_type: component type of the device
         - coordinatecenter: coordinate center number
         
         raises:
@@ -3928,11 +3979,11 @@ class idods(object):
         '''
         
         # Check name parameter
-        self._checkParameter('name', installname)
+        self._checkParameter('name', name)
         
         # Check component type
-        if 'cmpnttype' in kws and kws['cmpnttype'] != None:
-            componentType = self.retrieveComponentType(kws['cmpnttype'])
+        if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
+            componentType = self.retrieveComponentType(kws['cmpnt_type'])
             componentTypeKeys = componentType.keys()
         
         else:
@@ -3961,7 +4012,7 @@ class idods(object):
         try:
             # Insert record into database
             cur = self.conn.cursor()
-            cur.execute(sql, (componentType[componentTypeKeys[0]]['id'], installname, description, coordinate))
+            cur.execute(sql, (componentType[componentTypeKeys[0]]['id'], name, description, coordinate))
         
             # Get last row id
             invid = cur.lastrowid
@@ -3981,12 +4032,12 @@ class idods(object):
             self.logger.info('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateInstall(self, installId, oldInstallName, installName, **kws):
+    def updateInstall(self, install_id, old_name, name, **kws):
         '''Update insertion device installation using any of the acceptable key words:
 
-        - installName: installation name, which is its label on field
+        - name: installation name, which is its label on field
         - description: installation description
-        - cmpnttype: component type of the device
+        - cmpnt_type: component type of the device
         - coordinatecenter: coordinate center number
         
         raises:
@@ -4002,30 +4053,30 @@ class idods(object):
         whereValue = None
         
         # Check id
-        if installId:
-            self._checkParameter('id', installId, 'prim')
+        if install_id:
+            self._checkParameter('id', install_id, 'prim')
             whereKey = 'install_id'
-            whereValue = installId
+            whereValue = install_id
         
         # Check name
-        if oldInstallName:
-            self._checkParameter('name', oldInstallName)
+        if old_name:
+            self._checkParameter('name', old_name)
             whereKey = 'field_name'
-            whereValue = oldInstallName
+            whereValue = old_name
             
         # Check if where key is set
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
         
         # Check name parameter
-        self._checkParameter('name', installName)
-        queryDict['field_name'] = installName
+        self._checkParameter('name', name)
+        queryDict['field_name'] = name
         
         # Check component type
-        if 'cmpnttype' in kws:
-            componentType = self.retrieveComponentType(kws['cmpnttype'])
+        if 'cmpnt_type' in kws:
+            componentType = self.retrieveComponentType(kws['cmpnt_type'])
             componentTypeKeys = componentType.keys()
-            queryDict['cmpnt_type_id'] = componentType[componentTypeKeys[0]]
+            queryDict['cmpnt_type_id'] = componentType[componentTypeKeys[0]]['id']
         
         # Check install description
         if 'description' in kws:
@@ -4073,7 +4124,7 @@ class idods(object):
         returns:
             {'id': {
                     'id':                  #int,
-                    'cmpnttype':           #string,
+                    'cmpnt_type':           #string,
                     'name':                #string,
                     'description':         #string,
                     'coordinationcenter':  #float
@@ -4110,12 +4161,12 @@ class idods(object):
             self.logger.info('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveInstall(self, install_name, **kws):
+    def retrieveInstall(self, name, **kws):
         '''Retrieve insertion device installation using any of the acceptable key words:
 
-        - install_name: installation name, which is its label on field
+        - name: installation name, which is its label on field
         - description: installation description
-        - cmpnttype: component type name of the device
+        - cmpnt_type: component type name of the device
         - coordinatecenter: coordinate center number
         
         raises:
@@ -4126,14 +4177,14 @@ class idods(object):
                     'id':                #int,
                     'name':              #string,
                     'description':       #string,
-                    'cmpnttype':         #string,
+                    'cmpnt_type':         #string,
                     'coordinatecenter':  #float
                 }
             }
         '''
         
         # Check name
-        self._checkParameter('name', install_name)
+        self._checkParameter('name', name)
         
         # Generate SQL
         sql = '''
@@ -4152,15 +4203,15 @@ class idods(object):
         vals = []
         
         # Append name parameter
-        sqlVals = self._checkWildcardAndAppend('inst.field_name', install_name, sql, vals)
+        sqlVals = self._checkWildcardAndAppend('inst.field_name', name, sql, vals)
         
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
             sqlVals = self._checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
             
         # Append component type parameter
-        if 'cmpnttype' in kws and kws['cmpnttype'] != None:
-            sqlVals = self._checkWildcardAndAppend('ct.cmpnt_type_name', kws['cmpnttype'], sqlVals[0], sqlVals[1], 'AND')
+        if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
+            sqlVals = self._checkWildcardAndAppend('ct.cmpnt_type_name', kws['cmpnt_type'], sqlVals[0], sqlVals[1], 'AND')
 
         # Append coordination center parameter
         if 'coordinatecenter' in kws and kws['coordinatecenter'] != None:
@@ -4181,7 +4232,7 @@ class idods(object):
                     'id': r[0],
                     'name': r[2],
                     'description': r[3],
-                    'cmpnttype': r[5],
+                    'cmpnt_type': r[5],
                     'coordinatecenter': r[4]
                 }
                 
@@ -4490,7 +4541,7 @@ class idods(object):
             
         # Check url
         if 'url' in kws:
-            queryDict['url'] = kws['url']
+            queryDict['data_url'] = kws['url']
             
         # Check status
         if 'status' in kws:

@@ -25,26 +25,48 @@ class TestIdods(unittest.TestCase):
     __jsonheader = {'content-type':'application/json', 'accept':'application/json'}
 
     def cleanTables(self):
+        # Clean offline data
+        cleanOfflineData(['spec1234desc'])
+        
+        # Clean install rel prop
+        cleanInstallRelProp(['testprop'])
+        
+        # Clean install rel prop type
+        cleanInstallRelPropType(['testprop', 'prop2'])
+        
+        # Clean install rel
+        cleanInstallRel('test child', 'test parent')
+        cleanInstallRel('test parent', 'test child')
+        
+        # Clean online data
+        cleanOnlineData(['desc1234'])
+        
+        # Clean inventory install map
+        cleanInventoryToInstall('test parent', 'name')
+        cleanInventoryToInstall('test parent', 'name2')
+        
+        # Clean install table
+        cleanInstall(['test parent', 'test child'])
+        
+        # Clean data method
+        cleanDataMethod(['method', 'method2', 'test'])
         
         # Clean inventory property
         cleanInventoryProperty('name', 'alpha')
         cleanInventoryProperty('name2', 'alpha')
-        
         # Clean inventory
         cleanInventory(['name', 'name2'])
-        
-        # Clean vendor table
-        cleanVendor(['test vendor'])
-        
         # Clean inventory property template table
         cleanInventoryPropertyTemplate(['alpha', 'beta'])
         
-        # Clean component type property
-        cleanComponentTypeProperty('Magnet', 'length')
+        # Clean vendor table
+        cleanVendor(['test vendor', 'test vendor2'])
         
+        # Clean component type property
+        cleanComponentTypeProperty('test cmpnt3', 'length')
+        cleanComponentTypeProperty('Magnet', 'length')
         # Clean component type property type
         cleanComponentTypePropertyType(['length', 'width'])
-        
         # Clean if there is something left from previous runs
         cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
 
@@ -328,6 +350,21 @@ class TestIdods(unittest.TestCase):
         r=self.client.post(url, data={'name': 'test vendor', 'description': 'desc'})
         r.raise_for_status()
         
+        # Save new inventory property template
+        url = 'http://localhost:8000/id/device/saveinventoryproptmplt/'
+        
+        # Set parameters
+        params={
+            'name': 'alpha',
+            'description': 'desc',
+            'cmpnt_type': 'Magnet',
+            'default': 'a',
+            'unit': 'M'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
         # Save new inventory
         url = 'http://localhost:8000/id/device/saveinventory/'
         
@@ -336,7 +373,8 @@ class TestIdods(unittest.TestCase):
             'name': 'name',
             'cmpnt_type': 'Magnet',
             'vendor': 'test vendor',
-            'serialno': '123'
+            'serialno': '123',
+            'props': json.dumps({'alpha': 3})
         }
         
         r=self.client.post(url, data=params)
@@ -359,6 +397,9 @@ class TestIdods(unittest.TestCase):
         # Test returned inventory serial number
         self.assertEqual(resultObject['serialno'], '123', 'There is no serial number with that value in the database!')
         
+        # Test returned property
+        self.assertEqual(resultObject['alpha'], '3', 'There is no property with that value in the database!')
+        
         # Try to update inventory
         url = 'http://localhost:8000/id/device/updateinventory/'
         
@@ -368,7 +409,8 @@ class TestIdods(unittest.TestCase):
             'name': 'name2',
             'cmpnt_type': 'Magnet',
             'vendor': 'test vendor',
-            'serialno': '1234'
+            'serialno': '1234',
+            'props': json.dumps({'alpha': 4})
         }
         
         r=self.client.post(url, data=params)
@@ -390,6 +432,9 @@ class TestIdods(unittest.TestCase):
         
         # Test returned inventory serial number
         self.assertEqual(resultObject['serialno'], '1234', 'There is no serial number with that value in the database!')
+                
+        # Test returned property
+        self.assertEqual(resultObject['alpha'], '4', 'There is no property with that value in the database!')
 
     '''
     Test saving, retrieving and updating inventory property template
@@ -487,6 +532,684 @@ class TestIdods(unittest.TestCase):
         
         # Test returned inventory property template description
         self.assertEqual(resultObject['description'], 'desc2', 'There is no item with that description in the database!')
+
+    '''
+    Test saving, retrieving and updating install entries
+    '''
+    def testInstall(self):
+        
+        # Save new component type
+        url = 'http://localhost:8000/id/device/savecmpnttype/'
+        r=self.client.post(url, data={'name': 'Magnet', 'description': 'desc'})
+        r.raise_for_status()
+
+        # Save new install
+        url = 'http://localhost:8000/id/device/saveinstall/'
+        
+        # Set parameters
+        params={
+            'name': 'test parent',
+            'description': 'desc',
+            'cmpnt_type': 'Magnet',
+            'coordinatecenter': 3.4
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Try to retrieve install
+        url = 'http://localhost:8000/id/device/install/'
+        
+        # Set parameters
+        params={
+            'name': 'test parent'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install name
+        self.assertEqual(resultObject['name'], 'test parent', 'There is no item with that name!')
+        
+        # Test returned install description
+        self.assertEqual(resultObject['description'], 'desc', 'There is no item with that description!')
+        
+        # Test returned install component type
+        self.assertEqual(resultObject['cmpnt_type'], 'Magnet', 'There is no item with that component type!')
+        
+        # Test returned install coordinate center
+        self.assertEqual(resultObject['coordinatecenter'], 3.4, 'There is no item with that coordinate center!')
+        
+        # Update install
+        url = 'http://localhost:8000/id/device/updateinstall/'
+        
+        # Set parameters
+        params={
+            'old_name': 'test parent',
+            'name': 'test parent',
+            'description': 'desc2',
+            'cmpnt_type': 'Magnet',
+            'coordinatecenter': 3.5
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Try to retrieve updated install
+        url = 'http://localhost:8000/id/device/install/'
+        
+        # Set parameters
+        params={
+            'name': 'test parent'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install name
+        self.assertEqual(resultObject['name'], 'test parent', 'There is no item with that name!')
+        
+        # Test returned install description
+        self.assertEqual(resultObject['description'], 'desc2', 'There is no item with that description!')
+        
+        # Test returned install component type
+        self.assertEqual(resultObject['cmpnt_type'], 'Magnet', 'There is no item with that component type!')
+        
+        # Test returned install coordinate center
+        self.assertEqual(resultObject['coordinatecenter'], 3.5, 'There is no item with that coordinate center!')
+
+    '''
+    Try to save, retrieve and update install rel
+    '''
+    def testInstallRel(self):
+        
+        # Save new component type
+        url = 'http://localhost:8000/id/device/savecmpnttype/'
+        r=self.client.post(url, data={'name': 'Magnet', 'description': 'desc'})
+        r.raise_for_status()
+
+        # Save new install rel property type
+        url = 'http://localhost:8000/id/device/saveinstallrelproptype/'
+        
+        # Set parameters
+        params={
+            'name': 'testprop',
+            'description': 'desc',
+            'unit': 'M'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+
+        # Save new install
+        url = 'http://localhost:8000/id/device/saveinstall/'
+        
+        # Set parameters for the parent
+        params={
+            'name': 'test parent',
+            'description': 'desc',
+            'cmpnt_type': 'Magnet',
+            'coordinatecenter': 3.4
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Set parameters for the child
+        params={
+            'name': 'test child',
+            'description': 'desc',
+            'cmpnt_type': 'Magnet',
+            'coordinatecenter': 3.2
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Save install rel
+        url = 'http://localhost:8000/id/device/saveinstallrel/'
+        
+        # Set parameters
+        params={
+            'parent_install': 'test parent',
+            'child_install': 'test child',
+            'description': 'desc',
+            'order': 3,
+            'props': json.dumps({'testprop': 'abc'})
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Try to retrieve updated install rel
+        url = 'http://localhost:8000/id/device/installrel/'
+        
+        # Set parameters
+        params={
+            'parent_install': 'test parent',
+            'child_install': 'test child'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install rel parent name
+        self.assertEqual(resultObject['parentname'], 'test parent', 'There is no item with that name!')
+        
+        # Test returned install rel child name
+        self.assertEqual(resultObject['childname'], 'test child', 'There is no item with that name!')
+        
+        # Test returned install description
+        self.assertEqual(resultObject['description'], 'desc', 'There is no item with that description!')
+        
+        # Test returned install rel order
+        self.assertEqual(resultObject['order'], 3, 'There is no item with that order!')
+        
+        # Test returned install rel property
+        self.assertEqual(resultObject['testprop'], 'abc', 'There is no property with that value!')
+        
+        # Update install rel
+        url = 'http://localhost:8000/id/device/updateinstallrel/'
+        
+        # Set parameters
+        params={
+            'parent_install': 'test parent',
+            'child_install': 'test child',
+            'description': 'desc2',
+            'order': 4,
+            'props': json.dumps({'testprop': 'abcd'})
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Try to retrieve updated install rel
+        url = 'http://localhost:8000/id/device/installrel/'
+        
+        # Set parameters
+        params={
+            'parent_install': 'test parent',
+            'child_install': 'test child'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install rel parent name
+        self.assertEqual(resultObject['parentname'], 'test parent', 'There is no item with that name!')
+        
+        # Test returned install rel child name
+        self.assertEqual(resultObject['childname'], 'test child', 'There is no item with that name!')
+        
+        # Test returned install description
+        self.assertEqual(resultObject['description'], 'desc2', 'There is no item with that description!')
+        
+        # Test returned install component type
+        self.assertEqual(resultObject['order'], 4, 'There is no item with that order!')
+                
+        # Test returned install rel property
+        self.assertEqual(resultObject['testprop'], 'abcd', 'There is no property with that value!')
+
+    '''
+    Test saving, retrieving and updating install rel property type
+    '''
+    def testInstallRelPropType(self):
+        
+        # Save new install rel property type
+        url = 'http://localhost:8000/id/device/saveinstallrelproptype/'
+        
+        # Set parameters
+        params={
+            'name': 'testprop',
+            'description': 'desc',
+            'unit': 'M'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Try to retrieve install rel property type
+        url = 'http://localhost:8000/id/device/installrelproptype/'
+        
+        # Set parameters
+        params={
+            'name': '*'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install rel property type name
+        self.assertEqual(resultObject['name'], 'testprop', 'There is no item with that name!')
+        
+        # Test returned install rel property type description
+        self.assertEqual(resultObject['description'], 'desc', 'There is no item with that description!')
+        
+        # Test returned install rel property type unit
+        self.assertEqual(resultObject['unit'], 'M', 'There is no item with that unit!')
+        
+        # Try to update install rel property type
+        url = 'http://localhost:8000/id/device/updateinstallrelproptype/'
+        
+        # Set parameters
+        params={
+            'old_name': 'testprop',
+            'name': 'prop2',
+            'description': 'desc2',
+            'unit': 'M'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Try to retrieve install rel property type
+        url = 'http://localhost:8000/id/device/installrelproptype/'
+        
+        # Set parameters
+        params={
+            'name': '*'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install rel property type name
+        self.assertEqual(resultObject['name'], 'prop2', 'There is no item with that name!')
+        
+        # Test returned install rel property type description
+        self.assertEqual(resultObject['description'], 'desc2', 'There is no item with that description!')
+        
+        # Test returned install rel property type description
+        self.assertEqual(resultObject['unit'], 'M', 'There is no item with that unit!')
+
+    '''
+    Save, retrieve and update inventory to install map
+    '''
+    def testInventoryToInstall(self):
+        
+        # Save new component type
+        url = 'http://localhost:8000/id/device/savecmpnttype/'
+        r=self.client.post(url, data={'name': 'Magnet', 'description': 'desc'})
+        r.raise_for_status()
+        
+        # Save new vendor
+        url = 'http://localhost:8000/id/device/savevendor/'
+        
+        r=self.client.post(url, data={'name': 'test vendor', 'description': 'desc'})
+        r.raise_for_status()
+        
+        # Save new inventory
+        url = 'http://localhost:8000/id/device/saveinventory/'
+        
+        # Set parameters
+        params={
+            'name': 'name',
+            'cmpnt_type': 'Magnet',
+            'vendor': 'test vendor',
+            'serialno': '123'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+
+        # Save new install
+        url = 'http://localhost:8000/id/device/saveinstall/'
+        
+        # Set parameters for the parent
+        params={
+            'name': 'test parent',
+            'description': 'desc',
+            'cmpnt_type': 'Magnet',
+            'coordinatecenter': 3.4
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Save new inventory to install map
+        url = 'http://localhost:8000/id/device/saveinventorytoinstall/'
+        
+        # Set parameters
+        params={
+            'install_name': 'test parent',
+            'inv_name': 'name'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        idObject = r.json()
+        
+        # Retrieve inventory to install map
+        url = 'http://localhost:8000/id/device/inventorytoinstall/'
+        
+        # Set parameters
+        params={
+            'install_name': 'test parent',
+            'inv_name': 'name'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned map id
+        self.assertEqual(resultObject['id'], idObject['id'], 'Saved and updated ids are not the same!')
+        
+        # Update inventory to install map
+        url = 'http://localhost:8000/id/device/updateinventorytoinstall/'
+        
+        # Set parameters
+        params={
+            'inventory_to_install_id': resultObject['id'],
+            'install_name': 'test parent',
+            'inv_name': 'name'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        result = r.json()
+        
+        # Check if update returned True
+        self.assertTrue(result)
+
+    '''
+    Test saving, retrieving and updating data method
+    '''
+    def testDataMethod(self):
+        
+        # Save new data method
+        url = 'http://localhost:8000/id/device/savedatamethod/'
+        
+        # Set parameters
+        params={
+            'name': 'method',
+            'description': 'name'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Retrieve data method
+        url = 'http://localhost:8000/id/device/datamethod/'
+        
+        # Set parameters
+        params={
+            'name': 'met*'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned name
+        self.assertEqual(resultObject['name'], 'method', 'There is no item with that name in the database!')
+        
+        # Test returned description
+        self.assertEqual(resultObject['description'], 'name', 'There is no item with that description in the database!')
+        
+        # Update data method
+        url = 'http://localhost:8000/id/device/updatedatamethod/'
+        
+        # Set parameters
+        params={
+            'old_name': 'method',
+            'name': 'method',
+            'description': 'desc'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Retrieve data method
+        url = 'http://localhost:8000/id/device/datamethod/'
+        
+        # Set parameters
+        params={
+            'name': 'met*'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned name
+        self.assertEqual(resultObject['name'], 'method', 'There is no item with that name in the database!')
+        
+        # Test returned description
+        self.assertEqual(resultObject['description'], 'desc', 'There is no item with that description in the database!')
+
+    '''
+    Test saving, retrieving and updating offline data
+    '''
+    def testOfflineData(self):
+        
+        # Save new vendor
+        url = 'http://localhost:8000/id/device/savevendor/'
+        
+        r=self.client.post(url, data={'name': 'test vendor', 'description': 'desc'})
+        r.raise_for_status()
+        
+        # Save new component type
+        url = 'http://localhost:8000/id/device/savecmpnttype/'
+        
+        # Set parameters
+        params={
+            'name': 'Magnet',
+            'description': 'desc'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Save new data method
+        url = 'http://localhost:8000/id/device/savedatamethod/'
+        
+        # Set parameters
+        params={
+            'name': 'method',
+            'description': 'name'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Save new inventory
+        url = 'http://localhost:8000/id/device/saveinventory/'
+        
+        # Set parameters
+        params={
+            'name': 'name',
+            'cmpnt_type': 'Magnet',
+            'vendor': 'test vendor',
+            'serialno': '123'
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Save offline data
+        url = 'http://localhost:8000/id/device/saveofflinedata/'
+        
+        # Set parameters
+        params={
+            'inventory_name': 'name',
+            'description': 'spec1234desc',
+            'method_name': 'method',
+            'status': 1,
+            'data_file_name': 'file name',
+            'gap': 2
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Retrieve offline data
+        url = 'http://localhost:8000/id/device/offlinedata/'
+        
+        # Set parameters
+        params={
+            'gap': (1,5)
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned gap
+        self.assertEqual(resultObject['gap'], 2, 'There is no item with that gap in the database!')
+        
+        # Update offline data
+        url = 'http://localhost:8000/id/device/updateofflinedata/'
+        
+        # Set parameters
+        params={
+            'offline_data_id': resultObject['id'],
+            'inventory_name': 'name',
+            'description': 'spec1234desc',
+            'method_name': 'method',
+            'status': 1,
+            'data_file_name': 'file name',
+            'gap': 2,
+            'phase1': 4.34
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Retrieve offline data
+        url = 'http://localhost:8000/id/device/offlinedata/'
+        
+        # Set parameters
+        params={
+            'gap': (1,5)
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned gap
+        self.assertEqual(resultObject['phase1'], 4.34, 'There is no item with that phase1 in the database!')
+
+    '''
+    Test saving, retrieving and updating online data
+    '''
+    def testOnlineData(self):
+        
+        # Save new component type
+        url = 'http://localhost:8000/id/device/savecmpnttype/'
+        r=self.client.post(url, data={'name': 'Magnet', 'description': 'desc'})
+        r.raise_for_status()
+
+        # Save new install
+        url = 'http://localhost:8000/id/device/saveinstall/'
+        
+        # Set parameters
+        params={
+            'name': 'test parent',
+            'description': 'desc',
+            'cmpnt_type': 'Magnet',
+            'coordinatecenter': 3.4
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Save online data
+        url = 'http://localhost:8000/id/device/saveonlinedata/'
+        
+        # Set parameters
+        params={
+            'install_name': 'test parent',
+            'username': 'admin',
+            'description': 'desc1234',
+            'url': 'url',
+            'status': 1
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+        # Retrieve online data
+        url = 'http://localhost:8000/id/device/onlinedata/'
+        
+        # Set parameters
+        params={
+            'install_name': 'test parent'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install name
+        self.assertEqual(resultObject['install_name'], 'test parent', 'There is no item with that install name in the database!')
+        
+        # Update online data
+        url = 'http://localhost:8000/id/device/updateonlinedata/'
+        
+        # Set parameters
+        params={
+            'online_data_id': resultObject['id'],
+            'install_name': 'test parent',
+            'username': 'admin2',
+            'description': 'desc1234',
+            'url': 'url2',
+            'status': 1
+        }
+        
+        r=self.client.post(url, data=params)
+        r.raise_for_status()
+        
+                # Retrieve online data
+        url = 'http://localhost:8000/id/device/onlinedata/'
+        
+        # Set parameters
+        params={
+            'install_name': 'test parent'
+        }
+        
+        r=self.client.get(url, params=params, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Test returned install name
+        self.assertEqual(resultObject['install_name'], 'test parent', 'There is no item with that install name in the database!')
+        
+        # Test returned url
+        self.assertEqual(resultObject['url'], 'url2', 'There is no item with that url in the database!')
 
 if __name__ == "__main__":
     unittest.main()
