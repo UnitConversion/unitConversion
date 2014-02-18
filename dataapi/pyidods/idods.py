@@ -1201,7 +1201,8 @@ class idods(object):
 
                 {'id': { 'name':,                       # string
                          'serialno':,                   # string
-                         'cmpnt_type':                   # string
+                         'alias':,                      # string
+                         'cmpnt_type':                  # string
                          'typeinto':                    # string
                          'vendor':,                     # string
                          'length': ,                    # float
@@ -1263,6 +1264,7 @@ class idods(object):
                 resdict[r[0]] = {
                     'id': r[0],
                     'name': r[1],
+                    'alias': r[2],
                     'serialno': r[3],
                     'cmpnt_type': r[4],
                     'vendor': r[6]

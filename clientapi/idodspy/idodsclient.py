@@ -52,13 +52,14 @@ class IDODSClient(object):
             self.__userName = self.__getdefaultconfig('username', username)
             self.__password = self.__getdefaultconfig('password', password)
             
-            if username and password:
-                self.__auth = auth.HTTPBasicAuth(username, password)
+            if self.__userName and self.__password:
+                #self.__auth = (self.__userName, self.__password)
+                self.__auth = auth.HTTPBasicAuth(self.__userName, self.__password)
             
             else:
                 self.__auth = None
             
-            requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=(self.__userName, self.__password)).raise_for_status()
+            requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
             self.client = requests.session()
         
         except:
@@ -70,443 +71,872 @@ class IDODSClient(object):
         else:
             return value
 
-    def retrieveactiveinterlock(self, status, datefrom=None, dateto=None, withdata=True, rawdata=False):
-        '''Retrieve a data set according its saved time, and status.
-        One data set should have same properties for all device although its value could be empty.
+    def retrieveVendor(self, name, description=None):
+        '''
+        Retrieve vendor by its name and description
+        Wildcast matching are supported for both name and description.
+
+        :param name: vendor name
+        :type name: str
         
-        data structure:
+        :param description: description for a vendor
+        :type description: str
         
-        .. code-block:: python
-        
-            {id: {
-                  'status': ,
-                  'rawdata': {'name':, 'data': },
-                  'description': , 
-                  'author': ,
-                  'initialdate': ,
-                  'lastmodified': ,
-                  'modifieddate': ,
-                  'data':{'label':       [], # str, column's name, also property type collections for one active interlock unit.
-                          'units':       [], # str, units for each columns. Empty string if it does not have one.
-                         
-                          # the following are those columns appeared in ``label`` field.
-                          'name':        [], # str, active interlock device name 
-                          'definition':  [], # str, definition for that device
-                          'logicname':   [], # str, active interlock envelop name
-                          'shape':       [], # str, allowed shape in phase space
-                          's':           [], # double, s position in a lattice, particularly in a installation lattice
-                          'offset':      [], # double, offset relative to the center of a straight section
-                          'safecurent':  [], # double, allowed beam current for safe operation.  
-                                             # no need for active interlock if beam current is lower than this value.
-                          'aihol':       [], # double, allowed horizontal offset limit
-                          'aivol':       [], # double, allowed vertical offset limit
-                          'aihal':       [], # double, allowed horizontal angle limit
-                          'aival':       [], # double, allowed vertical angle limit
-                          'up_name':     [], # str, upstream BPM name involved in this active interlock unit
-                          'up_definition': [], #str, upstream device definition
-                          'up_offset':   [], # double, offset of upstream BPM relative to the center of a straight section
-                          'up_aihol':    [], # double, allowed horizontal offset limit of upstream BPM
-                          'up_aivol':    [], # double, allowed vertical offset limit of upstream BPM
-                          'down_name':   [], # str, downstream BPM name involved in this active interlock unit
-                          'down_definition': [], #str, downstream device definition
-                          'down_offset': [], # double, offset of downstream BPM relative to the center of a straight section
-                          'down_aihol':  [], # double, allowed horizontal offset limit of downstream BPM
-                          'down_aivol':  [], # double, allowed vertical offset limit of downstream BPM
-                          'logiccode':   [], # logic algorithm encoding code
-                         }
-                 },
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': {
+                    'id': ,
+                    'name': ,
+                    'description': 
+                    }
                  ...
-            }
-            
-        label is now defined as below:
-         
-        .. code-block:: python
-         
-            ['name', 'definition', 'logicname', 'shape', 'logic', 'logiccode'
-             's', 'offset', 'safecurent', 'aihol', 'aivol', 'aihal', 'aival',
-             'up_name', 'up_definition', 'up_offset', 'up_aihol', 'up_aivol',
-             'down_name', 'down_definition', 'down_offset', 'down_aihol', 'down_aivol',
-            ]
-        
-        units is for each columns contained in ``label``, therefore, it should have exact sequence as it appears in label
-        except ``units`` itself which should be the last one.
-        is most like as below:
-        
-        .. code-block:: python
-         
-            ['', '', '', '', '', '', 
-             'm', 'm', 'mA', 'mm', 'mm', 'mrad', 'mrad',
-             '', '', 'm', 'mm', 'mm',
-             '', '', 'm', 'mm', 'mm'
-            ]
-        
-        :param status: Current status.
-        :type status: int
-        
-        :param datefrom: data saved after this time. Default is None, which means data from very beginning. It has format as **yyyy-MM-dd hh:mm:ss**.
-        :type datafrom: datetime
-        
-        :param dateto: data saved before this time. Default is None, which means data till current. It has format as **yyyy-MM-dd hh:mm:ss**.
-        :type datato: datetime
-        
-        :param withdata: get data set. Default is true, which means always gets data by default. Otherwise, only device names are retrieved for desired data set.
-        :type withdata: boolean
-        
-        :param rawdata: get raw data back also. Default is false, which means no raw data.
-        :type rawdata: boolean
-        
-        :Returns: dict
-            
-        :Raises: HTTPError
-        
-        '''
-        params = {'function': 'retrieveActiveInterlock',
-                  'status': status
-                  }
-        if datefrom != None:
-            params['datefrom'] = datefrom
-        if dateto != None:
-            params['dateto'] = dateto
-        if withdata != None:
-            params['withdata'] = withdata
-        if rawdata != None:
-            params['rawdata'] = rawdata
-
-        resp=self.client.get(self.__baseURL+self.__resource, 
-                             params=params,
-                             headers=copy(self.__jsonheader),
-                             verify=False,
-                             auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()
-    
-    def saveactiveinterlock(self, data, description=None, datafile=None, active=True, author=None):
-        '''Save a new data set of active interlock.
-        By default, it deactivates existing active data set, and active this new data set.
-        Only one active data is allowed.
-        
-        A logic of active interlock has to be saved first, otherwise, an AttributeError might raise if logic can not be found.
-        
-        data structure:
-        
-        .. code-block:: python
-        
-            {'label':       [], # str, column's name, also property type collections for one active interlock unit.
-             'units':       [], # str, units for each columns. Empty string if it does not have one.
-             
-             # the following are those columns appeared in ``label`` field.
-             'name':        [], # str, active interlock device name 
-             'definition':  [], # str, definition for that device
-             'logicname':   [], # str, active interlock envelop name
-             'shape':       [], # str, allowed shape in phase space
-             's':           [], # double, s position in a lattice, particularly in a installation lattice
-             'offset':      [], # double, offset relative to the center of a straight section
-             'safecurent':  [], # double, allowed beam current for safe operation.  
-                                # no need for active interlock if beam current is lower than this value.
-             'aihol':       [], # double, allowed horizontal offset limit
-             'aivol':       [], # double, allowed vertical offset limit
-             'aihal':       [], # double, allowed horizontal angle limit
-             'aival':       [], # double, allowed vertical angle limit
-             'up_name':     [], # str, upstream BPM name involved in this active interlock unit
-             'up_definition': [], #str, upstream device definition
-             'up_offset':   [], # double, offset of upstream BPM relative to the center of a straight section
-             'up_aihol':    [], # double, allowed horizontal offset limit of upstream BPM
-             'up_aivol':    [], # double, allowed vertical offset limit of upstream BPM
-             'down_name':   [], # str, downstream BPM name involved in this active interlock unit
-             'down_definition': [], #str, downstream device definition
-             'down_offset': [], # double, offset of downstream BPM relative to the center of a straight section
-             'down_aihol':  [], # double, allowed horizontal offset limit of downstream BPM
-             'down_aivol':  [], # double, allowed vertical offset limit of downstream BPM
-            }
-            
-        label is now defined as below:
-         
-        .. code-block:: python
-         
-            ['name', 'definition', 'logicname', 'shape',
-             's', 'offset', 'safecurent', 'aihol', 'aivol', 'aihal', 'aival',
-             'up_name', 'up_definition', 'up_offset', 'up_aihol', 'up_aivol',
-             'down_name', 'down_definition', 'down_offset', 'down_aihol', 'down_aivol',
-            ]
-            
-        units is for each columns contained in ``label``, therefore, it should have exact sequence as it appears in label
-        except ``units`` itself which should be the last one.
-        is most like as below:
-        
-        .. code-block:: python
-         
-            ['', '', '', '',
-             'm', 'm', 'mA', 'mm', 'mm', 'mrad', 'mrad',
-             '', '', 'm', 'mm', 'mm',
-             '', '', 'm', 'mm', 'mm'
-            ]
-            
-        :param data: original data structure is described as above.
-        :type data: dict
-            
-        :param description: comments or any other notes for this data set.
-        :type description: str
-        
-        :param datafile: raw data file with full path.
-        :type datafile: str
-        
-        :param active: set current data set active. It sets new data set as active by default unless it is explicitly set to keep old active data set.
-        :type active: boolean
-        
-        :param author: the person who set this data set.
-        :type author: str
-        
-        :Returns: active interlock internal id if saved successfully.
-            
-        :Raises: HTTPError 
-
-        '''
-        payload = {'function': 'saveActiveInterlock',
-                   'data':    json.dumps(data),
-                   'active':  active, 
-                   }
-        if description != None:
-            payload['description'] = description
-        if datafile != None:
-            with file(datafile, 'r') as f:
-                bindata = base64.b64encode(f.read())
-                payload['rawdata'] = json.dumps({'name': datafile,
-                                                 'data': bindata})
-        if author != None:
-            payload['author'] = author
-
-        resp=self.client.post(self.__baseURL+self.__resource, 
-                              data=payload,
-                              headers=copy(self.__jsonheader),
-                              verify=False,
-                              auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()['id']
-
-    def updateactiveinterlockstatus(self, aiid, status, author=None):
-        '''Update status of a data set.
-        Once data is saved into database, only its status is allowed to be updated between active & inactive.
-        Only up to one (1) data set is allowed to be active. When the status is to active a particular data set,
-        it deactivates current active data set.
-        
-        Currently, the status is either active and inactive as defined as below: ::
-        
-            0: inactive
-            1: active 
-        
-        However, the definition could be extended when there is other requirement.
-        
-        :param aiid: internal id of an active interlock data set
-        :type aiid: int
-        
-        :param status: new status code
-        :type status: int
-        
-        :param author: name who requests this update
-        :type author: str
-            
-        :Returns: boolean
-            
-            The return code: ::
-                
-                True -- when the status is changed.
-                False -- when the status is not changed.
-        
-        :Raises: HTTPError
-        
-        '''    
-        payload={'function': 'updateActiveInterlockStatus',
-                 'id': aiid,
-                 'status': status, 
-         }
-        if author != None:
-            payload['author']=author
-        resp=self.client.post(self.__baseURL+self.__resource, 
-                              data=payload,
-                              headers=copy(self.__jsonheader),
-                              verify=False,
-                              auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()['status']
-    
-    def retrieveactiveinterlockproptype(self, name, unit=None, description=None):
-        '''Each involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, and so on.
-        This method is to retrieve active interlock property type information with given name, unit, and/or description.
-        
-        Wildcast matching is supported with:
-        
-            - ``*`` for multiple characters match, 
-            - ``?`` for single character match.
-
-        :param name: property type name.
-        :type name: str
-        
-        :param unit: unit of given property type.
-        :type unit: str
-        
-        :param description: description of given property type.
-        :type description: str
-        
-        :returns: dict
-            
-            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below:
-            
-            .. code-block:: python
-            
-                {'label':       [], # str, columns's name
-                 'id':          [], # int, internal id of property type
-                 'name':        [], # str, active interlock property type name 
-                 'unit':        [], # str, active interlock property type unit
-                 'description': [], # str, property type description
-                 'date':        [], # datetime, when this entry was created
                 }
-        
-        :raises: HTTPError
-        
-        '''
-        params={'function': 'retrieveActiveInterlockPropType',
-                'name': name, 
-         }
-        if unit != None:
-            params['unit']=unit
-        if description != None:
-            params['description']=description
-        resp=self.client.get(self.__baseURL+self.__resource, 
-                             params=params,
-                             headers=copy(self.__jsonheader),
-                             verify=False,
-                             auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()
 
-    def saveactiveinterlockproptype(self, name, unit=None, description=None):
-        '''Each involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, and so on.
-        This method is to save active interlock property type information with given name, unit, and/or description.
+        :Raises: HTTPError
+        '''
         
-        The property name with given unit is unique in the database. It allows user to reuse a property type name, but given it 
-        a different unit.
+        # Try to retrieve vendor
+        url = 'vendor/'
         
-        :param name: property type name.
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveVendor(self, name, description = None):
+        '''Save vendor and its description into database
+
+        :param name: vendor name
         :type name: str
         
-        :param unit: unit of given property type.
-        :type unit: str
-        
-        :param description: description of given property type.
+        :param dtype: device type
+
+        :param description: a brief description which could have up to 255 characters
         :type description: str
-        
-        :returns: internal property type id
-            
-        :raises: HTTPError
-        
-        '''
-        payload={'function': 'saveActiveInterlockPropType',
-                 'name': name, 
-         }
-        if unit != None:
-            payload['unit']=unit
-        if description != None:
-            payload['description']=description
-        resp=self.client.post(self.__baseURL+self.__resource, 
-                              data=payload,
-                              headers=copy(self.__jsonheader),
-                              verify=False,
-                              auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()['id']
-        
-    def retrieveactiveinterlocklogic(self, name, shape=None, logic=None):
-        '''Retrieve logic information according given search constrains.
-        Active interlock envelop name has to be provided as a minimum requirement for this function.
-        
-        Wildcast matching is supported for name and shape with:
-        
-            - ``*`` for multiple characters match, 
-            - ``?`` for single character match.
 
-        Wildcast is not supported for logic since the * is a math symbol.
+        :return: a map with structure like:
 
-        :param name: active interlock envelop name.
-        :type name: str
-        
-        :param shape: active interlock shape name in phase space.
-        :type shape: str
-        
-        :param logic: active interlock logic.
-        :type logic: str
-        
-        :returns: dict 
-            
-            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below:
-            
             .. code-block:: python
-            
-                {'label':  [], # str, column's name
-                 'id':     [], # int, internal id of active interlock logic
-                 'name':   [], # str, name of active interlock envelop 
-                 'shape':  [], # str, allowed envelop shape in phase space
-                 'logic':  [], # str, logic expression
-                 'code':   [], # int, logic code for hardware convenience
-                 'author': [], # str, who created this entry
-                 'date':   [], # datetime, when this entry was created
-                }
-        
-        :raises: HTTPError
-        
-        '''
-        params={'function': 'retrieveActiveInterlockLogic',
-                'name': name}
-        if shape != None:
-            params['shape']=shape
-        if logic != None:
-            params['logic']=logic
-        resp=self.client.get(self.__baseURL+self.__resource, 
-                             params=params,
-                             headers=copy(self.__jsonheader),
-                             verify=False,
-                             auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()
-    
-    def saveactiveinterlocklogic(self, name, shape, logic, logiccode, author=None):
-        '''Save logic information for active interlock system.
-        It calls REST POST, and performs saveActiveInterlockLogic function.
-        
-        :param name: active interlock envelop name
-        :type name: str
-        
-        :param shape: active interlock shape name in phase space
-        :type shape: str
-        
-        :param logic: active interlock logic expression
-        :type logic: str
-        
-        :param logiccode: logic algorithm encoding code for hardware convenience
-        :type logiccode: int
 
-        :param author: who creates this data set
-        :type author: str
-            
-        :returns: internal id of active interlock logic
-                
-        :Raises: ValueError, HTTPError
-        
+                {'id': vendor_id}
+
+        :Raises: HTTPError
         '''
-        payload={'function': 'saveActiveInterlockLogic',
-                 'name': name, 
-                 'shape': shape, 
-                 'logic': logic, 
-                 'logiccode': logiccode, 
-         }
-        if author != None:
-            payload['author']=author
-        resp=self.client.post(self.__baseURL+self.__resource, 
-                              data=payload,
-                              headers=copy(self.__jsonheader),
-                              verify=False,
-                              auth=self.__auth)
-        self.__raise_for_status(resp.status_code, resp.text)
-        return resp.json()['id']
+        
+        # Set URL
+        url = 'savevendor/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateVendor(self, old_name, name, **kws):
+        '''
+        Update vendor and its description
+
+        :param name: vendor name
+        :type name: str
+
+        :param old_name: update vendor by its old name
+        :type old_name: str
+
+        :param description: a brief description which could have up to 255 characters
+        :type description: str
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updatevendor/'
+        
+        # Set parameters
+        params={
+            'vendor_id': None,
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveComponentType(self, name, description = None):
+        '''Retrieve a component type using the key words:
+
+        - name
+        - description
+
+        :param name: component type type name
+        :type name: str
+
+        :param description: description for this device
+        :type desctiprion: str
+
+        :return: a map with structure like:
+
+            .. code-block: python
+
+                {'id1':
+                    {'id': device type id,
+                    'name': device type name,
+                    'description': device type description,
+                    'prop1key': prop1value
+                    ...
+                    'propNkey': propNvalue
+                    },
+                 ...
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'cmpnttype/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveComponentType(self, name, description=None, props=None):
+        '''Save a component type using the key words:
+
+        - name
+        - description
+        - props
+
+        :param name: component type name
+        :type name: str
+
+        :param description: description for this device
+        :type desctiprion: str
+        
+        :param props: component type properties
+        :type props: python dict
+
+        :return: a map with structure like:
+
+            .. code-block: python
+
+                {'id': device type id}
+
+        :Raises: HTTPError
+
+        '''
+        
+        # Set URL
+        url = 'savecmpnttype/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        # Add props
+        if props:
+            params['props'] = json.dumps(props)
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateComponentType(self, old_name, name, **kws):
+        '''
+        Update description of a device type.
+        Once a device type is saved, it is not allowed to change it again since it will cause potential colflict.
+
+        - old_name
+        - name
+        - description
+        - props
+
+        :param old_name: component type name we want to update by
+        :type old_name: str
+
+        :param name: device type name
+        :type name: str
+
+        :param description: description for this device
+        :type desctiprion: str
+        
+        :param props: component type properties
+        :type props: python dict
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updatecmpnttype/'
+        
+        # Set parameters
+        params={
+            'component_type_id': None,
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add props
+        if 'props' in kws:
+            params['props'] = json.dumps(kws['props'])
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveComponentTypePropertyType(self, name):
+        '''
+        Retrieve component type property type by its name
+
+        - name: property type name
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        'id': ,              # int
+                        'name': ,           # string
+                        'description': ,    # string
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'cmpnttypeproptype/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveComponentTypePropertyType(self, name, description = None):
+        '''
+        Insert new component type property type into database
+
+        - name: name of the component type property type M
+        - description: description of the component type property tpye O
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': propertytypeid}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'savecmpnttypeproptype/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateComponentTypePropertyType(self, old_name, name, **kws):
+        '''
+        Insert new component type property type into database
+
+        - old_name: name of the component type property type we want to update by M
+        - name: name of the component type property type M
+        - description: description of the component type property tpye O
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updatecmpnttypeproptype/'
+        
+        # Set parameters
+        params={
+            'property_type_id': None,
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveInventory(self, name):
+        '''Retrieve an insertion device from inventory by device inventory name and type.
+        Wildcard matching is supported for inventory name and device type. ::
+
+            * for multiple characters matching
+            ? for single character matching
+
+
+        :param name: insertion device inventory name, which is usually different from its field name (the name after installation).
+        :type name: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': { 'name':,                       # string
+                         'serialno':,                   # string
+                         'cmpnt_type':                   # string
+                         'typeinto':                    # string
+                         'vendor':,                     # string
+                         'length': ,                    # float
+                         'up_corrector_position': ,     # float
+                         'middle_corrector_position': , # float
+                         'down_corrector_position':,    # float
+                         'gap_min': ,                   # float
+                         'gap_max': ,                   # float
+                         'gap_tolerance':,              # float
+                         'phase1_min':,                 # float
+                         'phase1_max':,                 # float
+                         'phase2_min':,                 # float
+                         'phase2_max':,                 # float
+                         'phase3_min':,                 # float
+                         'phase3_max':,                 # float
+                         'phase4_min':,                 # float
+                         'phase4_max':,                 # float
+                         'phase_tolerance':,            # float
+                         'k_max_linear':,               # float
+                         'k_max_circular':,             # float
+                         'phase_mode_p':,               # string
+                         'phase_mode_a1':,              # string
+                         'phase_mode_a2':               # string
+
+                        }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'inventory/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInventory(self, name, **kws):
+        '''
+        save insertion device into inventory using any of the acceptable key words:
+
+        - name:  name to identify that device from vendor
+        - cmpnt_type: device type name
+        - alias: alias name if it has
+        - serialno: serial number
+        - vendor: vendor name
+        - props: properties with structure as below
+
+        .. code-block:: python
+
+            {
+                'length': ,                    # float
+                'up_corrector_position': ,     # float
+                'middle_corrector_position': , # float
+                'down_corrector_position':,    # float
+                'gap_min': ,                   # float
+                'gap_max': ,                   # float
+                'gap_tolerance':,              # float
+                'phase1_min':,                 # float
+                'phase1_max':,                 # float
+                'phase2_min':,                 # float
+                'phase2_max':,                 # float
+                'phase3_min':,                 # float
+                'phase3_max':,                 # float
+                'phase4_min':,                 # float
+                'phase4_max':,                 # float
+                'phase_tolerance':,            # float
+                'k_max_linear':,               # float
+                'k_max_circular':,             # float
+                'phase_mode_p':,               # string
+                'phase_mode_a1':,              # string
+                'phase_mode_a2':               # string
+            }
+
+        :param name: insertion device name, which is usually different from its field name (the name after installation).
+        :type name: str
+
+        :param dtype: device type
+        :type dtype: str
+
+        :param alias: alias name if it has
+        :type alias: str
+
+        :param serialno: serial number
+        :type serialno: str
+
+        :param vendor: name of vendor
+        :type vendor: str
+
+        :param props: a map to describe the property of an insertion device as described above
+        :type props: object
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': inventory_id}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveinventory/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add component type
+        if 'cmpnt_type' in kws:
+            params['cmpnt_type'] = kws['cmpnt_type']
+        
+        # Add alias
+        if 'alias' in kws:
+            params['alias'] = kws['alias']
+        
+        # Add serialno
+        if 'serialno' in kws:
+            params['serialno'] = kws['serialno']
+        
+        # Add vendor
+        if 'vendor' in kws:
+            params['vendor'] = kws['vendor']
+        
+        # Add props
+        if 'props' in kws:
+            params['props'] = json.dumps(kws['props'])
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateInventory(self, old_name, name, **kws):
+        '''
+        Update inventory using any of the acceptable key words:
+
+        - old_name:  name of the inventory we want to update by
+        - name:  name to identify that device from vendor
+        - cmpnt_type: device type name
+        - alias: alias name if it has
+        - serialno: serial number
+        - vendor: vendor name
+        - props: properties with structure as below
+
+        .. code-block:: python
+
+            {
+                'length': ,                    # float
+                'up_corrector_position': ,     # float
+                'middle_corrector_position': , # float
+                'down_corrector_position':,    # float
+                'gap_min': ,                   # float
+                'gap_max': ,                   # float
+                'gap_tolerance':,              # float
+                'phase1_min':,                 # float
+                'phase1_max':,                 # float
+                'phase2_min':,                 # float
+                'phase2_max':,                 # float
+                'phase3_min':,                 # float
+                'phase3_max':,                 # float
+                'phase4_min':,                 # float
+                'phase4_max':,                 # float
+                'phase_tolerance':,            # float
+                'k_max_linear':,               # float
+                'k_max_circular':,             # float
+                'phase_mode_p':,               # string
+                'phase_mode_a1':,              # string
+                'phase_mode_a2':               # string
+            }
+
+        :param name: insertion device name, which is usually different from its field name (the name after installation).
+        :type name: str
+
+        :param dtype: device type
+        :type dtype: str
+
+        :param alias: alias name if it has
+        :type alias: str
+
+        :param serialno: serial number
+        :type serialno: str
+
+        :param vendor: name of vendor
+        :type vendor: str
+
+        :param props: a map to describe the property of an insertion device as described above
+        :type props: object
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updateinventory/'
+        
+        # Set parameters
+        params={
+            'inventory_id': None,
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add component type
+        if 'cmpnt_type' in kws:
+            params['cmpnt_type'] = kws['cmpnt_type']
+        
+        # Add alias
+        if 'alias' in kws:
+            params['alias'] = kws['alias']
+        
+        # Add serialno
+        if 'serialno' in kws:
+            params['serialno'] = kws['serialno']
+        
+        # Add vendor
+        if 'vendor' in kws:
+            params['vendor'] = kws['vendor']
+        
+        # Add props
+        if 'props' in kws:
+            params['props'] = json.dumps(kws['props'])
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveInventoryPropertyTemplate(self, name):
+        '''
+        Retrieve inventory property template by its name
+
+        - name: Inventory property name
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        'id': ,              # int
+                        'cmpnt_type': ,      # int
+                        'name': ,           # string
+                        'description': ,    # string
+                        'default': ,        # string
+                        'unit':             # string
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'inventoryproptmplt/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description = None, default = None, unit = None):
+        '''
+        Insert new inventory property template into database
+
+        - cmpnt_type: component type name M
+        - name: property template name M
+        - description: property template description O
+        - default: property template default value O
+        - unit: property template unit O
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': propertytemplateid}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveinventoryproptmplt/'
+        
+        # Set parameters
+        params={
+            'cmpnt_type': cmpnt_type,
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        # Add default
+        if default:
+            params['default'] = default
+        
+        # Add unit
+        if unit:
+            params['unit'] = unit
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type, name, **kws):
+        '''
+        Update inventory property template in a database
+
+        - tmplt_id: property template id M
+        - cmpnt_type: component type name M
+        - name: property template name M
+        - description: property template description O
+        - default: property template default value O
+        - unit: property template unit O
+
+        :return: True if update succeeded
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updateinventoryproptmplt/'
+        
+        # Set parameters
+        params={
+            'tmplt_id': tmplt_id,
+            'cmpnt_type': cmpnt_type,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add default
+        if 'default' in kws:
+            params['default'] = kws['default']
+        
+        # Add unit
+        if 'unit' in kws:
+            params['unit'] = kws['unit']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveInstall(self, name, **kws):
+        '''Retrieve insertion device installation using any of the acceptable key words:
+
+        - name: installation name, which is its label on field
+        - description: installation description
+        - cmpnt_type: component type name of the device
+        - coordinatecenter: coordinate center number
+        
+        raises:
+            HTTPError
+            
+        returns:
+            {'id': {
+                    'id':                #int,
+                    'name':              #string,
+                    'description':       #string,
+                    'cmpnt_type':         #string,
+                    'coordinatecenter':  #float
+                }
+            }
+        '''
+        
+        # Set URL
+        url = 'install/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add component type
+        if 'cmpnt_type' in kws:
+            params['cmpnt_type'] = kws['cmpnt_type']
+        
+        # Add coordinate center
+        if 'coordinatecenter' in kws:
+            params['coordinatecenter'] = kws['coordinatecenter']
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInstall(self, name, **kws):
+        '''Save insertion device installation using any of the acceptable key words:
+
+        - name: installation name, which is its label on field
+        - description: installation description
+        - cmpnt_type: component type of the device
+        - coordinatecenter: coordinate center number
+        
+        raises:
+            HTTPError
+            
+        returns:
+            {'id': new install id}
+        '''
+        
+        # Set URL
+        url = 'saveinstall/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add component type
+        if 'cmpnt_type' in kws:
+            params['cmpnt_type'] = kws['cmpnt_type']
+        
+        # Add coordinate center
+        if 'coordinatecenter' in kws:
+            params['coordinatecenter'] = kws['coordinatecenter']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateInstall(self, old_name, name, **kws):
+        '''Update insertion device installation using any of the acceptable key words:
+
+        - name: installation name, which is its label on field
+        - description: installation description
+        - cmpnt_type: component type of the device
+        - coordinatecenter: coordinate center number
+        
+        raises:
+            HTTPError
+            
+        returns:
+            True if everything is ok
+        '''
+        
+        # Set URL
+        url = 'updateinventoryproptmplt/'
+        
+        # Set parameters
+        params={
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add component type
+        if 'cmpnt_type' in kws:
+            params['cmpnt_type'] = kws['cmpnt_type']
+        
+        # Add coordinate center
+        if 'coordinatecenter' in kws:
+            params['coordinatecenter'] = kws['coordinatecenter']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
 
     @classmethod
     def __raise_for_status(self, status_code, reason):
