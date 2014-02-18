@@ -7,7 +7,7 @@ Created on Jan 10, 2014
 import unittest
 import os, sys
 
-from preparerdb import *
+from idods.rdbutils.preparerdb import *
 
 libPath = os.path.abspath("../../../dataapi/")
 sys.path.append(libPath)

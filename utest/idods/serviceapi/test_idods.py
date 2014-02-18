@@ -17,7 +17,7 @@ import os, sys
 libPath = os.path.abspath("../../../utest/")
 sys.path.append(libPath)
 
-from idods.dataapi.preparerdb import *
+from idods.rdbutils.preparerdb import *
 
 class TestIdods(unittest.TestCase):
 

@@ -9,9 +9,6 @@ try:
 except ImportError:
     import json
 
-__all__ = []
-__version__ = [1, 0, 0]
-
 class idods(object):
     '''
     Data API for insertion device online data storage.

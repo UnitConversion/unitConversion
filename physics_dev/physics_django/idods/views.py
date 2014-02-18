@@ -11,6 +11,7 @@ try:
 except ImportError:
     import json
 
+from authentication import has_perm_or_basicauth
 from pyidods.idods import (idods)
 
 # Init idods
@@ -373,6 +374,14 @@ Update online data
 @require_http_methods(["POST"])
 def updateOnlineDataWS(request):
     return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status'])
+
+'''
+Test authentication
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def testAuth(request):
+    return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
 
 '''
 Load index html file

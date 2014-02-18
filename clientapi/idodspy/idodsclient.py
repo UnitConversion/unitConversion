@@ -3,9 +3,8 @@ Copyright (c) 2013 Brookhaven National Laboratory
 
 All rights reserved. Use is subject to license terms and conditions.
 
-Created on Sep 10, 2013
-
-@author: shengb
+Created on Feb 17, 2014
+@author: dejan.dezman@cosylab.com
 
 '''
 
@@ -33,31 +32,35 @@ except ImportError:
 
 from _conf import _conf
 
-class ActiveInterlockClient(object):
+class IDODSClient(object):
     '''
-    The ActiveInterlockClient provides a client connection object to perform 
-    save, retrieve, and update operations for NSLS II active interlock service.
+    IDODSClient provides a client connection object to perform 
+    save, retrieve, and update operations for NSLS II insertion device online data service.
     '''
  
     def __init__(self, BaseURL=None, username=None, password=None):
         '''
-        BaseURL = the url of the active interlock service
+        BaseURL = the url of the insertion device online data service
         username = 
         password = 
         '''
         self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}    
-        self.__resource = '/activeinterlock/'
+        self.__resource = 'test/'
         
         try:
             self.__baseURL = self.__getdefaultconfig('BaseURL', BaseURL)
             self.__userName = self.__getdefaultconfig('username', username)
             self.__password = self.__getdefaultconfig('password', password)
+            
             if username and password:
                 self.__auth = auth.HTTPBasicAuth(username, password)
+            
             else:
                 self.__auth = None
-            requests.get(self.__baseURL + self.__resource, verify=False, headers=copy(self.__jsonheader)).raise_for_status()
+            
+            requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=(self.__userName, self.__password)).raise_for_status()
             self.client = requests.session()
+        
         except:
             raise Exception, 'Failed to create client to ' + self.__baseURL + self.__resource
         
