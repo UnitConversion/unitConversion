@@ -2430,6 +2430,7 @@ class idods(object):
     def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''Update a device as installed when its installation has been changed using the key words:
 
+        - inventory_to_install_id
         - install_name
         - inv_name
 
@@ -3610,7 +3611,7 @@ class idods(object):
 
     def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
         '''
-        Save isntall relationship in the database.
+        Save install relationship in the database.
         
         params:
             - parent_install: id of the parent element
@@ -3623,6 +3624,11 @@ class idods(object):
                     ...
                     'keyN': 'valueN'
                 }
+        returns:
+            {'id': id of the saved install rel}
+            
+        raises:
+            ValueError, MySQLError
         '''
         
         # Check if the same relationship already exists in the database
@@ -3710,6 +3716,12 @@ class idods(object):
                     ...
                     'keyN': 'valueN'
                 }
+        
+        returns:
+            True if everything is ok
+            
+        raises:
+            ValueError, MySQLError
         '''
         
         # Define query dictionary

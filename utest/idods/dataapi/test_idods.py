@@ -77,10 +77,10 @@ class TestIdods(unittest.TestCase):
     def testRetrieveVendor(self):
 
         # Save new vendor
-        self.api.saveVendor('test vendor');
+        self.api.saveVendor('test vendor')
 
         # Test retrieving vendor by name
-        result = self.api.retrieveVendor('test vendor');
+        result = self.api.retrieveVendor('test vendor')
         resultKeys = result.keys()
         
         self.assertEqual(result[resultKeys[0]]['name'], 'test vendor', 'Verdor retrieved')
@@ -154,12 +154,12 @@ class TestIdods(unittest.TestCase):
         self.assertRaises(ValueError, self.api.retrieveComponentType, None)
 
         # Test retrieving component type by whole desciprtion
-        result = self.api.retrieveComponentType('*', 'test description');
+        result = self.api.retrieveComponentType('*', 'test description')
         keys = result.keys()
         self.assertEqual(result[keys[0]]['description'], 'test description', 'Correct component type retrieved')
 
         # Test retrieving component type by description with wildcard characters
-        result = self.api.retrieveComponentType('*', '*descripti*');
+        result = self.api.retrieveComponentType('*', '*descripti*')
         keys = result.keys()
         self.assertEqual(result[keys[0]]['description'], 'test description', 'Correct component type retrieved')
 
@@ -629,7 +629,7 @@ class TestIdods(unittest.TestCase):
         self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description = 'desc2'))
         
         # Try to update by setting component type to None
-        self.assertRaises(self.api.updateInstall, None, 'test child', 'test child', cmpnt_type=None)
+        self.assertRaises(ValueError, self.api.updateInstall, None, 'test child', 'test child', cmpnt_type=None)
         
         # Retrieve successfully updated component type
         componentType = self.api.retrieveInstall('test child')

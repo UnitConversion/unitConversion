@@ -49,9 +49,6 @@ class Test(unittest.TestCase):
         # Clean install table
         cleanInstall(['test parent', 'test child'])
         
-        # Clean vendor table
-        cleanVendor(['test vendor', 'test vendor2'])
-        
         # Clean data method
         cleanDataMethod(['method', 'method2', 'test'])
         
@@ -62,6 +59,9 @@ class Test(unittest.TestCase):
         cleanInventory(['name', 'name2'])
         # Clean inventory property template table
         cleanInventoryPropertyTemplate(['alpha', 'beta'])
+        
+        # Clean vendor table
+        cleanVendor(['test vendor', 'test vendor2'])
         
         # Clean component type property
         cleanComponentTypeProperty('test cmpnt3', 'length')
@@ -91,10 +91,10 @@ class Test(unittest.TestCase):
     def testVendor(self):
 
         # Save new vendor
-        self.client.saveVendor('test vendor');
+        self.client.saveVendor('test vendor')
 
         # Test retrieving vendor by its name
-        result = self.client.retrieveVendor('test vendor');
+        result = self.client.retrieveVendor('test vendor')
         resultKeys = result.keys()
         
         self.assertEqual(result[resultKeys[0]]['name'], 'test vendor', 'Verdor retrieved')
@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
         self.client.updateVendor('test vendor', 'test vendor2', description='desc')
         
         # Test retrieving vendor by its name
-        result = self.client.retrieveVendor('test vendor2');
+        result = self.client.retrieveVendor('test vendor2')
         resultKeys = result.keys()
         resultObject = result[resultKeys[0]]
         
@@ -188,6 +188,9 @@ class Test(unittest.TestCase):
     '''
     def testInventory(self):
         
+        # Save new vendor
+        self.client.saveVendor('test vendor')
+        
         # Prepare component type
         self.client.saveComponentType('Magnet')
         
@@ -195,7 +198,7 @@ class Test(unittest.TestCase):
         self.client.saveInventoryPropertyTemplate('Magnet', 'alpha')
         
         # Create inventory
-        idObject = self.client.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
+        idObject = self.client.saveInventory('name', cmpnt_type='Magnet', vendor='test vendor', alias='name2', props={'alpha': 42})
         
         # Update inventory
         self.assertTrue(self.client.updateInventory('name', 'name2', cmpnt_type='Magnet', alias='name3', props={'alpha': 43}))
@@ -218,7 +221,7 @@ class Test(unittest.TestCase):
         self.assertEqual(inventoryObject['alias'], 'name3')
         
         # Check vendor
-        self.assertEqual(inventoryObject['vendor'], None)
+        self.assertEqual(inventoryObject['vendor'], 'test vendor')
         
     '''
     Test saving, retrieving and updating inventory property template
@@ -248,5 +251,172 @@ class Test(unittest.TestCase):
         # Check name
         self.assertEqual(templateObject['name'], 'beta')
 
+    '''
+    Test saving, retrieving and updating install
+    '''
+    def testInstall(self):
+        
+        # Prepare component type
+        self.client.saveComponentType('Magnet')
+        
+        # Prepare install
+        savedInstall = self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        
+        # Try to update
+        self.assertTrue(self.client.updateInstall('test parent', 'test child', cmpnt_type='Magnet', description = 'desc2'))
+        
+        # Try to update by setting component type to None
+        self.assertRaises(HTTPError, self.client.updateInstall, 'test child', 'test child', cmpnt_type=None)
+        
+        # Retrieve successfully updated component type
+        componentType = self.client.retrieveInstall('test child')
+        componentTypeKeys = componentType.keys()
+        componentTypeObject = componentType[componentTypeKeys[0]]
+        
+        # Check ids
+        self.assertEqual(savedInstall['id'], componentTypeObject['id'])
+        
+        # Check description
+        self.assertEqual(componentTypeObject['description'], 'desc2')
+        
+        # Check coordinate center
+        self.assertEqual(componentTypeObject['coordinatecenter'], 2.2)
+        
+        # Check name
+        self.assertEqual(componentTypeObject['name'], 'test child')
+        
+        # Check component type
+        self.assertEqual(componentTypeObject['cmpnt_type'], 'Magnet')
+
+    '''
+    Test saving, retrieving and updating install rel
+    '''
+    def testInstallRel(self):
+        
+        # Prepare component type
+        self.client.saveComponentType('Magnet')
+        
+        # Prepare install parent
+        self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        
+        # Prepare install child
+        self.client.saveInstall('test child', cmpnt_type='Magnet')
+        
+        # Prepare prop type
+        self.client.saveInstallRelPropertyType('testprop')
+        
+        # Save rel
+        self.client.saveInstallRel('test parent', 'test child', 'desc', 1, {'testprop': 'testvalue'})
+        
+        # Try to update
+        self.assertTrue(self.client.updateInstallRel('test parent', 'test child', description='descupd', order=2, props={'testprop': 'value'}))
+        
+        # Retrieve rel
+        retrievedRel = self.client.retrieveInstallRel(None, 'test parent', 'test child')
+        retrievedRelKeys = retrievedRel.keys()
+        retrievedRelObject = retrievedRel[retrievedRelKeys[0]]
+        
+        # Check description
+        self.assertEqual(retrievedRelObject['description'], 'descupd')
+        
+        # Check order
+        self.assertEqual(retrievedRelObject['order'], 2)
+        
+        # Check test property
+        self.assertEqual(retrievedRelObject['testprop'], 'value')
+        
+        # Test saving another rel with same parent and child
+        self.assertRaises(HTTPError, self.client.saveInstallRel, 'test parent', 'test child', None, None)
+        
+        # Test saving install rel with property that is not defined
+        self.assertRaises(HTTPError, self.client.saveInstallRel, 'test child', 'test parent', None, None, {'testprop2': 'testvalue'})
+
+    '''
+    Test saving, retrieving and updating install rel property type
+    '''
+    def testInstallRelPropertyType(self):
+        
+        # Prepare prop type
+        propType = self.client.saveInstallRelPropertyType('testprop')
+        
+        # Try to update
+        self.assertTrue(self.client.updateInstallRelPropertyType('testprop', 'prop2', description='desc', unit='units'))
+        
+        # Retrieve updated property type
+        updatedPropType = self.client.retrieveInstallRelPropertyType('prop2')
+        updatedPropTypeKeys = updatedPropType.keys()
+        updatedPropTypeObject = updatedPropType[updatedPropTypeKeys[0]]
+        
+        # Check ids
+        self.assertEqual(propType['id'], updatedPropTypeObject['id'])
+        
+        # Check if units are still the same
+        self.assertEqual(updatedPropTypeObject['unit'], 'units')
+        
+        # Check if description is still the same
+        self.assertEqual(updatedPropTypeObject['description'], 'desc')
+        
+        # Check name
+        self.assertEqual(updatedPropTypeObject['name'], 'prop2')
+
+    '''
+    Test saving, retrieving and updating inventory to install map
+    '''
+    def testInventoryToInstall(self):
+        
+        # Prepare component type
+        self.client.saveComponentType('Magnet')
+        
+        # Try to save new inventory property template
+        self.client.saveInventoryPropertyTemplate('Magnet', 'alpha')
+        
+        # Create inventory
+        self.client.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
+        self.client.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        
+        # Prepare install parent
+        self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        
+        # Map install to inventory
+        map = self.client.saveInventoryToInstall('test parent', 'name')
+        
+        # Retrieve saved map
+        retrieveMap = self.client.retrieveInventoryToInstall(None, 'test parent', 'name')
+        retrieveMapKeys = retrieveMap.keys()
+        retrieveMapObject = retrieveMap[retrieveMapKeys[0]]
+        
+        # Check if saved and retrieved maps are equal
+        self.assertEqual(map['id'], retrieveMapObject['id'])
+        
+        # Set install to a new inventory
+        self.assertTrue(self.client.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
+
+    '''
+    Test saving, retrieving and updating data method
+    '''
+    def testUpdateDataMethod(self):
+        # Save data method with name and description
+        saveDataMethod = self.client.saveDataMethod('method', 'description')
+        
+        # Try updating by old name
+        self.assertTrue(self.client.updateDataMethod('method', 'method2', description='new desc'))
+        
+        # Get updated data method
+        updatedDataMethod = self.client.retrieveDataMethod('method2')
+        updatedDataMethodKeys = updatedDataMethod.keys()
+        updatedDataMethodObject = updatedDataMethod[updatedDataMethodKeys[0]]
+        
+        # Check ids
+        self.assertEqual(saveDataMethod['id'], updatedDataMethodObject['id'])
+        
+        # Check new description
+        self.assertEqual(updatedDataMethodObject['description'], 'new desc',)
+        
+        # Update by an id
+        self.assertTrue(self.client.updateDataMethod('method', 'method', description='new desc2'))
+        
+        # Update should fail if there is no id or old name present
+        self.assertRaises(HTTPError, self.client.updateDataMethod, None, 'method2')
+    
 if __name__ == "__main__":
     unittest.main()

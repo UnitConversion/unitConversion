@@ -578,6 +578,11 @@ class IDODSClient(object):
         
         # Add vendor
         if 'vendor' in kws:
+            
+            # Check vendor value
+            if kws['vendor'] == None:
+                self.__raise_for_status(400, 'If vendor is passed it should not be None!')
+            
             params['vendor'] = kws['vendor']
         
         # Add props
@@ -674,6 +679,11 @@ class IDODSClient(object):
         
         # Add vendor
         if 'vendor' in kws:
+            
+            # Check vendor value
+            if kws['vendor'] == None:
+                self.__raise_for_status(400, 'If vendor is passed it should not be None!')
+            
             params['vendor'] = kws['vendor']
         
         # Add props
@@ -900,6 +910,7 @@ class IDODSClient(object):
     def updateInstall(self, old_name, name, **kws):
         '''Update insertion device installation using any of the acceptable key words:
 
+        - old_name: installation name, we want ot update by
         - name: installation name, which is its label on field
         - description: installation description
         - cmpnt_type: component type of the device
@@ -913,7 +924,7 @@ class IDODSClient(object):
         '''
         
         # Set URL
-        url = 'updateinventoryproptmplt/'
+        url = 'updateinstall/'
         
         # Set parameters
         params={
@@ -927,11 +938,506 @@ class IDODSClient(object):
         
         # Add component type
         if 'cmpnt_type' in kws:
+            
+            # Check for none
+            if kws['cmpnt_type'] == None:
+                self.__raise_for_status(400, 'If component type parameter is present it should not be set to None!')
+            
             params['cmpnt_type'] = kws['cmpnt_type']
         
         # Add coordinate center
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveInstallRel(self, install_rel_id = None, parent_install = None, child_install = None, description = None, order = None, date = None, expected_property = None):
+        '''
+        Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
+        all the parents of specific child.
+        
+        params:
+            - install_rel_id: id of the install_rel table
+            - parent_install: name of the parent install element
+            - child_install: name of the child install element
+            - description: description of a relationship
+            - order: order number of child element in the parent element; accepts a range in a tuple
+            - date: date of the device installation; accepts a range in a tuple
+            - expected_property: if we want to search for relationships with specific property set to a specific value, we
+              can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
+              beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
+            
+        returns:
+            {
+                'id': {
+                    'id':           #int,
+                    'parentid':     #int,
+                    'parentname':   #string,
+                    'childid':      #int,
+                    'childname':    #string,
+                    'description':  #string,
+                    'order':        #int,
+                    'date':         #string,
+                    'prop1key':     #string,
+                    ...
+                    'propNkey':     #string
+                }
+            }
+            
+        raises:
+            HTTPError
+        '''
+        
+        # Set URL
+        url = 'installrel/'
+        
+        # Set parameters
+        params={
+            'install_rel_id': install_rel_id,
+            'parent_install': parent_install,
+            'child_install': child_install,
+            'description': description,
+            'order': order,
+            'date': date
+        }
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
+        '''
+        Save install relationship in the database.
+        
+        params:
+            - parent_install: id of the parent element
+            - child_install: id of the child element
+            - description: description of the relationship
+            - order: order of the child in the relationship
+            - props :
+                {
+                    'key1': 'value1',
+                    ...
+                    'keyN': 'valueN'
+                }
+        returns:
+            {'id': id of the saved install rel}
+            
+        raises:
+            HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveinstallrel/'
+        
+        # Set parameters
+        params={
+            'parent_install': parent_install,
+            'child_install': child_install
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        # Add order
+        if order:
+            params['order'] = order
+            
+        # Add props
+        if props:
+            params['props'] = json.dumps(props)
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateInstallRel(self, parent_install, child_install, **kws):
+        '''
+        Update install relationship.
+        
+        params:
+            - parent_install: name of the parent element we want ot update by
+            - child_install: name of the child element we want ot update by
+            - description: description of the relationship
+            - order: order of the child in the relationship
+            - props :
+                {
+                    'key1': 'value1',
+                    ...
+                    'keyN': 'valueN'
+                }
+        
+        returns:
+            True if everything is ok
+            
+        raises:
+            HTTPError
+        '''
+        
+        # Set URL
+        url = 'updateinstallrel/'
+        
+        # Set parameters
+        params={
+            'parent_install': parent_install,
+            'child_install': child_install
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add order
+        if 'order' in kws:
+            params['order'] = kws['order']
+            
+        # Add props
+        if 'props' in kws:
+            params['props'] = json.dumps(kws['props'])
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveInstallRelPropertyType(self, name):
+        '''
+        Retrieve install relationship property type by its name
+
+        - name: property type name
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        'id': ,             # int
+                        'name': ,           # string
+                        'description': ,    # string
+                        'unit': ,          # string
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'installrelproptype/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInstallRelPropertyType(self, name, description = None, unit = None):
+        '''
+        Insert new install relationship property type into database
+
+        - name: name of the install relationship property type M
+        - description: description of the install relationship property type O
+        - unit: unit used for this property type O
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': propertytypeid}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveinstallrelproptype/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        # Add unit
+        if unit:
+            params['unit'] = unit
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateInstallRelPropertyType(self, old_name, name, **kws):
+        '''
+        Update install relationship property type
+
+        - old_name: name of the install relationship property type we want to update by O
+        - name: name of the install relationship property type M
+        - description: description of the install relationship property type O
+        - unit: units used for this property type O
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updateinstallrelproptype/'
+        
+        # Set parameters
+        params={
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add unit
+        if 'unit' in kws:
+            params['unit'] = kws['unit']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
+        '''
+        Return installed devices or psecific map
+        
+        params:
+            - inventory_to_install_id
+            - install_name
+            - inv_name
+
+        :param inventory_to_install_id: id of the inventory to install map
+        :type inventory_to_install_id: int
+
+        :param install_name: label name after installation
+        :type install_name: str
+
+        :param inv_name: name in its inventory
+        :type inv_name: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': {
+                        'id': #int,
+                        'installid': #int,
+                        'installname': #string,
+                        'inventoryid': #int,
+                        'inventoryname': #string
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'inventorytoinstall/'
+        
+        # Set parameters
+        params={
+            'inventory_to_install_id': inventory_to_install_id,
+            'install_name': install_name,
+            'inv_name': inv_name
+        }
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInventoryToInstall(self, install_name, inv_name):
+        '''Link a device as installed once it is installed into field using the key words:
+        - install_name
+        - inv_name
+
+        :param install_name: label name after installation
+        :type install_name: str
+
+        :param inv_name: name in its inventory
+        :type inv_name: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': id of new inventorytoinstall record}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveinventorytoinstall/'
+        
+        # Set parameters
+        params={
+            'install_name': install_name,
+            'inv_name': inv_name
+        }
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
+        '''Update a device as installed when its installation has been changed using the key words:
+
+        - inventory_to_install_id
+        - install_name
+        - inv_name
+
+        :param install_name: label name after installation
+        :type install_name: str
+
+        :param inv_name: name in its inventory
+        :type inv_name: str
+
+        :return: True if everything was ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updateinventorytoinstall/'
+        
+        # Set parameters
+        params={
+            'inventory_to_install_id': inventory_to_install_id,
+            'install_name': install_name,
+            'inv_name': inv_name
+        }
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def retrieveDataMethod(self, name, description = None):
+        '''Retrieve a method name and its description which is used when producing data set for an insertion device.
+
+        :param name: name of the method
+        :type name: str
+
+        :param description: description of this method
+        :type description: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+                {'id':
+                    {'id': data method id,
+                     'name': method name,
+                     'description': description of this method
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Try to retrieve data method
+        url = 'datamethod/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveDataMethod(self, name, description=None):
+        '''Save a method with its description which is used when producing data set for an insertion device.
+
+        :param name: name of the method
+        :type name: str
+
+        :param description: description of this method
+        :type description: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': method_id}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'savedatamethod/'
+        
+        # Set parameters
+        params={
+            'name': name
+        }
+        
+        # Add description
+        if description:
+            params['description'] = description
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateDataMethod(self, old_name, name, **kws):
+        '''Update data method by id or name.
+
+        :param datamethod_id id of the data method we want to update by
+        :type datamethod_id: int
+
+        :param old_name: name of the method we want to update by
+        :type old_name: str
+
+        :param name: name of the method
+        :type name: str
+
+        :param description: description of this method
+        :type description: str
+
+        :return: True if everything was ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'updatedatamethod/'
+        
+        # Set parameters
+        params={
+            'datamethod_id': None,
+            'old_name': old_name,
+            'name': name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
         
         r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
         self.__raise_for_status(r.status_code, r.text)
