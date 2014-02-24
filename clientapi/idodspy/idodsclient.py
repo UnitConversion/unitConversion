@@ -1444,6 +1444,531 @@ class IDODSClient(object):
         
         return r.json()
 
+    def retrieveOfflineData(self, **kws):
+        '''Retrieve insertion device offline data using any of the acceptable key words:
+
+        - offlineid
+        - description
+        - gap
+        - phase1
+        - phase2
+        - phase3
+        - phase4
+        - phasemode
+        - polarmode
+        - status
+        - method_name
+        - inventory_name
+        - with_data
+
+        :param offlineid: id of the offline data we want to retrieve
+        :type offlineid: int
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param gap: gap when this data set is produced
+        :type gap: float
+
+        :param phase1: phase 1 when this data set is produced
+        :type phase1: float
+
+        :param phase2: phase 2 when this data set is produced
+        :type phase2: float
+
+        :param phase3: phase 3 when this data set is produced
+        :type phase3: float
+
+        :param phase4: phase 4 when this data set is produced
+        :type phase4: float
+
+        :param phasemode: description for the mode of phase, which is determined by gap/phase
+        :type phasemode: str
+
+        :param polarmode: description for the mode of polar, which is determined by gap/phase
+        :type polarmode: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :param method_name: name of method used to produce the data
+        :type method_name: str
+
+        :param inventory_name: name of inventory used to produce the data
+        :type inventory_name: str
+
+        :param with_data: do we want data is returned together with the result?
+        :type with_data: True/False
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'data_id': {
+                        'username': ,      # string
+                        'description': ,   # string
+                        'date': ,          # timestamp
+                        'gap':,            # float
+                        'phase1': ,        # float
+                        'phase2': ,        # float
+                        'phase3':,         # float
+                        'phase4':,         # float
+                        'phasemode':,      # string
+                        'polarmode':,      # string
+                        'status':,         # int
+                        'data_file_name':, # string
+                        'data_file_ts':,   # string
+                        'data_id':,        # int
+                        'script_name':,    # string
+                        'script':,         # string
+                        'method_name':,    # string
+                        'methoddesc':,     # string
+                        'inventory_name':, # string
+                        'data':            # string
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'offlinedata/'
+        
+        # Set parameters
+        params={}
+        
+        # Add offline id
+        if 'offlineid' in kws:
+            params['offlineid'] = kws['offlineid']
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add gap
+        if 'gap' in kws:
+            params['gap'] = kws['gap']
+        
+        # Add phase1
+        if 'phase1' in kws:
+            params['phase1'] = kws['phase1']
+        
+        # Add phase2
+        if 'phase2' in kws:
+            params['phase2'] = kws['phase2']
+        
+        # Add phase3
+        if 'phase3' in kws:
+            params['phase3'] = kws['phase3']
+        
+        # Add phase4
+        if 'phase4' in kws:
+            params['phase4'] = kws['phase4']
+        
+        # Add phasemode
+        if 'phasemode' in kws:
+            params['phasemode'] = kws['phasemode']
+        
+        # Add polarmode
+        if 'polarmode' in kws:
+            params['polarmode'] = kws['polarmode']
+        
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+        
+        # Add method name
+        if 'method_name' in kws:
+            params['method_name'] = kws['method_name']
+        
+        # Add inventory name
+        if 'inventory_name' in kws:
+            params['inventory_name'] = kws['inventory_name']
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        returnData = r.json()
+        
+        # Append data if with_data is set
+        if 'with_data' in kws and kws['with_data'] == True:
+            
+            # Set URL
+            url = 'rawdata/'
+            
+            # Go through all returned offline data and append data
+            offlineDataKeys = returnData.keys()
+            
+            for key in offlineDataKeys:
+                offlineData = returnData[key]
+                
+                # Set parameters
+                params={
+                    'raw_data_id': offlineData['data_id']
+                }
+                
+                result = self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+                self.__raise_for_status(r.status_code, r.text)
+                resultData = result.json()
+                
+                resultKeys = resultData.keys()
+                resultObject = resultData[resultKeys[0]]
+                returnData[key]['data'] = resultObject['data']
+        
+        return returnData
+
+    def saveOfflineData(self, **kws):
+        '''
+        save insertion device offline data using any of the acceptable key words:
+
+        - inventory_name
+        - username
+        - description
+        - gap
+        - phase1
+        - phase2
+        - phase3
+        - phase4
+        - phasemode
+        - polarmode
+        - status
+        - data_file_name
+        - data_file_ts
+        - data
+        - script_name
+        - script
+        - method_name
+
+        :param inventory_name: name of the inventory offline data is connected to
+        :type inventory_name: str
+
+        :param username: author who created this data entry originally
+        :type username: str
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param gap: gap when this data set is produced
+        :type gap: float
+
+        :param phase1: phase 1 when this data set is produced
+        :type phase1: float
+
+        :param phase2: phase 2 when this data set is produced
+        :type phase2: float
+
+        :param phase3: phase 3 when this data set is produced
+        :type phase3: float
+
+        :param phase4: phase 4 when this data set is produced
+        :type phase4: float
+
+        :param phasemode: description for the mode of phase, which is determined by gap/phase
+        :type phasemode: str
+
+        :param polarmode: description for the mode of polar, which is determined by gap/phase
+        :type polarmode: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :param data_file_name: file name of the data
+        :type data_file_name: str
+
+        :param data_file_ts: time stamp of data file with format like "YYYY-MM-DD HH:MM:SS"
+        :type data_file_ts: str
+
+        :param data: real data dumped into JSON string
+        :type data: str
+
+        :param script_name: name of script to produce the data
+        :type script_name: str
+
+        :param script: script to produce the data
+        :type script: str
+
+        :param method_name: name of method used to produce the data
+        :type method_name: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': offline_data_id}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveofflinedata/'
+        
+        # Set parameters
+        params={}
+        
+        # Add inventory name
+        if 'inventory_name' in kws:
+            
+            # Check inventory name
+            if kws['inventory_name'] == None:
+                self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
+            
+            params['inventory_name'] = kws['inventory_name']
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add username
+        if 'username' in kws:
+            params['username'] = kws['username']
+        
+        # Add gap
+        if 'gap' in kws:
+            params['gap'] = kws['gap']
+        
+        # Add phase1
+        if 'phase1' in kws:
+            params['phase1'] = kws['phase1']
+        
+        # Add phase2
+        if 'phase2' in kws:
+            params['phase2'] = kws['phase2']
+        
+        # Add phase3
+        if 'phase3' in kws:
+            params['phase3'] = kws['phase3']
+        
+        # Add phase4
+        if 'phase4' in kws:
+            params['phase4'] = kws['phase4']
+        
+        # Add phasemode
+        if 'phasemode' in kws:
+            params['phasemode'] = kws['phasemode']
+        
+        # Add polarmode
+        if 'polarmode' in kws:
+            params['polarmode'] = kws['polarmode']
+        
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+        
+        # Add data file name
+        if 'data_file_name' in kws:
+            params['data_file_name'] = kws['data_file_name']
+        
+        # Add data file timestamp
+        if 'data_file_ts' in kws:
+            params['data_file_ts'] = kws['data_file_ts']
+        
+        # Add data
+        if 'data' in kws:
+            fileName = kws['data']
+            
+            with open(fileName, 'rb') as f:
+                ur = self.client.post(self.__baseURL+'saverawdata/', files={'file': f})
+                self.__raise_for_status(ur.status_code, ur.text)
+            
+            params['data_id'] = ur.json()['id']
+        
+        # Add script_name
+        if 'script_name' in kws:
+            params['script_name'] = kws['script_name']
+        
+        # Add script
+        if 'script' in kws:
+            params['script'] = kws['script']
+        
+        # Add method name
+        if 'method_name' in kws:
+            
+            # Check method name
+            if kws['method_name'] == None:
+                self.__raise_for_status(400, 'If method name is passed it should not be None!')
+            
+            params['method_name'] = kws['method_name']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateOfflineData(self, offline_data_id, **kws):
+        '''
+        Update insertion device offline data by its id
+
+        parameters:
+        - inventory_name
+        - username
+        - description
+        - gap
+        - phase1
+        - phase2
+        - phase3
+        - phase4
+        - phasemode
+        - polarmode
+        - status
+        - data_file_name
+        - data_file_ts
+        - data
+        - script_name
+        - script
+        - method_name
+
+        :param inventory_name: name of the inventory offline data is connected to
+        :type inventory_name: str
+
+        :param username: author who created this data entry originally
+        :type username: str
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param gap: gap when this data set is produced
+        :type gap: float
+
+        :param phase1: phase 1 when this data set is produced
+        :type phase1: float
+
+        :param phase2: phase 2 when this data set is produced
+        :type phase2: float
+
+        :param phase3: phase 3 when this data set is produced
+        :type phase3: float
+
+        :param phase4: phase 4 when this data set is produced
+        :type phase4: float
+
+        :param phasemode: description for the mode of phase, which is determined by gap/phase
+        :type phasemode: str
+
+        :param polarmode: description for the mode of polar, which is determined by gap/phase
+        :type polarmode: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :param data_file_name: file name of the data
+        :type data_file_name: str
+
+        :param data_file_ts: time stamp of data file with format like "YYYY-MM-DD HH:MM:SS"
+        :type data_file_ts: str
+
+        :param data: real data dumped into JSON string
+        :type data: str
+
+        :param script_name: name of script to produce the data
+        :type script_name: str
+
+        :param script: script to produce the data
+        :type script: str
+
+        :param method_name: name of method used to produce the data
+        :type method_name: str
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        # Set URL
+        url = 'updateofflinedata/'
+        
+        # Set parameters
+        params={
+            'offline_data_id': offline_data_id
+        }
+        
+        # Add inventory name
+        if 'inventory_name' in kws:
+            
+            # Check inventory name
+            if kws['inventory_name'] == None:
+                self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
+            
+            params['inventory_name'] = kws['inventory_name']
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add username
+        if 'username' in kws:
+            params['username'] = kws['username']
+        
+        # Add gap
+        if 'gap' in kws:
+            params['gap'] = kws['gap']
+        
+        # Add phase1
+        if 'phase1' in kws:
+            params['phase1'] = kws['phase1']
+        
+        # Add phase2
+        if 'phase2' in kws:
+            params['phase2'] = kws['phase2']
+        
+        # Add phase3
+        if 'phase3' in kws:
+            params['phase3'] = kws['phase3']
+        
+        # Add phase4
+        if 'phase4' in kws:
+            params['phase4'] = kws['phase4']
+        
+        # Add phasemode
+        if 'phasemode' in kws:
+            params['phasemode'] = kws['phasemode']
+        
+        # Add polarmode
+        if 'polarmode' in kws:
+            params['polarmode'] = kws['polarmode']
+        
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+        
+        # Add data file name
+        if 'data_file_name' in kws:
+            params['data_file_name'] = kws['data_file_name']
+        
+        # Add data file timestamp
+        if 'data_file_ts' in kws:
+            params['data_file_ts'] = kws['data_file_ts']
+        
+        # Add data
+        if 'data' in kws:
+            fileName = kws['data']
+            
+            with open(fileName, 'rb') as f:
+                ur = self.client.post(self.__baseURL+'saverawdata/', files={'file': f})
+                self.__raise_for_status(ur.status_code, ur.text)
+            
+            params['data_id'] = ur.json()['id']
+        
+        # Add script_name
+        if 'script_name' in kws:
+            params['script_name'] = kws['script_name']
+        
+        # Add script
+        if 'script' in kws:
+            params['script'] = kws['script']
+        
+        # Add method name
+        if 'method_name' in kws:
+            
+            # Check method name
+            if kws['method_name'] == None:
+                self.__raise_for_status(400, 'If method name is passed it should not be None!')
+            
+            params['method_name'] = kws['method_name']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
     @classmethod
     def __raise_for_status(self, status_code, reason):
         http_error_msg = ''

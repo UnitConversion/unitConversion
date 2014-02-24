@@ -69,6 +69,9 @@ class TestIdods(unittest.TestCase):
         cleanComponentTypePropertyType(['length', 'width'])
         # Clean if there is something left from previous runs
         cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
+        
+        # Clean raw data
+        cleanRawData()
 
     def setUp(self):
         self.cleanTables()
@@ -1003,6 +1006,31 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(resultObject['description'], 'desc', 'There is no item with that description in the database!')
 
     '''
+    Test saving and retrieving raw data
+    '''
+    def testRawData(self):
+        
+        # Save raw data
+        url = 'http://localhost:8000/id/device/saverawdata/'
+        
+        # Open file
+        with open('../dataapi/download_128', 'rb') as f:
+            rawData=self.client.post(url, files={'file': f})
+            rawData.raise_for_status()
+            
+        # Retrieve data
+        url = 'http://localhost:8000/id/device/rawdata/'
+        
+        r=self.client.get(url, params={'raw_data_id': rawData.json()['id']}, verify=False, headers=self.__jsonheader)
+        r.raise_for_status()
+        result = r.json()
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
+        
+        # Check if we got data
+        self.assertNotEqual(resultObject['data'], '')
+
+    '''
     Test saving, retrieving and updating offline data
     '''
     def testOfflineData(self):
@@ -1051,6 +1079,14 @@ class TestIdods(unittest.TestCase):
         r=self.client.post(url, data=params)
         r.raise_for_status()
         
+        # Save raw data
+        url = 'http://localhost:8000/id/device/saverawdata/'
+        
+        # Open file
+        with open('../dataapi/download_128', 'rb') as f:
+            rawData=self.client.post(url, files={'file': f})
+            rawData.raise_for_status()
+        
         # Save offline data
         url = 'http://localhost:8000/id/device/saveofflinedata/'
         
@@ -1060,6 +1096,7 @@ class TestIdods(unittest.TestCase):
             'description': 'spec1234desc',
             'method_name': 'method',
             'status': 1,
+            'data_id': rawData.json()['id'],
             'data_file_name': 'file name',
             'gap': 2
         }

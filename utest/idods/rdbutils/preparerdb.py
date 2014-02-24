@@ -152,6 +152,19 @@ def cleanDataMethod(namelist):
 
     conn.close()
     
+def cleanRawData():
+    '''
+    Clean raw data of all entries
+    '''
+    
+    conn=connect()
+    cur = conn.cursor()
+    sql = 'DELETE FROM id_raw_data WHERE id_raw_data_id >= 1'
+    cur.execute(sql)
+    conn.commit()
+
+    conn.close()
+    
 def cleanOfflineData(descriptionList):
     '''
     Clean offline data table of specific entries

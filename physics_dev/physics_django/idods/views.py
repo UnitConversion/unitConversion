@@ -334,6 +334,50 @@ def updateDataMethodWS(request):
     return _updateData(request, idodsi.updateDataMethod, ['old_name', 'name', 'description'], {'datamethod_id': None})
 
 '''
+Retrieve raw data
+'''
+@require_http_methods(["GET"])
+def retrieveRawDataWS(request):
+    return _retrieveData(request, idodsi.retrieveRawData, ['raw_data_id'])
+
+'''
+Save raw data
+'''
+@require_http_methods(["POST"])
+def saveRawDataWS(request):
+    rawFile = request.FILES.getlist('file')[0]
+    
+    res = {}
+    
+    try:
+        res = idodsi.saveRawData(rawFile.read())
+        
+        transaction.commit_unless_managed()
+    
+    except TypeError as e:
+        idods_log.exception(e)
+        return HttpResponseBadRequest(HttpResponse(content=e))
+    
+    except ValueError as e:
+        idods_log.exception(e)
+        return HttpResponseBadRequest(HttpResponse(content=e))
+    
+    except MySQLError as e:
+        idods_log.exception(e)
+        return HttpResponseServerError(HttpResponse(content=e))
+    
+    except TransactionManagementError as e:
+        idods_log.exception(e)
+        transaction.rollback_unless_managed()
+        return HttpResponseServerError(HttpResponse(content=e))
+    
+    except Exception as e:
+        idods_log.exception(e)
+        raise e
+    
+    return HttpResponse(json.dumps(res), mimetype="application/json")
+
+'''
 Retrieve offline data
 '''
 @require_http_methods(["GET"])
@@ -344,15 +388,15 @@ def retrieveOfflineDataWS(request):
 Save offline data
 '''
 @require_http_methods(["POST"])
-def saveDataOfflineDataWS(request):
-    return _saveData(request, idodsi.saveOfflineData, ['inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data', 'script_name', 'script', 'method_name'])
+def saveOfflineDataWS(request):
+    return _saveData(request, idodsi.saveOfflineData, ['inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
 Update offline data
 '''
 @require_http_methods(["POST"])
 def updateOfflineDataWS(request):
-    return _updateData(request, idodsi.updateOfflineData, ['offline_data_id', 'inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data', 'script_name', 'script', 'method_name'])
+    return _updateData(request, idodsi.updateOfflineData, ['offline_data_id', 'inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
 Retrieve online data
@@ -365,7 +409,7 @@ def retrieveOnlineDataWS(request):
 Save online data
 '''
 @require_http_methods(["POST"])
-def saveDataOnlineDataWS(request):
+def saveOnlineDataWS(request):
     return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'url', 'status'])
 
 '''

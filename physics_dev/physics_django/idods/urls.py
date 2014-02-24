@@ -10,8 +10,9 @@ from physics_django.idods.views import (retrieveInstallRelWS, saveInstallRelWS, 
 from physics_django.idods.views import (retrieveInstallRelPropTypeWS, saveInstallRelPropTypeWS, updateInstallRelPropTypeWS)
 from physics_django.idods.views import (retrieveInventoryToInstallWS, saveInventoryToInstallWS, updateInventoryToInstallWS)
 from physics_django.idods.views import (retrieveDataMethodWS, saveDataMethodWS, updateDataMethodWS)
-from physics_django.idods.views import (retrieveOfflineDataWS, saveDataOfflineDataWS, updateOfflineDataWS)
-from physics_django.idods.views import (retrieveOnlineDataWS, saveDataOnlineDataWS, updateOnlineDataWS)
+from physics_django.idods.views import (retrieveRawDataWS, saveRawDataWS)
+from physics_django.idods.views import (retrieveOfflineDataWS, saveOfflineDataWS, updateOfflineDataWS)
+from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS)
 from physics_django.idods.views import (testAuth)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
 
@@ -68,14 +69,18 @@ urlpatterns = patterns(
     url(r'^id/device/savedatamethod/$', saveDataMethodWS),
     url(r'^id/device/updatedatamethod/$', updateDataMethodWS),
     
+    # Retrieve, save raw data
+    url(r'^id/device/rawdata/$', retrieveRawDataWS),
+    url(r'^id/device/saverawdata/$', saveRawDataWS),
+    
     # Retrieve, save and update offline data
     url(r'^id/device/offlinedata/$', retrieveOfflineDataWS),
-    url(r'^id/device/saveofflinedata/$', saveDataOfflineDataWS),
+    url(r'^id/device/saveofflinedata/$', saveOfflineDataWS),
     url(r'^id/device/updateofflinedata/$', updateOfflineDataWS),
     
     # Retrieve, save and update online data
     url(r'^id/device/onlinedata/$', retrieveOnlineDataWS),
-    url(r'^id/device/saveonlinedata/$', saveDataOnlineDataWS),
+    url(r'^id/device/saveonlinedata/$', saveOnlineDataWS),
     url(r'^id/device/updateonlinedata/$', updateOnlineDataWS),
     
     # Test authentication

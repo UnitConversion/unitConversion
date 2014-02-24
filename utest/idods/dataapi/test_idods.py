@@ -62,6 +62,9 @@ class TestIdods(unittest.TestCase):
         # Clean if there is something left from previous runs
         cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
 
+        # Clean raw data
+        cleanRawData()
+
     def setUp(self):
         self.con = connect()
         self.api = idods(self.con)
@@ -527,13 +530,19 @@ class TestIdods(unittest.TestCase):
     def testRawData(self):
         
         # Prepare raw data
-        f = open('download_4', 'rb')
-        savedData = self.api.saveRawData(f.read())
+        with open('download_4', 'rb') as f:
+            savedData = self.api.saveRawData(f.read())
         
-        f = open('download_128', 'rb')
+        with open('download_128', 'rb') as f:
+            # Check if data was successfully updated
+            self.assertTrue(self.api.updateRawData(savedData['id'], f.read()))
+            
+        # Retrieve data
+        result = self.api.retrieveRawData(savedData['id'])
+        resultKeys = result.keys()
+        resultObject = result[resultKeys[0]]
         
-        # Check if data was successfully updated
-        self.assertTrue(self.api.updateRawData(savedData['id'], f.read()))
+        self.assertNotEqual(resultObject['data'], '')
 
     '''
     Save offline data
@@ -552,8 +561,12 @@ class TestIdods(unittest.TestCase):
         # Prepare method
         savedMethod = self.api.saveDataMethod('test')
         
+        # Prepare raw data
+        with open('download_4', 'rb') as f:
+            savedData = self.api.saveRawData(f.read())
+        
         # Create save offline data
-        savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
+        savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
         
         # Retrieve offline data by gap range
         offlineData = self.api.retrieveOfflineData(gap=(3, 4))
@@ -595,8 +608,12 @@ class TestIdods(unittest.TestCase):
         # Prepare inventory
         savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
         
+        # Prepare raw data
+        with open('download_4', 'rb') as f:
+            savedData = self.api.saveRawData(f.read())
+        
         # Create offline data
-        savedOfflineData = self.api.saveOfflineData(inventory_name='name', method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
+        savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
         
         # Update offline data
         self.assertTrue(self.api.updateOfflineData(savedOfflineData['id'], status=2, phase1=2.4, phasemode='p', data_file_ts='2014-02-03'))

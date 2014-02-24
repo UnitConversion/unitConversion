@@ -1284,6 +1284,58 @@ class idods(object):
             self.logger.info('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching insertion device inventory:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def retrieveRawData(self, raw_data_id):
+        '''
+        Retrieve raw data by its id
+
+        :param raw_data_id: raw data id
+        :type raw_data_id: int
+        
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': {
+                    'id': ,
+                    'name': ,
+                    'data':
+                    }
+                 ...
+                }
+
+        :Raises: ValueError, exception
+        '''
+
+        # Check id parameer
+        self._checkParameter('id', raw_data_id, 'prim')
+
+        # Generate SQL statement
+        sql = '''
+        SELECT id_raw_data_id, data FROM id_raw_data WHERE id_raw_data_id = %s
+        '''
+
+        try:
+            # Execute sql
+            cur = self.conn.cursor()
+            cur.execute(sql, raw_data_id)
+
+            # Get record
+            res = cur.fetchall()
+            resdict = {}
+
+            # Generate return dictionary
+            for r in res:
+                resdict[r[0]] = {
+                    'id': r[0],
+                    'data': r[1]
+                }
+
+            return resdict
+
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+
     def saveRawData(self, data):
         '''
         Save raw data into database
@@ -1317,6 +1369,47 @@ class idods(object):
                 self.conn.commit()
                 
             return {'id': dataid}
+            
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def concatRawData(self, data, raw_data_id):
+        '''
+        Concat large data in the database
+        
+        params:
+            - data: part of the data we want to save in a blob
+            - raw_data_id: id of the raw data we need to update
+        
+        raises:
+            MySQLError
+            
+        returns:
+            True if everything is ok
+        
+        '''
+        
+        # Generate SQL
+        sql = '''
+        UPDATE id_raw_data SET data=CONCAT(data, %s) WHERE id_raw_data_id = %s
+        '''
+        
+        try:
+            # Insert data into database
+            cur = self.conn.cursor()
+            cur.execute(sql, (data, raw_data_id))
+            
+            # Handle transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
             
         except MySQLdb.Error as e:
 
@@ -1394,7 +1487,7 @@ class idods(object):
         - status
         - data_file_name
         - data_file_ts
-        - data
+        - data_id
         - script_name
         - script
         - method_name
@@ -1438,8 +1531,8 @@ class idods(object):
         :param data_file_ts: time stamp of data file with format like "YYYY-MM-DD HH:MM:SS"
         :type data_file_ts: str
 
-        :param data: real data dumped into JSON string
-        :type data: str
+        :param data_id: id of the raw data
+        :type data_id: str
 
         :param script_name: name of script to produce the data
         :type script_name: str
@@ -1550,8 +1643,8 @@ class idods(object):
         # Check data
         data = None
         
-        if 'data' in kws and kws['data'] != None:
-            data = kws['data']
+        if 'data_id' in kws and kws['data_id'] != None:
+            data = kws['data_id']
             
         # Check script_name
         scriptname = None
@@ -1602,7 +1695,7 @@ class idods(object):
             script_file_name,
             script_file_content
         ) VALUES (
-            %s,%s,1,%s,%s,NOW(),%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+            %s,%s,%s,%s,%s,NOW(),%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
         )
         '''
         
@@ -1610,6 +1703,7 @@ class idods(object):
             vals = [
                 inventoryid,
                 methodid,
+                data,
                 username,
                 description,
                 gap,
@@ -1666,7 +1760,7 @@ class idods(object):
         - status
         - data_file_name
         - data_file_ts
-        - data
+        - data_id
         - script_name
         - script
         - method_name
@@ -1710,8 +1804,8 @@ class idods(object):
         :param data_file_ts: time stamp of data file with format like "YYYY-MM-DD HH:MM:SS"
         :type data_file_ts: str
 
-        :param data: real data dumped into JSON string
-        :type data: str
+        :param data_id: id of the raw data
+        :type data_id: str
 
         :param script_name: name of script to produce the data
         :type script_name: str
@@ -1796,10 +1890,10 @@ class idods(object):
         if 'data_file_ts' in kws and kws['data_file_ts'] != None:
             queryDict['result_file_time'] = kws['data_file_ts']
             
-        # Check data
-        if 'data' in kws and kws['data'] != None:
-            data = kws['data']
-            # !!! save data
+        # Check data id
+        if 'data_id' in kws and kws['data_id'] != None:
+            data = kws['data_id']
+            queryDict['id_raw_data_id'] = data
             
         # Check script_name
         if 'script_name' in kws:
@@ -1916,7 +2010,7 @@ class idods(object):
                         'status':,         # int
                         'data_file_name':, # string
                         'data_file_ts':,   # string
-                        'data':,           # string
+                        'data_id':,        # int
                         'script_name':,    # string
                         'script':,         # string
                         'method_name':,    # string
@@ -2057,7 +2151,7 @@ class idods(object):
                     'status': r[14],
                     'data_file_name': r[15],
                     'data_file_ts': None,
-                    'data': 0,
+                    'data_id': r[3],
                     'script_name': r[17],
                     'script': r[18],
                     'method_name': r[19],

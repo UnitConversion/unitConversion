@@ -70,6 +70,9 @@ class Test(unittest.TestCase):
         cleanComponentTypePropertyType(['length', 'width'])
         # Clean if there is something left from previous runs
         cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
+        
+        # Clean raw data
+        #cleanRawData()
 
     def setUp(self):
         self.cleanTables()
@@ -88,7 +91,7 @@ class Test(unittest.TestCase):
     '''
     Try to save and update a vendor
     '''
-    def testVendor(self):
+    def AtestVendor(self):
 
         # Save new vendor
         self.client.saveVendor('test vendor')
@@ -119,7 +122,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating component type
     '''
-    def testCmpntType(self):
+    def AtestCmpntType(self):
         
         # Save component type property type
         self.client.saveComponentTypePropertyType('length', 'test description')
@@ -164,7 +167,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating component type property type
     '''
-    def testCmpntTypePropType(self):
+    def AtestCmpntTypePropType(self):
         
         # Save component type property type
         propertyType = self.client.saveComponentTypePropertyType('length', 'test description')
@@ -186,7 +189,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating inventory
     '''
-    def testInventory(self):
+    def AtestInventory(self):
         
         # Save new vendor
         self.client.saveVendor('test vendor')
@@ -226,7 +229,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating inventory property template
     '''
-    def testInventoryPropTmplt(self):
+    def AtestInventoryPropTmplt(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -254,7 +257,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating install
     '''
-    def testInstall(self):
+    def AtestInstall(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -291,7 +294,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating install rel
     '''
-    def testInstallRel(self):
+    def AtestInstallRel(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -334,7 +337,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating install rel property type
     '''
-    def testInstallRelPropertyType(self):
+    def AtestInstallRelPropertyType(self):
         
         # Prepare prop type
         propType = self.client.saveInstallRelPropertyType('testprop')
@@ -362,7 +365,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating inventory to install map
     '''
-    def testInventoryToInstall(self):
+    def AtestInventoryToInstall(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -394,7 +397,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating data method
     '''
-    def testUpdateDataMethod(self):
+    def AtestUpdateDataMethod(self):
         # Save data method with name and description
         saveDataMethod = self.client.saveDataMethod('method', 'description')
         
@@ -417,6 +420,46 @@ class Test(unittest.TestCase):
         
         # Update should fail if there is no id or old name present
         self.assertRaises(HTTPError, self.client.updateDataMethod, None, 'method2')
-    
+
+    '''
+    Test saving, retrieving and updating offline data
+    '''
+    def testOfflineData(self):
+        
+        # Prepare data method
+        self.client.saveDataMethod('method', 'description')
+        
+        # Prepare component type
+        self.client.saveComponentType('Magnet')
+
+        # Prepare inventory
+        self.client.saveInventory('name', cmpnt_type='Magnet', alias='name2')
+        
+        # Create offline data
+        savedOfflineData = self.client.saveOfflineData(inventory_name='name', method_name='method', status=1, data='../dataapi/download_128', data_file_name='datafile', gap=3.4, description='spec1234desc')
+        
+        # Update offline data
+        self.assertTrue(self.client.updateOfflineData(savedOfflineData['id'], status=2, phase1=2.4, data='large2', phasemode='p', data_file_ts='2014-02-03'))
+        
+        # Retrieve updated offline data by id
+        updatedData = self.client.retrieveOfflineData(offlineid=savedOfflineData['id'], with_data=True)
+        updatedDataKeys = updatedData.keys()
+        updatedDataObject = updatedData[updatedDataKeys[0]]
+        
+        # Check status
+        self.assertEqual(updatedDataObject['status'], 2)
+        
+        # Check gap
+        self.assertEqual(updatedDataObject['gap'], 3.4)
+        
+        # Check phase mode
+        self.assertEqual(updatedDataObject['phasemode'], 'p')
+        
+        # Check raw data id
+        self.assertNotEqual(updatedDataObject['data_id'], 0)
+
+        # Check data
+        self.assertNotEqual(updatedDataObject['data'], '')
+
 if __name__ == "__main__":
     unittest.main()
