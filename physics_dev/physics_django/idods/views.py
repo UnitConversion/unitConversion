@@ -399,6 +399,38 @@ def updateOfflineDataWS(request):
     return _updateData(request, idodsi.updateOfflineData, ['offline_data_id', 'inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
+Upload a file
+'''
+@require_http_methods(["POST"])
+def uploadFileWS(request):
+    rawFile = request.FILES.getlist('file')[0]
+    params = _retrievecmddict(request.POST.copy())
+    
+    data = ""
+    
+    # Go through all the chunks and assemble the file
+    if(rawFile.multiple_chunks()):
+        
+        for chunk in rawFile.chunks():
+            data += chunk
+    
+    else:
+        data = rawFile.read()
+    
+    # Try saving the file
+    try:
+        filePath = idodsi.saveFile(params['file_name'], data)
+    
+        res = {
+            'path': filePath['path']
+        }
+        return HttpResponse(json.dumps(res), mimetype="application/json")
+        
+    except Exception as e:
+        idods_log.exception(e)
+        return HttpResponseServerError(HttpResponse(content=e))
+
+'''
 Retrieve online data
 '''
 @require_http_methods(["GET"])

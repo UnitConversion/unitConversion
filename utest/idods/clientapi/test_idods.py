@@ -72,7 +72,7 @@ class Test(unittest.TestCase):
         cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
         
         # Clean raw data
-        #cleanRawData()
+        cleanRawData()
 
     def setUp(self):
         self.cleanTables()
@@ -91,7 +91,7 @@ class Test(unittest.TestCase):
     '''
     Try to save and update a vendor
     '''
-    def AtestVendor(self):
+    def testVendor(self):
 
         # Save new vendor
         self.client.saveVendor('test vendor')
@@ -122,7 +122,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating component type
     '''
-    def AtestCmpntType(self):
+    def testCmpntType(self):
         
         # Save component type property type
         self.client.saveComponentTypePropertyType('length', 'test description')
@@ -167,7 +167,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating component type property type
     '''
-    def AtestCmpntTypePropType(self):
+    def testCmpntTypePropType(self):
         
         # Save component type property type
         propertyType = self.client.saveComponentTypePropertyType('length', 'test description')
@@ -189,7 +189,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating inventory
     '''
-    def AtestInventory(self):
+    def testInventory(self):
         
         # Save new vendor
         self.client.saveVendor('test vendor')
@@ -229,7 +229,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating inventory property template
     '''
-    def AtestInventoryPropTmplt(self):
+    def testInventoryPropTmplt(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -257,7 +257,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating install
     '''
-    def AtestInstall(self):
+    def testInstall(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -294,7 +294,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating install rel
     '''
-    def AtestInstallRel(self):
+    def testInstallRel(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -337,7 +337,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating install rel property type
     '''
-    def AtestInstallRelPropertyType(self):
+    def testInstallRelPropertyType(self):
         
         # Prepare prop type
         propType = self.client.saveInstallRelPropertyType('testprop')
@@ -365,7 +365,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating inventory to install map
     '''
-    def AtestInventoryToInstall(self):
+    def testInventoryToInstall(self):
         
         # Prepare component type
         self.client.saveComponentType('Magnet')
@@ -397,7 +397,7 @@ class Test(unittest.TestCase):
     '''
     Test saving, retrieving and updating data method
     '''
-    def AtestUpdateDataMethod(self):
+    def testUpdateDataMethod(self):
         # Save data method with name and description
         saveDataMethod = self.client.saveDataMethod('method', 'description')
         
@@ -460,6 +460,45 @@ class Test(unittest.TestCase):
 
         # Check data
         self.assertNotEqual(updatedDataObject['data'], '')
+
+    '''
+    Test retrieving, saving and updating online data
+    '''
+    def testOnlineData(self):
+                
+        # Prepare component type
+        self.client.saveComponentType('Magnet')
+        
+        # Prepare install parent
+        self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        
+        # Save online data
+        onlineid = self.client.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+        
+        # Update online data
+        self.assertTrue(self.client.updateOnlineData(onlineid['id'], username='username2'))
+        
+        # Retrieve online data
+        retrievedOnlineData = self.client.retrieveOnlineData(onlineid=onlineid['id'])
+        retrievedOnlineDataKeys = retrievedOnlineData.keys()
+        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
+        
+        # Test username
+        self.assertEqual('username2', retrievedOnlineDataObject['username'])
+        
+        # Test URL
+        self.assertEqual('url', retrievedOnlineDataObject['url'])
+        
+        # Test status
+        self.assertEqual(1, retrievedOnlineDataObject['status'])
+
+    def testUploadingLargeFile(self):
+        
+        # Upload a file
+        uploadedFile = self.client.uploadFile('large')
+        
+        # Test file path
+        self.assertNotEqual(uploadedFile['path'], '')
 
 if __name__ == "__main__":
     unittest.main()

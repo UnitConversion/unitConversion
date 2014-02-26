@@ -1969,6 +1969,243 @@ class IDODSClient(object):
         
         return r.json()
 
+    def retrieveOnlineData(self, **kws):
+        '''Retrieve insertion device online data using any of the acceptable key words:
+
+        - onlineid
+        - install_name
+        - username
+        - description
+        - url
+        - status
+
+        :param onlineid: id of the online data we want to update by
+        :type onlineid: int
+
+        :param install_name: device name that the data belongs to
+        :type install_name: str
+
+        :param username: author who updated this data entry
+        :type username: str
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param url: external url of the data file is stored
+        :type url: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': {
+                        'id':,            #int
+                        'installid':,     #int
+                        'install_name':,  #string
+                        'username':,      #string
+                        'description':,   #string
+                        'url':,           #url
+                        'date':,          #date
+                        'status':,        #int
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'onlinedata/'
+        
+        # Set parameters
+        params={}
+        
+        # Add online id
+        if 'onlineid' in kws:
+            params['onlineid'] = kws['onlineid']
+        
+        # Add install name
+        if 'install_name' in kws:
+            params['install_name'] = kws['install_name']
+        
+        # Add username
+        if 'username' in kws:
+            params['username'] = kws['username']
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add url
+        if 'url' in kws:
+            params['url'] = kws['url']
+        
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+        
+        r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveOnlineData(self, install_name, **kws):
+        '''Save insertion device online data using any of the acceptable key words:
+
+        - install_name
+        - username
+        - description
+        - url
+        - status
+
+        The data itself is stored on server's harddisk because its size might blow up to GB level.
+        Ths file url is stored in the database.
+
+        :param install_name: device name that the data belongs to
+        :type install_name: str
+
+        :param username: author who updated this data entry
+        :type username: str
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param url: external url of the data file is stored
+        :type url: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': data id}
+
+        :Raises: HTTPError
+        '''
+        
+        # Set URL
+        url = 'saveonlinedata/'
+        
+        # Set parameters
+        params={
+            'install_name': install_name
+        }
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add username
+        if 'username' in kws:
+            params['username'] = kws['username']
+        
+        # Add url
+        if 'url' in kws:
+            params['url'] = kws['url']
+        
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def updateOnlineData(self, online_data_id, **kws):
+        '''
+        Update insertion device online data using any of the acceptable key words:
+
+        - install_name
+        - username
+        - description
+        - url
+        - status
+
+        The data itself is stored on server's harddisk because its size might blow up to GB level.
+        Ths file url is stored in the database.
+
+        :param install_name: device name that the data belongs to
+        :type install_name: str
+
+        :param username: author who updated this data entry
+        :type username: str
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param url: external url of the data file is stored
+        :type url: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        # Set URL
+        url = 'updateonlinedata/'
+        
+        # Set parameters
+        params={
+            'online_data_id': online_data_id
+        }
+        
+        # Add install name
+        if 'install_name' in kws:
+            
+            # Check install name
+            if kws['install_name'] == None:
+                self.__raise_for_status(400, 'If install name is passed it should not be None!')
+            
+            params['install_name'] = kws['install_name']
+        
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+        
+        # Add username
+        if 'username' in kws:
+            params['username'] = kws['username']
+        
+        # Add url
+        if 'url' in kws:
+            params['url'] = kws['url']
+        
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+        
+        r=self.client.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def uploadFile(self, file_name):
+        '''
+        Upload a file
+        
+        params:
+            - file_name name of the file
+        '''
+        
+        with open(file_name, 'rb') as f:
+            
+            # Set parameters
+            params={
+                'file_name': file_name
+            }
+            
+            r = self.client.post(self.__baseURL+'file/', files={'file': f}, data=params)
+            self.__raise_for_status(r.status_code, r.text)
+            
+        return r.json()
+
     @classmethod
     def __raise_for_status(self, status_code, reason):
         http_error_msg = ''

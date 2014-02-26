@@ -7,7 +7,6 @@ Created on Feb 28, 2013
 '''
 import os
 import errno
-import datetime
 from collections import OrderedDict
 import zipfile
 
@@ -16,7 +15,7 @@ import MySQLdb
 
 import base64
 
-from utils import (_assemblesql, _wildcardformat)
+from utils import (_assemblesql, _wildcardformat, _generateFilePath)
 
 from .tracyunit import elementpropunits as tracypropunits
 from _mysql_exceptions import MySQLError
@@ -55,22 +54,6 @@ class lattice(object):
             return self._removeendbackslash(string[:-1])
         else:
             return string
-
-    def generateFilePath(self):
-        '''
-        Generate path for the uploaded file
-        '''
-        #now = datetime.datetime.now()
-        #dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
-        dirname = 'documents/%s'%datetime.datetime.now().strftime("%Y%m%d/%H%M%S/%f")
-        try:
-            os.makedirs(dirname)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(dirname):
-                pass
-            else: 
-                raise Exception("Could not create a directory to save lattice file")
-        return dirname
 
     def retrievelatticeinfo(self, name, version=None, branch=None, description=None, latticetype=None, creator=None):
         '''
@@ -502,7 +485,7 @@ class lattice(object):
         '''
         furl = None
         if savefile:
-            furl = self.generateFilePath()
+            furl = _generateFilePath()
             with open('/'.join((furl, latticefile)), 'w') as f:
                 for data in latticedata:
                     if data.endswith('\n'):
@@ -886,7 +869,7 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            furl = self.generateFilePath()
+            furl = _generateFilePath()
             with open('/'.join((furl, params['name'])), 'w') as f:
                 for data in params['raw']:
                     if data.endswith('\n'):
@@ -1274,7 +1257,7 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            furl = self.generateFilePath()
+            furl = _generateFilePath()
             with open('/'.join((furl, params['name'])), 'w') as f:
                 for data in params['raw']:
                     if data.endswith('\n'):

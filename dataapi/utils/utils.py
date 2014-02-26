@@ -2,8 +2,12 @@
 Created on Mar 5, 2013
 
 @author: shengb
+@updated: dejan.dezman@cosylab.com Feb 26, 2014
 '''
 import collections
+import datetime
+import os
+import errno
 
 def _wildcardformat(regxval):
     """
@@ -104,3 +108,19 @@ def _retrievecmddict(httpcmd):
         else:
             httpdict[k.lower()] = v
     return httpdict
+
+def _generateFilePath():
+    '''
+    Generate path for the uploaded file
+    '''
+    #now = datetime.datetime.now()
+    #dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
+    dirname = 'documents/%s'%datetime.datetime.now().strftime("%Y%m%d/%H%M%S/%f")
+    try:
+        os.makedirs(dirname)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(dirname):
+            pass
+        else: 
+            raise Exception("Could not create a directory to save lattice file")
+    return dirname

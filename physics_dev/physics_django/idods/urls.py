@@ -12,6 +12,7 @@ from physics_django.idods.views import (retrieveInventoryToInstallWS, saveInvent
 from physics_django.idods.views import (retrieveDataMethodWS, saveDataMethodWS, updateDataMethodWS)
 from physics_django.idods.views import (retrieveRawDataWS, saveRawDataWS)
 from physics_django.idods.views import (retrieveOfflineDataWS, saveOfflineDataWS, updateOfflineDataWS)
+from physics_django.idods.views import (uploadFileWS)
 from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS)
 from physics_django.idods.views import (testAuth)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
@@ -77,6 +78,9 @@ urlpatterns = patterns(
     url(r'^id/device/offlinedata/$', retrieveOfflineDataWS),
     url(r'^id/device/saveofflinedata/$', saveOfflineDataWS),
     url(r'^id/device/updateofflinedata/$', updateOfflineDataWS),
+    
+    # Retrieve, save big file
+    url(r'^id/device/file/$', uploadFileWS),
     
     # Retrieve, save and update online data
     url(r'^id/device/onlinedata/$', retrieveOnlineDataWS),

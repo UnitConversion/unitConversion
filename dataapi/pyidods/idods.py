@@ -1,7 +1,7 @@
 import logging
 import MySQLdb
 
-from utils import (_wildcardformat)
+from utils import (_wildcardformat, _generateFilePath)
 from _mysql_exceptions import MySQLError
 
 try:
@@ -4347,6 +4347,34 @@ class idods(object):
             self.logger.info('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def saveFile(self, file_name, data):
+        '''
+        Save file that was uploaded and return file path
+        
+        params:
+            - file_name name of the file we want to save
+            - data data we want to dave
+            
+        raises:
+            IOError
+        
+        returns:
+            {'path': path to a file}
+        '''
+        path = _generateFilePath()
+        filePath = '/'.join((path, file_name))
+        
+        try:
+            with open(filePath, 'w') as f:
+                f.write(data)
+        
+            return {'path': filePath}
+            
+        except IOError as e:
+            self.logger.info('Error when writing to a file:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise IOError('Error when writing to a file:\n%s (%d)' %(e.args[1], e.args[0]))
+            
+
     def saveOnlineData(self, install_name, **kws):
         '''Save insertion device online data using any of the acceptable key words:
 
@@ -4584,7 +4612,8 @@ class idods(object):
             raise MySQLError('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateOnlineData(self, online_data_id, **kws):
-        '''update insertion device online data using any of the acceptable key words:
+        '''
+        Update insertion device online data using any of the acceptable key words:
 
         - install_name
         - username
