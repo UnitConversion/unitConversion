@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_6
--- Created on: 1/23/2014 1:08:33 PM
--- Diagram Version: 530
+-- Created on: 1/23/2014 2:52:12 PM
+-- Diagram Version: 531
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -238,7 +238,6 @@ CREATE TABLE `inventory_prop_tmplt` (
   `inventory_prop_tmplt_default` varchar(255),
   `inventory_prop_tmplt_units` varchar(50),
   PRIMARY KEY(`inventory_prop_tmplt_id`),
-  UNIQUE INDEX `new_index65`(`inventory_prop_tmplt_name`),
   CONSTRAINT `Ref_169` FOREIGN KEY (`cmpnt_type_id`)
     REFERENCES `cmpnt_type`(`cmpnt_type_id`)
     ON DELETE NO ACTION

@@ -12,9 +12,7 @@ Active interlock data service is implementation using Django framework, and its 
     :maxdepth: 2
     
     introduction
-    client
     service
-    dataapi
 
 Indices and tables
 ==================

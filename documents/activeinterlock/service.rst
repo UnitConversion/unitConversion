@@ -11,6 +11,8 @@ Other than those 2 methods, if server receives another http method request, it r
 
 For each GET and POST method, there are set of functions associated with each, which are summarized as below: ::
 
+(This is old version, and new implementation should be revised according the requirement.)
+
   ==========  ==================================   =============================
     Method                   GET                              POST
   ----------  ----------------------------------   -----------------------------
