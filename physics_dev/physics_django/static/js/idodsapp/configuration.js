@@ -9,7 +9,7 @@
  */
 
 // For accessing the REST service
-var serviceurl = "http://localhost:8000/";
+var serviceurl = "http://localhost:8000/id/device";
 
 //Version number
 var version = "0.1";
@@ -22,36 +22,25 @@ var dataTypes = [
 	{name:"vendor", value:"Vendor"}
 ];
 
-// Lattice statuses
-var statuses = [
-	{id:-1, value:"-"},
-	{id:0, value:"Current golden lattice"},
-	{id:1, value:"Alternative golden lattice"},
-	{id:2, value:"Lattice from live machine"},
-	{id:3, value:"Previous golden lattice"}
-];
-
-// Model statuses
-var modelStatuses = [
-	{id:-1, value:"-"},
-	{id:0, value:"Current golden model"},
-	{id:1, value:"Alternative golden model"},
-	{id:2, value:"Model from live machine"},
-	{id:3, value:"Previous golden model"}
-];
-
-// Model details
-var modelDetails = [
-	{name:"Transfer Matrix", value:"retrieveTransferMatrix"},
-	{name:"Closed Orbit", value:"retrieveClosedOrbit"},
-	{name:"Twiss", value:"retrieveTwiss"},
-	{name:"Beam Parameters", value:"retrieveBeamParameters"}
-];
-
-// Lattice types
-var latticeTypes = [
-	{name:"plain/txt", value:JSON.stringify({'name': 'plain', 'format': 'txt'})},
-	{name:"tracy3/lat", value:JSON.stringify({'name': 'tracy3',  'format': 'lat'})},
-	{name:"tracy4/lat", value:JSON.stringify({'name': 'tracy4',  'format': 'lat'})},
-	{name:"elegant/lte", value:JSON.stringify({'name': 'elegant', 'format': 'lte'})}
+// Vendor fixed properties
+var vendorProps = [
+	{
+		"name": "id",
+		"display": "Id",
+		"save": false,
+		"update": false
+	},
+	{
+		"name": "name",
+		"display": "Name",
+		"save": true,
+		"update": true,
+		"mandatory": true
+	},
+	{
+		"name": "description",
+		"display": "Description",
+		"save": true,
+		"update": true
+	}
 ];

@@ -1,7 +1,8 @@
 /*
- * Controllers for lattice module
+ * Controllers for insertion device online data service module
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
+ * @created: Feb 26, 2014
  */
 
 app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
@@ -35,8 +36,6 @@ app.controller('mainCtrl', function($scope, $modal){
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
-	$scope.statuses = statuses;
-	$scope.modelStatuses = modelStatuses;
 	setUpLoginForm();
 
 	$scope.session = {};
@@ -93,127 +92,39 @@ app.controller('mainCtrl', function($scope, $modal){
 /*
  * Controller for the left/search pane
  */
-app.controller('searchFormCtrl', function($scope, $window, $routeParams){
+app.controller('searchVendorCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
-	$scope.search.displayLattice = "display_block";
-	$scope.search.displayModel = "display_none";
-	$scope.search.type = "vendor";
-	$scope.search.selected = -1;
 	$scope.dataTypes = dataTypes;
 
-	// Set search type
-	if($routeParams.type !== undefined) {
-		$scope.search.type = $routeParams.type;
-	}
-
-	// Lattice search button click
-	$scope.searchForLattice = function(search) {
-		var newLocation = createLatticeListQuery(search, true) + "/list";
+	// Vendor search button click
+	$scope.searchForVendor = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createUrlAndQuery(search, "vendor", true) + "/list";
+		l(newLocation);
 		$window.location = newLocation;
 	};
-
-	// Model search button click
-	$scope.searchForModel = function(search) {
-		var newLocation = createModelListQuery(search, true) + "/list";
-		$window.location = newLocation;
-	};
-
-	$scope.$watch('search.status', function(newValue, oldValue) {
-
-		if(newValue !== "") {
-			$scope.search.desc = "";
-			$scope.search.creator = "";
-			$scope.search.latticetype = "";
-		}
-	});
-
-	// Watch for search type change
-	$scope.$watch('search.type', function(newValue, oldValue){
-		$scope.search.status = -1;
-
-		if(newValue === "lattice") {
-			$scope.search.displayLattice = "display_block";
-			$scope.search.displayModel = "display_none";
-
-		} else {
-			$scope.search.displayLattice = "display_none";
-			$scope.search.displayModel = "display_block";
-		}
-	});
 });
 
 /*
- * List lattice in the middle pane
+ * List vendor in the middle pane
  */
-app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window) {
+app.controller('listVendorCtrl', function($scope, $routeParams, $http, $window, Vendor, vendorFactory) {
 	// Remove image from the middle pane if there is something to show
 	$scope.style.middle_class = "container-scroll-middle-no-img";
 
 	$scope.id = $routeParams.id;
-	$scope.comparison = {};
-	$scope.comparison.data = {};
-	$scope.comparison.length = 0;
-	$scope.comparison.show = 'false';
 
-	$scope.lattices = [];
-	var previousLattice = undefined;
-	var query = "";
+	$scope.vendors = [];
+	var previousItem = undefined;
 
-	// Set flag when lattice was selected
-	$scope.setCompareData = function() {
-		$scope.comparison.length = 0;
+	vendorFactory.retrieveVendors($routeParams).then(function(result) {
 
-		$.each($scope.comparison.data, function(name, selected) {
+		l(result);
 
-			if(selected === true) {
-				$scope.comparison.length ++;
-			}
-		});
-	};
+		$.each(result, function(i, item){
 
-	// Click on compare lattice button
-	$scope.compareLattice = function() {
-		var lattices = [];
-
-		$.each($scope.comparison.data, function(i, lattice){
-
-			if(lattice === true) {
-				lattices.push(i);
-			}
-		});
-
-		var location = createLatticeListQuery($routeParams, true) + "/ids/" + lattices.join(",");
-
-		$window.location = location;
-	};
-
-	// Clear selected lattices
-	$scope.clearSelection = function() {
-
-		$.each($scope.comparison.data, function(i, lattice){
-			$scope.comparison.data[i] = false;
-		});
-
-		$scope.comparison.length = 0;
-	};
-
-
-	if($routeParams.status !== undefined && $routeParams.status !== "-1") {
-		l($routeParams.status);
-		query = serviceurl + 'lattice/?function=retrieveLatticeStatus&' + createLatticeListQuery($routeParams, false);
-
-	} else {
-		$routeParams.status = undefined;
-		query = serviceurl + 'lattice/?function=retrieveLattice&' + createLatticeListQuery($routeParams, false);
-	}
-
-	$http.get(query).success(function(data){
-
-		$.each(data, function(i, item){
-
-			// Build customized Log object
-			var newItem = item;
-			newItem.latticeid = i;
+			// Build customized object
+			var newItem = new Vendor(item);
 
 			// Alternate background colors
 			if(i%2 === 0) {
@@ -223,244 +134,94 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 				newItem.color = "bg_light";
 			}
 
-			$scope.lattices.push(newItem);
+			$scope.vendors.push(newItem);
 		});
 	});
-
-	// Show details when user selects the lattice from a list
-	$scope.showDetails = function(lattice){
-		$scope.id = undefined;
-
-		// Clear click style from previously selected element
-		if(previousLattice !== undefined) {
-			previousLattice.click = "";
-		}
-
-		previousLattice = lattice;
-		lattice.click = "lattice_click";
-		lattice.search = $routeParams.search;
-		lattice.type = $routeParams.type;
-		$routeParams.click = "lattice_click";
-
-		var location = createLatticeListQuery($routeParams, true) + "/id/" + lattice.name + '|||' + lattice.branch + '|||' + lattice.version;
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createUrlAndQuery($routeParams, "vendor", true) + "/id/new/action/save";
 		$window.location = location;
-	};
-});
-
-/*
- * List models in the middle pane
- */
-app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
-	// Remove image from the middle pane if there is something to show
-	$scope.style.middle_class = "container-scroll-middle-no-img";
-
-	$scope.id = $routeParams.id;
-	$scope.comparison = {};
-	$scope.comparison.data = {};
-	$scope.comparison.length = 0;
-	$scope.comparison.show = 'false';
-
-	$scope.models = {};
-	$scope.modelsArray = [];
-	var previousModel = undefined;
-	var query = "";
-
-	if($routeParams.status !== undefined && $routeParams.status !== "-1") {
-		l($routeParams.status);
-		query = serviceurl + 'lattice/?function=retrieveModelStatus&' + createModelListQuery($routeParams, false);
-
-	} else {
-		$routeParams.status = undefined;
-		query = serviceurl + 'lattice/?function=retrieveModel&' + createModelListQuery($routeParams, false);
 	}
 
-	$http.get(query).success(function(data){
-		var index = 0;
-
-		$.each(data, function(i, item){
-
-			// Build customized Model object
-			var newItem = item;
-
-			// Alternate background colors
-			if(index%2 === 0) {
-				newItem.color = "bg_dark";
-
-			} else {
-				newItem.color = "bg_light";
-			}
-
-			$scope.models[i] = newItem;
-			$scope.modelsArray.push(newItem);
-
-			index ++;
-		});
-	});
-
-	// Set flag when new model was selected
-	$scope.setCompareData = function() {
-		$scope.comparison.length = 0;
-
-		$.each($scope.comparison.data, function(name, selected) {
-
-			if(selected === true) {
-				$scope.comparison.length ++;
-			}
-		});
-	};
-
-	// Click on compare lattice button
-	$scope.compareModel = function() {
-		var models = [];
-
-		$.each($scope.comparison.data, function(i, model){
-			var id = $scope.models[i].name + "||" + i;
-			l(id);
-
-			if(model === true) {
-				models.push(id);
-			}
-		});
-
-		var location = createModelListQuery($routeParams, true) + "/ids/" + models.join("|||");
-		$window.location = location;
-	};
-
-	// Clear selected models
-	$scope.clearSelection = function() {
-		$.each($scope.comparison.data, function(i, model){
-			$scope.comparison.data[i] = false;
-		});
-
-		$scope.comparison.length = 0;
-	};
-
-	// Show details when user selects the model from a list
-	$scope.showDetails = function(model){
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
 		$scope.id = undefined;
 
 		// Clear click style from previously selected element
-		if(previousModel !== undefined) {
-			previousModel.click = "";
+		if(previousItem !== undefined) {
+			previousItem.click = "";
 		}
 
-		previousModel = model;
-		model.click = "lattice_click";
-		model.search = $routeParams.search;
-		model.type = $routeParams.type;
-		$routeParams.click = "lattice_click";
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+		$routeParams.description = item.description;
 
-		var location = createModelListQuery($routeParams, true) + "/id/" + model.id;
-
+		var location = createUrlAndQuery($routeParams, "vendor", true) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
 
 /*
- * Show lattice details in the right pane
+ * Show details in the right pane
  */
-app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $sce, $modal, $timeout){
+app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, Vendor, vendorFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
-	$scope.raw = {};
-	$scope.raw.data = [];
-	$scope.latticeModels = [];
-	$scope.compare = {};
-	$scope.compare.show = false;
-	$scope.raw.id = $routeParams.id;
-
-	// Get id parameter from the URL and split it by |||
-	var params = $routeParams.id.split('|||');
-	var paramsObject = {};
-	paramsObject.type = $routeParams.type;
-	paramsObject.name = params[0];
-	paramsObject.branch = params[1];
-	paramsObject.version = params[2];
-
-	// Show lattice model list
-	var query = serviceurl + 'lattice/?function=retrieveModelList&latticename=' + paramsObject.name + '&latticeversion=' + paramsObject.version + '&latticebranch=' + paramsObject.branch;
-
-	// Get model list data and create appropriate object
-	$http.get(query).success(function(data){
-
-		$.each(data, function(name, model){
-			model.name = name;
-
-			var route = {};
-			route.id = model.id;
-			route.type = "model";
-
-			$.each(model, function(i, cell){
-				model[i] = $sce.trustAsHtml(model[i].toString());
-			});
-
-			var location = createModelListQuery(route, true) + "/id/" + name;
-			model.link = $sce.trustAsHtml('<a href="' + location + '">link to model</a>');
-			$scope.latticeModels.push(model);
-		});
+	$scope.action = $routeParams.action;
+	$scope.new = new Vendor();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	
+	// Get vendor from the factory
+	vendorFactory.retrieveVendor($routeParams).then(function(result) {
+		$scope.element = result;
 	});
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createUrlAndQuery($routeParams, "vendor", true) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var vendor = new Vendor(newItem);
+		l(vendor);
+		var result = vendorFactory.checkVendor(vendor);
+		l(result);
 
-	// Show raw lattice in a table
-	query = serviceurl + 'lattice/?function=retrieveLattice&rawdata=true&withdata=true&' + createLatticeListQuery(paramsObject, false);
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var promise;
+			
+			if(action === "update") {
+				promise = vendorFactory.updateVendor($scope.element);
 
-	var lattice = {};
-	var header = [];
-
-	// Get lattice data and generate appropriate objects
-	$http.get(query).success(function(data){
-		l(data);
-
-		var latticeKeys = Object.keys(data);
-		lattice = data[latticeKeys[0]].lattice;
-		$scope.raw.url = serviceurl + data[latticeKeys[0]].url;
-
-		var urlParts = $scope.raw.url.split("/");
-		$scope.raw.zipurl = urlParts.slice(0, urlParts.length-1).join("/") + '_' + urlParts[urlParts.length-1] + '.zip';
-
-		$scope.lattice = data[latticeKeys[0]];
-		$scope.lattice.latticeid = latticeKeys[0];
-
-		// Create array of header columns
-		header.push("id");
-		header.push("name");
-		header.push("type");
-		header.push("length");
-		header.push("position");
-
-		// Get the rest of the columns
-		if(lattice.columns !== undefined) {
-
-			$.each(lattice.columns, function(i, column){
-				header.push(column);
+			} else if(action == "save") {
+				promise = vendorFactory.saveVendor($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Vendor successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
 			});
 		}
-
-		$scope.raw.data.push({head: header});
-
-		// Show data with some delay
-		$timeout(function() {
-			$scope.raw.table =  createLatticeTable(header, lattice, $scope.raw.url);
-		}, 100);
-	});
-
-	$scope.updateLattice = function(latticeName, latticeVersion, latticeBranch) {
-
-		var modalInstance = $modal.open({
-			templateUrl: 'modal/update_lattice.html',
-			controller: 'updateLatticeModalCtrl',
-			resolve: {
-				name: function() {
-					return latticeName;
-				},
-				version: function() {
-					return latticeVersion;
-				},
-				branch: function() {
-					return latticeBranch;
-				}
-			}
-		});
-	};
+	}
 });
 
 /*

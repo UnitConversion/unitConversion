@@ -1,5 +1,5 @@
 /*
- * Helper functions for Unit Conversion client
+ * Helper functions for IDODS client
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
  */
@@ -55,24 +55,19 @@ jQuery.fn.doesExist = function(){
  * @param {boolean} returnUrl return url or query
  * @returns {String} return url or query string
  */
-function createLatticeListQuery(search, returnUrl) {
-	var query = "";
+function createUrlAndQuery(search, type, returnUrl) {
+	var query = serviceurl + "/" + type + "/?";
 	var url = "#";
 
 	// Add type
-	url += "/type/" + search.type;
+	url += "/" + type;
+	
+	// Add search time part
+	if(search.search !== undefined) {
+		url += "/search/" + search.search;
+	}
 
-	if(search.type === "lattice") {
-
-		// Add status part
-		if(search.status !== undefined) {
-			query += "status=" + search.status + "&";
-			url += "/status/" + search.status;
-
-		} else {
-			query += "";
-			url += "/status/";
-		}
+	if(type === "vendor") {
 
 		// Add name part
 		if(search.name !== undefined) {
@@ -84,54 +79,14 @@ function createLatticeListQuery(search, returnUrl) {
 			url += "/name/";
 		}
 
-		// Add version part
-		if(search.version !== undefined) {
-			query += "version=" + search.version + '&';
-			url += "/version/" + search.version;
-
-		} else {
-			query += "version=*&";
-			url += "/version/";
-		}
-
-		// Add branch part
-		if(search.branch !== undefined) {
-			query += "branch=" + search.branch + '&';
-			url += "/branch/" + search.branch;
-
-		} else {
-			query += "branch=*&";
-			url += "/branch/";
-		}
-
 		// Add description part
-		if(search.desc !== undefined) {
-			query += "description=" + search.desc + '&';
-			url += "/desc/" + search.desc;
+		if(search.description !== undefined) {
+			query += "description=" + search.description + '&';
+			url += "/description/" + search.description;
 
 		} else {
 			query += "description=*&";
-			url += "/desc/";
-		}
-
-		// Add creator part
-		if(search.creator !== undefined) {
-			query += "creator=" + search.creator + '&';
-			url += "/creator/" + search.creator;
-
-		} else {
-			query += "creator=*&";
-			url += "/creator/";
-		}
-
-		// Add lattice type part
-		if(search.latticetype !== undefined) {
-			query += 'latticetype={"name":"' + search.latticetype + '"}';
-			url += "/latticetype/" + search.latticetype;
-
-		} else {
-			query += "";
-			url += "/latticetype/";
+			url += "/description/";
 		}
 	}
 
@@ -142,6 +97,26 @@ function createLatticeListQuery(search, returnUrl) {
 	} else {
 		return query;
 	}
+}
+
+/**
+ * Prepare url post parameter. This function us used to avoid problems when using $http.post function.
+ * @param dictOfValues dictionary of key and value of parameters
+ */
+function prepareUrlParameters(listOfKeys, dictOfValues, listOfMandatoryKeys) {
+	var params = [];
+
+	$.each(listOfKeys, function(i, key) {
+
+		if(key in dictOfValues) {
+			params.push(key + "=" + dictOfValues[key]);
+		
+		} else if(listOfMandatoryKeys && listOfMandatoryKeys.indexOf(key) >= 0) {
+			params.push(key + "=*");
+		}
+	});
+	
+	return params.join("&");
 }
 
 /**

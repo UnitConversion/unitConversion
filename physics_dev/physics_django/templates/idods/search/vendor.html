@@ -1,0 +1,33 @@
+{% load verbatim %} {% verbatim %}
+<div class="clear"></div>
+<div id="search_form">
+	<div class="">
+		<h5>Search</h5>
+	</div>
+
+	<div>
+		<select>
+			<option ng-model="search.type" ng-repeat="type in dataTypes" value="{{type.name}}">{{type.value}}</option>
+		</select>
+		<br />
+		<br />
+	</div>
+	<div class="">
+		Name:
+		<br />
+		<input class="search_field" ng-enter="searchForVendor(search)" type="text" ng-model="search.name" name="name" />
+		<br />
+		<br />
+	</div>
+	<div class="">
+		Description:
+		<br />
+		<input class="search_field" ng-enter="searchForVendor(search)" type="text" ng-model="search.description" name="description" />
+		<br />
+		<br />
+	</div>
+	<div class="">
+		<button ng-click="searchForVendor(search)" class="btn">Search</button>
+	</div>
+</div>
+{% endverbatim %}

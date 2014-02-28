@@ -236,26 +236,26 @@ html, body {
 	background-color: #f2f2f2;
 }
 
-.lattice {
+.item {
 	display: block;
 	cursor: pointer;
 	border-bottom: 1px solid #dddddd;
 	padding: 5px;
 }
 
-.lattice:hover {
+.item:hover {
 	background-color: #ffffff;
 }
 
-.lattice_click {
+.item_click {
 	background-color: #82bcd9;
 }
 
-.lattice_click span {
+.item_click span {
 	color: white;
 }
 
-.lattice_click:hover {
+.item_click:hover {
 	background-color: #82bcd9;
 }
 
@@ -356,7 +356,7 @@ html, body {
 	list-style-type: none;
 }
 
-.compare_btn {
+.add_btn {
 	margin-bottom: 5px;
 }
 
@@ -401,7 +401,7 @@ html, body {
 	background-color: #f1f1f1;
 }
 
-.lattice_list {
+.item_list {
 	width: 100%;
 }
 
@@ -410,7 +410,7 @@ html, body {
 	margin-bottom: 0 !important;
 }
 
-.model_update {
+.item_update {
 	position: absolute;
 	right: 5px;
 	top: 15px;

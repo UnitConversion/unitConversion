@@ -14,7 +14,9 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',																																			'index.home').
+		when('/vendor',																																		'index.vendor').
+		when('/vendor/search/:search/name/:name?/description/:description?/list',																			'index.vendor.list').
+		when('/vendor/search/:search/name/:name?/description/:description?/id/:id/action/:action',															'index.vendor.list.details').
 		when('/type/:type/status/:status?/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/list',		'index.home.lattice_list').
 		when('/type/:type/status/:status?/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/id/:id',	'index.home.lattice_list.lattice_details').
 		when('/type/:type/status/:status?/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/ids/:ids',	'index.home.lattice_list.lattices_details').
@@ -22,6 +24,32 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/type/:type/status/:status?/name/:name?/id/:id?',																								'index.home.model_list.model_details').
 		when('/type/:type/status/:status?/name/:name?/ids/:ids?',																							'index.home.model_list.models_details').
 
+		segment('index', {
+			templateUrl: 'content.html',
+			controller: 'mainCtrl'
+		}).
+		within().
+			segment('vendor', {
+				templateUrl: 'search/vendor.html',
+				controller: 'searchVendorCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/vendor.html',
+					controller: 'listVendorCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/vendor.html',
+						controller: 'showVendorCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up();
+	
+	/*
 		segment('index', {
 			templateUrl: 'content.html',
 			controller: 'mainCtrl'
@@ -68,6 +96,7 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				up().
 			up().
 		up();
+		*/
 
-		//$routeProvider.otherwise({redirectTo: '/'});
+		$routeProvider.otherwise({redirectTo: '/vendor'});
 });

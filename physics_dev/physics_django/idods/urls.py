@@ -90,6 +90,6 @@ urlpatterns = patterns(
     # Test authentication
     url(r'^id/device/test/$', testAuth),
     
-    url(r'^id/web/$', idodsIndexHtml),
-    url(r'^id/web/.+', idodsHtmls),
+    url(r'^id/web/device/$', idodsIndexHtml),
+    url(r'^id/web/device/(.+)', idodsHtmls),
 )

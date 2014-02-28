@@ -142,6 +142,7 @@ Update vendor
 '''
 @require_http_methods(["POST"])
 def updateVendorWS(request):
+    print request.POST
     return _updateData(request, idodsi.updateVendor, ['old_name', 'name', 'description'], {'vendor_id': None})
 
 '''
@@ -468,7 +469,5 @@ def idodsIndexHtml(request):
 '''
 Load html files
 '''
-def idodsHtmls(request):
-    path_parts = request.path.split("/")
-    file_name = path_parts[len(path_parts)-1]
-    return render_to_response("idods/" + file_name)
+def idodsHtmls(request, url):
+    return render_to_response("idods/" + url)
