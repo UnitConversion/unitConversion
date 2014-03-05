@@ -14,20 +14,47 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/vendor',																																		'index.vendor').
-		when('/vendor/search/:search/name/:name?/description/:description?/list',																			'index.vendor.list').
-		when('/vendor/search/:search/name/:name?/description/:description?/id/:id/action/:action',															'index.vendor.list.details').
-		when('/type/:type/status/:status?/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/list',		'index.home.lattice_list').
-		when('/type/:type/status/:status?/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/id/:id',	'index.home.lattice_list.lattice_details').
-		when('/type/:type/status/:status?/name/:name?/version/:version?/branch/:branch?/desc/:desc?/creator/:creator?/latticetype/:latticetype?/ids/:ids',	'index.home.lattice_list.lattices_details').
-		when('/type/:type/status/:status?/name/:name?/list',																								'index.home.model_list').
-		when('/type/:type/status/:status?/name/:name?/id/:id?',																								'index.home.model_list.model_details').
-		when('/type/:type/status/:status?/name/:name?/ids/:ids?',																							'index.home.model_list.models_details').
+		when('/vendor',																										'index.vendor').
+		when('/vendor/search/:search/name/:name?/description/:description?/list',											'index.vendor.list').
+		when('/vendor/search/:search/name/:name?/description/:description?/id/:id/action/:action',							'index.vendor.list.details').
+		
+		when('/cmpnt_type',																									'index.cmpnt_type').
+		when('/cmpnt_type/search/:search/name/:name?/description/:description?/list',										'index.cmpnt_type.list').
+		when('/cmpnt_type/search/:search/name/:name?/description/:description?/id/:id/action/:action',						'index.cmpnt_type.list.details').
+		
+		when('/cmpnt_type_type',																							'index.cmpnt_type_type').
+		when('/cmpnt_type_type/search/:search/name/:name?/description/:description?/list',									'index.cmpnt_type_type.list').
+		when('/cmpnt_type_type/search/:search/name/:name?/description/:description?/id/:id/action/:action',					'index.cmpnt_type_type.list.details').
+
+		when('/inventory',																									'index.inventory').
+		when('/inventory/search/:search/name/:name?/list',																	'index.inventory.list').
+		when('/inventory/search/:search/name/:name?/id/:id/action/:action',													'index.inventory.list.details').
+
+		when('/inventory_type',																								'index.inventory_type').
+		when('/inventory_type/search/:search/name/:name?/list',																'index.inventory_type.list').
+		when('/inventory_type/search/:search/name/:name?/id/:id/action/:action',											'index.inventory_type.list.details').
+		
+		when('/install',																																			'index.install').
+		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/list',						'index.install.list').
+		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',		'index.install.list.details').
+		
+		when('/data_method',																								'index.data_method').
+		when('/data_method/search/:search/name/:name?/description/:description?/list',										'index.data_method.list').
+		when('/data_method/search/:search/name/:name?/description/:description?/id/:id/action/:action',						'index.data_method.list.details').
+		
+		when('/offline_data',																								'index.offline_data').
+		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/list',					'index.offline_data.list').
+		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/id/:id/action/:action','index.offline_data.list.details').
+		
+		when('/online_data',																								'index.online_data').
+		when('/online_data/search/:search/install_name/:install_name?/description/:description?/list',					'index.online_data.list').
+		when('/online_data/search/:search/install_name/:install_name?/description/:description?/id/:id/action/:action',	'index.online_data.list.details').
 
 		segment('index', {
 			templateUrl: 'content.html',
 			controller: 'mainCtrl'
 		}).
+		
 		within().
 			segment('vendor', {
 				templateUrl: 'search/vendor.html',
@@ -47,56 +74,175 @@ app.config(function($routeSegmentProvider, $routeProvider){
 					}).
 				up().
 			up().
-		up();
-	
-	/*
-		segment('index', {
-			templateUrl: 'content.html',
-			controller: 'mainCtrl'
-		}).
+		up().
+
 		within().
-			segment('home', {
-				templateUrl: 'search.html',
-				controller: 'searchFormCtrl'
+			segment('cmpnt_type', {
+				templateUrl: 'search/cmpnt_type.html',
+				controller: 'searchCmpntTypeCtrl'
 			}).
 			within().
-				segment('lattice_list', {
-					templateUrl: 'list.html',
-					controller: 'listLatticeCtrl',
-					dependencies: ['type', 'status', 'name', 'version', 'branch', 'desc', 'creator', 'latticetype']
+				segment('list', {
+					templateUrl: 'list/cmpnt_type.html',
+					controller: 'listCmpntTypeCtrl',
+					dependencies: ['search']
 				}).
 				within().
-					segment('lattice_details', {
-						templateUrl: 'details.html',
-						controller: 'showLatticeDetailsCtrl',
-						dependencies: ['id']
-					}).
-					segment('lattices_details', {
-						templateUrl: 'details.html',
-						controller: 'showLatticesDetailsCtrl',
-						dependencies: ['ids']
+					segment('details', {
+						templateUrl: 'details/cmpnt_type.html',
+						controller: 'showCmpntTypeCtrl',
+						dependencies: ['id', 'action']
 					}).
 				up().
-				segment('model_list', {
-					templateUrl: 'model_list.html',
-					controller: 'listModelCtrl',
-					dependencies: ['type', 'name', 'status']
+			up().
+		up().
+
+		within().
+			segment('cmpnt_type_type', {
+				templateUrl: 'search/cmpnt_type_type.html',
+				controller: 'searchCmpntTypeTypeCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/cmpnt_type_type.html',
+					controller: 'listCmpntTypeTypeCtrl',
+					dependencies: ['search']
 				}).
 				within().
-					segment('model_details', {
-						templateUrl: 'model_details.html',
-						controller: 'showModelDetailsCtrl',
-						dependencies: ['id']
+					segment('details', {
+						templateUrl: 'details/cmpnt_type_type.html',
+						controller: 'showCmpntTypeTypeCtrl',
+						dependencies: ['id', 'action']
 					}).
-					segment('models_details', {
-						templateUrl: 'model_details.html',
-						controller: 'showModelsDetailsCtrl',
-						dependencies: ['ids']
+				up().
+			up().
+		up().
+
+		within().
+			segment('inventory', {
+				templateUrl: 'search/inventory.html',
+				controller: 'searchInventoryCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/inventory.html',
+					controller: 'listInventoryCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/inventory.html',
+						controller: 'showInventoryCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('inventory_type', {
+				templateUrl: 'search/inventory_type.html',
+				controller: 'searchInventoryTypeCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/inventory_type.html',
+					controller: 'listInventoryTypeCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/inventory_type.html',
+						controller: 'showInventoryTypeCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('install', {
+				templateUrl: 'search/install.html',
+				controller: 'searchInstallCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/install.html',
+					controller: 'listInstallCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/install.html',
+						controller: 'showInstallCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('data_method', {
+				templateUrl: 'search/data_method.html',
+				controller: 'searchDataMethodCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/data_method.html',
+					controller: 'listDataMethodCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/data_method.html',
+						controller: 'showDataMethodCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('offline_data', {
+				templateUrl: 'search/offline_data.html',
+				controller: 'searchOfflineDataCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/offline_data.html',
+					controller: 'listOfflineDataCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/offline_data.html',
+						controller: 'showOfflineDataCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('online_data', {
+				templateUrl: 'search/online_data.html',
+				controller: 'searchOnlineDataCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/online_data.html',
+					controller: 'listOnlineDataCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/online_data.html',
+						controller: 'showOnlineDataCtrl',
+						dependencies: ['id', 'action']
 					}).
 				up().
 			up().
 		up();
-		*/
-
-		$routeProvider.otherwise({redirectTo: '/vendor'});
+	
+		//$routeProvider.otherwise({redirectTo: '/vendor'});
 });

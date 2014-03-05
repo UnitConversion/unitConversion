@@ -19,28 +19,13 @@ var writeLogs = true;
 
 // Types of data we can browse/create/update/delete
 var dataTypes = [
-	{name:"vendor", value:"Vendor"}
-];
-
-// Vendor fixed properties
-var vendorProps = [
-	{
-		"name": "id",
-		"display": "Id",
-		"save": false,
-		"update": false
-	},
-	{
-		"name": "name",
-		"display": "Name",
-		"save": true,
-		"update": true,
-		"mandatory": true
-	},
-	{
-		"name": "description",
-		"display": "Description",
-		"save": true,
-		"update": true
-	}
+	{name:"vendor", value:"Vendor"},
+	{name:"cmpnt_type", value:"Component type"},
+	{name:"cmpnt_type_type", value:"Component type property type"},
+	{name:"inventory", value:"Inventory"},
+	{name:"inventory_type", value:"Inventory property type"},
+	{name:"install", value:"Install"},
+	{name:"data_method", value:"Data method"},
+	{name:"offline_data", value:"Offline data"},
+	{name:"online_data", value:"Online data"}
 ];

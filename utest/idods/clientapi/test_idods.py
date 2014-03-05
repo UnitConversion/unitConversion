@@ -462,6 +462,12 @@ class Test(unittest.TestCase):
         self.assertNotEqual(updatedDataObject['data'], '')
 
     '''
+    Callback method for testing uploading files with online data methods
+    '''
+    def callback(self, first, second, third):
+        print first, second, third
+
+    '''
     Test retrieving, saving and updating online data
     '''
     def testOnlineData(self):
@@ -473,13 +479,13 @@ class Test(unittest.TestCase):
         self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
         
         # Save online data
-        onlineid = self.client.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+        onlineid = self.client.saveOnlineData('test parent', username='username', description='desc1234', data='../dataapi/download_128', data_file_name='datafile', status=1)
         
         # Update online data
-        self.assertTrue(self.client.updateOnlineData(onlineid['id'], username='username2'))
+        self.assertTrue(self.client.updateOnlineData(onlineid['id'], username='username2', data='../dataapi/download_128', data_file_name='datafile123'))
         
         # Retrieve online data
-        retrievedOnlineData = self.client.retrieveOnlineData(onlineid=onlineid['id'])
+        retrievedOnlineData = self.client.retrieveOnlineData(onlineid=onlineid['id'], with_data=True, data_path="downloadedfile2", callback=self.callback)
         retrievedOnlineDataKeys = retrievedOnlineData.keys()
         retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
         
@@ -487,7 +493,7 @@ class Test(unittest.TestCase):
         self.assertEqual('username2', retrievedOnlineDataObject['username'])
         
         # Test URL
-        self.assertEqual('url', retrievedOnlineDataObject['url'])
+        self.assertTrue('datafile' in retrievedOnlineDataObject['url'])
         
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
@@ -495,7 +501,7 @@ class Test(unittest.TestCase):
     def testUploadingLargeFile(self):
         
         # Upload a file
-        uploadedFile = self.client.uploadFile('large')
+        uploadedFile = self.client.uploadFile('large', 'new_file')
         
         # Test file path
         self.assertNotEqual(uploadedFile['path'], '')

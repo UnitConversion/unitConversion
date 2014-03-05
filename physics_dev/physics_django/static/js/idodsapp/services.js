@@ -23,6 +23,122 @@ app.factory('modelCodeInfoService', function($resource){
 });
 
 /*
+ * Check if object has all mandatory properties set
+ * @param item item we are checking
+ * @param error error is filled in if mandatory property is not set
+ */
+function checkItem(item, error) {
+	error.reset();
+
+	$.each(item.m, function(i, property) {
+
+		if(item[property] === undefined || item[property] === "") {
+			error.add(property, item.display[property] + " is mandatory!");
+		}
+	});
+
+	if(error.num === 0) {
+		return true;
+	
+	} else {
+		return error;
+	}
+}
+
+/*
+ * Retrieve item from the REST
+ * @param url url for retrieving the item
+ * @param obj item object that has the information about search parameters
+ * @param Class name of the class we will create when we will get items
+ */
+function retrieveItem($q, $http, url, obj, Class) {
+	var query = serviceurl + "/" + url + "/?";
+	query += prepareUrlParameters(obj.search_m, obj);
+
+	var deffered = $q.defer();
+	var promise = deffered.promise;
+
+	$http.get(query).success(function(data){
+		deffered.resolve(new Class(data[obj.id]));
+	
+	}).error(function(data, status, headers, config) {
+		deffered.reject(data);
+	});
+
+	return promise;
+}
+
+/*
+ * Retrieve all items from the REST
+ * @param url url for retrieving the item
+ * @param list array of parameters that can be present in the http request
+ * @param params value of the parameters that can be present in the http request
+ * @param mandatoryList array of mandatory parameters that should be present in the http request
+ */
+function retrieveItems($q, $http, url, list, params, mandatoryList) {
+	var query = serviceurl + "/" + url + "/?";
+
+	query += prepareUrlParameters(list, params, mandatoryList);
+
+	var deffered = $q.defer();
+	var promise = deffered.promise;
+
+	$http.get(query).success(function(data){
+		deffered.resolve(data);
+	
+	}).error(function(data, status, headers, config) {
+		deffered.reject(data);
+	});
+
+	return promise;
+}
+
+/*
+ * Save item in the database using REST
+ * @param url url for saving the item
+ * @param obj item we want to save
+ */
+function saveItem($q, $http, url, obj) {
+	var query = serviceurl + "/" + url + "/";
+
+	var params = prepareUrlParameters(obj.save, obj);
+
+	var deffered = $q.defer();
+	var promise = deffered.promise;
+
+	$http.post(query, params).success(function(data){
+		deffered.resolve(data);
+	
+	}).error(function(data, status, headers, config) {
+		deffered.reject(data);
+	});
+
+	return promise;
+}
+
+/*
+ * Update item using REST
+ * @param url url for updating the item
+ * @param obj item we want to update
+ */
+function updateItem($q, $http, url, obj) {
+	var query = serviceurl + "/" + url + "/";
+
+	var params = prepareUrlParameters(obj.update, obj);
+	var deffered = $q.defer();
+	var promise = deffered.promise;
+
+	$http.post(query, params).success(function(data){
+		deffered.resolve(data);
+	
+	}).error(function(data, status, headers, config) {
+		deffered.reject(data);
+	});
+
+	return promise;
+}
+
+/*
  * Provide a factory for the vendor entity. Vendor can be checked, retrieved, saved and updated
  */
 app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
@@ -39,117 +155,533 @@ app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
 	factory.checkVendor = function(vendor) {
 
 		if(vendor !== undefined) {
-			this.setVendor(vendor);
+			factory.setVendor(vendor);
 		}
 
-		this.error.reset();
-
-		l(this.eVendor.m);
-
-		$.each(this.eVendor.m, function(i, property) {
-
-			if(factory.eVendor[property] === undefined || factory.eVendor[property] === "") {
-				factory.error.add(property, property + " is mandatory!");
-			}
-		});
-
-		if(this.error.num === 0) {
-			return true;
-		
-		} else {
-			return this.error;
-		}
+		return checkItem(factory.eVendor, factory.error);
 	}
 
 	// Get vendor from server
 	factory.retrieveVendor = function(vendor) {
-		var query = serviceurl + "/vendor/?";
 
 		if(vendor !== undefined) {
 			this.setVendor(vendor);
 		}
 
-		query += prepareUrlParameters(this.eVendor.list, this.eVendor);
-
-		var deffered = $q.defer();
-		var promise = deffered.promise;
-
-		$http.get(query).success(function(data){
-			deffered.resolve(new Vendor(data[factory.eVendor.id]));
-		
-		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
-		});
-
-		return promise;
+		return retrieveItem($q, $http, "vendor", this.eVendor, Vendor);
 	}
 
 	// Get vendors from server
 	factory.retrieveVendors = function(params) {
-		var query = serviceurl + "/vendor/?";
-		l(this.eVendor);
-		l(this.eVendor.m);
-
-		query += prepareUrlParameters(this.eVendor.list, params, this.eVendor.m);
-		l(query);
-
-		var deffered = $q.defer();
-		var promise = deffered.promise;
-
-		$http.get(query).success(function(data){
-			deffered.resolve(data);
-		
-		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
-		});
-
-		return promise;
+		return retrieveItems($q, $http, "vendor", this.eVendor.list, params, this.eVendor.search_m);
 	}
 
 	// Save new vendor
 	factory.saveVendor = function(vendor) {
-		var query = serviceurl + "/savevendor/";
 
 		if(vendor !== undefined) {
 			this.setVendor(vendor);
 		}
 
-		var params = prepareUrlParameters(this.eVendor.save, this.eVendor);
-
-		var deffered = $q.defer();
-		var promise = deffered.promise;
-
-		$http.post(query, params).success(function(data){
-			deffered.resolve(data);
-		
-		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
-		});
-
-		return promise;
+		return saveItem($q, $http, "savevendor", this.eVendor);
 	}
 
 	// Update a vendor
 	factory.updateVendor = function(vendor) {
-		var query = serviceurl + "/updatevendor/";
 
 		if(vendor !== undefined) {
 			this.setVendor(vendor);
 		}
 
-		var params = prepareUrlParameters(this.eVendor.update, this.eVendor);
+		return updateItem($q, $http, "updatevendor", this.eVendor);
+	}
 
-		var deffered = $q.defer();
-		var promise = deffered.promise;
+	return factory;
+});
 
-		$http.post(query, params).success(function(data){
-			deffered.resolve(data);
-		
-		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
-		});
+/*
+ * Provide a factory for the component type entity. Component type can be checked, retrieved, saved and updated
+ */
+app.factory('cmpntTypeFactory', function($http, $q, CmpntType, EntityError) {
+	var factory = {};
+	factory.eCmpntType = new CmpntType();
+	factory.error = new EntityError();
 
-		return promise;
+	// Set component type object
+	factory.setCmpntType = function(cmpntType) {
+		this.eCmpntType.set(cmpntType);
+	}
+
+	// Check component type before sending it to the server
+	factory.checkCmpntType = function(cmpntType) {
+
+		if(cmpntType !== undefined) {
+			this.setCmpntType(cmpntType);
+		}
+
+		return checkItem(this.eCmpntType, this.error);
+	}
+
+	// Get componet type from server
+	factory.retrieveCmpntType = function(cmpntType) {
+
+		if(cmpntType !== undefined) {
+			this.setCmpntType(cmpntType);
+		}
+
+		return retrieveItem($q, $http, "cmpnttype", this.eCmpntType, CmpntType);
+	}
+
+	// Get component types from server
+	factory.retrieveCompntTypes = function(params) {
+		return retrieveItems($q, $http, "cmpnttype", this.eCmpntType.list, params, this.eCmpntType.search_m);
+	}
+
+	// Save new component type
+	factory.saveCmpntType = function(cmpntType) {
+
+		if(cmpntType !== undefined) {
+			this.setCmpntType(cmpntType);
+		}
+
+		return saveItem($q, $http, "savecmpnttype", this.eCmpntType);
+	}
+
+	// Update component tpye
+	factory.updateCmpntType = function(cmpntType) {
+
+		if(cmpntType !== undefined) {
+			this.setCmpntType(cmpntType);
+		}
+
+		return updateItem($q, $http, "updatecmpnttype", this.eCmpntType);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the component type property type entity. Component type property type can be checked, retrieved, saved and updated
+ */
+app.factory('cmpntTypeTypeFactory', function($http, $q, CmpntTypeType, EntityError) {
+	var factory = {};
+	factory.eCmpntTypeType = new CmpntTypeType();
+	factory.error = new EntityError();
+
+	// Set component type property type object
+	factory.setCmpntTypeType = function(cmpntTypeType) {
+		this.eCmpntTypeType.set(cmpntTypeType);
+	}
+
+	// Check component type property type before sending it to the server
+	factory.checkCmpntTypeType = function(cmpntTypeType) {
+
+		if(cmpntTypeType !== undefined) {
+			this.setCmpntTypeType(cmpntTypeType);
+		}
+
+		return checkItem(this.eCmpntTypeType, this.error);
+	}
+
+	// Get componet type property type from server
+	factory.retrieveCmpntTypeType = function(cmpntTypeType) {
+
+		if(cmpntTypeType !== undefined) {
+			this.setCmpntTypeType(cmpntTypeType);
+		}
+
+		return retrieveItem($q, $http, "cmpnttypeproptype", this.eCmpntTypeType, CmpntTypeType);
+	}
+
+	// Get component type property types from server
+	factory.retrieveCompntTypeTypes = function(params) {
+		return retrieveItems($q, $http, "cmpnttypeproptype", this.eCmpntTypeType.list, params, this.eCmpntTypeType.search_m);
+	}
+
+	// Save new component type property type
+	factory.saveCmpntTypeType = function(cmpntTypeType) {
+
+		if(cmpntTypeType !== undefined) {
+			this.setCmpntTypeType(cmpntTypeType);
+		}
+
+		return saveItem($q, $http, "savecmpnttypeproptype", this.eCmpntTypeType);
+	}
+
+	// Update component type property type
+	factory.updateCmpntTypeType = function(cmpntTypeType) {
+
+		if(cmpntTypeType !== undefined) {
+			this.setCmpntTypeType(cmpntTypeType);
+		}
+
+		return updateItem($q, $http, "updatecmpnttypeproptype", this.eCmpntTypeType);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the inventory entity. Inventory can be checked, retrieved, saved and updated
+ */
+app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
+	var factory = {};
+	factory.entity = new Inventory();
+	factory.error = new EntityError();
+
+	// Set inventory object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check inventory before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get inventory from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "inventory", this.entity, Inventory);
+	}
+
+	// Get inventories from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "inventory", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new inventory
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinventory", this.entity);
+	}
+
+	// Update inventory
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinventory", this.entity);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the inventory property template entity. Inventory property template can be checked, retrieved, saved and updated
+ */
+app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityError) {
+	var factory = {};
+	factory.entity = new InventoryType();
+	factory.error = new EntityError();
+
+	// Set inventory property template object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check inventory property tempalte before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get inventory property template from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "inventoryproptmplt", this.entity, InventoryType);
+	}
+
+	// Get inventorie property templates from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "inventoryproptmplt", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new inventory property template
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinventoryproptmplt", this.entity);
+	}
+
+	// Update inventory property template
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinventoryproptmplt", this.entity);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the install entity. Install can be checked, retrieved, saved and updated
+ */
+app.factory('installFactory', function($http, $q, Install, EntityError) {
+	var factory = {};
+	factory.entity = new Install();
+	factory.error = new EntityError();
+
+	// Set install object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check install before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get install from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "install", this.entity, Install);
+	}
+
+	// Get install from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "install", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new install
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinstall", this.entity);
+	}
+
+	// Update install
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinstall", this.entity);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the data method entity. Data method can be checked, retrieved, saved and updated
+ */
+app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {
+	var factory = {};
+	factory.entity = new DataMethod();
+	factory.error = new EntityError();
+
+	// Set data method object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check data method before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get data method from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "datamethod", this.entity, DataMethod);
+	}
+
+	// Get data method from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "datamethod", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new data method
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "savedatamethod", this.entity);
+	}
+
+	// Update data method
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updatedatamethod", this.entity);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the offline data entity. Offline data can be checked, retrieved, saved and updated
+ */
+app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) {
+	var factory = {};
+	factory.entity = new OfflineData();
+	factory.error = new EntityError();
+
+	// Set offline data object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check offline data before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get offline data from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "offlinedata", this.entity, OfflineData);
+	}
+
+	// Get offline data from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "offlinedata", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new offline data
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveofflinedata", this.entity);
+	}
+
+	// Update offline data
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateofflinedata", this.entity);
+	}
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the online data entity. Online data can be checked, retrieved, saved and updated
+ */
+app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
+	var factory = {};
+	factory.entity = new OnlineData();
+	factory.error = new EntityError();
+
+	// Set online data object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check online data before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get online data from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "onlinedata", this.entity, OnlineData);
+	}
+
+	// Get online data from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "onlinedata", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new online data
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveonlinedata", this.entity);
+	}
+
+	// Update online data
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateonlinedata", this.entity);
 	}
 
 	return factory;

@@ -95,12 +95,18 @@ app.controller('mainCtrl', function($scope, $modal){
 app.controller('searchVendorCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[0];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		$window.location = newLocation;
+	};
 
 	// Vendor search button click
-	$scope.searchForVendor = function(search) {
+	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
-		var newLocation = createUrlAndQuery(search, "vendor", true) + "/list";
-		l(newLocation);
+		var newLocation = createRouteUrl(search, "vendor", ["name", "description"]) + "/list";
 		$window.location = newLocation;
 	};
 });
@@ -140,7 +146,7 @@ app.controller('listVendorCtrl', function($scope, $routeParams, $http, $window, 
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createUrlAndQuery($routeParams, "vendor", true) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, "vendor", ["name", "description"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -160,7 +166,7 @@ app.controller('listVendorCtrl', function($scope, $routeParams, $http, $window, 
 		$routeParams.name = item.name;
 		$routeParams.description = item.description;
 
-		var location = createUrlAndQuery($routeParams, "vendor", true) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, "vendor", ["name", "description"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -180,11 +186,12 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 	// Get vendor from the factory
 	vendorFactory.retrieveVendor($routeParams).then(function(result) {
 		$scope.element = result;
+		$scope.element.old_name = result.name;
 	});
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createUrlAndQuery($routeParams, "vendor", true) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "vendor", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 	
@@ -199,7 +206,9 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 			$scope.error = result.errorDict;
 		
 		} else {
+			delete $scope.error;
 			var promise;
+			l($scope.element);
 			
 			if(action === "update") {
 				promise = vendorFactory.updateVendor($scope.element);
@@ -225,707 +234,1330 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 });
 
 /*
- * Show lattice compare view in the right pane
+ * Controller for the left/search pane
  */
-app.controller('showLatticesDetailsCtrl', function($scope, $routeParams, $http, $q){
-	// Remove image from the middle pane if there is something to show
-	$scope.style.right_class = "container-scroll-last-one-no-img";
-	$scope.raw = {};
-	$scope.raw.show = true;
-	$scope.compare = {};
-	$scope.compare.show = true;
-	$scope.raw.id = $routeParams.ids;
-	$scope.filter = {};
-	$scope.filter.deviceName = "";
+app.controller('searchCmpntTypeCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[1];
 
-	var query = "";
-	var latticesData = {};
-	$scope.raw.lattices = latticesData;
-	$scope.raw.deviceName = "";
-	var latticesKeys = [];
-
-	// If comparing data
-	var ids = $scope.raw.id.split(',');
-	$scope.raw.ids = ids;
-
-	if(ids.length > 2) {
-		$scope.compare.message = "Comparison of more than two lattices is not allowed!";
-
-	} else {
-		var gets = [];
-
-		$.each(ids, function(i, id){
-
-			var params = id.split('|||');
-			var paramsObject = {};
-			paramsObject.type = $routeParams.type;
-			paramsObject.name = params[0];
-			paramsObject.branch = params[1];
-			paramsObject.version = params[2];
-
-			query = serviceurl + 'lattice/?function=retrieveLattice&withdata=true&' + createLatticeListQuery(paramsObject, false);
-
-			gets.push($http.get(query));
-		});
-
-		// Return all results
-		$q.all(gets).then(function(results) {
-
-			if(!checkLatticeFormat(results)) {
-				$scope.compare.message = "Selected lattices doens't have same formats. Comparison cannot continue.";
-
-			} else {
-				l(results);
-
-				$.each(results, function(i, result){
-					var latticeData = {};
-					var keys = Object.keys(result.data);
-					var header = [];
-
-					header.push("id");
-					header.push("name");
-					header.push("type");
-					header.push("length");
-					header.push("position");
-
-					// Get the rest of the columns
-					if(result.data[keys[0]].lattice.columns !== undefined) {
-
-						$.each(result.data[keys[0]].lattice.columns, function(i, column){
-							header.push(column);
-						});
-					}
-
-					$.each(result.data[keys[0]].lattice, function(j, line){
-						var key = line["name"];
-
-						var valueObject = {};
-
-						$.each(header, function(k, headerEl){
-							valueObject[headerEl] = line[headerEl];
-						});
-
-						latticeData[key] = valueObject;
-					});
-
-					// Add compared property
-					latticeData['compared'] = false;
-
-					latticesData[result.data[keys[0]].name] = {keys:header, data:latticeData};
-				});
-
-				// List devices
-				latticesKeys = Object.keys(latticesData);
-				var html = "<tr><th>Device names</th>";
-
-				$.each(latticesKeys, function(i, key){
-					html += "<th>" + key + "</th>";
-				});
-
-				html += "<th>Diff</th>";
-				html += "</tr>";
-				html += createLatticeComparinsonRows(latticesData, latticesKeys[0]);
-				html += createLatticeComparinsonRows(latticesData, latticesKeys[1]);
-				$scope.raw.table = html;
-			}
-		});
-	}
-
-	$scope.diffDetails = function(device) {
-		var parent = $('.parent_' + device);
-		var children = $('.children_' + device);
-
-		children.toggle();
-
-		if(parent.hasClass('icon-chevron-up')) {
-			parent.removeClass('icon-chevron-up');
-			parent.addClass('icon-chevron-down');
-
-		} else {
-			parent.removeClass('icon-chevron-down');
-			parent.addClass('icon-chevron-up');
-		}
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
 	};
 
-	$scope.filterLattice = function() {
-		filterTableItems($scope.filter, ".lattice_table2_row", "#lattice_table2");
-	};
-
-	$scope.downloadFile = function() {
-
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "cmpnt_type", ["name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
 	};
 });
 
 /*
- * Show model details in the right pane
+ * List items in the middle pane
  */
-app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $window, $modal){
+app.controller('listCmpntTypeCtrl', function($scope, $routeParams, $http, $window, CmpntTypeInfo, CmpntType, cmpntTypeFactory) {
 	// Remove image from the middle pane if there is something to show
-	$scope.style.right_class = "container-scroll-last-one-no-img";
-	$scope.raw = {};
-	$scope.raw.search = {};
-	$scope.raw.search.precision = 4;
-	$scope.raw.data = {};
-	$scope.raw.header = {};
-	$scope.raw.show = true;
-	$scope.models = {};
-	$scope.raw.modelDetails = modelDetails;
-	$scope.raw.showMatrices = false;
-	$scope.raw.selection = {};
-	$scope.raw.selectionCount = 0;
-	$scope.raw.factor = {};
+	$scope.style.middle_class = "container-scroll-middle-no-img";
 
-	$scope.compare = {};
-	$scope.compare.show = false;
+	$scope.id = $routeParams.id;
+	$scope.info = CmpntTypeInfo;
 
-	$scope.plotPlaceholder = {};
-	$scope.plotPlaceholder.show = false;
+	$scope.types = [];
+	var previousItem = undefined;
 
-	var keys = [];
-	var privateModel = {};
+	cmpntTypeFactory.retrieveCompntTypes($routeParams).then(function(result) {
 
-	var query = serviceurl + 'lattice/?function=retrieveModel&name=*&id=' + $routeParams.id;
+		l(result);
 
-	$http.get(query).success(function(data){
-		l(data);
-		keys = Object.keys(data);
-		privateModel = data[keys[0]];
-		$scope.models = privateModel;
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new CmpntType(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.types.push(newItem);
+		});
 	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "cmpnt_type", ["name", "description"]) + "/id/new/action/save";
+		$window.location = location;
+	}
 
-	$scope.trim = function(input) {
-		var output = input.replace(/^\s+|\s+$|\r\n/g, '');
-		return output;
-	};
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
 
-	$scope.showSimulationControlData = function() {
-		if(privateModel.simulationControl !== undefined && privateModel.simulationControlParsed === undefined) {
-			privateModel.simulationControlParsed = JSON.parse(privateModel.simulationControl);
-
-		} else {
-			privateModel.simulationControlParsed = undefined;
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
 		}
-	};
 
-	$scope.searchForModelDetails = function() {
-		$scope.raw.showMatrices = false;
-		query = createModelDetailsUrl($scope.raw.search, privateModel.name);
-		l(query);
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+		$routeParams.description = item.description;
 
-		$http.get(query).success(function(data){
-			l(data);
-			var transform = transformModelDetails(data);
-			l(transform);
-			var name = transform[0];
-			$scope.raw.header[transform[0]] = transform[1];
-			$scope.raw.data[transform[0]] = transform[2];
-			$scope.raw.selection = filterPropertySelectionTable(transform[0], $scope.raw.header);
-			$scope.raw.factor = filterPropertyFactorTable(transform[0], $scope.raw.header);
-			$scope.raw.selectionCount = Object.keys($scope.raw.selection).length;
-			$scope.raw.modelName = transform[0];
-
-			if($scope.raw.data[transform[0]].transferMatrix !== undefined) {
-				$scope.raw.transferMatrix = data[name].transferMatrix;
-			}
-		});
-	};
-
-	// Show matrices below the details
-	$scope.showMatrices = function() {
-
-		if($scope.raw.showMatrices) {
-			$scope.raw.showMatrices = false;
-
-		} else {
-			$scope.raw.showMatrices = true;
-		}
-	};
-
-	// Plot data when properties are selected
-	$scope.plotData = function() {
-		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
-	};
-
-	// Export data to csv file
-	$scope.exportData = function() {
-		var output = createCsvString($scope.raw.data, $scope.raw.selection, $scope.raw.factor);
-		$window.open('data:application/download,' + encodeURIComponent(output));
-	};
-
-	$scope.updateModel = function(modelName) {
-		l(modelName);
-
-		var modalInstance = $modal.open({
-			templateUrl: 'modal/update_model.html',
-			controller: 'updateModelModalCtrl',
-			resolve: {
-				name: function() {
-					return modelName;
-				}
-			}
-		});
+		var location = createRouteUrl($routeParams, "cmpnt_type", ["name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
 	};
 });
 
 /*
  * Show details in the right pane
  */
-app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $q){
+app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $window, CmpntTypeInfo, CmpntType, CmpntTypeType, cmpntTypeFactory, cmpntTypeTypeFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
-	$scope.raw = {};
-	$scope.raw.search = {};
-	$scope.models = {};
-	$scope.compare = {};
-	$scope.compare.factor = {};
-	$scope.compare.show = true;
-	$scope.raw.modelDetails = modelDetails;
-	$scope.plotPlaceholder = {};
-	$scope.plotPlaceholder.show = false;
+	$scope.action = $routeParams.action;
+	$scope.new = new CmpntType();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = CmpntTypeInfo;
 
-	var query = "";
-	var ids = $routeParams.ids.split("|||");
-	var nameToIdMap = {};
+	$scope.types = [];
+	$scope.new.prop_keys = [];
 
-	$scope.searchForModelDetails = function() {
-		var gets = [];
-		$scope.compare.names = [];
-		$scope.compare.ids = [];
-		$scope.compare.selection = {};
-		$scope.compare.selectionCount = 0;
-		$scope.compare.data = {};
+	// Retrieve all Componet type property types
+	cmpntTypeTypeFactory.retrieveCompntTypeTypes({}).then(function(result) {
 
-		$.each(ids, function(i, id){
-			var idParts = id.split("||");
-			nameToIdMap[idParts[0]] = idParts[1];
-			query = createModelDetailsUrl($scope.raw.search, idParts[0]);
-			l(query);
-			gets.push($http.get(query));
+		$.each(result, function(i, item){
+			$scope.types.push(item.name);
 		});
+	});
+	
+	// Append new property
+	$scope.appendProperty = function() {
 
-		$scope.compare.nameToIdMap = nameToIdMap;
+		if($routeParams.action === "save"){
+			$scope.new.prop_keys.push({'name': '', 'value': ''});
+		
+		} else {
+			$scope.element.prop_keys.push({'name': '', 'value': ''});
+		}
+		l($scope.props);
+	}
 
-		// Return all results
-		$q.all(gets).then(function(results) {
+	// Property name dropdown has changed
+	$scope.changePropertyName = function() {
+		l($scope.props);
+	}
+	
+	// Get component type from the factory
+	cmpntTypeFactory.retrieveCmpntType($routeParams).then(function(result) {
+		$scope.element = result;
+		$scope.element.old_name = result.name;
+		l($scope.element);
+	});
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "cmpnt_type", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new CmpntType(newItem);
+		l(item);
+		var result = cmpntTypeFactory.checkCmpntType(item);
+		l(result);
 
-			$.each(results, function(i, result) {
-				var transform = transformModelDetails(result.data);
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
 
-				$scope.compare.names.push(transform[0]);
-				$scope.compare.ids.push(nameToIdMap[transform[0]]);
-				$scope.compare.data[transform[0]] = transform[2];
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
 
-				$scope.compare.selection = createPropertySelectionTable(transform[1], transform[0], $scope.compare.selection);
-				$scope.compare.modelName = transform[0];
-				$scope.compare.factor = createPropertyFactorTable(transform[1], transform[0], $scope.compare.factor);
+				$.each($scope.element.prop_keys, function(i, prop) {
+					propsObject[prop.name] = prop.value;
+				});
 
-				$scope.compare.selectionCount = Object.keys($scope.compare.selection).length;
+				$scope.element.props = JSON.stringify(propsObject);
+
+				promise = cmpntTypeFactory.updateCmpntType($scope.element);
+
+			} else if(action == "save") {
+
+				$.each($scope.new.prop_keys, function(i, prop) {
+					propsObject[prop.name] = prop.value;
+				});
+
+				$scope.new.props = JSON.stringify(propsObject);
+				promise = cmpntTypeFactory.saveCmpntType($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Component type successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
 			});
-		});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchCmpntTypeTypeCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[2];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
 	};
 
-	$scope.plotData = function() {
-		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
-	};
-
-	$scope.trim = function(input) {
-		var output = input.replace(/^\s+|\s+$|\r\n/g, '');
-		return output;
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, ["name", "cmpnt_type_type", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
 	};
 });
 
 /*
- * Upload lattice controller
+ * List items in the middle pane
  */
-app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance, $window) {
-	$scope.upload = {};
-	$scope.upload.latticeFile = "";
-	$scope.upload.controlFile = "";
-	$scope.upload.kickmapFile = "";
+app.controller('listCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $window, CmpntTypeType, CmpntTypeTypeInfo, cmpntTypeTypeFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
 
-	$scope.modal = {};
-	$scope.modal.error = {};
-	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Lattice with the same parameters already exists in the database!";
+	$scope.id = $routeParams.id;
+	$scope.info = CmpntTypeTypeInfo;
 
-	$scope.modal.success = {};
-	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Lattice successfully uploaded!";
+	$scope.types = [];
+	var previousItem = undefined;
 
-	$scope.modal.waiting = {};
-	$scope.modal.waiting.show = false;
-	$scope.modal.waiting.message = "Uploading lattice and running simulation!";
+	cmpntTypeTypeFactory.retrieveCompntTypeTypes($routeParams).then(function(result) {
 
-	$scope.modal.doSimulation = {};
-	$scope.modal.doSimulation.show = true;
-	$scope.modal.doSimulation.selected = false;
+		l(result);
 
-	$scope.modal.controlFile = {};
-	$scope.modal.controlFile.show = false;
+		$.each(result, function(i, item){
 
-	$scope.modal.finishButton = "Cancel";
+			// Build customized object
+			var newItem = new CmpntTypeType(item);
 
-	$scope.modal.latticeTypes = latticeTypes;
-	var uploadData = undefined;
-
-	// Watch lattice type
-	$scope.$watch('upload.latticeType', function(newValue, oldValue) {
-		var value = {};
-
-		if(newValue !== undefined) {
-			value = JSON.parse(newValue);
-
-			if(value.name === "plain") {
-				$scope.modal.doSimulation.show = false;
-				$scope.modal.doSimulation.selected = false;
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
 
 			} else {
-				$scope.modal.doSimulation.show = true;
-				$scope.modal.doSimulation.selected = true;
+				newItem.color = "bg_light";
 			}
 
-			if(value.name === "elegant") {
-				$scope.modal.controlFile.show = true;
+			$scope.types.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "cmpnt_type_type", ["name", "description"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+		$routeParams.description = item.description;
+
+		var location = createRouteUrl($routeParams, "cmpnt_type_type", ["name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $window, CmpntTypeType, CmpntTypeTypeInfo, cmpntTypeTypeFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new CmpntTypeType();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = CmpntTypeTypeInfo;
+
+	// Get component type from the factory
+	cmpntTypeTypeFactory.retrieveCmpntTypeType($routeParams).then(function(result) {
+		$scope.element = result;
+		$scope.element.old_name = result.name;
+	});
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "cmpnt_type_type", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	// Save item into database
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new CmpntTypeType(newItem);
+		l(item);
+		var result = cmpntTypeTypeFactory.checkCmpntTypeType(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = cmpntTypeTypeFactory.updateCmpntTypeType($scope.element);
+
+			} else if(action == "save") {
+				promise = cmpntTypeTypeFactory.saveCmpntTypeType($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Component type property type successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchInventoryCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[3];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "inventory", ["name"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $window, InventoryInfo, Inventory, inventoryFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = InventoryInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	inventoryFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new Inventory(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
 
 			} else {
-				$scope.modal.controlFile.show = false;
+				newItem.color = "bg_light";
 			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "inventory", ["name"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
 		}
-	});
 
-	$scope.options = {
-		url: serviceurl + "lattice/upload",
-		maxFileSize: 5000000,
-		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
-	};
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
 
-	$scope.closeAlert = function() {
-		$scope.modal.error.show = false;
-		$scope.modal.success.show = false;
-	};
-
-	$scope.$on('fileuploadadd', function(e, data) {
-		l(data);
-		var id = data.fileInput.context.id;
-		$scope.upload[id] = data.files[0].name;
-
-		if(uploadData === undefined) {
-			uploadData = data;
-
-		} else {
-			uploadData.files.push(data.files[0]);
-		}
-	});
-
-	$scope.$on('fileuploaddone', function(e, data) {
-		uploadData = undefined;
-		$scope.modal.success.show = true;
-		$scope.modal.waiting.show = false;
-		$scope.modal.error.show = false;
-		$scope.upload.latticeFile = "";
-		$scope.upload.controlFile = "";
-		$scope.upload.kickmapFile = "";
-
-		$scope.modal.finishButton = "Finish";
-	});
-
-	$scope.$on('fileuploadfail', function(e, data) {
-		$scope.modal.waiting.show = false;
-		$scope.modal.success.show = false;
-		$scope.modal.error.message = data.jqXHR.responseText;
-		$scope.modal.error.show = true;
-		$scope.modal.success.show = false;
-	});
-
-	$scope.ok = function() {
-		$scope.modal.finishButton = "Cancel";
-
-		if(
-			$scope.upload.name === "" ||
-			$scope.upload.branch === "" ||
-			$scope.upload.version === "" ||
-			$scope.upload.latticeType === undefined ||
-			uploadData === undefined
-		) {
-			$scope.modal.error.message = "Parameters should not be empty!";
-			$scope.modal.error.show = true;
-			$scope.modal.success.show = false;
-
-		} else {
-			$scope.modal.error.show = false;
-			$scope.modal.waiting.show = true;
-			$scope.modal.success.show = false;
-			l(uploadData);
-			uploadData.submit();
-		}
-	};
-
-	$scope.cancelButton = function() {
-		$modalInstance.dismiss('cancel');
-		$window.location.reload();
+		var location = createRouteUrl($routeParams, "inventory", ["name"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
 	};
 });
 
 /*
- * Upload model controller
+ * Show details in the right pane
  */
-app.controller('uploadModelModalCtrl', function($scope, $modalInstance, modelCodeInfoService, $window, $http) {
-	$scope.upload = {};
-	$scope.upload.controlFile = "";
-	$scope.upload.resultFile = "";
-	$scope.upload.latticeid = undefined;
+app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $window, InventoryInfo, CmpntType, Inventory, cmpntTypeFactory, inventoryTypeFactory, inventoryFactory, vendorFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new Inventory();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = InventoryInfo;
 
-	$scope.$watch('upload.latticeid', function(newValue, oldValue) {
-		l(newValue);
-	});
+	$scope.types = [];
+	$scope.props = [];
+	$scope.vendors = [];
+	$scope.new.prop_keys = [];
 
-	$scope.modal = {};
-	$scope.modal.error = {};
-	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Model with the same parameters already exists in the database!";
+	// Retrieve all Component types
+	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
 
-	$scope.modal.success = {};
-	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Model successfully uploaded!";
-
-	$scope.modal.waiting = {};
-	$scope.modal.waiting.show = false;
-	$scope.modal.waiting.message = "Uploading model!";
-
-	$scope.modal.controlFile = {};
-	$scope.modal.controlFile.show = false;
-
-	$scope.modal.lattices = [];
-
-	var query = serviceurl + 'lattice/?function=retrieveLatticeInfo&name=*&branch=*&version=*';
-
-	// Retrieve lattices
-	$http.get(query).success(function(data){
-
-		$.each(data, function(id, lattice) {
-			lattice.id = id;
-			lattice.label = lattice.name + " / " + lattice.branch + " / " + lattice.version;
-			lattice.value = lattice.id;
-			$scope.modal.lattices.push(lattice);
+		$.each(result, function(i, item){
+			$scope.types.push(item.name);
 		});
-
-		l($scope.modal.lattices);
 	});
 
-	// Load Mode Code Info
-	modelCodeInfoService.transform(function(serviceData){
-		l("modelcodeinfo");
-		l(serviceData);
-		$scope.modal.modelCodeInfo = serviceData.data;
+	// Retrieve all Inventory property templates
+	inventoryTypeFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.props.push(item.name);
+		});
 	});
 
-	$scope.modal.finishButton = "Cancel";
-	var uploadData = undefined;
+	// Retrieve all vendors
+	vendorFactory.retrieveVendors({}).then(function(result) {
 
-	$scope.options = {
-		url: serviceurl + "model/upload",
-		maxFileSize: 5000000,
-		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
-	};
+		$.each(result, function(i, item){
+			$scope.vendors.push(item.name);
+		});
+	});
+	
+	// Append new property
+	$scope.appendProperty = function() {
 
-	$scope.closeAlert = function() {
-		$scope.modal.error.show = false;
-		$scope.modal.success.show = false;
-	};
-
-	$scope.$on('fileuploadadd', function(e, data) {
-		l(data);
-		var id = data.fileInput.context.id;
-		$scope.upload[id] = data.files[0].name;
-
-		if(uploadData === undefined) {
-			uploadData = data;
-
+		if($routeParams.action === "save"){
+			$scope.new.prop_keys.push({'name': '', 'value': ''});
+		
 		} else {
-			uploadData.files.push(data.files[0]);
+			$scope.element.prop_keys.push({'name': '', 'value': ''});
 		}
-	});
+	}
 
-	$scope.$on('fileuploaddone', function(e, data) {
-		uploadData = undefined;
-		$scope.modal.success.show = true;
-		$scope.modal.waiting.show = false;
-		$scope.modal.error.show = false;
-		$scope.upload.controlFile = "";
-		$scope.upload.resultFile = "";
+	// Property name dropdown has changed
+	$scope.changePropertyName = function() {
+		l($scope.props);
+	}
+	
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		inventoryFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "inventory", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new Inventory(newItem);
+		var result = inventoryFactory.checkItem(item);
+		l(result);
 
-		$scope.modal.finishButton = "Finish";
-	});
-
-	$scope.$on('fileuploadfail', function(e, data) {
-		$scope.modal.waiting.show = false;
-		$scope.modal.success.show = false;
-		$scope.modal.error.message = data.jqXHR.responseText;
-		$scope.modal.error.show = true;
-		$scope.modal.success.show = false;
-	});
-
-	$scope.ok = function() {
-		$scope.modal.finishButton = "Cancel";
-
-		if(
-			$scope.upload.modelname === "" ||
-			$scope.upload.simCodeAlg === undefined ||
-			uploadData === undefined
-		) {
-			$scope.modal.error.message = "Parameters should not be empty!";
-			$scope.modal.error.show = true;
-			$scope.modal.success.show = false;
-
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
 		} else {
-			$scope.modal.error.show = false;
-			$scope.modal.waiting.show = true;
-			$scope.modal.success.show = false;
-			l(uploadData);
-			uploadData.submit();
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+
+				$.each($scope.element.prop_keys, function(i, prop) {
+					propsObject[prop.name] = prop.value;
+				});
+
+				$scope.element.props = JSON.stringify(propsObject);
+
+				promise = inventoryFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+
+				$.each($scope.new.prop_keys, function(i, prop) {
+					propsObject[prop.name] = prop.value;
+				});
+
+				$scope.new.props = JSON.stringify(propsObject);
+				promise = inventoryFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Inventory successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
 		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchInventoryTypeCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[4];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
 	};
 
-	$scope.cancelButton = function() {
-		$modalInstance.dismiss('cancel');
-		$window.location.reload();
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "inventory_type", ["name"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
 	};
 });
 
 /*
- * Update model controller
+ * List items in the middle pane
  */
-app.controller('updateModelModalCtrl', function($scope, $modalInstance, $http, name) {
-	$scope.upload = {};
-	$scope.modelStatuses = modelStatuses;
+app.controller('listInventoryTypeCtrl', function($scope, $routeParams, $http, $window, InventoryTypeInfo, InventoryType, inventoryTypeFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
 
-	$scope.modal = {};
-	$scope.modal.error = {};
-	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Something went wrong during status saving!";
+	$scope.id = $routeParams.id;
+	$scope.info = InventoryTypeInfo;
 
-	$scope.modal.success = {};
-	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Status successfully saved!";
+	$scope.items = [];
+	var previousItem = undefined;
 
-	$scope.modal.waiting = {};
-	$scope.modal.waiting.show = false;
-	$scope.modal.waiting.message = "Saving status";
+	inventoryTypeFactory.retrieveItems($routeParams).then(function(result) {
 
-	$scope.modal.controlFile = {};
-	$scope.modal.controlFile.show = false;
+		l(result);
 
-	$scope.modal.finishButton = "Cancel";
+		$.each(result, function(i, item){
 
-	$scope.closeAlert = function() {
-		$scope.modal.error.show = false;
-		$scope.modal.success.show = false;
-	};
+			// Build customized object
+			var newItem = new InventoryType(item);
 
-	$scope.ok = function() {
-		$scope.modal.finishButton = "Cancel";
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
 
-		if(
-			$scope.upload.status === undefined ||
-			$scope.upload.status === "-1"
-		) {
-			$scope.modal.error.message = "Parameters should not be empty!";
-			$scope.modal.error.show = true;
-			$scope.modal.success.show = false;
+			} else {
+				newItem.color = "bg_light";
+			}
 
-		} else {
-			$scope.modal.error.show = false;
-			$scope.modal.waiting.show = true;
-			$scope.modal.success.show = false;
-		}
-		var query = serviceurl + "model/savestatus";
-
-		$http.post(query, "status=" + $scope.upload.status + "&name=" + name).success(function(data){
-			$scope.modal.success.show = true;
-			$scope.modal.waiting.show = false;
-			$scope.modal.error.show = false;
-			$scope.modal.finishButton = "Finish";
-
-		}).error(function(data, status, headers, config) {
-			$scope.modal.waiting.show = false;
-			$scope.modal.success.show = false;
-			$scope.modal.error.message = data;
-			$scope.modal.error.show = true;
-			$scope.modal.success.show = false;
+			$scope.items.push(newItem);
 		});
-	};
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "inventory_type", ["name"]) + "/id/new/action/save";
+		$window.location = location;
+	}
 
-	$scope.cancelButton = function() {
-		$modalInstance.dismiss('cancel');
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+
+		var location = createRouteUrl($routeParams, "inventory_type", ["name"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
 	};
 });
 
 /*
- * Update lattice controller
+ * Show details in the right pane
  */
-app.controller('updateLatticeModalCtrl', function($scope, $modalInstance, $http, name, version, branch) {
-	$scope.upload = {};
-	$scope.latticeStatuses = statuses;
+app.controller('showInventoryTypeCtrl', function($scope, $routeParams, $http, $window, InventoryTypeInfo, InventoryType, inventoryTypeFactory, cmpntTypeFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new InventoryType();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = InventoryTypeInfo;
 
-	$scope.modal = {};
-	$scope.modal.error = {};
-	$scope.modal.error.show = false;
-	$scope.modal.error.message = "Something went wrong during status saving!";
+	$scope.types = [];
 
-	$scope.modal.success = {};
-	$scope.modal.success.show = false;
-	$scope.modal.success.message = "Status successfully saved!";
+	// Retrieve all Component types
+	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
 
-	$scope.modal.waiting = {};
-	$scope.modal.waiting.show = false;
-	$scope.modal.waiting.message = "Saving status";
-
-	$scope.modal.controlFile = {};
-	$scope.modal.controlFile.show = false;
-
-	$scope.modal.finishButton = "Cancel";
-
-	$scope.closeAlert = function() {
-		$scope.modal.error.show = false;
-		$scope.modal.success.show = false;
-	};
-
-	$scope.ok = function() {
-		$scope.modal.finishButton = "Cancel";
-
-		if(
-			$scope.upload.status === undefined ||
-			$scope.upload.status === "-1"
-		) {
-			$scope.modal.error.message = "Parameters should not be empty!";
-			$scope.modal.error.show = true;
-			$scope.modal.success.show = false;
-
-		} else {
-			$scope.modal.error.show = false;
-			$scope.modal.waiting.show = true;
-			$scope.modal.success.show = false;
-		}
-		var query = serviceurl + "lattice/savestatus";
-
-		$http.post(query, "status=" + $scope.upload.status + "&name=" + name + "&version=" + version + "&branch=" + branch).success(function(data){
-			$scope.modal.success.show = true;
-			$scope.modal.waiting.show = false;
-			$scope.modal.error.show = false;
-			$scope.modal.finishButton = "Finish";
-
-		}).error(function(data, status, headers, config) {
-			$scope.modal.waiting.show = false;
-			$scope.modal.success.show = false;
-			$scope.modal.error.message = data;
-			$scope.modal.error.show = true;
-			$scope.modal.success.show = false;
+		$.each(result, function(i, item){
+			$scope.types.push(item.name);
 		});
+	});
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		inventoryTypeFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.tmplt_id = result.id;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "inventory_type", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new InventoryType(newItem);
+		var result = inventoryTypeFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = inventoryTypeFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = inventoryTypeFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Inventory property template successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchInstallCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[5];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
 	};
 
-	$scope.cancelButton = function() {
-		$modalInstance.dismiss('cancel');
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
 	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, installFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = InstallInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	installFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new Install(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+		$routeParams.description = item.description;
+		$routeParams.cmpnt_type = item.cmpnt_type;
+		$routeParams.coordinatecenter = item.coordinatecenter;
+
+		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, installFactory, cmpntTypeFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new Install();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = InstallInfo;
+
+	$scope.types = [];
+
+	// Retrieve all Component types
+	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.types.push(item.name);
+		});
+	});
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		installFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new Install(newItem);
+		var result = installFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = installFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = installFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Install item successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[6];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "data_method", ["name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listDataMethodCtrl', function($scope, $routeParams, $http, $window, DataMethodInfo, DataMethod, dataMethodFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = DataMethodInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	dataMethodFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new DataMethod(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+		$routeParams.description = item.description;
+
+		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $window, DataMethodInfo, DataMethod, dataMethodFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new DataMethod();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = DataMethodInfo;
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		dataMethodFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new DataMethod(newItem);
+		var result = dataMethodFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = dataMethodFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = dataMethodFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Data method item successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[7];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "offline_data", ["inventory_name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = OfflineDataInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	offlineDataFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new OfflineData(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.inventory_name = item.inventory_name;
+		$routeParams.description = item.description;
+
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new OfflineData();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = OfflineDataInfo;
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		offlineDataFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.offline_data_id = result.id;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	/*$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}*/
+	
+	/*$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new DataMethod(newItem);
+		var result = dataMethodFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = dataMethodFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = dataMethodFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Data method item successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}*/
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[8];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "online_data", ["install_name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listOnlineDataCtrl', function($scope, $routeParams, $http, $window, OnlineDataInfo, OnlineData, onlineDataFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = OnlineDataInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	onlineDataFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new OnlineData(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "online_data", ["install_name", "description"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.install_name = item.install_name;
+		$routeParams.description = item.description;
+
+		var location = createRouteUrl($routeParams, "online_data", ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $window, OnlineDataInfo, OnlineData, onlineDataFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new OnlineData();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = OnlineDataInfo;
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		onlineDataFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.online_data_id = result.id;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	/*$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}*/
+	
+	/*$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new DataMethod(newItem);
+		var result = dataMethodFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = dataMethodFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = dataMethodFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Data method item successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}*/
 });

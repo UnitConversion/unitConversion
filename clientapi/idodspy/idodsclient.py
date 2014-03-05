@@ -25,6 +25,8 @@ from requests import HTTPError
 from copy import copy
 
 import base64
+import urllib
+
 try: 
     import json
 except ImportError: 
@@ -1978,6 +1980,9 @@ class IDODSClient(object):
         - description
         - url
         - status
+        - with_data
+        - data_path
+        - callback
 
         :param onlineid: id of the online data we want to update by
         :type onlineid: int
@@ -1997,6 +2002,21 @@ class IDODSClient(object):
         :param status: status of this data set
         :type status: int
 
+        :param with_data: should data be downloaded from the server or not
+        :type with_data: boolean
+
+        :param data_path: path to the local file in which downloaded file will be put to
+        :type data_path: string
+
+        :param callback: reference to a local method that will receive info about a file that is being downloaded. This parameter, if present, is a hook function that will be called once on establishment of the network connection and once after each block read thereafter. The hook will be passed three arguments; a count of blocks transferred so far, a block size in bytes, and the total size of the file. The third argument may be -1 in some cases.
+        
+            Example of the callback method
+            
+            def callback(block_number, block_size, total_size):
+                print block_number, block_size, total_size
+        
+        :type callback: function
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -2007,7 +2027,7 @@ class IDODSClient(object):
                         'install_name':,  #string
                         'username':,      #string
                         'description':,   #string
-                        'url':,           #url
+                        'url':,           #string
                         'date':,          #date
                         'status':,        #int
                     }
@@ -2049,7 +2069,34 @@ class IDODSClient(object):
         r=self.client.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
         
-        return r.json()
+        returnData = r.json()
+    
+        # Set data path
+        data_path = None
+        
+        if 'data_path' in kws:
+            data_path = kws['data_path']
+            
+        # Set callback
+        callback = None
+        
+        if 'callback' in kws:
+            callback = kws['callback']
+    
+        # Append data if with_data is set
+        if 'with_data' in kws and kws['with_data'] == True:
+            
+            # Go through all returned online data and append data
+            onlineDataKeys = returnData.keys()
+            
+            for key in onlineDataKeys:
+                onlineData = returnData[key]
+                urlParts = self.__baseURL.split('/')
+                downloadUrl = urlParts[:-3]
+                
+                urllib.urlretrieve('/'.join(downloadUrl) + '/' + onlineData['url'], filename=data_path, reporthook=callback)
+        
+        return returnData
 
     def saveOnlineData(self, install_name, **kws):
         '''Save insertion device online data using any of the acceptable key words:
@@ -2057,7 +2104,8 @@ class IDODSClient(object):
         - install_name
         - username
         - description
-        - url
+        - data
+        - data_file_name
         - status
 
         The data itself is stored on server's harddisk because its size might blow up to GB level.
@@ -2072,8 +2120,11 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param url: external url of the data file is stored
-        :type url: str
+        :param data: path to the file we want to upload
+        :type data: str
+
+        :param data_file_name: name of the file we want to upload
+        :type data_file_name: str
 
         :param status: status of this data set
         :type status: int
@@ -2104,8 +2155,12 @@ class IDODSClient(object):
             params['username'] = kws['username']
         
         # Add url
-        if 'url' in kws:
-            params['url'] = kws['url']
+        if 'data' in kws and 'data_file_name' in kws:
+            
+            # Upload a file
+            uploadedFile = self.uploadFile(kws['data'], kws['data_file_name'])
+            
+            params['url'] = uploadedFile['path']
         
         # Add status
         if 'status' in kws:
@@ -2123,7 +2178,8 @@ class IDODSClient(object):
         - install_name
         - username
         - description
-        - url
+        - data
+        - data_file_name
         - status
 
         The data itself is stored on server's harddisk because its size might blow up to GB level.
@@ -2138,8 +2194,11 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param url: external url of the data file is stored
-        :type url: str
+        :param data: path to the file we want to upload
+        :type data: str
+
+        :param data_file_name: name of the file we want to upload
+        :type data_file_name: str
 
         :param status: status of this data set
         :type status: int
@@ -2174,8 +2233,12 @@ class IDODSClient(object):
             params['username'] = kws['username']
         
         # Add url
-        if 'url' in kws:
-            params['url'] = kws['url']
+        if 'data' in kws and 'data_file_name' in kws:
+            
+            # Upload a file
+            uploadedFile = self.uploadFile(kws['data'], kws['data_file_name'])
+            
+            params['url'] = uploadedFile['path']
         
         # Add status
         if 'status' in kws:
@@ -2186,15 +2249,16 @@ class IDODSClient(object):
         
         return r.json()
 
-    def uploadFile(self, file_name):
+    def uploadFile(self, data, file_name):
         '''
         Upload a file
         
         params:
+            - data path to the file
             - file_name name of the file
         '''
         
-        with open(file_name, 'rb') as f:
+        with open(data, 'rb') as f:
             
             # Set parameters
             params={

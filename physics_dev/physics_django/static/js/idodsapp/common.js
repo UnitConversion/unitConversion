@@ -50,53 +50,40 @@ jQuery.fn.doesExist = function(){
 };
 
 /**
- * Create query for listing lattice
- * @param {type} search search or $routeParams object
- * @param {boolean} returnUrl return url or query
- * @returns {String} return url or query string
+ * Create routing url
+ * @param search search or $routeParams object
+ * @param type name of the item we are dealing with e.g. vendor, cmpnt_type
+ * @param paramList array of parameter names that should be concatenated
  */
-function createUrlAndQuery(search, type, returnUrl) {
-	var query = serviceurl + "/" + type + "/?";
+function createRouteUrl(search, type, paramList) {
 	var url = "#";
 
 	// Add type
 	url += "/" + type;
+
+	// Redirect to new entity
+	if(search === undefined) {
+		return url;
+	}
 	
 	// Add search time part
 	if(search.search !== undefined) {
 		url += "/search/" + search.search;
 	}
 
-	if(type === "vendor") {
+	$.each(paramList, function(i, param) {
 
-		// Add name part
-		if(search.name !== undefined) {
-			query += "name=" + search.name + '&';
-			url += "/name/" + search.name;
-
-		} else {
-			query += "name=*&";
-			url += "/name/";
-		}
-
-		// Add description part
-		if(search.description !== undefined) {
-			query += "description=" + search.description + '&';
-			url += "/description/" + search.description;
+		// Add param
+		if(search[param] !== undefined) {
+			url += "/" + param + "/" + search[param];
 
 		} else {
-			query += "description=*&";
-			url += "/description/";
+			url += "/" + param + "/";
 		}
-	}
+	});
 
-	// Return URL or query
-	if(returnUrl) {
-		return url;
-
-	} else {
-		return query;
-	}
+	// Return URL
+	return url;
 }
 
 /**

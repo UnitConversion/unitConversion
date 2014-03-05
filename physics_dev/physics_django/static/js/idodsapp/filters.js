@@ -54,3 +54,13 @@ app.filter('precision', function() {
 		}
 	};
 });
+
+/*
+ * Inline if. Example of usage: {{foo == "bar" | iif : "it's true" : "no, it's not"}}
+ * found at: http://stackoverflow.com/questions/14164371/inline-conditionals-in-angular-js
+ */
+app.filter('iff', function () {
+   return function(input, trueValue, falseValue) {
+        return input ? trueValue : falseValue;
+   };
+});

@@ -1,0 +1,105 @@
+{% load verbatim %}
+{% verbatim %}
+
+<a name="{{scroll.scroll}}"></a>
+
+<div ng-if="action == 'retrieve'">
+	<div class="details_data">
+		<h3>{{info.retrieve_title}}</h3>
+		
+		{% endverbatim %}
+			{% if user.is_authenticated %}
+			{% endif %}
+		{% verbatim %}
+		<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
+
+
+		<table class="table table-bordered">
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+			<tr ng-repeat="property in element.retrieve">
+				<td>{{element.display[property]}}</td>
+				<td>{{element[property]}}</td>
+			</tr>
+			<tr ng-repeat="property in element.prop_keys">
+				<td>{{property.name}}</td>
+				<td>{{property.value}}</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<div ng-if="action == 'save'">
+	<div class="details_data">
+		<h3>{{info.save_title}}</h3>
+		
+		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			<strong>{{alert.title}}</strong> {{alert.body}}
+		</div>
+
+		<table class="table table-bordered">
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+			<tr ng-repeat="property in new.save_show">
+				<td>{{new.display[property]}}</td>
+				<td>
+					<span class="control-group" ng-class="{'error': error[property]}">
+						<span class="controls">
+							
+							<select ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
+							
+							<input ng-if="property != 'cmpnt_type'" type="text" ng-model="new[property]" />
+							
+							<span class="help-inline">{{error[property]}}</span>
+						</span>
+					</span>
+				</td>
+			</tr>
+		</table>
+		<br/>
+		<button ng-click="saveItem(new, 'save')" class="btn btn-success">{{info.save_button}}</button>
+	</div>
+</div>
+
+<div ng-if="action == 'update'">
+	<div class="details_data">
+		<h3>{{info.update_title}}</h3>
+		
+		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			<strong>{{alert.title}}</strong> {{alert.body}}
+		</div>
+		
+		<table class="table table-bordered">
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+			<tr ng-repeat="property in element.save_show">
+				<td>
+					{{element.display[property]}}
+				</td>
+				<td>
+					<span class="control-group" ng-class="{'error': error[property]}">
+						<span class="controls">
+
+							<select ng-if="property == 'cmpnt_type'" ng-model="element[property]" ng-options="type for type in types"></select>
+							
+							<input ng-if="property != 'cmpnt_type'" type="text" ng-model="element[property]" />
+
+							<span class="help-inline">{{error[property]}}</span>
+						</span>
+					</span>
+				</td>
+			</tr>
+		</table>
+		<br/>
+		<button ng-click="saveItem(element, 'update')" class="btn btn-success">{{info.update_button}}</button>
+	</div>
+</div>
+{% endverbatim %}

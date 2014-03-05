@@ -418,7 +418,7 @@ class idods(object):
                 {
                     'id': {
                         'id': ,              # int
-                        'cmpnt_type': ,      # int
+                        'cmpnt_type': ,      # string
                         'name': ,           # string
                         'description': ,    # string
                         'default': ,        # string
@@ -1168,10 +1168,25 @@ class idods(object):
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
                 
+                currentTemplates = self.retrieveInventoryProperty(name)
+                currentTemplatesDict = {}
+                
+                # Map current properties
+                for key in currentTemplates.keys():
+                    currentTemplatesDict[currentTemplates[key]['templatename']] = currentTemplates[key]['value']
+                
                 # Update all properties
                 for key in props:
                     value = props[key]
-                    self.updateInventoryProperty(name, key, value)
+                    
+                    if key in currentTemplatesDict:
+                        
+                        # Update property
+                        self.updateInventoryProperty(name, key, value)
+                        
+                    else:
+                        # Save property
+                        self.saveInventoryProperty(name, key, value)
                 
             return True
             
@@ -1226,7 +1241,7 @@ class idods(object):
                          'phase_mode_p':,               # string
                          'phase_mode_a1':,              # string
                          'phase_mode_a2':               # string
-
+                         'prop_keys':                   ['key1', 'key2']
                         }
                 }
 
@@ -1267,7 +1282,8 @@ class idods(object):
                     'alias': r[2],
                     'serialno': r[3],
                     'cmpnt_type': r[4],
-                    'vendor': r[6]
+                    'vendor': r[6],
+                    'prop_keys': []
                 }
                 
                 # Get the rest of the properties
@@ -1277,6 +1293,7 @@ class idods(object):
                 for prop in properties:
                     obj = properties[prop]
                     resdict[r[0]][obj['templatename']] = obj['value']
+                    resdict[r[0]]['prop_keys'].append(obj['templatename'])
             
             return resdict
 
@@ -3041,7 +3058,8 @@ class idods(object):
                     'description': device type description,
                     'prop1key': prop1value
                     ...
-                    'propNkey': propNvalue
+                    'propNkey': propNvalue,
+                    'prop_keys': ['key1', 'key2']
                     },
                  ...
                 }
@@ -3080,6 +3098,7 @@ class idods(object):
                 resdict[r[0]]['id'] = r[0]
                 resdict[r[0]]['name'] = r[1]
                 resdict[r[0]]['description'] = r[2]
+                resdict[r[0]]['prop_keys'] = []
                 
                 # Get the rest of the properties
                 properties = self._retrieveComponentTypeProperty(r[0])
@@ -3088,6 +3107,7 @@ class idods(object):
                 for prop in properties:
                     obj = properties[prop]
                     resdict[r[0]][obj['typename']] = obj['value']
+                    resdict[r[0]]['prop_keys'].append(obj['typename'])
 
             return resdict
 
@@ -3216,7 +3236,7 @@ class idods(object):
             
         # Check where condition
         if whereKey == None:
-            raise ValueError("Vendor id or old vendor name should be present to execute an update!")
+            raise ValueError("Component type id or old component type name should be present to execute an update!")
         
         # Check device type
         self._checkParameter("component type", name)
@@ -3245,13 +3265,27 @@ class idods(object):
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
                 
+                # Get current properties
+                currentProps = self.retrieveComponentTypeProperty(name)
+                currentPropsDict = {}
+                
+                # Map current properties
+                for key in currentProps.keys():
+                    currentPropsDict[currentProps[key]['typename']] = currentProps[key]['value']
                 
                 # Update all the properties
                 for key in props:
                     value = props[key]
                     
-                    # Save it into database
-                    self.updateComponentTypeProperty(name, key, value)
+                    if key in currentPropsDict:
+                    
+                        # Update property
+                        self.updateComponentTypeProperty(name, key, value)
+                        
+                    else:
+                        
+                        # Save new property
+                        self.saveComponentTypeProperty(name, key, value)
                 
             return True
 
@@ -4077,7 +4111,7 @@ class idods(object):
         - coordinatecenter: coordinate center number
         
         raises:
-            ValueError, MySQLError
+            ValueError, Exception
             
         returns:
             {'id': new install id}
@@ -4128,7 +4162,7 @@ class idods(object):
                 
             return {'id': invid}
         
-        except MySQLdb.Error as e:
+        except Exception as e:
             
             # Rollback changes
             if self.transaction == None:
