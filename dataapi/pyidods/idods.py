@@ -1,7 +1,13 @@
+'''
+Created on Feb 10, 2014
+
+@author dejan.dezman@cosylab.com
+'''
+
 import logging
 import MySQLdb
 
-from utils import (_wildcardformat, _generateFilePath)
+from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 from _mysql_exceptions import MySQLError
 
 try:
@@ -78,130 +84,6 @@ class idods(object):
             
         return (sqlString, valsList)
 
-    def _checkWildcardAndAppend(self, parameterKey, parameterValue, sqlString, valsList, prependedOperator = None):
-        '''
-        Check for wildcard characters in a parameter value and append appropriate sql
-        
-        parameters:
-            - parameterKey: name of the parameter in the DB table
-            - parameterValue: value of this parameter
-            - sqlString: existing sql string that was generated outside of this function
-            - valsList: list of formated values that should be inserted into sql statement
-            - prepandedOperator: sql operator that will be prepended before the new condition
-            
-        return:
-            tuple of new sql string and new list of values
-        '''
-        
-        # Prepend operator if it exists
-        if prependedOperator != None:
-            sqlString += " " + prependedOperator + " "
-            
-        # Do not check for wildcard parameters if we have a number
-        if isinstance(parameterValue, (int, float, long, complex)):
-            sqlString += " " + parameterKey + " = %s "
-            valsList.append(parameterValue)
-            return (sqlString, valsList)
-        
-        # Check if user wants all objects
-        if parameterValue == "*":
-            sqlString += " 1=1 "
-        
-        # Check for wildcard characters
-        elif "*" in parameterValue or "?" in parameterValue:
-            sqlString += " " + parameterKey + " like %s "
-            valsList.append(_wildcardformat(parameterValue))
-            
-        # All of the other options
-        else:
-            sqlString += " " + parameterKey + " = %s "
-            valsList.append(parameterValue)
-            
-        return (sqlString, valsList)
-    
-    def _checkParameter(self, parameterKey, paramaterValue, parameterTypeWeAreCheckingFor = "string"):
-        '''
-        Check different types of input parameters. Parameter should match agreed criteria or exception will be thrown
-        
-        parameters:
-            - parameterKey: name of the parameter
-            - parameterValue: value of the parameter
-            - parameterTypeWeAreCheckingFor: which type are we chacking
-                * string: if we are checking string value
-                * prim: if we are checking primary key value
-            
-        raise:
-            ValueError if parameter don'r match agreed criteria
-        '''
-        
-        # Check string
-        if parameterTypeWeAreCheckingFor == "string":
-            
-            if not isinstance(paramaterValue, (str, unicode)):
-                raise ValueError("Parameter %s is missing!" % parameterKey)
-            
-        # Check primary key
-        elif parameterTypeWeAreCheckingFor == "prim":
-            
-            try:
-                paramaterValue = int(paramaterValue)
-                
-            except ValueError as e:
-                raise ValueError("Parameter %s cannot be None. %s." % (parameterKey, e.args[0]))
-
-    def _generateUpdateQuery(self, tableName, queryDict, whereKey, whereValue, whereDict = None):
-        '''
-        Check number of parameters that are set and generate update SQL
-        
-        params:
-            - tableName: name of the table we are updating
-            - queryDict: dictionary where every key is an attribute name and every value new attribute value
-            - whereKey: attribute by which we are updating
-            - whereValue: attribute value by which we are updating
-            - whereDict: dictionary of where keys and values
-        
-        raises:
-            ValueError if no attributes are set
-        '''
-        
-        # Create value list
-        vals = []
-        
-        # Check the number of attributes that are set
-        if len(queryDict) < 1:
-            raise ValueError("At least one attribute has to be set to a new value!")
-        
-        # Generate SQL
-        sql = 'UPDATE ' + tableName + ' SET '
-        sqlList = []
-        
-        # Go through parameters
-        for attr in queryDict.keys():
-            value = queryDict[attr]
-            sqlList.append(' ' + attr + ' = %s ')
-            vals.append(value)
-        
-        sql += ','.join(sqlList)
-        
-        if whereDict == None:
-            # Append where condition
-            sql += ' WHERE ' + whereKey + ' = %s '
-            vals.append(whereValue)
-            
-        else:
-            sql += ' WHERE '
-            sqlList = []
-            
-            # Go through where keys
-            for whereKey in whereDict.keys():
-                whereValue = whereDict[whereKey]
-                sqlList.append(' ' + whereKey + ' = %s ')
-                vals.append(whereValue)
-                
-            sql += " AND ".join(sqlList)
-        
-        return (sql, vals)
-
     def retrieveVendor(self, name, description=None):
         '''
         Retrieve vendor by its name and description
@@ -225,11 +107,11 @@ class idods(object):
                  ...
                 }
 
-        :Raises: ValueError, exception
+        :Raises: ValueError, Exception
         '''
 
         # Check for vendor name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
 
         # Generate SQL statement
         vals = []
@@ -238,11 +120,11 @@ class idods(object):
         '''
 
         # Append name
-        sqlVals = self._checkWildcardAndAppend('vendor_name', name, sql, vals)
+        sqlVals = _checkWildcardAndAppend('vendor_name', name, sql, vals)
 
         # Append description
         if description != None:
-            sqlVals = self._checkWildcardAndAppend('vendor_description', description, sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkWildcardAndAppend('vendor_description', description, sqlVals[0], sqlVals[1], 'AND')
 
         try:
             # Execute sql
@@ -288,13 +170,13 @@ class idods(object):
         '''
         
         # Check for vendor name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
 
         # Try to retrieve vendor by its name
         existingVendor = self.retrieveVendor(name, description=description)
 
         if len(existingVendor):
-            raise ValueError("Vendor (%s) already exists in the database!" % name);
+            raise ValueError("Vendor (%s) already exists in the database!" % name)
 
         # Generate SQL statement
         if description != None:
@@ -359,13 +241,13 @@ class idods(object):
         
         # Check id
         if vendor_id:
-            self._checkParameter('id', vendor_id, 'prim')
+            _checkParameter('id', vendor_id, 'prim')
             whereKey = 'vendor_id'
             whereValue = vendor_id
             
         # Check old name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'vendor_name'
             whereValue = old_name
             
@@ -374,7 +256,7 @@ class idods(object):
             raise ValueError("Vendor id or old vendor name should be present to execute an update!")
         
         # Check for vendor name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         queryDict['vendor_name'] = name
 
         
@@ -383,7 +265,7 @@ class idods(object):
             queryDict['vendor_description'] = kws['description']
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('vendor', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('vendor', queryDict, whereKey, whereValue)
 
         try:
             # Execute sql
@@ -430,7 +312,7 @@ class idods(object):
         '''
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
 
         # Construct SQL
         sql = '''
@@ -445,7 +327,7 @@ class idods(object):
         vals = []
         
         # Append name
-        sqlAndVals = self._checkWildcardAndAppend("inventory_prop_tmplt_name", name, sql, vals)
+        sqlAndVals = _checkWildcardAndAppend("inventory_prop_tmplt_name", name, sql, vals)
 
         try:
             cur = self.conn.cursor()
@@ -506,7 +388,7 @@ class idods(object):
         cmpnt_typeid = result.keys()[0]
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
 
         # Generate SQL
         sql = '''
@@ -559,7 +441,7 @@ class idods(object):
         whereKey = 'inventory_prop_tmplt_id'
 
         # Check id
-        self._checkParameter('id', tmplt_id, 'prim')
+        _checkParameter('id', tmplt_id, 'prim')
         whereValue = tmplt_id
 
         # Check component type
@@ -572,7 +454,7 @@ class idods(object):
         queryDict['cmpnt_type_id'] = cmpnt_typeid
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
         queryDict['inventory_prop_tmplt_name'] = name
 
         # Check description parameter
@@ -588,7 +470,7 @@ class idods(object):
             queryDict['inventory_prop_tmplt_units'] = kws['unit']
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('inventory_prop_tmplt', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('inventory_prop_tmplt', queryDict, whereKey, whereValue)
 
         try:
             cur = self.conn.cursor()
@@ -659,7 +541,7 @@ class idods(object):
 
         # Add value parameter if exists
         if value:
-            sqlVals = self._checkWildcardAndAppend('inventory_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkWildcardAndAppend('inventory_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
 
         try:
             # Retrieve objects from the database
@@ -841,7 +723,7 @@ class idods(object):
         queryDict['inventory_prop_value'] = value
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)
+        sqlVals = _generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)
         
         try:
             cur = self.conn.cursor()
@@ -939,7 +821,7 @@ class idods(object):
         if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
             
             # Check component type parameter
-            self._checkParameter("component type", kws['cmpnt_type'])
+            _checkParameter("component type", kws['cmpnt_type'])
             
             res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
@@ -968,7 +850,7 @@ class idods(object):
         if kws.has_key('vendor') and kws['vendor'] != None:
             
             # Check parameter
-            self._checkParameter("vendor name", kws['vendor'])
+            _checkParameter("vendor name", kws['vendor'])
             
             res = self.retrieveVendor(kws['vendor'])
 
@@ -1092,13 +974,13 @@ class idods(object):
         
         # Check id
         if inventory_id:
-            self._checkParameter('id', inventory_id, 'prim')
+            _checkParameter('id', inventory_id, 'prim')
             whereKey = 'inventory_id'
             whereValue = inventory_id
             
         # Check old name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'name'
             whereValue = old_name
         
@@ -1106,14 +988,14 @@ class idods(object):
             raise ValueError("Id or old name should be present to execute an update!")
 
         # Check name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         queryDict['name'] = name
 
         # Check device type parameter
         if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
             
             # Check component type parameter
-            self._checkParameter("component type", kws['cmpnt_type'])
+            _checkParameter("component type", kws['cmpnt_type'])
             
             res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
@@ -1138,7 +1020,7 @@ class idods(object):
         if kws.has_key('vendor') and kws['vendor'] != None:
             
             # Check parameter
-            self._checkParameter("vendor name", kws['vendor'])
+            _checkParameter("vendor name", kws['vendor'])
             
             res = self.retrieveVendor(kws['vendor'])
 
@@ -1149,7 +1031,7 @@ class idods(object):
             vendor = res[resKeys[0]]['id']
             queryDict['vendor_id'] = vendor
             
-        sqlVals = self._generateUpdateQuery('inventory', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('inventory', queryDict, whereKey, whereValue)
         
         try:
             # Insert inventory into database
@@ -1249,7 +1131,7 @@ class idods(object):
         '''
 
         # Check name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         
         # Generate SQL
         sql = '''
@@ -1265,7 +1147,7 @@ class idods(object):
         vals = []
         
         # Append inv.name parameter
-        sqlVals = self._checkWildcardAndAppend('inv.name', name, sql, vals)
+        sqlVals = _checkWildcardAndAppend('inv.name', name, sql, vals)
 
         try:
             cur = self.conn.cursor()
@@ -1324,7 +1206,7 @@ class idods(object):
         '''
 
         # Check id parameer
-        self._checkParameter('id', raw_data_id, 'prim')
+        _checkParameter('id', raw_data_id, 'prim')
 
         # Generate SQL statement
         sql = '''
@@ -1457,7 +1339,7 @@ class idods(object):
         queryDict = {}
         
         # Check id
-        self._checkParameter('id', rawDataId, 'prim')
+        _checkParameter('id', rawDataId, 'prim')
         whereKey = 'id_raw_data_id'
         whereValue = rawDataId
         
@@ -1465,7 +1347,7 @@ class idods(object):
         queryDict['data'] = data
         
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('id_raw_data', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('id_raw_data', queryDict, whereKey, whereValue)
         
         try:
             # Insert data into database
@@ -1589,7 +1471,7 @@ class idods(object):
         
         if 'username' in kws and kws['username'] != None:
             username = kws['username']
-            self._checkParameter('username', username)
+            _checkParameter('username', username)
             
         # Check description
         description = None
@@ -1842,7 +1724,7 @@ class idods(object):
         queryDict = {}
         
         # Check id
-        self._checkParameter('id', offline_data_id, 'prim')
+        _checkParameter('id', offline_data_id, 'prim')
         whereKey = 'id_offline_data_id'
         whereValue = offline_data_id
         
@@ -1934,7 +1816,7 @@ class idods(object):
             queryDict['id_data_method_id'] = methodid
 
         # Genreate SQL
-        sqlVals = self._generateUpdateQuery('id_offline_data', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('id_offline_data', queryDict, whereKey, whereValue)
         
         try:
             
@@ -2075,13 +1957,13 @@ class idods(object):
         
         # Append offline id
         if 'offlineid' in kws and kws['offlineid'] != None:
-            self._checkParameter('id', kws['offlineid'], 'prim')
+            _checkParameter('id', kws['offlineid'], 'prim')
             sql += ' AND id_offline_data_id = %s '
             vals.append(kws['offlineid'])
         
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
-            sqlVal = self._checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
+            sqlVal = _checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
         
@@ -2117,13 +1999,13 @@ class idods(object):
             
         # Append phasemode parameter
         if 'phasemode' in kws and kws['phasemode'] != None:
-            sqlVal = self._checkWildcardAndAppend('iod.phase_mode', kws['phasemode'], sql, vals, 'AND')
+            sqlVal = _checkWildcardAndAppend('iod.phase_mode', kws['phasemode'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
             
         # Append polarmode parameter
         if 'polarmode' in kws and kws['polarmode'] != None:
-            sqlVal = self._checkWildcardAndAppend('iod.polar_mode', kws['polarmode'], sql, vals, 'AND')
+            sqlVal = _checkWildcardAndAppend('iod.polar_mode', kws['polarmode'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
             
@@ -2134,13 +2016,13 @@ class idods(object):
             
         # Append method name parameter
         if 'method_name' in kws and kws['method_name'] != None:
-            sqlVal = self._checkWildcardAndAppend('idm.method_name', kws['method_name'], sql, vals, 'AND')
+            sqlVal = _checkWildcardAndAppend('idm.method_name', kws['method_name'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
         
         # Append inventory name
         if 'inventory_name' in kws and kws['inventory_name'] != None:
-            sqlVal = self._checkWildcardAndAppend('inv.name', kws['inventory_name'], sql, vals, 'AND')
+            sqlVal = _checkWildcardAndAppend('inv.name', kws['inventory_name'], sql, vals, 'AND')
             sql = sqlVal[0]
         
         try:
@@ -2211,7 +2093,7 @@ class idods(object):
             raise ValueError("Data method (%s) already exists in the database!" % name)
 
         # Check name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         
         # Generate SQL
         sql = '''
@@ -2270,13 +2152,13 @@ class idods(object):
         
         # Check if
         if datamethod_id:
-            self._checkParameter('id', datamethod_id, 'prim')
+            _checkParameter('id', datamethod_id, 'prim')
             whereKey = 'id_data_method_id'
             whereValue = datamethod_id
             
         # Check name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'method_name'
             whereValue = old_name
             
@@ -2285,7 +2167,7 @@ class idods(object):
             raise ValueError("Id or old name should be present to execute an update!")
 
         # Check name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         queryDict['method_name'] = name
         
         # Check description parameter
@@ -2293,7 +2175,7 @@ class idods(object):
             queryDict['description'] = kws['description']
         
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('id_data_method', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('id_data_method', queryDict, whereKey, whereValue)
         
         try:
             cur = self.conn.cursor()
@@ -2337,7 +2219,7 @@ class idods(object):
         '''
         
         # Check name
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         
         # Contruct SQL
         sql = '''
@@ -2352,11 +2234,11 @@ class idods(object):
         vals = []
         
         # Append name
-        sqlAndVals = self._checkWildcardAndAppend('method_name', name, sql, vals)
+        sqlAndVals = _checkWildcardAndAppend('method_name', name, sql, vals)
         
         # Check if description exists
         if description:
-            sqlAndVals = self._checkWildcardAndAppend('description', description, sqlAndVals[0], sqlAndVals[1], 'AND')
+            sqlAndVals = _checkWildcardAndAppend('description', description, sqlAndVals[0], sqlAndVals[1], 'AND')
 
         try:
             # Execute SQL
@@ -2560,7 +2442,7 @@ class idods(object):
         queryDict = {}
         
         # Check id
-        self._checkParameter('id', inventory_to_install_id, 'prim')
+        _checkParameter('id', inventory_to_install_id, 'prim')
         whereKey = 'inventory__install_id'
         whereValue = inventory_to_install_id
         
@@ -2585,7 +2467,7 @@ class idods(object):
         queryDict['inventory_id'] = inventoryObject['id']
         
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('inventory__install', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('inventory__install', queryDict, whereKey, whereValue)
         
         try:
             cur = self.conn.cursor()
@@ -2628,7 +2510,7 @@ class idods(object):
         '''
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
 
         # Construct SQL
         sql = '''
@@ -2641,7 +2523,7 @@ class idods(object):
         vals = []
         
         # Append name
-        sqlAndVals = self._checkWildcardAndAppend("cmpnt_type_prop_type_name", name, sql, vals)
+        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_prop_type_name", name, sql, vals)
 
         try:
             cur = self.conn.cursor()
@@ -2688,7 +2570,7 @@ class idods(object):
             raise ValueError("Component type property type (%s) already exists in the database!" % name)
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
 
         # Generate SQL
         sql = '''
@@ -2741,13 +2623,13 @@ class idods(object):
 
         # Check id
         if property_type_id:
-            self._checkParameter('id', property_type_id, 'prim')
+            _checkParameter('id', property_type_id, 'prim')
             whereKey = 'cmpnt_type_prop_type_id'
             whereValue = property_type_id
             
         # Check old name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'cmpnt_type_prop_type_name'
             whereValue = old_name
         
@@ -2755,7 +2637,7 @@ class idods(object):
             raise ValueError("Id or old name should be present to execute an update!")
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
         queryDict['cmpnt_type_prop_type_name'] = name
         
         # Append description
@@ -2763,7 +2645,7 @@ class idods(object):
             queryDict['cmpnt_type_prop_type_desc'] = kws['description']
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('cmpnt_type_prop_type', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('cmpnt_type_prop_type', queryDict, whereKey, whereValue)
 
         try:
             cur = self.conn.cursor()
@@ -2834,7 +2716,7 @@ class idods(object):
 
         # Add value parameter if exists
         if value:
-            sqlVals = self._checkWildcardAndAppend('cmpnt_type_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkWildcardAndAppend('cmpnt_type_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
 
         try:
             # Retrieve objects from the database
@@ -3015,7 +2897,7 @@ class idods(object):
         queryDict['cmpnt_type_prop_value'] = value
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('cmpnt_type_prop', queryDict, None, None, whereDict)
+        sqlVals = _generateUpdateQuery('cmpnt_type_prop', queryDict, None, None, whereDict)
         
         try:
             cur = self.conn.cursor()
@@ -3068,7 +2950,7 @@ class idods(object):
         '''
 
         # Check component type parameter
-        self._checkParameter("component type", name)
+        _checkParameter("component type", name)
 
         # Start SQL
         sql = '''
@@ -3078,11 +2960,11 @@ class idods(object):
         vals = []
 
         # Append component type
-        sqlAndVals = self._checkWildcardAndAppend("cmpnt_type_name", name, sql, vals)
+        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals)
 
         # Append desciprtion if exists
         if description != None:
-            sqlAndVals = self._checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
+            sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
 
         # Execute SQL
         try:
@@ -3142,7 +3024,7 @@ class idods(object):
         '''
 
         # Check device type
-        self._checkParameter("component type", name)
+        _checkParameter("component type", name)
 
         # Check if component type already exists
         componenttype = self.retrieveComponentType(name);
@@ -3224,13 +3106,13 @@ class idods(object):
         
         # Check id
         if component_type_id:
-            self._checkParameter('id', component_type_id, 'prim')
+            _checkParameter('id', component_type_id, 'prim')
             whereKey = 'cmpnt_type_id'
             whereValue = component_type_id
             
         # Check old name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'cmpnt_type_name'
             whereValue = old_name
             
@@ -3239,7 +3121,7 @@ class idods(object):
             raise ValueError("Component type id or old component type name should be present to execute an update!")
         
         # Check device type
-        self._checkParameter("component type", name)
+        _checkParameter("component type", name)
         queryDict['cmpnt_type_name']= name
         
         # Add description
@@ -3247,7 +3129,7 @@ class idods(object):
             queryDict['description'] = kws['description']
 
         # Save it into database and return its new id
-        sqlVals = self._generateUpdateQuery('cmpnt_type', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('cmpnt_type', queryDict, whereKey, whereValue)
 
         try:
             cur = self.conn.cursor()
@@ -3321,7 +3203,7 @@ class idods(object):
         '''
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
 
         # Construct SQL
         sql = '''
@@ -3334,7 +3216,7 @@ class idods(object):
         vals = []
         
         # Append name
-        sqlAndVals = self._checkWildcardAndAppend("install_rel_prop_type_name", name, sql, vals)
+        sqlAndVals = _checkWildcardAndAppend("install_rel_prop_type_name", name, sql, vals)
 
         try:
             cur = self.conn.cursor()
@@ -3383,7 +3265,7 @@ class idods(object):
             raise ValueError("Install rel property type (%s) already exists in the database!" % name)
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
 
         # Generate SQL
         sql = '''
@@ -3437,13 +3319,13 @@ class idods(object):
         
         # Check if
         if type_id:
-            self._checkParameter('id', type_id, 'prim')
+            _checkParameter('id', type_id, 'prim')
             whereKey = 'install_rel_prop_type_id'
             whereValue = type_id
             
         # Check name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'install_rel_prop_type_name'
             whereValue = old_name
             
@@ -3452,7 +3334,7 @@ class idods(object):
             raise ValueError("Id or old name should be present to execute an update!")
 
         # Check name
-        self._checkParameter("name", name)
+        _checkParameter("name", name)
         queryDict['install_rel_prop_type_name'] = name
         
         # Check description
@@ -3464,7 +3346,7 @@ class idods(object):
             queryDict['install_rel_prop_type_units'] = kws['unit']
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('install_rel_prop_type', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('install_rel_prop_type', queryDict, whereKey, whereValue)
 
         try:
             cur = self.conn.cursor()
@@ -3532,7 +3414,7 @@ class idods(object):
 
         # Add value parameter if exists
         if value:
-            sqlVals = self._checkWildcardAndAppend('install_rel_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkWildcardAndAppend('install_rel_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
 
         try:
             # Retrieve objects from the database
@@ -3716,7 +3598,7 @@ class idods(object):
             queryDict['install_rel_prop_value'] = kws['value']
 
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('install_rel_prop', queryDict, None, None, whereDict)
+        sqlVals = _generateUpdateQuery('install_rel_prop', queryDict, None, None, whereDict)
         
         try:
             cur = self.conn.cursor()
@@ -3887,7 +3769,7 @@ class idods(object):
             queryDict['logical_order'] = kws['order']
     
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('install_rel', queryDict, None, None, whereDict)
+        sqlVals = _generateUpdateQuery('install_rel', queryDict, None, None, whereDict)
        
         try:
             # Insert entity
@@ -4029,7 +3911,7 @@ class idods(object):
             
         # Check description parameter
         if description:
-            sqlVals = self._checkWildcardAndAppend('ir.logical_desc', description, sql, vals, 'AND')
+            sqlVals = _checkWildcardAndAppend('ir.logical_desc', description, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
             
@@ -4118,7 +4000,7 @@ class idods(object):
         '''
         
         # Check name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         
         # Check component type
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
@@ -4193,13 +4075,13 @@ class idods(object):
         
         # Check id
         if install_id:
-            self._checkParameter('id', install_id, 'prim')
+            _checkParameter('id', install_id, 'prim')
             whereKey = 'install_id'
             whereValue = install_id
         
         # Check name
         if old_name:
-            self._checkParameter('name', old_name)
+            _checkParameter('name', old_name)
             whereKey = 'field_name'
             whereValue = old_name
             
@@ -4208,7 +4090,7 @@ class idods(object):
             raise ValueError("Id or old name should be present to execute an update!")
         
         # Check name parameter
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         queryDict['field_name'] = name
         
         # Check component type
@@ -4228,7 +4110,7 @@ class idods(object):
             queryDict['coordinate_center'] = coordinate
             
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('install', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('install', queryDict, whereKey, whereValue)
         
         try:
             # Insert record into database
@@ -4323,7 +4205,7 @@ class idods(object):
         '''
         
         # Check name
-        self._checkParameter('name', name)
+        _checkParameter('name', name)
         
         # Generate SQL
         sql = '''
@@ -4342,15 +4224,15 @@ class idods(object):
         vals = []
         
         # Append name parameter
-        sqlVals = self._checkWildcardAndAppend('inst.field_name', name, sql, vals)
+        sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals)
         
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
-            sqlVals = self._checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
             
         # Append component type parameter
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
-            sqlVals = self._checkWildcardAndAppend('ct.cmpnt_type_name', kws['cmpnt_type'], sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkWildcardAndAppend('ct.cmpnt_type_name', kws['cmpnt_type'], sqlVals[0], sqlVals[1], 'AND')
 
         # Append coordination center parameter
         if 'coordinatecenter' in kws and kws['coordinatecenter'] != None:
@@ -4446,7 +4328,7 @@ class idods(object):
         '''
         
         # Check install name
-        self._checkParameter('name', install_name)
+        _checkParameter('name', install_name)
             
         returnedInstall = self.retrieveInstall(install_name)
         
@@ -4584,25 +4466,25 @@ class idods(object):
         
         # Append online id
         if 'onlineid' in kws and kws['onlineid'] != None:
-            self._checkParameter('id', kws['onlineid'], 'prim')
+            _checkParameter('id', kws['onlineid'], 'prim')
             sql += ' AND id_online_data_id = %s '
             vals.append(kws['onlineid'])
             
         # Append username
         if 'username' in kws and kws['username'] != None:
-            sqlVals = self._checkWildcardAndAppend('iod.login_name', kws['username'], sql, vals, 'AND')
+            sqlVals = _checkWildcardAndAppend('iod.login_name', kws['username'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
             
         # Append description
         if 'description' in kws and kws['description'] != None:
-            sqlVals = self._checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
+            sqlVals = _checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
             
         # Append url
         if 'url' in kws and kws['url'] != None:
-            sqlVals = self._checkWildcardAndAppend('iod.data_url', kws['url'], sql, vals, 'AND')
+            sqlVals = _checkWildcardAndAppend('iod.data_url', kws['url'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
             
@@ -4614,7 +4496,7 @@ class idods(object):
             
         # Append install name
         if 'install_name' in kws and kws['install_name'] != None:
-            sqlVals = self._checkWildcardAndAppend('inst.field_name', kws['install_name'], sql, vals, 'AND')
+            sqlVals = _checkWildcardAndAppend('inst.field_name', kws['install_name'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
             
@@ -4682,7 +4564,7 @@ class idods(object):
         queryDict = {}
         
         # Check id
-        self._checkParameter('id', online_data_id, 'prim')
+        _checkParameter('id', online_data_id, 'prim')
         whereKey = 'id_online_data_id'
         whereValue = online_data_id
         
@@ -4716,7 +4598,7 @@ class idods(object):
             queryDict['status'] = kws['status']
             
         # Generate SQL
-        sqlVals = self._generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)
+        sqlVals = _generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)
         
         try:
             # Insert offline data into database
@@ -4812,7 +4694,7 @@ class idods(object):
         '''
         
         # Check name
-        self._checkParameter('name', install_name)
+        _checkParameter('name', install_name)
         
         # Generate select SQL
         sql = '''
@@ -4869,7 +4751,7 @@ class idods(object):
         vals = []
         
         # Append name parameter
-        sqlVals = self._checkWildcardAndAppend('inst.field_name', install_name, sql, vals)
+        sqlVals = _checkWildcardAndAppend('inst.field_name', install_name, sql, vals)
         
         try:
             # Execute SQL

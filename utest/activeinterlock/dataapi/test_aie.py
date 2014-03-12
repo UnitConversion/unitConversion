@@ -18,9 +18,9 @@ from activeinterlock.rdbutils import (close, connect)
 class Test(unittest.TestCase):
 
     def __cleanrdb(self):
-        '''clean up existing data
         '''
-        
+        clean up existing data
+        '''
 
         sql = '''
         delete from active_interlock_prop;
@@ -35,7 +35,7 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.conn = connect()
-        self.aie = epsai(self.conn)
+        self.api = epsai(self.conn)
         self.scale = random.uniform(1.0, 2.0)
         
         self.aie_prop_type = {'label': ['name', 'unit', 'description'],
@@ -272,7 +272,169 @@ class Test(unittest.TestCase):
         self.__cleanrdb()
         close(self.conn)
 
-    def test_activeinterlocklogic(self):
+    '''
+    Test saving and retrieving active interlock
+    '''
+    def testActiveInterlockHeader(self):
+        
+        # Save active interlock
+        aih = self.api.saveActiveInterlockHeader('desc', 'admin')
+        
+        # Retrieve active interlock
+        ai = self.api.retrieveActiveInterlockHeader(None, aih['id'])
+        aiKeys = ai.keys()
+        aiObject = ai[aiKeys[0]]
+        
+        # Test description
+        self.assertEqual(aiObject['description'], 'desc')
+        
+        # Test created by
+        self.assertEqual(aiObject['created_by'], 'admin')
+        
+        # Test status
+        self.assertEqual(aiObject['status'], 0)
+
+    '''
+    Test saving and retrieving devices
+    '''
+    def testDevice(self):
+
+        # Prepare active interlock header
+        aih = self.api.saveActiveInterlockHeader('desc', 'admin')
+        
+        # Prepare logic
+        self.api.saveActiveInterlockLogic('name', 'shape', 'logic', 10, 'author')
+        
+        # Prepare device property type
+        self.assertRaises(ValueError, self.api.saveActiveInterlockPropType, 'cell', '', 'a cell')
+        
+        # Save device
+        savedDevice = self.api.saveDevice(0, 'device name', 'bm', 'name', {'cell': 'test'})
+        
+        # Retrieve device
+        device = self.api.retrieveDevice(aih['id'], None, 'device name', 'bm')
+        deviceObject = device[savedDevice['id']]
+        
+        # Test device name
+        self.assertEqual(deviceObject['name'], 'device name')
+        
+        # Test definition
+        self.assertEqual(deviceObject['definition'], 'bm')
+        
+        # Test logic name
+        self.assertEqual(deviceObject['logic'], 'name')
+        
+        # Test retrieving a property
+        self.assertEqual(deviceObject['cell'], 'test')
+
+    '''
+    Test saving and retrieving active interlock property type
+    '''
+    def testPropType(self):
+        
+        # Save property type
+        self.api.saveActiveInterlockPropType('length', 'm', 'some length')
+        
+        # Retrieve property type
+        propType = self.api.retrieveActiveInterlockPropType('length')
+        typeKeys = propType.keys()
+        typeObject = propType[typeKeys[0]]
+        
+        # Test name
+        self.assertEqual(typeObject['name'], 'length')
+        
+        # Test unit
+        self.assertEqual(typeObject['unit'], 'm')
+        
+        # Test description
+        self.assertEqual(typeObject['description'], 'some length')
+        
+        # Try to save prop type with same name and unit
+        self.assertRaises(ValueError, self.api.saveActiveInterlockPropType, 'length', unit='m')
+
+    '''
+    Test saving, retrieving and updating active interlock property
+    '''
+    def testProp(self):
+        
+        # Save property type
+        self.api.saveActiveInterlockPropType('length', 'm', 'some length')
+        self.api.saveActiveInterlockPropType('length2', 'm', 'approvable')
+        
+        # Prepare active interlock header
+        self.api.saveActiveInterlockHeader('desc', 'admin')
+        
+        # Prepare logic
+        self.api.saveActiveInterlockLogic('name', 'shape', 'logic', 10, 'author')
+        
+        # Save device
+        savedDevice = self.api.saveDevice(0, 'device name', 'bm', 'name', {'length': 'test'})
+        
+        # Save property
+        self.api.saveActiveInterlockProp(savedDevice['id'], 'length2', '123')
+        
+        # Retrieve property
+        prop = self.api.retrieveActiveInterlockProp(savedDevice['id'], 'length2')
+        propKeys = prop.keys()
+        propObject = prop[propKeys[0]]
+        
+        # Test value
+        self.assertEqual(propObject['value'], '123')
+        
+        # Update property
+        self.assertTrue(self.api.updateActiveInterlockProp(savedDevice['id'], 'length2', '1234'))
+        
+        # Retrieve property
+        prop = self.api.retrieveActiveInterlockProp(savedDevice['id'], 'length2')
+        propKeys = prop.keys()
+        propObject = prop[propKeys[0]]
+        
+        # Test value
+        self.assertEqual(propObject['value'], '1234')
+        
+        # Test status
+        self.assertEqual(propObject['status'], 2)
+        
+        # Try to approve length2 property
+        self.assertTrue(self.api.approveCells(savedDevice['id'], ['length2']))
+        
+        # Retrieve property
+        prop = self.api.retrieveActiveInterlockProp(savedDevice['id'], 'length2')
+        propKeys = prop.keys()
+        propObject = prop[propKeys[0]]
+        
+        # Test status
+        self.assertEqual(propObject['status'], 3)
+
+    '''
+    Test saving and retrieving logic
+    '''
+    def testLogic(self):
+        
+        # Save logic
+        self.api.saveActiveInterlockLogic('name', 'shape', 'logic', 10, 'author')
+        
+        # Retrieve logic
+        logic = self.api.retrieveActiveInterlockLogic('name')
+        logicKeys = logic.keys()
+        logicObject = logic[logicKeys[0]]
+        
+        # Test name
+        self.assertEqual(logicObject['name'], 'name')
+        
+        # Test shape
+        self.assertEqual(logicObject['shape'], 'shape')
+        
+        # Test logic
+        self.assertEqual(logicObject['logic'], 'logic')
+        
+        # Test code
+        self.assertEqual(logicObject['code'], 10)
+        
+        # Test author
+        self.assertEqual(logicObject['created_by'], 'author')
+
+    def Atest_activeinterlocklogic(self):
 #        print("======test active interlock logic=========")
         # should save successfully
         labels = self.aie_logic['label']
@@ -320,7 +482,7 @@ class Test(unittest.TestCase):
                               )
 #        print("======test active interlock finished=========")
         
-    def test_activeinterlockproptype(self):
+    def Atest_activeinterlockproptype(self):
         ''''''
         # should save successfully
 #        print("======test active interlock property type=========")
@@ -368,7 +530,7 @@ class Test(unittest.TestCase):
 #        print("======test active interlock property type finished=========")
         
         
-    def test_activeinterlock(self):
+    def Atest_activeinterlock(self):
 #        print("======test active interlock=========")
         # id has to be a positive integer
         self.assertRaises(ValueError, self.aie.updateactiveinterlockstatus, -1L, 0, 'author')
@@ -397,24 +559,10 @@ class Test(unittest.TestCase):
         #
         # prepare data set
 
-        # script filename (usually with path)
-        #inspect.getfile(inspect.currentframe()) 
-        # script directory
-        path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
-
-        datafile = 'Ilinski_AI_DB_20130731.xls'
-        # read raw data in
-        exceldata=None
-        with file('/'.join((path, datafile)), 'r') as f:
-            bindata = base64.b64encode(f.read())
-            exceldata=json.dumps({'name': datafile,
-                                  'data': bindata})
-
         # save first example data set
         desc1 = 'Latest data for active interlock published on 2013-07-31'
-        self.aie.saveactiveinterlock(self.aie_data, 
-                                     description=desc1, 
-                                     rawdata=exceldata, 
+        self.aie.saveActiveInterlock(self.aie_data, 
+                                     description=desc1,
                                      active=True, 
                                      author='unit test')
         
@@ -435,9 +583,8 @@ class Test(unittest.TestCase):
         
         # save 2nd example data set
         desc2='Latest data for active interlock published on 2013-07-31, data scaled by factor %s' %self.scale
-        self.aie.saveactiveinterlock(self.aie_data2, 
+        self.aie.saveActiveInterlock(self.aie_data2, 
                                      description=desc2, 
-                                     rawdata=exceldata, 
                                      active=True, 
                                      author='unit test')
 
@@ -488,5 +635,4 @@ class Test(unittest.TestCase):
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
-    
     

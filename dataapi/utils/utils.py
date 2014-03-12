@@ -124,3 +124,127 @@ def _generateFilePath():
         else: 
             raise Exception("Could not create a directory to save lattice file")
     return dirname
+
+def _checkParameter(parameterKey, paramaterValue, parameterTypeWeAreCheckingFor = "string"):
+    '''
+    Check different types of input parameters. Parameter should match agreed criteria or exception will be thrown
+    
+    parameters:
+        - parameterKey: name of the parameter
+        - parameterValue: value of the parameter
+        - parameterTypeWeAreCheckingFor: which type are we chacking
+            * string: if we are checking string value
+            * prim: if we are checking primary key value
+        
+    raise:
+        ValueError if parameter don'r match agreed criteria
+    '''
+    
+    # Check string
+    if parameterTypeWeAreCheckingFor == "string":
+        
+        if not isinstance(paramaterValue, (str, unicode)):
+            raise ValueError("Parameter %s is missing!" % parameterKey)
+        
+    # Check primary key
+    elif parameterTypeWeAreCheckingFor == "prim":
+        
+        try:
+            paramaterValue = int(paramaterValue)
+            
+        except ValueError as e:
+            raise ValueError("Parameter %s cannot be None. %s." % (parameterKey, e.args[0]))
+
+def _checkWildcardAndAppend(parameterKey, parameterValue, sqlString, valsList, prependedOperator = None):
+    '''
+    Check for wildcard characters in a parameter value and append appropriate sql
+    
+    parameters:
+        - parameterKey: name of the parameter in the DB table
+        - parameterValue: value of this parameter
+        - sqlString: existing sql string that was generated outside of this function
+        - valsList: list of formated values that should be inserted into sql statement
+        - prepandedOperator: sql operator that will be prepended before the new condition
+        
+    return:
+        tuple of new sql string and new list of values
+    '''
+    
+    # Prepend operator if it exists
+    if prependedOperator != None:
+        sqlString += " " + prependedOperator + " "
+        
+    # Do not check for wildcard parameters if we have a number
+    if isinstance(parameterValue, (int, float, long, complex)):
+        sqlString += " " + parameterKey + " = %s "
+        valsList.append(parameterValue)
+        return (sqlString, valsList)
+    
+    # Check if user wants all objects
+    if parameterValue == "*":
+        sqlString += " 1=1 "
+    
+    # Check for wildcard characters
+    elif "*" in parameterValue or "?" in parameterValue:
+        sqlString += " " + parameterKey + " like %s "
+        valsList.append(_wildcardformat(parameterValue))
+        
+    # All of the other options
+    else:
+        sqlString += " " + parameterKey + " = %s "
+        valsList.append(parameterValue)
+        
+    return (sqlString, valsList)
+
+def _generateUpdateQuery(tableName, queryDict, whereKey, whereValue, whereDict = None):
+    '''
+    Check number of parameters that are set and generate update SQL
+    
+    params:
+        - tableName: name of the table we are updating
+        - queryDict: dictionary where every key is an attribute name and every value new attribute value
+        - whereKey: attribute by which we are updating
+        - whereValue: attribute value by which we are updating
+        - whereDict: dictionary of where keys and values
+    
+    raises:
+        ValueError if no attributes are set
+    '''
+    
+    # Create value list
+    vals = []
+    
+    # Check the number of attributes that are set
+    if len(queryDict) < 1:
+        raise ValueError("At least one attribute has to be set to a new value!")
+    
+    # Generate SQL
+    sql = 'UPDATE ' + tableName + ' SET '
+    sqlList = []
+    
+    # Go through parameters
+    for attr in queryDict.keys():
+        value = queryDict[attr]
+        sqlList.append(' ' + attr + ' = %s ')
+        vals.append(value)
+    
+    sql += ','.join(sqlList)
+    
+    if whereDict == None:
+        # Append where condition
+        sql += ' WHERE ' + whereKey + ' = %s '
+        vals.append(whereValue)
+        
+    else:
+        sql += ' WHERE '
+        sqlList = []
+        
+        # Go through where keys
+        for whereKey in whereDict.keys():
+            whereValue = whereDict[whereKey]
+            sqlList.append(' ' + whereKey + ' = %s ')
+            vals.append(whereValue)
+            
+        sql += " AND ".join(sqlList)
+    
+    return (sql, vals)
