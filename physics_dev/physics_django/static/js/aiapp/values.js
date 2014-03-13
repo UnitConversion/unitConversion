@@ -70,6 +70,9 @@ app.value('BendingMagnet', function(obj) {
 	// Update parameters
 	this.update = ["aid_id", "prop_type_name", "value"];
 
+	// Update device
+	this.update_device = ["aid_id", "name", "logic"];
+
 	// Approve parameters
 	this.approve = ["aid_id", "prop_types"];
 	

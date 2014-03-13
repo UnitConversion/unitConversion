@@ -17,11 +17,11 @@
 		<!-- Collect the nav links, forms, and other content for toggling -->
 		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 			<ul class="nav navbar-nav">
-				<li ng-class="{active: urlStatus == 'editable'}"><a href="#/status/editable/tab/bm/bm">Editable <span class="badge">{{editable}}</span></a></li>
-				<li ng-class="{active: urlStatus == 'approved'}"><a href="#/status/approved/tab/bm/bm">Approved <span class="badge">{{approved}}</span></a></li>
-				<li ng-class="{active: urlStatus == 'active'}"><a href="#/status/active/tab/bm/bm">Active <span class="badge">{{active}}</span></a></li>
-				<li ng-class="{active: urlStatus == 'backup'}"><a href="#/status/backup/tab/bm/bm">Backup <span class="badge">{{backup}}</span></a></li>
-				<li ng-class="{active: path == '/history'}"><a href="#/history">History <span class="badge">{{history}}</span></a></li>
+				<li ng-class="{active: urlStatus == 'editable'}"><a ng-click="goTo('editable')" href="">Editable <span class="badge">{{statuses.editable}}</span></a></li>
+				<li ng-class="{active: urlStatus == 'approved'}"><a ng-click="goTo('approved')" href="">Approved <span class="badge">{{statuses.approved}}</span></a></li>
+				<li ng-class="{active: urlStatus == 'active'}"><a ng-click="goTo('active')" href="">Active <span class="badge">{{statuses.active}}</span></a></li>
+				<li ng-class="{active: urlStatus == 'backup'}"><a ng-click="goTo('backup')" href="">Backup <span class="badge">{{statuses.backup}}</span></a></li>
+				<li ng-class="{active: path == '/history'}"><a href="#/history/">History <span class="badge">{{statuses.history}}</span></a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<li class="dropdown">

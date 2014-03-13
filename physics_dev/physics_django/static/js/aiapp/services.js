@@ -25,6 +25,40 @@ app.factory('statusFactory', function($http, $q){
 		return promise;
 	}
 
+	factory.approveDataset = function() {
+		var query = serviceurl + "/updatestatus/";
+
+		var params = "status=" + aiStatusMap['editable'] + "&new_status=" + aiStatusMap['approved'];
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
+	factory.editDataset = function() {
+		var query = serviceurl + "/updatestatus/";
+
+		var params = "status=" + aiStatusMap['approved'] + "&new_status=" + aiStatusMap['editable'];
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
 	return factory;
 })
 
@@ -49,7 +83,7 @@ app.factory('headerFactory', function($http, $q){
 	}
 
 	return factory;
-})
+});
 
 /*
  * Provide bending magnet factory. Banging magnet data can be retrieved and saved.
@@ -128,6 +162,27 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 		var query = serviceurl + "/updateprop/";
 
 		var params = prepareUrlParameters(factory.bm.update, params);
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
+	// Update device
+	factory.updateDevice = function(params) {
+		l(params);
+
+		var query = serviceurl + "/updatedevice/";
+
+		var params = prepareUrlParameters(factory.bm.update_device, params);
+		l(params);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 

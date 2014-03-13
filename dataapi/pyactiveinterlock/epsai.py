@@ -489,7 +489,7 @@ class epsai(object):
         
         return aiid
         
-    def updateActiveInterlockStatus(self, aiid, status, created_by=None):
+    def updateActiveInterlockStatusOld(self, aiid, status, created_by=None):
         '''
         Update status of a data set.
         
@@ -575,6 +575,98 @@ class epsai(object):
             
             self.logger.info('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateActiveInterlockStatus(self, ai_id, status, new_status):
+        '''
+        Update status of a data set.
+        
+        Current statuses:
+        
+            0: editable
+            1: approved
+            2: active
+            3: backup
+            4: history
+        
+        :param aiid: internal id of an active interlock data set
+        :type aiid: int
+        
+        :param status: new status code
+        :type status: int
+        
+        :param created_by: name who requests this update
+        :type created_by: str
+            
+        :Returns: boolean
+            
+            The return code: ::
+                
+                True -- when the status is changed.
+                Exception -- when there was an error.
+        
+        :Raises: MySQLError, ValueError
+        '''
+        
+        # Convert
+        new_status = int(new_status)
+        
+        # Check that id or status is set
+        if ai_id == None and status == None:
+            raise ValueError("Id or status should be provided to update status!")
+        
+        # Get active interlock id from status
+        if status != None and ai_id == None:
+            ai = self.retrieveActiveInterlockHeader(status)
+            aiKeys = ai.keys()
+            
+            # If there is no dataset with this status, return True
+            if len(aiKeys) == 0:
+                return True
+            
+            aiObj = ai[aiKeys[0]]
+            ai_id = aiObj['id']
+        
+        # Move statuses
+        if new_status >= 2 and new_status < 4:
+            return self.updateActiveInterlockStatus(ai_id, None, new_status + 1)
+        
+        # Delete dataset that currently has this status
+        if new_status == 0 or new_status == 1:
+            self.deleteDevice(new_status)
+            #self.updateActiveInterlockStatus(None, new_status, -1)
+        
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+        
+        # Set status
+        queryDict['status'] = new_status
+        
+        # Set where
+        whereDict['active_interlock_id'] = ai_id
+        
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('active_interlock', queryDict, None, None, whereDict)
+        print sqlVals
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when updating active interlock status:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating active interlock status:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveDeviceProperties(self):
         '''
@@ -776,7 +868,6 @@ class epsai(object):
         
         # Generate SQL
         sqlVals = _generateUpdateQuery('active_interlock_prop', queryDict, None, None, whereDict)
-        print sqlVals
         
         try:
             # Insert ai property data into database
@@ -920,6 +1011,11 @@ class epsai(object):
             if ai_id == None:
                 ai = self.retrieveActiveInterlockHeader(ai_status)
                 aiKeys = ai.keys()
+                
+                # Check the number of active interlocks
+                if len(aiKeys) == 0:
+                    return {}
+                
                 aiObject = ai[aiKeys[0]]
                 ai_id = aiObject['id']
         
@@ -1005,6 +1101,9 @@ class epsai(object):
         
         :param logic: name of the logic that has t be saved in the database
         :type logic: str
+        
+        :return
+         {'id': id of the saved device}
         '''
         
         ai_id = None
@@ -1080,6 +1179,138 @@ class epsai(object):
 
             self.logger.info('Error when saving active interlock device:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving active interlock device:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateDevice(self, aid_id, name = None, logic = None):
+        '''
+        Update device's name and logic
+        
+        :param aid_id: active interlock device id
+        :type int
+        
+        :param name: device name
+        :type string
+        
+        :param logic: device logic name
+        :type string
+        
+        :return
+            True if everything is ok
+        '''
+        
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+        
+        # Check if there is something to update
+        if name == None and logic == None:
+            raise ValueError("There is nothing to update!")
+        
+        # Check logic
+        if logic != None:
+            retrieveLogic = self.retrieveActiveInterlockLogic(logic)
+            
+            if len(retrieveLogic) == 0:
+                raise ValueError("There is no logic (%s) in the database!" % logic)
+            
+            logicKeys = retrieveLogic.keys()
+            logicObj = retrieveLogic[logicKeys[0]]
+            queryDict['active_interlock_logic_id'] = logicObj['id']
+        
+        # Set where
+        whereDict['active_interlock_device_id'] = aid_id
+        
+        # Set name
+        if name != None:
+            queryDict['device_name'] = name
+            
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('active_interlock_device', queryDict, None, None, whereDict)
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when updating active interlock device:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating active interlock device:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def deleteDevice(self, status):
+        '''
+        Delete active interlock device by its id
+        
+        :param status: active interlock status
+        :type int
+        
+        :returns
+            True if everything is ok
+        '''
+        
+        # Get active interlock id with specific status
+        ai = self.retrieveActiveInterlockHeader(status)
+        aiKeys = ai.keys()
+        
+        # Check the length of the list
+        if len(aiKeys) == 0:
+            return {}
+        
+        aiObj = ai[aiKeys[0]]
+        
+        ai_id = aiObj['id']
+        
+        # Delete properties
+        sqlP = '''
+        DELETE FROM active_interlock_prop WHERE
+        active_interlock_device_id IN (
+            SELECT active_interlock_device_id
+            FROM active_interlock_device
+            WHERE active_interlock_id = %s
+        );
+        '''
+        
+        # Delete active interlock header
+        sqlH = '''
+        DELETE FROM active_interlock
+        WHERE active_interlock_id = %s
+        '''
+        
+        # Delete devices
+        sqlD = '''
+        DELETE FROM active_interlock_device
+        WHERE active_interlock_id = %s
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlP, ai_id)
+            cur.execute(sqlD, ai_id)
+            cur.execute(sqlH, ai_id)
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error while deleting active interlock:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error while deleting active interlock:\n%s (%d)' % (e.args[1], e.args[0]))
+
 
     def retrieveStatusInfo(self):
         '''

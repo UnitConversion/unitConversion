@@ -7,43 +7,64 @@
 
 app.controller('indexCtrl', function($scope){
 	$scope.version = version;
+	l("reload");
 });
 
-app.controller('mainCtrl', function($scope, $routeParams, $route, statusFactory){
-	l($routeParams);
+app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statusFactory){
 	$scope.urlStatus = $routeParams.status;
 	$scope.path = $route.current.originalPath;
 
-	$scope.editable = 0;
-	$scope.approved = 0;
-	$scope.active = 0;
-	$scope.backup = 0;
-	$scope.history = 0;
+	$scope.statuses = {};
+	$scope.statuses.editable = 0;
+	$scope.statuses.approved = 0;
+	$scope.statuses.active = 0;
+	$scope.statuses.backup = 0;
+	$scope.statuses.history = 0;
 
 	statusFactory.retrieveStatuses().then(function(result) {
-
-		l(result);
-		$scope.editable = result[0]['num'];
-		$scope.approved = result[1]['num'];
-		$scope.active = result[2]['num'];
-		$scope.backup = result[3]['num'];
-		$scope.history = result[4]['num'];
+		$scope.statuses.editable = result[0]['num'];
+		$scope.statuses.approved = result[1]['num'];
+		$scope.statuses.active = result[2]['num'];
+		$scope.statuses.backup = result[3]['num'];
+		$scope.statuses.history = result[4]['num'];
 	});
+
+	$scope.goTo = function(status) {
+
+		if((status === "active" || status === "approved" || status === "backup") && $scope.statuses[status] === 0 ) {
+			return;
+		}
+
+		$window.location = "#/status/" + status + "/tab/bm/bm/";
+	}
 });
 
 app.controller('dataCtrl', function($scope, $routeParams, $route, $modal){
-	l($route);
 	$scope.urlStatus = $routeParams.status;
 	$scope.urlTab = $routeParams.tab;
-
-	l($scope.editable);
 
 	$scope.createDataset = function() {
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/create_dataset.html',
 			controller: 'createDatasetCtrl'
 		});
-	};
+	}
+
+	$scope.approveDataset = function() {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/approve_dataset.html',
+			controller: 'approveDatasetCtrl'
+		});
+	}
+
+	$scope.editDataset = function() {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/edit_dataset.html',
+			controller: 'editDatasetCtrl'
+		});
+	}
 });
 
 app.controller('historyCtrl', function($scope){
@@ -53,7 +74,6 @@ app.controller('historyCtrl', function($scope){
  * Bending magnet controller that displays anf manages everything connected to bending magnet table
  */
 app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory, BendingMagnet, $modal){
-	l('bm controller' + $routeParams.status);
 	$scope.error = {};
 	$scope.bmArr = [];
 	$scope.logicArr = [];
@@ -61,9 +81,11 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	var aiStatus = aiStatusMap[$routeParams.status];
 
 	// Skip everything if t here is no datasets with current status
-	if ($scope[$routeParams.status] === 0) {
+	/*if ($scope.statuses[$routeParams.status] === 0) {
+		l("return because there is nothing in this status");
+		l($scope.statuses);
 		return;
-	}
+	}*/
 
 	// Retrieve bending magnets
 	bmFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
@@ -136,6 +158,29 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 				device.prop_statuses[typeName] = 2;
 			}
 
+			return true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+			return false;
+		});	
+	}
+
+	$scope.updateItemFixed = function(device, propName, propValue) {
+		$scope.alert.show = false;
+
+		var params = {};
+		params['aid_id'] = device.id;
+		params[propName] = propValue;
+
+		bmFactory.updateDevice(params).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Value successfully updated!";
 			return true;
 
 		}, function(error) {
@@ -460,6 +505,94 @@ app.controller('approveRowCtrl', function($scope, $modalInstance, $window, bmFac
 			}
 		});
 
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Approve dataset controller
+ */
+app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, statusFactory) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		statusFactory.approveDataset().then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Dataset successfully approved!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$window.location = "#/status/approved/tab/bm/bm/";
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Edit dataset controller
+ */
+app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, statusFactory) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		statusFactory.editDataset().then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Dataset status successfully changed!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$window.location = "#/status/editable/tab/bm/bm/";
 		$modalInstance.dismiss('cancel');
 	};
 });

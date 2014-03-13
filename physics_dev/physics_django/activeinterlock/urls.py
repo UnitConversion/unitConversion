@@ -3,7 +3,8 @@ from django.conf.urls.defaults import patterns, url
 from physics_django.activeinterlock.views import (activeinterlock) 
 from physics_django.activeinterlock.views import (retrieveStatusesWS) 
 from physics_django.activeinterlock.views import (retrieveAiHeaderWS, saveAiHeaderWS) 
-from physics_django.activeinterlock.views import (retrieveDeviceWS, saveDeviceWS) 
+from physics_django.activeinterlock.views import (retrieveDeviceWS, saveDeviceWS, updateDeviceWS) 
+from physics_django.activeinterlock.views import (updateStatusWS) 
 from physics_django.activeinterlock.views import (updatePropWS) 
 from physics_django.activeinterlock.views import (approveCellsWS) 
 from physics_django.activeinterlock.views import (retrieveLogicWS, saveLogicWS) 
@@ -22,6 +23,9 @@ urlpatterns = patterns(
 
     url(r'^ai/device/$', retrieveDeviceWS),
     url(r'^ai/savedevice/$', saveDeviceWS),
+    url(r'^ai/updatedevice/$', updateDeviceWS),
+    
+    url(r'^ai/updatestatus/$', updateStatusWS),
     
     url(r'^ai/updateprop/$', updatePropWS),
     

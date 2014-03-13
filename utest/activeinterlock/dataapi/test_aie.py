@@ -294,6 +294,53 @@ class Test(unittest.TestCase):
         # Test status
         self.assertEqual(aiObject['status'], 0)
 
+    def testActiveInterlockStatusChange(self):
+        
+        # Save active interlock
+        self.api.saveActiveInterlockHeader('header desc', 'admin')
+        
+        # Prepare logic
+        self.api.saveActiveInterlockLogic('log', 'shape', 'logic', 10, 'author')
+        
+        # Save device
+        self.api.saveDevice(0, 'device name', 'bm', 'log', {'cell': 'test'})
+        
+        # Try to change status
+        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1))
+        
+        # The number of datasets with status 0 should be 0
+        status0 = self.api.retrieveActiveInterlockHeader(0)
+        self.assertEqual(len(status0), 0)
+        
+        # The number of datasets with status 1 should be 1
+        status1 = self.api.retrieveActiveInterlockHeader(1)
+        self.assertEqual(len(status1), 1)
+        
+        # Save another active interlock
+        self.api.saveActiveInterlockHeader('second header desc', 'admin')
+        
+        # Save another device
+        self.api.saveDevice(0, 'device name2', 'bm', 'log', {'cell': 'test'})
+        
+        # The number of datasets with status 0 should be 1
+        status0 = self.api.retrieveActiveInterlockHeader(0)
+        self.assertEqual(len(status0), 1)
+        
+        # The number of datasets with status 1 should be 1
+        status1 = self.api.retrieveActiveInterlockHeader(1)
+        self.assertEqual(len(status1), 1)
+        
+        # Try to change status, the old one should be removed
+        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1))
+        
+        # The number of datasets with status 0 should be 0
+        status0 = self.api.retrieveActiveInterlockHeader(0)
+        self.assertEqual(len(status0), 0)
+        
+        # The number of datasets with status 1 should be 1
+        status1 = self.api.retrieveActiveInterlockHeader(1)
+        self.assertEqual(len(status1), 1)
+
     '''
     Test saving and retrieving devices
     '''
@@ -396,7 +443,7 @@ class Test(unittest.TestCase):
         self.assertEqual(propObject['status'], 2)
         
         # Try to approve length2 property
-        self.assertTrue(self.api.approveCells(savedDevice['id'], ['length2']))
+        self.assertTrue(self.api.approveCells(savedDevice['id'], json.dumps(['length2'])))
         
         # Retrieve property
         prop = self.api.retrieveActiveInterlockProp(savedDevice['id'], 'length2')

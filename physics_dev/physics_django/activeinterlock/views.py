@@ -245,12 +245,26 @@ def saveDeviceWS(request):
     '''
     return _saveData(request, api.saveDevice, ['ai_status', 'name', 'definition', 'logic', 'props'])
 
+@require_http_methods(["POST"])
+def updateDeviceWS(request):
+    '''
+    Update device
+    '''
+    return _updateData(request, api.updateDevice, ['aid_id', 'name', 'logic'])
+
 @require_http_methods(["GET"])
 def retrieveLogicWS(request):
     '''
     Retrieve active interlock header information
     '''
     return _retrieveData(request, api.retrieveActiveInterlockLogic, ['name', 'shape', 'logic'])
+
+@require_http_methods(["POST"])
+def updateStatusWS(request):
+    '''
+    Update active interlock status
+    '''
+    return _updateData(request, api.updateActiveInterlockStatus, ['status', 'new_status'], {'ai_id': None})
 
 @require_http_methods(["POST"])
 def updatePropWS(request):

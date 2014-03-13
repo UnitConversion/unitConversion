@@ -6,7 +6,7 @@
 	<strong>{{alert.title}}</strong> {{alert.body}}
 </div>
 
-<div class="table-responsive">
+<div ng-if="urlStatus == 'editable'" class="table-responsive">
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th>Cell</th>
@@ -28,7 +28,7 @@
 			</td>
 			<td>
 				<span class="edit-wrapper">
-					<a href="#" onbeforesave="updateItemFixed(bm.id, 'name', bm.name)" class="edit" editable-text="bm.name">{{bm.name || '&nbsp;'}}</a>
+					<a href="#" onbeforesave="updateItemFixed(bm, 'name', $data)" class="edit" editable-text="bm.name">{{bm.name || '&nbsp;'}}</a>
 				</span>
 			</td>
 			<td>{{bm.bm_type || '&nbsp;'}}</td>
@@ -40,7 +40,7 @@
 			</td>
 			<td>
 				<span class="edit-wrapper">
-					<a href="#" onbeforesave="updateItemFixed(bm.id, 'logic', bm.logic)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
 				</span>
 			</td>
 			<td ng-class="{'danger': bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2}">
@@ -51,7 +51,7 @@
 			</td>
 			<td>
 				<span class="edit-wrapper">
-					<a href="#" onbeforesave="updateItemFixed(bm.id, 'logic', bm.logic)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
 				</span>
 			</td>
 			<td ng-class="{'danger': bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2}">
@@ -79,6 +79,31 @@
 		</tr>
 		<tr>
 			<td colspan="9"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new device</button></td>
+		</tr>
+	</table>
+</div>
+
+<div ng-if="urlStatus != 'editable'" class="table-responsive">
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th>Cell</th>
+			<th>Element Name</th>
+			<th>Element Type</th>
+			<th>s</th>
+			<th>BPM-SR</th>
+			<th>AI Offset Limit Hor. (AIOLH)</th>
+			<th>BPM-SR</th>
+			<th>AI Offset Limit Ver. (AIOLV)</th>
+		</tr>
+		<tr ng-repeat="bm in bmArr">
+			<td>{{bm.bm_cell || '&nbsp;'}}</td>
+			<td>{{bm.name || '&nbsp;'}}</td>
+			<td>{{bm.bm_type || '&nbsp;'}}</td>
+			<td>{{bm.bm_s || '&nbsp;'}}</td>
+			<td>{{bm.logic || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiolh || '&nbsp;'}}</td>
+			<td>{{bm.logic || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiolv || '&nbsp;'}}</td>
 		</tr>
 	</table>
 </div>

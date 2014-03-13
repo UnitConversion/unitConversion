@@ -23,12 +23,12 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/status/:status/tab/:tab',		'index.status').
-		when('/status/:status/tab/:tab/bm',		'index.status.bm').
-		when('/status/:status/tab/:tab/id',		'index.status.id').
-		when('/status/:status/tab/:tab/logic',	'index.status.logic').
-		when('/history',						'index.history').
-		when('/dataset/:id',					'index.dataset').
+		when('/status/:status/tab/:tab/',		'index.status').
+		when('/status/:status/tab/:tab/bm/',	'index.status.bm').
+		when('/status/:status/tab/:tab/id/',	'index.status.id').
+		when('/status/:status/tab/:tab/logic/',	'index.status.logic').
+		when('/history/',						'index.history').
+		when('/dataset/:id/',					'index.dataset').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -39,13 +39,13 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 			segment('status', {
 				templateUrl: 'data.html',
 				controller: 'dataCtrl',
-				dependencies: ['status', 'tab']
+				dependencies: ['tab']
 			}).
 			within().
 				segment('bm', {
 					templateUrl: 'bm.html',
 					controller: 'bmCtrl',
-					dependencies: ['status', 'tab']
+					dependencies: ['tab']
 				}).
 				segment('id', {
 					templateUrl: 'id.html'
@@ -53,7 +53,7 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 				segment('logic', {
 					templateUrl: 'logic.html',
 					controller: 'logicCtrl',
-					dependencies: ['status', 'tab']
+					dependencies: ['tab']
 				}).
 			up().
 		up().
