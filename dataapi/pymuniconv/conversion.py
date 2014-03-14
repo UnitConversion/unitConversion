@@ -10,6 +10,8 @@ from scipy.interpolate import interp1d
 
 import copy
 
+scalingfactor = 0.9988
+
 def _makei2b(expr, revert=False, y=0.0):
     f=None
     
@@ -179,7 +181,8 @@ def _doi2b(paramsdict, value, revert=False, key='i2b'):
                 
                 # algorithm 2
                 # 2nd order interpolation
-                func = interp1d(x, y, kind='cubic')
+                # func = interp1d(x, y, kind='cubic')
+                func = interp1d(x, y)
                 try:
                     res = func(value).item()
                 except ValueError:
@@ -370,6 +373,8 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                     message = 'Failed to convert K value to magnetic field.'
                 else:
                     unit = conversiondict['b2k']['initialUnit']
+    
+    res *= scalingfactor
     
     return res, message, unit
 
