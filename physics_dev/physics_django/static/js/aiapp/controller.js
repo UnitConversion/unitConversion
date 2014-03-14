@@ -39,7 +39,7 @@ app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statu
 	}
 });
 
-app.controller('dataCtrl', function($scope, $routeParams, $route, $modal){
+app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $window, statusFactory){
 	$scope.urlStatus = $routeParams.status;
 	$scope.urlTab = $routeParams.tab;
 
@@ -65,9 +65,16 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal){
 			controller: 'editDatasetCtrl'
 		});
 	}
-});
 
-app.controller('historyCtrl', function($scope){
+	$scope.activateDataset = function() {
+		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['active'], "modified_by":"admin", "definition":"bm"}).then(function(data) {
+			l("ok");
+			$window.location = "#/status/active/tab/bm/bm/";
+
+		}, function(error) {
+			l("error");
+		});		
+	}
 });
 
 /*
@@ -79,13 +86,14 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	$scope.logicArr = [];
 	$scope.alert = {};
 	var aiStatus = aiStatusMap[$routeParams.status];
+	$scope.urlTab = $routeParams.tab;
 
-	// Skip everything if t here is no datasets with current status
-	/*if ($scope.statuses[$routeParams.status] === 0) {
-		l("return because there is nothing in this status");
-		l($scope.statuses);
+	l("bm controller");
+
+	// If status is not defined, skip this controller
+	if ($routeParams.status === undefined) {
 		return;
-	}*/
+	}
 
 	// Retrieve bending magnets
 	bmFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
@@ -238,7 +246,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
-				$scope.alert.body = "Logic successfully saved!";
+				$scope.alert.body = "Device successfully saved!";
 
 				bmFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
 
@@ -269,6 +277,10 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	}
 });
 
+app.controller('idCtrl', function($scope, $routeParams){
+	$scope.urlTab = $routeParams.tab;
+});
+
 /*
  * Logic controller that displays logic and manages adding and updating logics
  */
@@ -276,6 +288,7 @@ app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
 	$scope.error = {};
 	$scope.logicArr = [];
 	$scope.alert = {};
+	$scope.urlTab = $routeParams.tab;
 
 	logicFactory.retrieveItems({}).then(function(result) {
 
@@ -350,6 +363,27 @@ app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
 		}
 	}
 
+});
+
+app.controller('historyCtrl', function($scope, headerFactory, History, $window){
+	$scope.historyArr = [];
+	l("history controller");
+
+	headerFactory.retrieveHeader().then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new History(item);
+			$scope.historyArr.push(newItem);
+		});
+	});
+
+	$scope.goTo = function(id) {
+		$window.location = "#/dataset/" + id + "/tab/bm/bm/";
+	}
 });
 
 /*
@@ -526,7 +560,7 @@ app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, s
 	$scope.ok = function() {
 		$scope.alert.show = false;
 
-		statusFactory.approveDataset().then(function(data) {
+		statusFactory.updateStatus({"status":aiStatusMap['editable'], "new_status":aiStatusMap['approved'], "modified_by":"admin", "definition":"bm"}).then(function(data) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
@@ -570,7 +604,7 @@ app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, stat
 	$scope.ok = function() {
 		$scope.alert.show = false;
 
-		statusFactory.editDataset().then(function(data) {
+		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['editable'], "modified_by":"admin", "definition":"bm"}).then(function(data) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
@@ -595,4 +629,48 @@ app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, stat
 		$window.location = "#/status/editable/tab/bm/bm/";
 		$modalInstance.dismiss('cancel');
 	};
+});
+
+/*
+ * Retrieve dataset by id
+ */
+
+app.controller('historyDataCtrl', function($scope, $routeParams){
+	$scope.urlTab = $routeParams.tab;
+	$scope.datasetId = $routeParams.id;
+});
+
+app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, BendingMagnet){
+	$scope.bmArr = [];
+	$scope.urlTab = $routeParams.tab;
+	
+	// Retrieve bending magnets
+	bmFactory.retrieveItems({'ai_id': $scope.datasetId}).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new BendingMagnet(item);
+			$scope.bmArr.push(newItem);
+		});
+	});
+});
+
+app.controller('historyLogicCtrl', function($scope, $routeParams, logicFactory, Logic){
+	$scope.logicArr = [];
+	$scope.urlTab = $routeParams.tab;
+
+	logicFactory.retrieveItems({}).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new Logic(item);
+			$scope.logicArr.push(newItem);
+		});
+	});
 });

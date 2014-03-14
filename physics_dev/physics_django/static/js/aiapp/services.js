@@ -7,6 +7,7 @@
 
 app.factory('statusFactory', function($http, $q){
 	var factory = {};
+	factory.update = ["status", "new_status", "modified_by", "definition"];
 
 	// Return statuses
 	factory.retrieveStatuses = function() {
@@ -25,31 +26,14 @@ app.factory('statusFactory', function($http, $q){
 		return promise;
 	}
 
-	factory.approveDataset = function() {
+	factory.updateStatus = function(params) {
 		var query = serviceurl + "/updatestatus/";
-
-		var params = "status=" + aiStatusMap['editable'] + "&new_status=" + aiStatusMap['approved'];
-		var deffered = $q.defer();
-		var promise = deffered.promise;
-
-		$http.post(query, params).success(function(data){
-			deffered.resolve(data);
 		
-		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
-		});
-
-		return promise;
-	}
-
-	factory.editDataset = function() {
-		var query = serviceurl + "/updatestatus/";
-
-		var params = "status=" + aiStatusMap['approved'] + "&new_status=" + aiStatusMap['editable'];
+		var payload = prepareUrlParameters(factory.update, params);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 
-		$http.post(query, params).success(function(data){
+		$http.post(query, payload).success(function(data){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
@@ -62,6 +46,9 @@ app.factory('statusFactory', function($http, $q){
 	return factory;
 })
 
+/*
+ * Provide header factory. Active interlock header can be retrieved and saved.
+ */
 app.factory('headerFactory', function($http, $q){
 	var factory = {};
 
@@ -73,6 +60,22 @@ app.factory('headerFactory', function($http, $q){
 		var promise = deffered.promise;
 
 		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
+	factory.retrieveHeader = function(){
+		var query = serviceurl + "/activeinterlockheader/?status=" + aiStatusMap['history'];
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.get(query).success(function(data){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {

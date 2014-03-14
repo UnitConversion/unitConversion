@@ -1,0 +1,39 @@
+{% load verbatim %}
+{% verbatim %}
+
+<div>
+	<ul class="nav nav-tabs">
+		<li ng-class="{active: urlTab == 'bm'}"><a href="#/dataset/{{datasetId}}/tab/bm/bm/">AI-BM</a></li>
+		<li ng-class="{active: urlTab == 'id'}"><a href="#/dataset/{{datasetId}}/tab/id/id/">AI-ID</a></li>
+		<li ng-class="{active: urlTab == 'logic'}"><a href="#/dataset/{{datasetId}}/tab/logic/logic/">Logic</a></li>
+	</ul>
+</div>
+
+<br />
+
+<div class="table-responsive">
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th>Cell</th>
+			<th>Element Name</th>
+			<th>Element Type</th>
+			<th>s</th>
+			<th>BPM-SR</th>
+			<th>AI Offset Limit Hor. (AIOLH)</th>
+			<th>BPM-SR</th>
+			<th>AI Offset Limit Ver. (AIOLV)</th>
+		</tr>
+		<tr ng-repeat="bm in bmArr">
+			<td>{{bm.bm_cell || '&nbsp;'}}</td>
+			<td>{{bm.name || '&nbsp;'}}</td>
+			<td>{{bm.bm_type || '&nbsp;'}}</td>
+			<td>{{bm.bm_s || '&nbsp;'}}</td>
+			<td>{{bm.logic || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiolh || '&nbsp;'}}</td>
+			<td>{{bm.logic || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiolv || '&nbsp;'}}</td>
+		</tr>
+	</table>
+</div>
+
+{% endverbatim %}

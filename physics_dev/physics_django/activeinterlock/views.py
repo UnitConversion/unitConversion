@@ -236,7 +236,7 @@ def retrieveDeviceWS(request):
     '''
     Retrieve device
     '''
-    return _retrieveData(request, api.retrieveDevice, ['ai_id', 'ai_status', 'name', 'definition'], {'ai_id': None})
+    return _retrieveData(request, api.retrieveDevice, ['ai_id', 'ai_status', 'name', 'definition'])
 
 @require_http_methods(["POST"])
 def saveDeviceWS(request):
@@ -264,7 +264,7 @@ def updateStatusWS(request):
     '''
     Update active interlock status
     '''
-    return _updateData(request, api.updateActiveInterlockStatus, ['status', 'new_status'], {'ai_id': None})
+    return _updateData(request, api.updateActiveInterlockStatus, ['status', 'new_status', 'modified_by', 'definition'], {'ai_id': None})
 
 @require_http_methods(["POST"])
 def updatePropWS(request):

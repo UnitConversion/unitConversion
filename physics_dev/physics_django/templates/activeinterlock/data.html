@@ -6,14 +6,8 @@
 		<button ng-if="urlStatus == 'editable'" ng-click="approveDataset()" class="btn-space btn btn-default pull-right">Approve</button>
 		<button ng-if="urlStatus == 'approved'" ng-click="editDataset()" class="btn-space btn btn-info pull-right">Make editable</button>
 		<button ng-if="urlStatus == 'active' || urlStatus == 'backup'" class="btn btn-default pull-right">Copy to editable</button>
-		<ul class="nav nav-tabs">
-			<li ng-class="{active: urlTab == 'bm'}"><a href="#/status/{{urlStatus}}/tab/bm/bm/">AI-BM</a></li>
-			<li ng-class="{active: urlTab == 'id'}"><a href="#/status/{{urlStatus}}/tab/id/id/">AI-ID</a></li>
-			<li ng-class="{active: urlTab == 'logic'}"><a href="#/status/{{urlStatus}}/tab/logic/logic/">Logic</a></li>
-		</ul>
+		<button ng-if="urlStatus == 'approved' || urlStatus == 'backup'" ng-click="activateDataset()" class="btn btn-default pull-right">Make active!!!!! (remove afterwards)</button>
 	</div>
-
-	<br />
 
 	<div app-view-segment="2"></div>
 </div>

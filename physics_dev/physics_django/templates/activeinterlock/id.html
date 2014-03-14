@@ -1,31 +1,53 @@
 {% load verbatim %}
 {% verbatim %}
 
-<div class="table-responsive">
+<div>
+	<ul class="nav nav-tabs">
+		<li ng-class="{active: urlTab == 'bm'}"><a href="#/status/{{urlStatus}}/tab/bm/bm/">AI-BM</a></li>
+		<li ng-class="{active: urlTab == 'id'}"><a href="#/status/{{urlStatus}}/tab/id/id/">AI-ID</a></li>
+		<li ng-class="{active: urlTab == 'logic'}"><a href="#/status/{{urlStatus}}/tab/logic/logic/">Logic</a></li>
+	</ul>
+</div>
+
+<br />
+
+<div class="table-responsive id-table">
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th colspan="4"></th>
-			<th colspan="10">NSLS II Active Interlock Envelope (AIE)</th>
-			<th colspan="12">AI EPS & Logic for e-beam within the phase space of AIE-ID (dumped otherwise)</th>
+			<th colspan="6">NSLS II Active Interlock Envelope (AIE)</th>
+			<th colspan="30">AI EPS & Logic for e-beam within the phase space of AIE-ID (dumped otherwise)</th>
 			<th></th>
 		</tr>
 		<tr>
 			<th></th>
 			<th colspan="2">Radiation source</th>
 			<th></th>
-			<th colspan="10">AIE-ID</th>
+			<th colspan="6">AIE-ID</th>
+			<th colspan="3"></th>
 			<th colspan="3">BPM-ID1 (s1)</th>
 			<th rowspan="3">Logic</th>
 			<th colspan="3">BPM-ID2 (s2)</th>
 			<th colspan="5">E-beam (s3)</th>
+			<th colspan="3"></th>
+			<th colspan="3">BPM-ID1 (s1)</th>
+			<th rowspan="3">Logic</th>
+			<th colspan="3">BPM-ID2 (s2)</th>
+			<th colspan="5">E-beam (s3)</th>
+			<th></th>
 		</tr>
 		<tr>
 			<th></th>
 			<th colspan="2"></th>
 			<th></th>
-			<th colspan="4"></th>
+			<th colspan="3"></th>
 			<th colspan="2">Lattice</th>
-			<th colspan="4"></th>
+			<th></th>
+			<th colspan="3"></th>
+			<th colspan="3">Down-stream of Str. Sect.</th>
+			<th colspan="3">Up-stream of Str. Sect.</th>
+			<th colspan="5">AIE location</th>
+			<th colspan="3"></th>
 			<th colspan="3">Down-stream of Str. Sect.</th>
 			<th colspan="3">Up-stream of Str. Sect.</th>
 			<th colspan="5">AIE location</th>
@@ -35,25 +57,40 @@
 			<th>Cell</th>
 			<th>Type</th>
 			<th>Set</th>
-			<th>Straight section</th>
-			<th>Orientation</th>
+			<th>Str. sect.</th>
 			<th>AIE Name</th>
 			<th>Shape</th>
 			<th>Defined by</th>
 			<th>Name</th>
 			<th>Position (s3)</th>
-			<th>Position from cent. Str. Sect.</th>
+			<th>Pos. from cent. Str. Sect.</th>
+			
 			<th>Max. offset</th>
 			<th>Max. angle</th>
 			<th>Extra offset</th>
 			<th>Lattice position (s1)</th>
-			<th>Postition from cent. Str. Sect.</th>
+			<th>Pos. from cent. Str. Sect.</th>
 			<th>Offset</th>
 			<th>Lattice position (s2)</th>
-			<th>Position from cent. Str. Sect.</th>
+			<th>Pos. from cent. Str. Sect.</th>
 			<th>Offset</th>
 			<th>Lattice position (s3)</th>
-			<th>Position from cent. Str. Sect.</th>
+			<th>Pos. from cent. Str. Sect.</th>
+			<th>Offset</th>
+			<th>Logic</th>
+			<th>Angle</th>
+			
+			<th>Max. offset</th>
+			<th>Max. angle</th>
+			<th>Extra offset</th>
+			<th>Lattice position (s1)</th>
+			<th>Pos. from cent. Str. Sect.</th>
+			<th>Offset</th>
+			<th>Lattice position (s2)</th>
+			<th>Pos. from cent. Str. Sect.</th>
+			<th>Offset</th>
+			<th>Lattice position (s3)</th>
+			<th>Pos. from cent. Str. Sect.</th>
 			<th>Offset</th>
 			<th>Logic</th>
 			<th>Angle</th>
@@ -68,9 +105,25 @@
 			<th></th>
 			<th></th>
 			<th></th>
+			<th>m</th>
+			<th>m</th>
+			
+			<th>mm</th>
+			<th>mrad</th>
 			<th></th>
 			<th>m</th>
 			<th>m</th>
+			<th>mm</th>
+			<th></th>
+			<th>m</th>
+			<th>m</th>
+			<th>mm</th>
+			<th>m</th>
+			<th>m</th>
+			<th>mm</th>
+			<th></th>
+			<th>mrad</th>
+
 			<th>mm</th>
 			<th>mrad</th>
 			<th></th>
@@ -99,7 +152,7 @@
 			<th></th>
 			<th></th>
 			<th></th>
-			<th></th>
+			
 			<th></th>
 			<th></th>
 			<th></th>
@@ -115,126 +168,26 @@
 			<th>|x1+(x2-x1)*(s3-s1)/(s2-s1)|&lt;</th>
 			<th></th>
 			<th>|(x2-x1)/(s2-s1)|&lt;</th>
+
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>|y1|&lt;</th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>|y2|&lt;</th>
+			<th></th>
+			<th></th>
+			<th>|y1+(y2-y1)*(s3-s1)/(s2-s1)|&lt;</th>
+			<th></th>
+			<th>|(y2-y1)/(s2-s1)|&lt;</th>
 			<th></th>
 		</tr>
 		<tr>
-			<td>2</td>
-			<td>EPU</td>
-			<td>ud</td>
-			<td>LONG</td>
-			<td>Horizontal</td>
-			<td>AIE-ID-B</td>
-			<td>diamond</td>
-			<td>SRPTF</td>
-			<td>MK4G1C02A</td>
-			<td>52.797</td>
-			<td>0.0000</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>1.5000</td>
-			<td>&</td>
-			<td></td>
-			<td></td>
-			<td>1.500</td>
-			<td></td>
-			<td>0.000</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td><button class="btn btn-default">Approve</button></td>
-		</tr>
-		<tr>
-			<td>2</td>
-			<td>EPU</td>
-			<td>ud</td>
-			<td>LONG</td>
-			<td>Vertical</td>
-			<td>AIE-ID-B</td>
-			<td>diamond</td>
-			<td>SRPTF</td>
-			<td>MK4G1C02A</td>
-			<td>52.797</td>
-			<td>0.0000</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>1.5000</td>
-			<td>&</td>
-			<td></td>
-			<td></td>
-			<td>1.500</td>
-			<td></td>
-			<td>0.000</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td><button class="btn btn-default">Approve</button></td>
-		</tr>
-		<tr>
-			<td>3</td>
-			<td>IVU</td>
-			<td>cent</td>
-			<td>SHORT</td>
-			<td>Horizontal</td>
-			<td>AIE-ID-A</td>
-			<td>rectangular</td>
-			<td></td>
-			<td>MK4G1C03A</td>
-			<td>79.196</td>
-			<td>0.0000</td>
-			<td>0.500</td>
-			<td>0.250</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>0.000</td>
-			<td>0.500</td>
-			<td>&</td>
-			<td>0.250</td>
-			<td><button class="btn btn-default">Approve</button></td>
-		</tr>
-		<tr>
-			<td>3</td>
-			<td>IVU</td>
-			<td>cent</td>
-			<td>SHORT</td>
-			<td>Vertical</td>
-			<td>AIE-ID-A</td>
-			<td>rectangular</td>
-			<td></td>
-			<td>MK4G1C03A</td>
-			<td>79.196</td>
-			<td>0.0000</td>
-			<td>0.500</td>
-			<td>0.250</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>0.000</td>
-			<td>0.500</td>
-			<td>&</td>
-			<td>0.250</td>
-			<td><button class="btn btn-default">Approve</button></td>
-		</tr>
-		<tr>
-			<td colspan="27"><a href="#">+ Add new device</a></td>
+			<td colspan="41"><a href="#">+ Add new device</a></td>
 		</tr>
 	</table>
 </div>

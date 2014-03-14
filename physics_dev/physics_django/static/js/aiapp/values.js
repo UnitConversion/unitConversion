@@ -6,6 +6,39 @@
  */
 
 /*
+ * History object
+ */
+app.value('History', function(obj) {
+	
+	this.retrieve_display = ["description", "created_by", "created_date", "modified_by", "modified_date"];
+
+	// All possible parameters
+	this.all = ["id", "description", "created_by", "created_date", "modified_by", "modified_date"];
+
+	this.id = "";
+	this.description = "";
+	this.created_by = "";
+	this.created_date = "";
+	this.modified_by = "";
+	this.modified_date = "";
+
+	this.set = function(obj) {
+
+		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+ 			this[this.all[i]] = obj[this.all[i]];
+ 		}
+	}
+
+	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+});
+
+/*
  * Logic object
  */
 app.value('Logic', function(obj) {
@@ -62,7 +95,7 @@ app.value('BendingMagnet', function(obj) {
 	this.save_display = ["bm_cell", "name", "bm_type", "bm_s", "logic", "bm_aiolh", "logic", "bm_aiolv"];
 
 	// Mandatory parameters for retrieving
-	this.retrieve_m = ["ai_status", "name", "definition"];
+	this.retrieve_m = ["name", "definition"];
 	
 	// All parameters for retrieving
 	this.retrieve = ["ai_id", "ai_status", "name", "definition"];

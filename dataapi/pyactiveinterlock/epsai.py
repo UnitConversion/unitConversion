@@ -576,7 +576,7 @@ class epsai(object):
             self.logger.info('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateActiveInterlockStatus(self, ai_id, status, new_status):
+    def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by, definition):
         '''
         Update status of a data set.
         
@@ -588,14 +588,20 @@ class epsai(object):
             3: backup
             4: history
         
-        :param aiid: internal id of an active interlock data set
-        :type aiid: int
+        :param ai_id: internal id of an active interlock data set
+        :type ai_id: int
         
-        :param status: new status code
+        :param status: current status code
         :type status: int
         
-        :param created_by: name who requests this update
-        :type created_by: str
+        :param new_status: new status code
+        :type new_status: int
+        
+        :param modified_by: name who requests this update
+        :type modified_by: str
+        
+        :param definition: are we updating bm or id?
+        :type definition: str
             
         :Returns: boolean
             
@@ -628,12 +634,23 @@ class epsai(object):
         
         # Move statuses
         if new_status >= 2 and new_status < 4:
-            return self.updateActiveInterlockStatus(ai_id, None, new_status + 1)
+            self.updateActiveInterlockStatus(None, new_status, new_status + 1, modified_by, definition)
         
         # Delete dataset that currently has this status
         if new_status == 0 or new_status == 1:
             self.deleteDevice(new_status)
-            #self.updateActiveInterlockStatus(None, new_status, -1)
+        
+        # Check if all properties are approved
+        if new_status == 1:
+            devices = self.retrieveDevice(None, 0, "*", definition)
+            
+            # Go through all the devices
+            for deviceId in devices.keys():
+                propertyStatuses = devices[deviceId]['prop_statuses']
+                countUnapproved = propertyStatuses.values().count(2)
+                
+                if countUnapproved > 0:
+                    raise ValueError("Dataset cannot be approved if there are unapproved device properties!")
         
         # Define query dict
         queryDict = {}
@@ -641,13 +658,14 @@ class epsai(object):
         
         # Set status
         queryDict['status'] = new_status
+        queryDict['modified_date'] = "now"
+        queryDict['modified_by'] = modified_by
         
         # Set where
         whereDict['active_interlock_id'] = ai_id
         
         # Generate SQL
         sqlVals = _generateUpdateQuery('active_interlock', queryDict, None, None, whereDict)
-        print sqlVals
         
         try:
             cur = self.conn.cursor()
@@ -955,7 +973,7 @@ class epsai(object):
             raise MySQLError('Error when updating active interlock device property:\n%s (%d)' % (e.args[1], e.args[0]))
 
 
-    def retrieveDevice(self, ai_id, ai_status, name, definition):
+    def retrieveDevice(self, ai_id = None, ai_status = None, name = None, definition = None):
         '''
         Retrieve devices of particular active interlock, name and definition. Name can also be a wildcard
         character to select all devices.

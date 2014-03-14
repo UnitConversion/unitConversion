@@ -1,6 +1,9 @@
+{% load verbatim %}
+{% verbatim %}
+
 <div class="content">
 	<div class="form-group col-sm-5">
-		<input type="text" class="form-control input-sm" placeholder="Filter history ..." />
+		<input type="text" ng-model="filter" class="form-control input-sm" placeholder="Filter history ..." />
 	</div>
 
 	<div class="table-responsive">
@@ -13,14 +16,12 @@
 				<th>Modified date</th>
 				<th></th>
 			</tr>
-			<tr>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td><button class="btn btn-default">Show</button></td>
+			<tr ng-repeat="history in historyArr | filter: filter">
+				<td ng-repeat="prop in history.retrieve_display">{{history[prop]}}</td>
+				<td><button ng-click="goTo(history.id)" class="btn btn-default">Show</button></td>
 			</tr>
 		</table>
 	</div>
 </div>
+
+{% endverbatim %}

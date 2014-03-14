@@ -28,7 +28,10 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 		when('/status/:status/tab/:tab/id/',	'index.status.id').
 		when('/status/:status/tab/:tab/logic/',	'index.status.logic').
 		when('/history/',						'index.history').
-		when('/dataset/:id/',					'index.dataset').
+		when('/dataset/:id/tab/:tab/',			'index.dataset').
+		when('/dataset/:id/tab/:tab/bm/',		'index.dataset.bm').
+		when('/dataset/:id/tab/:tab/id/',		'index.dataset.id').
+		when('/dataset/:id/tab/:tab/logic/',	'index.dataset.logic').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -38,8 +41,7 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 		within().
 			segment('status', {
 				templateUrl: 'data.html',
-				controller: 'dataCtrl',
-				dependencies: ['tab']
+				controller: 'dataCtrl'
 			}).
 			within().
 				segment('bm', {
@@ -48,7 +50,9 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 					dependencies: ['tab']
 				}).
 				segment('id', {
-					templateUrl: 'id.html'
+					templateUrl: 'id.html',
+					controller: 'idCtrl',
+					dependencies: ['tab']
 				}).
 				segment('logic', {
 					templateUrl: 'logic.html',
@@ -56,12 +60,30 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 					dependencies: ['tab']
 				}).
 			up().
-		up().
-		within().
 			segment('history', {
 				templateUrl: 'history.html',
 				controller: 'historyCtrl'
 			}).
+			segment('dataset', {
+				templateUrl: 'history_data.html',
+				controller: 'historyDataCtrl',
+				dependencies: ['id']
+			}).
+			within().
+				segment('bm', {
+					templateUrl: 'history_bm.html',
+					controller: 'historyBmCtrl',
+					dependencies: ['tab']
+				}).
+				segment('id', {
+					templateUrl: 'history_id.html'
+				}).
+				segment('logic', {
+					templateUrl: 'history_logic.html',
+					controller: 'historyLogicCtrl',
+					dependencies: ['tab']
+				}).
+			up().
 		up();
 
 		$routeProvider.otherwise({redirectTo: '/status/editable/tab/bm/bm'});

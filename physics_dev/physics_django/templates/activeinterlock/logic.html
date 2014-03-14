@@ -1,6 +1,16 @@
 {% load verbatim %}
 {% verbatim %}
 
+<div>
+	<ul class="nav nav-tabs">
+		<li ng-class="{active: urlTab == 'bm'}"><a href="#/status/{{urlStatus}}/tab/bm/bm/">AI-BM</a></li>
+		<li ng-class="{active: urlTab == 'id'}"><a href="#/status/{{urlStatus}}/tab/id/id/">AI-ID</a></li>
+		<li ng-class="{active: urlTab == 'logic'}"><a href="#/status/{{urlStatus}}/tab/logic/logic/">Logic</a></li>
+	</ul>
+</div>
+
+<br />
+
 <div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
 	<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 	<strong>{{alert.title}}</strong> {{alert.body}}

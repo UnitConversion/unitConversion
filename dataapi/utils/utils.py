@@ -225,8 +225,13 @@ def _generateUpdateQuery(tableName, queryDict, whereKey, whereValue, whereDict =
     # Go through parameters
     for attr in queryDict.keys():
         value = queryDict[attr]
-        sqlList.append(' ' + attr + ' = %s ')
-        vals.append(value)
+        
+        if value == "now":
+            sqlList.append(' ' + attr + ' = NOW() ')
+            
+        else:
+            sqlList.append(' ' + attr + ' = %s ')
+            vals.append(value)
     
     sql += ','.join(sqlList)
     

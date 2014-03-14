@@ -1,0 +1,31 @@
+{% load verbatim %}
+{% verbatim %}
+
+<div>
+	<ul class="nav nav-tabs">
+		<li ng-class="{active: urlTab == 'bm'}"><a href="#/dataset/{{datasetId}}/tab/bm/bm/">AI-BM</a></li>
+		<li ng-class="{active: urlTab == 'id'}"><a href="#/dataset/{{datasetId}}/tab/id/id/">AI-ID</a></li>
+		<li ng-class="{active: urlTab == 'logic'}"><a href="#/dataset/{{datasetId}}/tab/logic/logic/">Logic</a></li>
+	</ul>
+</div>
+
+<br />
+
+<div class="table-responsive">
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th>Name</th>
+			<th>Shape</th>
+			<th>Logic</th>
+			<th>Code</th>
+		</tr>
+		<tr ng-repeat="logic in logicArr">
+			<td>{{logic.name || '&nbsp;'}}</td>
+			<td>{{logic.shape || '&nbsp;'}}</td>
+			<td>{{logic.logic || '&nbsp;'}}</td>
+			<td>{{logic.code || '&nbsp;'}}</td>
+		</tr>
+	</table>
+</div>
+
+{% endverbatim %}
