@@ -1,6 +1,8 @@
 import os
 import sys
 
+import numpy as np
+
 import cothread.catools as ca
 from cothread import WaitForQuit
 
@@ -81,6 +83,7 @@ def _setpv(pvname, origval):
     global pvrbsdict
     global quadparams
     global sextparams
+    global corrparams
 
     subpvs = None
     if pvspsdict.has_key(pvname):
@@ -188,6 +191,42 @@ def _setpv(pvname, origval):
                 vals.append('Conversion error')
                 pvs.append("%s.EGU"%v['B'])
                 vals.append('1/m2')
+        elif corrparams.has_key(k):
+            try:
+                pvs.append(v['B'])
+                vals.append(corrparams[k]*origval)
+
+                unit = 'T-m'
+                pvs.append("%s.EGU"%v['B'])
+                vals.append(unit)
+                
+                pvs.append("%s.DESC"%v['B'])
+                vals.append('Conversion succeeded')
+            except ValueError:
+                pvs.append(v['B'])
+                vals.append(0.0)
+                pvs.append("%s.DESC"%v['B'])
+                vals.append('Conversion error')
+                pvs.append("%s.EGU"%v['B'])
+                vals.append('T-m')
+            try:
+                pvs.append(v['K'])
+                # B0rho is 10.0007 for NSLS II storage ring
+                vals.append(corrparams[k]*origval/10.007)
+
+                pvs.append("%s.EGU"%v['K'])
+                unit = 'rad'
+                vals.append(unit)
+
+                pvs.append("%s.DESC"%v['K'])
+                vals.append('Conversion succeeded')
+            except ValueError:
+                pvs.append(v['K'])
+                vals.append(0.0)
+                pvs.append("%s.DESC"%v['K'])
+                vals.append('Conversion error')
+                pvs.append("%s.EGU"%v['B'])
+                vals.append('rad')
         else:
             raise ValueError('Cannot find element for %s'%(k))
     
@@ -228,6 +267,11 @@ def main(dbonly):
         scs = uc.getConversionData(name="S*")
         global sextparams
         sextparams = getstandardparamdicts(scs)
+        
+        # load transfer function from file
+        ccs = np.loadtxt('cor-transfer-func.txt', dtype=str, skiprows=3)
+        global corrparams
+        corrparams = dict(zip(ccs[:,0], [float(val) for val in ccs[:,1]]))
         
         startmonitor(pvspsdict)
         print 'finish setting monitors for set point pvs'

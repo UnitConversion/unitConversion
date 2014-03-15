@@ -93,8 +93,13 @@ def getpvfromfile(fname):
             if tmpspdict.has_key(pvprop[0]) or tmprbdict.has_key(pvprop[0]):
                 raise ValueError('Duplicated element found for %s'%(pvprop[0]))
             
-            newsppv = _getnewpvname(pvprop[0], pvprop[2], 'C')
-            newrbpv = _getnewpvname(pvprop[0], pvprop[3], 'C')
+            #
+            if pvprop[1] in ['HCOR','VCOR']:
+                newsppv = pvprop[2]
+                newrbpv = pvprop[3]
+            else:
+                newsppv = _getnewpvname(pvprop[0], pvprop[2], 'C')
+                newrbpv = _getnewpvname(pvprop[0], pvprop[3], 'C')
             
             if pvprop[1] == 'QUAD':
                 sppv_gl = newsppv.replace("}I", "}GL")
@@ -119,7 +124,7 @@ def getpvfromfile(fname):
                 sppv_k = newsppv.replace("}I", "}K")
                 rbpv_sl = newrbpv.replace("}I", "}SL")
                 rbpv_k = newrbpv.replace("}I", "}K")
-                pvmappings = " ".join((pvmappings, pvs, sppv_gl, rbpv_gl, sppv_k, rbpv_k, '\n'))
+                pvmappings = " ".join((pvmappings, pvs, sppv_sl, rbpv_sl, sppv_k, rbpv_k, '\n'))
                 
                 dbbuffer = "".join((dbbuffer, rectemp%(sppv_sl), 
                               rectemp%(sppv_k),
@@ -131,6 +136,25 @@ def getpvfromfile(fname):
                                          }
                 
                 tmprbdict [pvprop[0]] = {'B': rbpv_sl,
+                                         'K': rbpv_k
+                                         }
+            elif pvprop[1] in ['HCOR', 'VCOR']:
+                sppv_bl = newsppv.replace("}I", "}BL")
+                sppv_k = newsppv.replace("}I", "}K")
+                rbpv_bl = newrbpv.replace("}I", "}BL")
+                rbpv_k = newrbpv.replace("}I", "}K")
+                pvmappings = " ".join((pvmappings, pvs, sppv_bl, rbpv_bl, sppv_k, rbpv_k, '\n'))
+                
+                dbbuffer = "".join((dbbuffer, rectemp%(sppv_bl), 
+                              rectemp%(sppv_k),
+                              rectemp%(rbpv_bl), 
+                              rectemp%(rbpv_k)))
+            
+                tmpspdict [pvprop[0]] = {'B': sppv_bl,
+                                         'K': sppv_k
+                                         }
+                
+                tmprbdict [pvprop[0]] = {'B': rbpv_bl,
                                          'K': rbpv_k
                                          }
             pvspsdict[pvprop[2]] = tmpspdict
