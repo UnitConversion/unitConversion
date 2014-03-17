@@ -313,7 +313,7 @@ def callback4command(value, index):
     isrunning = False
 
 def startmonitorcommand():
-    monstub = ca.camonitor([commandsppv, commandsppv], callback4command)
+    monstub = ca.camonitor([commandsppv, commandrbpv], callback4command)
     return monstub
 
 def callback4energy(value):
