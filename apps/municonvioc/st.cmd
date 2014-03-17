@@ -1,7 +1,7 @@
 #/usr/bin/bash
 system "python municonv.py"
 
-epicsEnvSet("EPICS_HOSTNAME", "physics03")
+epicsEnvSet("EPICS_HOSTNAME", "phyioc01")
 epicsEnvSet("EPICS_IOCNAME", "municonv")
 epicsEnvSet("CHF_UPDATE_DIR", "/cf-update")
 

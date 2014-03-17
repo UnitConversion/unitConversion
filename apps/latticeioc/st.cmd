@@ -2,7 +2,7 @@
 
 system "python lattice.py"
 epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", "200000")
-epicsEnvSet("EPICS_HOSTNAME", "physics03")
+epicsEnvSet("EPICS_HOSTNAME", "phyioc01")
 epicsEnvSet("EPICS_IOCNAME", "lattice")
 
 epicsEnvSet("CHF_UPDATE_DIR", "/cf-update")
