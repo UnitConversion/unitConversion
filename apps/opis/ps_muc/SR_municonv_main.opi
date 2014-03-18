@@ -1,0 +1,2102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display typeId="org.csstudio.opibuilder.Display" version="1.0">
+  <auto_zoom_to_fit_all>false</auto_zoom_to_fit_all>
+  <macros>
+    <include_parent_macros>true</include_parent_macros>
+    <P>SR-C26-BI{BPM:1}</P>
+  </macros>
+  <wuid>74c40f24:139b1931f75:-7967</wuid>
+  <boy_version>3.1.2.201212190928</boy_version>
+  <scripts />
+  <show_ruler>true</show_ruler>
+  <height>720</height>
+  <name></name>
+  <snap_to_geometry>true</snap_to_geometry>
+  <show_grid>true</show_grid>
+  <background_color>
+    <color red="192" green="192" blue="192" />
+  </background_color>
+  <foreground_color>
+    <color red="192" green="192" blue="192" />
+  </foreground_color>
+  <widget_type>Display</widget_type>
+  <show_close_button>true</show_close_button>
+  <width>1150</width>
+  <rules />
+  <show_edit_range>true</show_edit_range>
+  <grid_space>6</grid_space>
+  <auto_scale_widgets>
+    <auto_scale_widgets>false</auto_scale_widgets>
+    <min_width>-1</min_width>
+    <min_height>-1</min_height>
+  </auto_scale_widgets>
+  <actions hook="false" hook_all="false" />
+  <y>-1</y>
+  <x>-1</x>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>-490165f3:139dae2fe33:-4d81</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>45</height>
+    <name>Label_3</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="144" green="238" blue="144" />
+    </background_color>
+    <foreground_color>
+      <color red="29" green="40" blue="184" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>NSLS-II Storage Ring Magnet Unit Conversion</text>
+    <font>
+      <fontdata fontName="Arial" height="18" style="1" />
+    </font>
+    <width>579</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="255" green="192" blue="203" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>0</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>53</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <fill_level>0.0</fill_level>
+    <line_color>
+      <color red="128" green="0" blue="255" />
+    </line_color>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fce</wuid>
+    <bg_gradient_color>
+      <color red="255" green="255" blue="255" />
+    </bg_gradient_color>
+    <scripts />
+    <height>353</height>
+    <anti_alias>true</anti_alias>
+    <name>Rectangle_1</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <alpha>255</alpha>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <pv_name></pv_name>
+    <background_color>
+      <color name="OpTitleBG" red="175" green="238" blue="175" />
+    </background_color>
+    <foreground_color>
+      <color red="255" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Rectangle</widget_type>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color red="255" green="255" blue="255" />
+    </fg_gradient_color>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>553</width>
+    <line_style>0</line_style>
+    <border_style>0</border_style>
+    <rules />
+    <pv_value />
+    <border_width>1</border_width>
+    <line_width>0</line_width>
+    <horizontal_fill>true</horizontal_fill>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <actions hook="false" hook_all="false" />
+    <y>116</y>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>66</x>
+    <gradient>false</gradient>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fcd</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_31</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C01</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>198</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C01.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>264</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fcc</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_32</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C02</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>198</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C02.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>352</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fcb</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_33</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C03</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>198</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C03.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>448</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fca</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_34</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C04</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>198</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C04.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>544</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc9</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_35</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C06</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>270</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C06.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>166</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc8</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_36</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C07</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>271</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C07.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>264</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc7</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_37</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C08</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>271</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C08.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>352</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc6</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_38</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C09</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>271</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C09.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>448</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc5</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_39</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C10</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>271</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C10.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>544</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc4</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_40</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C11</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>342</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C11.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>76</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc3</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_41</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C12</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>342</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C12.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>166</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc2</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_42</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C13</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>342</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C13.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>264</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc1</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_43</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C14</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>342</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C14.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>352</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fc0</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_44</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C15</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>342</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C15.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>448</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fbf</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_45</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C16</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>342</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C16.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>544</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fbe</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_46</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C17</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>408</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C17.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>76</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fbd</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_47</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C18</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>408</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C18.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>166</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fbc</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_48</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C19</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>408</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C19.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>264</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fbb</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_49</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C20</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>408</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C20.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>352</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fba</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_50</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C21</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>408</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C21.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>448</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb9</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_51</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C22</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>408</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C22.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>544</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb8</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_52</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C23</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>132</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C23.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>76</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb7</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_53</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C24</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>132</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C24.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>166</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb6</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_54</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C25</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>132</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C25.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>264</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb5</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_55</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C26</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>132</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C26.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>352</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb4</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_56</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C27</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>132</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C27.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>448</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb3</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_57</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C28</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>132</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C28.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>544</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb2</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_58</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C29</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>198</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C29.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>76</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb1</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_59</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C30</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>198</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C30.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>166</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-5ba71461:13eb2bc4a7f:-6fb0</wuid>
+    <scripts />
+    <height>43</height>
+    <name>Action Button_60</name>
+    <forecolor_alarm_sensitive>true</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="255" green="128" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>C05</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="1">Default Bold</opifont.name>
+    </font>
+    <width>53</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>true</toggle_button>
+    <border_width>1</border_width>
+    <release_action_index>0</release_action_index>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>270</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>C05.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <PRI>SR</PRI>
+          <Sec>C26</Sec>
+          <N>1</N>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>76</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>-144af796:141796e6f84:-67ea</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>29</height>
+    <name>Label</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color name="GlobalBG" red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>P1</text>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>49</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>139</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>-144af796:141796e6f84:-67de</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>29</height>
+    <name>Label_2</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color name="GlobalBG" red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>P2</text>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>49</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>205</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>-144af796:141796e6f84:-67d3</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>29</height>
+    <name>Label_3</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color name="GlobalBG" red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>P3</text>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>49</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>278</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>-144af796:141796e6f84:-67c8</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>29</height>
+    <name>Label_4</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color name="GlobalBG" red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>P4</text>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>49</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>349</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>-144af796:141796e6f84:-67bd</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>29</height>
+    <name>Label_5</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color name="GlobalBG" red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>P5</text>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>49</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>415</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>17d7970f:1438d16c88e:-6c63</wuid>
+    <scripts />
+    <height>37</height>
+    <name>Action Button_66</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <background_color>
+      <color red="65" green="170" blue="188" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>SR Optics Monitor</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Lucida Grande" height="11" style="0">Default</opifont.name>
+    </font>
+    <width>101</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image></image>
+    <rules />
+    <pv_value />
+    <toggle_button>false</toggle_button>
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>54</y>
+    <actions hook="false" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>../opticsmonitor.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>531</x>
+  </widget>
+</display>
