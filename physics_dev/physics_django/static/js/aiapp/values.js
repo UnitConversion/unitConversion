@@ -43,24 +43,29 @@ app.value('History', function(obj) {
  */
 app.value('Logic', function(obj) {
 	// Mandatory parameters for saving
-	this.save_m = ["name"];
+	this.save_m = ["name", "code"];
 
 	// Parameters for saving
 	this.save = ["name", "shape", "logic", "code"];
 	
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name"];
+
+	// Parameters for updating
+	this.update = ["id", "name", "shape", "logic", "code"];
 	
 	// All parameters for retrieving
 	this.retrieve = ["name", "shape", "logic", "code"];
 	
-	this.all = ["id", "name", "shape", "logic", "code"];
+	this.all = ["id", "name", "shape", "logic", "code", "status", "num"];
 
 	this.id = "";
 	this.name = "";
 	this.shape = "";
 	this.logic = "";
 	this.code = "";
+	this.status = "";
+	this.num = "";
 
 	this.set = function(obj) {
 
@@ -139,6 +144,115 @@ app.value('BendingMagnet', function(obj) {
 	this.set = function(obj) {
 
 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+ 			this[this.all[i]] = obj[this.all[i]];
+ 		}
+	}
+
+	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+});
+
+/*
+ * Insertion device object
+ */
+app.value('InsertionDevice', function(obj) {
+	// Mandatory parameters for saving
+	this.save_m = ["name", "logic"];
+
+	// Parameters for saving
+	this.save = ["ai_status", "name", "definition", "logic", "props"];
+
+	// Save parameters in data
+	this.save_data = ["cell", "type", "set", "str_sect", "defined_by", "pos", "pos_from_cent", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_post_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_post_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
+	
+	// Parameters that are displayed for saving
+	this.save_display = ["cell", "type", "set", "str_sect", "logic", "shape", "defined_by", "name", "pos", "pos_from_cent", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_post_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_post_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
+
+	// Mandatory parameters for retrieving
+	this.retrieve_m = ["name", "definition"];
+	
+	// All parameters for retrieving
+	this.retrieve = ["ai_id", "ai_status", "name", "definition"];
+
+	// Update parameters
+	this.update = ["aid_id", "prop_type_name", "value"];
+
+	// Update device
+	this.update_device = ["aid_id", "name", "logic"];
+
+	// Approve parameters
+	this.approve = ["aid_id", "prop_types"];
+	
+	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "pos", "pos_from_cent", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_post_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_post_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
+
+	this.cell = "";
+	this.type = "";
+	this.set = "";
+	this.str_sect = "";
+	this.defined_by = "";
+	this.pos = "";
+	this.pos_from_cent = "";
+	this.x_max_offset = "";
+	this.x_max_angle = "";
+	this.x_extra_offset = "";
+	this.x_lat_pos_s1 = "";
+	this.x_pos_from_cent_s1 = "";
+	this.x_offset_s1 = "";
+	this.x_logic_1 = "";
+	this.x_lat_post_s2 = "";
+	this.x_pos_from_cent_s2 = "";
+	this.x_offset_s2 = "";
+	this.x_lat_pos_s3 = "";
+	this.x_pos_from_cent_s3 = "";
+	this.x_offset_s3 = "";
+	this.x_logic_2 = "";
+	this.x_angle = "";
+	this.y_max_offset = "";
+	this.y_max_angle = "";
+	this.y_extra_offset = "";
+	this.y_lat_pos_s1 = "";
+	this.y_pos_from_cent_s1 = "";
+	this.y_offset_s1 = "";
+	this.y_logic_1 = "";
+	this.y_lat_post_s2 = "";
+	this.y_pos_from_cent_s2 = "";
+	this.y_offset_s2 = "";
+	this.y_lat_pos_s3 = "";
+	this.y_pos_from_cent_s3 = "";
+	this.y_offset_s3 = "";
+	this.y_logic_2 = "";
+	this.y_angle = "";
+
+	this.id = "";
+	this.ai_id = "";
+	this.aid_id = "";
+	this.ai_status = "";
+	this.name = "";
+	this.definition = "";
+	this.logic = "";
+	this.prop_statuses = "";
+
+	this.props_raw = {};
+	this.props = {};
+
+	this.updateProps = function() {
+		for(i=0; i<this.save_data.length; i++) {
+ 			this.props_raw[this.save_data[i]] = this[this.save_data[i]];
+ 		}
+
+ 		this.props = JSON.stringify(this.props_raw);
+	}
+
+	this.set = function(obj) {
+		l(this.all);
+		l(obj);
+
+		if(obj === undefined || this.all === undefined) {
  			return undefined;
  		}
 

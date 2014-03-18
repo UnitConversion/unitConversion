@@ -11,6 +11,11 @@
 
 <br />
 
+<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
+	<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+	<strong>{{alert.title}}</strong> {{alert.body}}
+</div>
+
 <div class="table-responsive id-table">
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
@@ -186,8 +191,71 @@
 			<th>|(y2-y1)/(s2-s1)|&lt;</th>
 			<th></th>
 		</tr>
-		<tr>
-			<td colspan="41"><a href="#">+ Add new device</a></td>
+		
+		<!--Editable-->
+		{% endverbatim %}
+		{% if user.is_authenticated %}
+		<tr ng-if="urlStatus == 'editable'" ng-repeat="id in idArr">
+		{% else %}
+		<tr ng-if="false" ng-repeat="id in idArr">
+		{% endif %}
+		{% verbatim %}
+
+			<td ng-repeat="prop in id.save_display" ng-class="{'danger': id.prop_statuses[prop] && id.prop_statuses[prop] == 2}">
+				<span ng-if="prop != 'shape'" class="edit-wrapper">
+					<a ng-if="prop != 'logic' && prop != 'name'" href="#" onbeforesave="updateItem(id, prop, $data)" class="edit" editable-text="id[prop]">{{id[prop] || '&nbsp;'}}</a>
+					<a ng-if="prop == 'name'" href="#" onbeforesave="updateItemFixed(id, prop, $data)" class="edit" editable-text="id[prop]">{{id[prop] || '&nbsp;'}}</a>
+					<a ng-if="prop == 'logic'" href="#" onbeforesave="updateItemFixed(id, prop, $data)" class="edit select" editable-select="id[prop]" e-ng-options="name for name in logicArr">{{id[prop] || '&nbsp;'}}</a>
+				</span>
+				<span ng-if="prop == 'shape'">
+					{{id[prop] || '&nbsp;'}}
+				</span>
+				<button ng-click="approveCell(id, prop)" ng-if="id.prop_statuses[prop] && id.prop_statuses[prop] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<button ng-click="approveRow(id)" class="btn btn-default">Approve</button>
+				<button ng-click="addRow(id)" class="btn btn-default">Copy&Create</button>
+			</td>
+		</tr>
+
+		<!--Not editable-->
+		{% endverbatim %}
+		{% if user.is_authenticated %}
+		<tr ng-if="urlStatus != 'editable'" ng-repeat="id in idArr">
+		{% else %}
+		<tr ng-if="true" ng-repeat="id in idArr">
+		{% endif %}
+		{% verbatim %}
+
+			<td ng-repeat="prop in id.save_display">
+				{{id[prop] || '&nbsp;'}}
+			</td>
+			<td>
+			</td>
+		</tr>
+		
+		<tr ng-if="newInsD">
+			<td ng-repeat="prop in newInsD.save_display">
+				<span class="form-group" ng-class="{'has-error': error[prop]}">
+					<input ng-if="prop != 'logic'" type="text" ng-model="newInsD[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
+					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newInsD[prop]" class="form-control input-sm select"></select>
+				</span>
+			</td>
+			<td>
+				<button ng-click="saveItem(newInsD)" class="btn btn-warning">Add</button>
+				<button ng-click="cancel()" class="btn btn-default">Cancel</button>
+			</td>
+		</tr>
+
+		{% endverbatim %}
+		{% if user.is_authenticated %}
+		<tr ng-if="urlStatus == 'editable'">
+		{% else %}
+		<tr ng-if="false">
+		{% endif %}
+		{% verbatim %}
+
+			<td colspan="41"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new device</button></td>
 		</tr>
 	</table>
 </div>

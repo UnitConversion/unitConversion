@@ -53,10 +53,10 @@ class epsai(object):
         self.transaction = transaction
         
         # Define all the properties for id table
-        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['orientation', '', ''], ['logic_name', '', ''], ['shape', '', ''], ['defined_by', '', ''], ['device_name', '', ''], ['pos', 'm', ''], ['pos_from_cent', 'm', ''], ['max_offset', 'mm', ''], ['max_angle', 'mrad', ''], ['extra_offset', '', ''], ['lat_pos_s1', 'm', ''], ['pos_from_cent_s1', 'm', ''], ['offset_s1', 'mm', ''], ['logic_1', '', ''], ['lat_post_s2', 'm', ''], ['pos_from_cent_s2', 'm', ''], ['offset_s2', 'mm', ''], ['lat_pos_s3', 'm', ''], ['pos_from_cent_s3', 'm', ''], ['offset_s3', 'mm', ''], ['logic_2', '', ''], ['angle', 'mrad', '']]
+        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['pos', 'm', ''], ['pos_from_cent', 'm', ''], ['x_max_offset', 'mm', 'approvable'], ['x_max_angle', 'mrad', 'approvable'], ['x_extra_offset', '', 'approvable'], ['x_lat_pos_s1', 'm', 'approvable'], ['x_pos_from_cent_s1', 'm', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_logic_1', '', 'approvable'], ['x_lat_post_s2', 'm', 'approvable'], ['x_pos_from_cent_s2', 'm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_lat_pos_s3', 'm', 'approvable'], ['x_pos_from_cent_s3', 'm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_logic_2', '', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_max_offset', 'mm', 'approvable'], ['y_max_angle', 'mrad', 'approvable'], ['y_extra_offset', '', 'approvable'], ['y_lat_pos_s1', 'm', 'approvable'], ['y_pos_from_cent_s1', 'm', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_logic_1', '', 'approvable'], ['y_lat_post_s2', 'm', 'approvable'], ['y_pos_from_cent_s2', 'm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_lat_pos_s3', 'm', 'approvable'], ['y_pos_from_cent_s3', 'm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_logic_2', '', 'approvable'], ['y_angle', 'mrad', 'approvable']]
         
         # Define all the properties for the bm table
-        self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', 'approvable'], ['bm_logic_x', '', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_logic_y', '', ''], ['bm_aiolv', 'mm', 'approvable']]
+        self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
         
         
     def retrieveActiveInterlockOld(self, status, datefrom=None, dateto=None, withdata=True):
@@ -642,7 +642,7 @@ class epsai(object):
         
         # Check if all properties are approved
         if new_status == 1:
-            devices = self.retrieveDevice(None, 0, "*", definition)
+            devices = self.retrieveDevice(None, 0, "*", "*")
             
             # Go through all the devices
             for deviceId in devices.keys():
@@ -699,7 +699,7 @@ class epsai(object):
             
             # Save all id properties into the database
             for prop in self.id_props:
-                self.saveActiveInterlockPropType(prop[0], prop[1])
+                self.saveActiveInterlockPropType(prop[0], prop[1], prop[2])
             
             # Save all bm properties into the database
             for prop in self.bm_props:
@@ -1000,6 +1000,7 @@ class epsai(object):
                  'name':            , #str, name of the device
                  'definition':      , #str, definition of the device
                  'logic':           , #str, name of the logic
+                 'shape':           , #str, shape of the logic
                  'prop1key':        , #str, first property
                  ...
                  'propNkey':        , #str, Nth property
@@ -1051,6 +1052,7 @@ class epsai(object):
             aid.device_name,
             aid.definition,
             ail.name,
+            ail.shape,
             aid.active_interlock_id
         FROM active_interlock_device aid
         LEFT JOIN active_interlock_logic ail ON(aid.active_interlock_logic_id = ail.active_interlock_logic_id)
@@ -1084,6 +1086,7 @@ class epsai(object):
                     'name': r[1],
                     'definition': r[2],
                     'logic': r[3],
+                    'shape': r[4],
                     'prop_statuses': {}
                 }
                 
@@ -1749,6 +1752,45 @@ class epsai(object):
             self.logger.info('Error when saving active interlock property type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving active interlock property type:\n%s (%d)' %(e.args[1], e.args[0]))
             
+    def isLogicUsed(self, logic):
+        '''
+        Retrieve the number of uses of specific logic
+        
+        :param logic: name of the logic
+        :type str
+        
+        :return
+            {'num': usage count}
+        '''
+        
+        # Check logic parameter
+        _checkParameter('logic', logic)
+        
+        # Generate SQL
+        vals = []
+        sql = '''
+        SELECT count(active_interlock_device_id) as num_used
+        FROM active_interlock_device aid
+        LEFT JOIN active_interlock_logic ail ON(aid.active_interlock_logic_id = ail.active_interlock_logic_id)
+        WHERE
+        '''
+        
+        # Append logic
+        sqlVals = _checkWildcardAndAppend('ail.name', logic, sql, vals)
+        
+        try:
+            # Execute SQL
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            res = cur.fetchone()
+            resdict = {'num': res[0]}
+            
+            return resdict
+            
+        except MySQLdb.Error as e:
+            self.logger.info('Error when fetching number of occaisons logic is used:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching number of occaisons logic is used:\n%s (%d)' %(e.args[1], e.args[0]))
+    
     def retrieveActiveInterlockLogic(self, name, shape=None, logic=None):
         '''
         Retrieve logic information according given search constrains.
@@ -1777,14 +1819,16 @@ class epsai(object):
             .. code-block:: python
             
             {'id':
-                {'label':          [], # str, column's name
-                 'id':             [], # int, internal id of active interlock logic
-                 'name':           [], # str, name of active interlock envelop 
-                 'shape':          [], # str, allowed envelop shape in phase space
-                 'logic':          [], # str, logic expression
-                 'code':           [], # int, logic code for hardware convenience
-                 'created_by':     [], # str, who created this entry
-                 'created_date':   [], # datetime, when this entry was created
+                {'label':          , # str, column's name
+                 'id':             , # int, internal id of active interlock logic
+                 'name':           , # str, name of active interlock envelop 
+                 'shape':          , # str, allowed envelop shape in phase space
+                 'logic':          , # str, logic expression
+                 'code':           , # int, logic code for hardware convenience
+                 'status':         , # int, satus of the logic
+                 'created_by':     , # str, who created this entry
+                 'created_date':   , # datetime, when this entry was created
+                 'num':            , # int, usage count of this logic
                 }
             }
         
@@ -1797,7 +1841,7 @@ class epsai(object):
         # Generate SQL
         vals = []
         sql = '''
-        select active_interlock_logic_id, name, shape, logic, logic_code, created_by, created_date
+        select active_interlock_logic_id, name, shape, logic, logic_code, status, created_by, created_date
         from active_interlock_logic where
         '''
         
@@ -1819,7 +1863,7 @@ class epsai(object):
             vals.append(logic)
         
         try:
-            # Execure SQL
+            # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
@@ -1833,9 +1877,14 @@ class epsai(object):
                     'shape': r[2],
                     'logic': r[3],
                     'code': r[4],
-                    'created_by': r[5],
-                    'created_date': r[6].strftime(self.returnDateFormat)
+                    'status': r[5],
+                    'created_by': r[6],
+                    'created_date': r[7].strftime(self.returnDateFormat)
                 }
+                
+                # Get and append usage
+                usage = self.isLogicUsed(r[1])
+                resdict[r[0]]['num'] = usage['num']
 
             return resdict
             
@@ -1916,3 +1965,80 @@ class epsai(object):
             self.logger.info('Error when saving active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def updateActiveInterlockLogic(self, id, name=None, shape=None, logic=None, code=None):
+        '''
+        Save logic information for active interlock system.
+        The time is automatically captured when the data is saved into RDB.
+        
+        It checks whether given envelop name with given phase space shape and logic exists. If yes, it raises a ValueError exception.
+        
+        Currently implementation assumes that an active interlock envelop is for a particular shap, which is unique globally. 
+        If logic is changed, a new name should be defined.
+        
+        :param id: active interlock envelop id
+        :type id: int
+        
+        :param name: active interlock envelop name
+        :type name: str
+        
+        :param shape: active interlock shape name in phase space
+        :type shape: str
+        
+        :param logic: active interlock logic expression
+        :type logic: str
+        
+        :param code: logic algorithm encoding code for hardware convenience
+        :type code: int
+            
+        :returns: True if everything is ok
+                
+        :Raises: ValueError, Exception
+        '''
+        
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+    
+        # Check id parameter
+        _checkParameter('id', id, "prim")
+        whereDict['active_interlock_logic_id'] = id
+        
+        # Set name parameter
+        if name != None:
+            queryDict['name'] = shape
+        
+        # Set shape parameter
+        if shape != None:
+            queryDict['shape'] = shape
+        
+        # Set logic parameter
+        if logic != None:
+            queryDict['logic'] = logic
+            
+        # Set code parameter
+        if code != None:
+            queryDict['logic_code'] = code
+            
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('active_interlock_logic', queryDict, None, None, whereDict)
+        
+        try:
+            # Update logic
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            
+            # Create transactions
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+        
+        except Exception as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
+        

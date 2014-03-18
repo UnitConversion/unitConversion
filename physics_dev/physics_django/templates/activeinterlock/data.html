@@ -2,22 +2,34 @@
 {% verbatim %}
 
 <div class="content" ng-show="statuses[urlStatus] != 0">
+	{% endverbatim %}
+	{% if user.is_authenticated %}
 	<div>
 		<button ng-if="urlStatus == 'editable'" ng-click="approveDataset()" class="btn-space btn btn-default pull-right">Approve</button>
 		<button ng-if="urlStatus == 'approved'" ng-click="editDataset()" class="btn-space btn btn-info pull-right">Make editable</button>
 		<button ng-if="urlStatus == 'active' || urlStatus == 'backup'" class="btn btn-default pull-right">Copy to editable</button>
 		<button ng-if="urlStatus == 'approved' || urlStatus == 'backup'" ng-click="activateDataset()" class="btn btn-default pull-right">Make active!!!!! (remove afterwards)</button>
 	</div>
+	{% endif %}
+	{% verbatim %}
 
 	<div app-view-segment="2"></div>
 </div>
 
 <div class="container" ng-show="statuses[urlStatus] == 0 && urlStatus == 'editable'">
+	{% endverbatim %}
+	{% if user.is_authenticated %}
 	<div class="jumbotron">
-		<h2>There is no dataset with this status. Create a new dataset by pressing a button below</h2>
+		<h2>There is no dataset with this status. Create a new dataset by pressing a button below.</h2>
 		<br />
 		<p><button ng-click="createDataset()" class="btn btn-info btn-lg">Create new dataset</button></p>
 	</div>
+	{% else %}
+	<div class="jumbotron">
+		<h2>There is no dataset with this status. Login, to create a new dataset.</h2>
+	</div>
+	{% endif %}
+	{% verbatim %}
 </div>
 
 <div class="container" ng-show="statuses[urlStatus] == 0 && urlStatus != 'editable'">

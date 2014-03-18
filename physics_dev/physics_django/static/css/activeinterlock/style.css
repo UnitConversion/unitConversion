@@ -97,3 +97,15 @@ html, body {
 .id-table {
     overflow: auto;
 }
+
+.select {
+    min-width: 100px;
+}
+
+.user_dropdown_menu {
+    padding: 10px;
+}
+
+.login_error {
+    color: #b94a48;
+}

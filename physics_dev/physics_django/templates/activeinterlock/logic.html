@@ -16,7 +16,15 @@
 	<strong>{{alert.title}}</strong> {{alert.body}}
 </div>
 
-<div ng-if="urlStatus == 'editable'" class="table-responsive">
+
+{% endverbatim %}
+{% if user.is_authenticated %}
+	<div ng-if="urlStatus == 'editable'" class="table-responsive">
+{% else %}
+	<div ng-if="false" class="table-responsive">
+{% endif %}
+{% verbatim %}
+
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th>Name</th>
@@ -25,12 +33,47 @@
 			<th>Code</th>
 			<th></th>
 		</tr>
-		<tr ng-repeat="logic in logicArr">
-			<td><span class="edit-wrapper"><a href="#" class="edit" editable-text="logic.name">{{logic.name || '&nbsp;'}}</a></span></td>
-			<td><span class="edit-wrapper"><a href="#" class="edit" editable-text="logic.shape">{{logic.shape || '&nbsp;'}}</a></span></td>
-			<td><span class="edit-wrapper"><a href="#" class="edit" editable-text="logic.logic">{{logic.logic || '&nbsp;'}}</a></span></td>
-			<td><span class="edit-wrapper"><a href="#" class="edit" editable-text="logic.code">{{logic.code || '&nbsp;'}}</a></span></td>
-			<td><button class="btn btn-default">Approve</button></td>
+		<tr ng-repeat="logic in logicArr" ng-class="{'warning': logic.num > 0}">
+			<td>
+				<span ng-if="logic.num == 0" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(logic, 'name', $data)" class="edit" editable-text="logic.name">{{logic.name || '&nbsp;'}}</a>
+				</span>
+				<span ng-if="logic.num > 0">
+					{{logic.name || '&nbsp;'}}
+				</span>
+			</td>
+			<td>
+				<span ng-if="logic.num == 0" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(logic, 'shape', $data)" class="edit" editable-text="logic.shape">{{logic.shape || '&nbsp;'}}</a>
+				</span>
+				<span ng-if="logic.num > 0">
+					{{logic.shape || '&nbsp;'}}
+				</span>
+			</td>
+			<td>
+				<span ng-if="logic.num == 0" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(logic, 'logic', $data)" class="edit" editable-text="logic.logic">{{logic.logic || '&nbsp;'}}</a>
+				</span>
+				<span ng-if="logic.num > 0">
+					{{logic.logic || '&nbsp;'}}
+				</span>
+			</td>
+			<td>
+				<span ng-if="logic.num == 0" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(logic, 'code', $data)" class="edit" editable-text="logic.code">{{logic.code || '&nbsp;'}}</a>
+				</span>
+				<span ng-if="logic.num > 0">
+					{{logic.code || '&nbsp;'}}
+				</span>
+			</td>
+			<td>
+				<span ng-if="logic.num == 0">
+					<button class="btn btn-default">Approve</button>
+				</span>
+				<span ng-if="logic.num > 0">
+					Logic in use
+				</span>
+			</td>
 		</tr>
 		<tr ng-if="newLogic">
 			<td ng-repeat="prop in newLogic.retrieve">
@@ -49,7 +92,15 @@
 	</table>
 </div>
 
+{% endverbatim %}
+{% if user.is_authenticated %}
 <div ng-if="urlStatus != 'editable'" class="table-responsive">
+{% else %}
+<div ng-if="true" class="table-responsive">
+{% endif %}
+{% verbatim %}
+
+
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th>Name</th>

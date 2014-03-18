@@ -5,6 +5,26 @@
  * @created: Mar 6, 2014
  */
 
+/*
+ * Prepare form for login. Form is a part on a dropdown so some measures should
+ * be taken to change the dropdown functionality.
+ */
+function setUpLoginForm() {
+	// Setup drop down menu
+	$('.dropdown-toggle').dropdown();
+
+	// Fix input element click problem
+	$('.dropdown-menu').click(function(e) {
+		e.stopPropagation();
+	});
+
+	$('#loginButton').click(function(){
+		$('.user_dropdown_menu').ready(function(){
+			$('#inputUsername').focus();
+		});
+	});
+}
+
 /**
  * Write logs to Chrome or Firefox console
  * @param input input string

@@ -14,6 +14,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFou
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render_to_response
 from django.db.transaction import TransactionManagementError
+from django.template import RequestContext
 
 try:
     from django.utils import simplejson as json
@@ -287,14 +288,21 @@ def saveLogicWS(request):
     '''
     return _saveData(request, api.saveActiveInterlockLogic, ['name', 'shape', 'logic', 'code', 'created_by'])
 
+@require_http_methods(["POST"])
+def updateLogicWS(request):
+    '''
+    Update active interlock logic
+    '''
+    return _updateData(request, api.updateActiveInterlockLogic, ['id', 'name', 'shape', 'logic', 'code'], {})
+
 def aiIndexHtml(request):
     '''
     Load index html file
     '''
-    return render_to_response("activeinterlock/index.html")
+    return render_to_response("activeinterlock/index.html", context_instance = RequestContext(request))
 
 def aiHtmls(request, url):
     '''
     Load html files
     '''
-    return render_to_response("activeinterlock/" + url)
+    return render_to_response("activeinterlock/" + url, context_instance = RequestContext(request))

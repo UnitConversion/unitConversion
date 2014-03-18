@@ -6,7 +6,7 @@
  */
 
 // For accessing the REST service
-var serviceurl = "http://localhost:8000/ai";
+var serviceurl = "http://localhost:8000";
 
 //Version number
 var version = "0.1";

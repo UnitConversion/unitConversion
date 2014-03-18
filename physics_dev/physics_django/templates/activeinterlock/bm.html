@@ -16,7 +16,14 @@
 	<strong>{{alert.title}}</strong> {{alert.body}}
 </div>
 
-<div ng-if="urlStatus == 'editable'" class="table-responsive">
+{% endverbatim %}
+{% if user.is_authenticated %}
+	<div ng-if="urlStatus == 'editable'" class="table-responsive">
+{% else %}
+	<div ng-if="false" class="table-responsive">
+{% endif %}
+{% verbatim %}
+
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th>Cell</th>
@@ -93,7 +100,14 @@
 	</table>
 </div>
 
+{% endverbatim %}
+{% if user.is_authenticated %}
 <div ng-if="urlStatus != 'editable'" class="table-responsive">
+{% else %}
+<div ng-if="true" class="table-responsive">
+{% endif %}
+{% verbatim %}
+
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th>Cell</th>

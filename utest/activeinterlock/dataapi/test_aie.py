@@ -373,6 +373,12 @@ class Test(unittest.TestCase):
         
         # Test retrieving a property
         self.assertEqual(deviceObject['cell'], 'test')
+        
+        # Retrieve logic usage
+        result = self.api.isLogicUsed("name")
+        
+        # Test usage count
+        self.assertEqual(result['num'], 1)
 
     '''
     Test saving and retrieving active interlock property type
@@ -480,6 +486,9 @@ class Test(unittest.TestCase):
         
         # Test author
         self.assertEqual(logicObject['created_by'], 'author')
+        
+        # Test updating logic
+        self.assertTrue(self.api.updateActiveInterlockLogic(logicObject['id'], code=11))
 
     def Atest_activeinterlocklogic(self):
 #        print("======test active interlock logic=========")

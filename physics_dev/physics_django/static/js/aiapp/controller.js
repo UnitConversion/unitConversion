@@ -10,9 +10,11 @@ app.controller('indexCtrl', function($scope){
 	l("reload");
 });
 
-app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statusFactory){
+app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statusFactory, authFactory){
 	$scope.urlStatus = $routeParams.status;
 	$scope.path = $route.current.originalPath;
+	setUpLoginForm();
+	$scope.login = {};
 
 	$scope.statuses = {};
 	$scope.statuses.editable = 0;
@@ -28,6 +30,21 @@ app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statu
 		$scope.statuses.backup = result[3]['num'];
 		$scope.statuses.history = result[4]['num'];
 	});
+
+	$scope.login = function() {
+		authFactory.login($scope.login.username, $scope.login.password).then(function(data) {
+			$window.location.reload();
+
+		}, function(error) {
+			$scope.login.message = error;
+		});
+	}
+
+	$scope.logout = function() {
+		authFactory.logout().then(function(data) {
+			$window.location.reload();
+		});
+	}
 
 	$scope.goTo = function(status) {
 
@@ -277,8 +294,207 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	}
 });
 
-app.controller('idCtrl', function($scope, $routeParams){
+app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory, InsertionDevice, $modal){
+	$scope.error = {};
+	$scope.idArr = [];
+	$scope.logicArr = [];
+	$scope.alert = {};
+	var aiStatus = aiStatusMap[$routeParams.status];
 	$scope.urlTab = $routeParams.tab;
+	$scope.logicShapeDict = {};
+
+	l("id controller");
+
+	// If status is not defined, skip this controller
+	if ($routeParams.status === undefined) {
+		return;
+	}
+
+	// Retrieve insertion devices
+	idFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new InsertionDevice(item);
+			$scope.idArr.push(newItem);
+		});
+	});
+
+	// Retrieve logic
+	logicFactory.retrieveItems({}).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			$scope.logicArr.push(item.name);
+			$scope.logicShapeDict[item.name] = item.shape;
+		});
+	});
+
+
+	$scope.newInsD = undefined;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	}
+
+	$scope.addRow = function(item) {
+		l("add row " + item);
+		$scope.alert.show = false;
+
+		if($scope.logicArr.length == 0) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = "Before adding a new device, logic must be inserted!";
+
+			return;
+		}
+
+		$scope.newInsD = new InsertionDevice();
+		l($scope.newInsD);
+		//$scope.newInsD.bm_type = "BPM";
+
+		// Set properties if Copy&Create action
+		if (item !== undefined) {
+			l("set!");
+			$scope.newInsD.set(item);
+		}
+	}
+
+	$scope.cancel = function() {
+		$scope.newInsD = undefined;
+	}
+
+	$scope.updateItem = function(device, typeName, propValue) {
+		$scope.alert.show = false;
+
+		idFactory.updateItem({'aid_id': device.id, 'prop_type_name': typeName, 'value': propValue}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Value successfully updated!";
+
+			// Set status back to unapproved
+			if (device.prop_statuses[typeName] === 3) {
+				device.prop_statuses[typeName] = 2;
+			}
+
+			return true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+			return false;
+		});	
+	}
+
+	$scope.updateItemFixed = function(device, propName, propValue) {
+		$scope.alert.show = false;
+
+		var params = {};
+		params['aid_id'] = device.id;
+		params[propName] = propValue;
+
+		idFactory.updateDevice(params).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Value successfully updated!";
+			device.shape = $scope.logicShapeDict[device.logic];
+			return true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+			return false;
+		});	
+	}
+
+	$scope.approveCell = function(deviceObj, typeName) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/approve_cell.html',
+			controller: 'approveCellCtrl',
+			resolve: {
+				device: function() {
+					return deviceObj;
+				},
+				type_name: function() {
+					return typeName;
+				}
+			}
+		});
+	}
+
+	$scope.approveRow = function(deviceObj) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/approve_row.html',
+			controller: 'approveRowCtrl',
+			resolve: {
+				device: function() {
+					return deviceObj;
+				}
+			}
+		});
+	}
+
+	$scope.saveItem = function(newItem) {
+		$scope.alert.show = false;
+		$scope.newInsD = new InsertionDevice(newItem);
+		$scope.newInsD.ai_status = aiStatus;
+
+		$scope.error = idFactory.checkItem($scope.newInsD);
+		l($scope.error);
+
+		if (Object.keys($scope.error).length === 0) {
+			$scope.newInsD.updateProps();
+			var promise = idFactory.saveItem($scope.newInsD);
+
+			promise.then(function(data) {
+				$scope.cancel();
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Device successfully saved!";
+
+				idFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
+
+					l(result);
+					$scope.idArr = [];
+
+					$.each(result, function(i, item){
+
+						// Build customized object
+						var newItem = new InsertionDevice(item);
+						$scope.idArr.push(newItem);
+					});
+				});
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		
+		} else {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = "Name and logic are mandatory!";
+		}
+	}
 });
 
 /*
@@ -361,6 +577,28 @@ app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
 			$scope.alert.title = "Error!";
 			$scope.alert.body = "Name is mandatory!";
 		}
+	}
+
+	$scope.updateItem = function(device, propKey, propValue) {
+		$scope.alert.show = false;
+
+		var payload = {'id': device.id};
+		payload[propKey] = propValue;
+
+		logicFactory.updateItem(payload).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Value successfully updated!";
+			return true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+			return false;
+		});	
 	}
 
 });

@@ -7,7 +7,7 @@ from physics_django.activeinterlock.views import (retrieveDeviceWS, saveDeviceWS
 from physics_django.activeinterlock.views import (updateStatusWS) 
 from physics_django.activeinterlock.views import (updatePropWS) 
 from physics_django.activeinterlock.views import (approveCellsWS) 
-from physics_django.activeinterlock.views import (retrieveLogicWS, saveLogicWS) 
+from physics_django.activeinterlock.views import (retrieveLogicWS, saveLogicWS, updateLogicWS) 
 from physics_django.activeinterlock.views import (aiIndexHtml, aiHtmls) 
 
 urlpatterns = patterns(
@@ -33,6 +33,7 @@ urlpatterns = patterns(
     
     url(r'^ai/logic/$', retrieveLogicWS),
     url(r'^ai/savelogic/$', saveLogicWS),
+    url(r'^ai/updatelogic/$', updateLogicWS),
 
     url(r'^ai/web/$', aiIndexHtml),
     url(r'^ai/web/(.+)', aiHtmls),
