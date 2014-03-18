@@ -27,7 +27,7 @@ monitorrbvals = {}
 energyforsimulation = 3.000
 energysppv = 'SR-BI{RUNMODEL}ENERGY-SP'
 
-beamcurrentpv = 'SR:C03-BI{DCCT:1}I:Total-I'
+#beamcurrentpv = 'SR:C03-BI{DCCT:1}I:Total-I'
 
 wfrectemplate = '''record(waveform, "%s") {
     field(DTYP, "Soft Channel")
@@ -519,8 +519,8 @@ def runlatticemodel(is4setpoint):
             liveresult['betax'], liveresult['betay'],
             liveresult['etax'], liveresult['etay'],
             liveresult['name'],
-            liveresult['xcod'], liveresult['nuy'],
-            liveresult['nux'], liveresult['ycod'],
+            liveresult['xcod'], liveresult['ycod'],
+            liveresult['nux'], liveresult['nuy'],
             liveresult['s'],
             liveresult['tune'][0], liveresult['tune'][1],
             liveresult['chrom'][0], liveresult['chrom'][1],
@@ -567,8 +567,8 @@ def main(designlat, init=True):
                 designresult['betax'], designresult['betay'],
                 designresult['etax'], designresult['etay'],
                 designresult['name'],
-                designresult['xcod'], designresult['nuy'],
-                designresult['nux'], designresult['ycod'],
+                designresult['xcod'], designresult['ycod'],
+                designresult['nux'], designresult['nuy'],
                 designresult['s'],
                 designresult['tune'][0], designresult['tune'][1],
                 designresult['chrom'][0], designresult['chrom'][1],

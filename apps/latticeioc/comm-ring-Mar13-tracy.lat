@@ -7,11 +7,12 @@ Energy = 3.0;
 
 dP = 1e-8; CODeps = 1e-14;  
   
-Meth = 4; Nbend = 4; Nquad = 4;  
+Meth = 4; Nbend = 4; Nquad = 10;  
   
 pi = 4.0*arctan(1.0);  
 
-c0 = 2.99792458e8; h_rf = 1320; C = 11879.37;  
+{c0 = 2.99792458e8; h_rf = 1320; C = 11879.37;  }
+c0 = 2.99792458e8; h_rf = 1320; C = 791.958;
   
 CAV: Cavity, Frequency = c0/C*h_rf, Voltage = 5.00e6, Harnum = h_rf;  
 
