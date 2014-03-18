@@ -183,9 +183,9 @@ lathead = """{
 define lattice; ringtype = 1;
 Energy = %s;
 dP = 1e-8; CODeps = 1e-14;  
-Meth = 4; Nbend = 4; Nquad = 4;  
+Meth = 4; Nbend = 4; Nquad = 10;  
 pi = 4.0*arctan(1.0);  
-c0 = 2.99792458e8; h_rf = 1320; C = 11879.37;  
+c0 = 2.99792458e8; h_rf = 1320; C = 791.958;  
 
 """
 
