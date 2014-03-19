@@ -58,524 +58,6 @@ class epsai(object):
         # Define all the properties for the bm table
         self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
         
-        
-    def retrieveActiveInterlockOld(self, status, datefrom=None, dateto=None, withdata=True):
-        '''Retrieve a data set according its saved time, and status.
-        One data set should have same properties for all device although its value could be empty.
-        
-        data structure:
-        
-        .. code-block:: python
-        
-            {id: {
-                  'status': ,
-                  'description': , 
-                  'created_by': ,
-                  'created_date': ,
-                  'modified_by': ,
-                  'modified_date': ,
-                  'data':{'label':       [], # str, column's name, also property type collections for one active interlock unit.
-                          'units':       [], # str, units for each columns. Empty string if it does not have one.
-                         
-                          # the following are those columns appeared in ``label`` field.
-                          'name':        [], # str, active interlock device name 
-                          'definition':  [], # str, definition for that device
-                          'logicname':   [], # str, active interlock envelop name
-                          'shape':       [], # str, allowed shape in phase space
-                          's':           [], # double, s position in a lattice, particularly in a installation lattice
-                          'offset':      [], # double, offset relative to the center of a straight section
-                          'safecurent':  [], # double, allowed beam current for safe operation.  
-                                             # no need for active interlock if beam current is lower than this value.
-                          'aihol':       [], # double, allowed horizontal offset limit
-                          'aivol':       [], # double, allowed vertical offset limit
-                          'aihal':       [], # double, allowed horizontal angle limit
-                          'aival':       [], # double, allowed vertical angle limit
-                          'up_name':     [], # str, upstream BPM name involved in this active interlock unit
-                          'up_definition': [], #str, upstream device definition
-                          'up_offset':   [], # double, offset of upstream BPM relative to the center of a straight section
-                          'up_aihol':    [], # double, allowed horizontal offset limit of upstream BPM
-                          'up_aivol':    [], # double, allowed vertical offset limit of upstream BPM
-                          'down_name':   [], # str, downstream BPM name involved in this active interlock unit
-                          'down_definition': [], #str, downstream device definition
-                          'down_offset': [], # double, offset of downstream BPM relative to the center of a straight section
-                          'down_aihol':  [], # double, allowed horizontal offset limit of downstream BPM
-                          'down_aivol':  [], # double, allowed vertical offset limit of downstream BPM
-                          'logiccode':   [], # logic algorithm encoding code
-                         }
-                 },
-                 ...
-            }
-            
-        label is now defined as below:
-         
-        .. code-block:: python
-         
-            ['name', 'definition', 'logicname', 'shape', 'logic', 'logiccode'
-             's', 'offset', 'safecurent', 'aihol', 'aivol', 'aihal', 'aival',
-             'up_name', 'up_definition', 'up_offset', 'up_aihol', 'up_aivol',
-             'down_name', 'down_definition', 'down_offset', 'down_aihol', 'down_aivol',
-            ]
-        
-        units is for each columns contained in ``label``, therefore, it should have exact sequence as it appears in label
-        except ``units`` itself which should be the last one.
-        is most like as below:
-        
-        .. code-block:: python
-         
-            ['', '', '', '', '', '', 
-             'm', 'm', 'mA', 'mm', 'mm', 'mrad', 'mrad',
-             '', '', 'm', 'mm', 'mm',
-             '', '', 'm', 'mm', 'mm'
-            ]
-        
-        :param status: Current status.
-        :type status: int
-        
-        :param datefrom: data saved after this time. Default is None, which means data from very beginning. It has format as **yyyy-MM-dd hh:mm:ss** since dates in MySql are represented with the format.
-        :type datafrom: datetime
-        
-        :param dateto: data saved before this time. Default is None, which means data till current. It has format as **yyyy-MM-dd hh:mm:ss** since dates in MySql are represented with the format.
-        :type datato: datetime
-        
-        :param withdata: get data set. Default is true, which means always gets data by default. Otherwise, only device names are retrieved for desired data set.
-        :type withdata: boolean
-        
-        :Returns: dict
-            
-        :Raises: KeyError, AttributeError
-        
-        '''
-        
-        if withdata:
-            return self._retrieveDataSet(status, datefrom=datefrom, dateto=dateto)
-        
-        else:
-            return self._retrieveDataHeader(status, datefrom=datefrom, dateto=dateto)
-
-    def _retrieveDataHeader(self, status, datefrom=None, dateto=None):
-        '''Retrieve data set header information only.'''
-        
-        sql = '''
-        select ai.active_interlock_id, ai.status, ai.description, 
-        ai.created_by, ai.created_date, ai.modified_by, ai.modified_date
-        from active_interlock ai
-        where
-        '''
-
-        vals=[]
-        
-        # Append name
-        sqlVals = _checkWildcardAndAppend('ai.status', status, sql, vals)
-        sql = sqlVals[0]
-        vals = sqlVals[1]
-        
-        # Append date from
-        if datefrom != None:
-            sql+= ' AND ai.created_date >= %s '
-            vals.append(datefrom)
-            
-        # Append date to
-        if dateto != None:
-            sql+= ' AND ai.created_date <= %s '
-            vals.append(dateto)
-        
-        try:
-            # Execute sql
-            cur=self.conn.cursor()
-            cur.execute(sql, vals)
-            res = cur.fetchall()
-            
-            resdict = {}
-            
-            # Generate return dictionary
-            for r in res:
-                tmp = {'status': r[1]}
-                
-                if r[2] != None:
-                    tmp['description'] = r[2]
-                
-                if r[3] != None:
-                    tmp['created_by'] = r[3]
-                
-                if r[4] != None:
-                    tmp['created_date'] = r[4].strftime(self.returnDateFormat)
-                
-                if r[5] != None:
-                    tmp['modified_by'] = r[5]
-                
-                if r[6] != None:
-                    tmp['modified_date'] = r[6].strftime(self.returnDateFormat)
-
-                resdict[r[0]] = tmp
-    
-            return resdict
-            
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching active interlock data set headers:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching active interlock data set headers:\n%s (%d)' %(e.args[1], e.args[0]))
-    
-    def _retrieveDataSet(self, status, datefrom=None, dateto=None):
-        '''Retrieve data set'''
-        
-        res = self._retrieveDataHeader(status, datefrom=datefrom, dateto=dateto)
-        
-        sql = '''
-        select 
-        aid.device_name, aid.definition,
-        ail.name, ail.shape, ail.logic, ail.logic_code, 
-        aipt.name, aipt.description, aipt.unit, aipt.created_date,
-        aip.value, aip.inserted_date
-        from active_interlock_prop aip
-        left join active_interlock_device aid on aip.active_interlock_device_id = aid.active_interlock_device_id
-        left join active_interlock_logic ail on ail.active_interlock_logic_id=aid.active_interlock_logic_id
-        left join active_interlock_prop_type aipt on aipt.active_interlock_prop_type_id=aip.active_interlock_prop_type_id
-        where aid.active_interlock_id = %s order by aid.device_name
-        '''
-        
-        try:
-            cur=self.conn.cursor()
-            
-            for aiid, aidata in res.iteritems():
-                devicename=''
-                cur.execute(sql, (aiid,))
-                resdata = cur.fetchall()
-                
-                firstround = True
-                label=['name', 'definition', 'logic_name', 'shape', 'logic', 'logic_code']
-                units=['', '', '', '', '', '']
-    
-                innerdata = OrderedDict(
-                    (
-                        ('label', label),
-                        ('units', units),
-                        ('name', []),
-                        ('definition', []),
-                        ('logic_name', []),
-                        ('shape', []),
-                        ('logic', []),
-                        ('logic_code', []),
-                    )
-                )
-                
-                for restmp in resdata:
-                    
-                    if devicename != restmp[0]:
-                        for i in range(6):
-                            innerdata[label[i]].append(restmp[i])
-
-                        if devicename != '':
-                            firstround=False
-                            
-                        devicename = restmp[0]
-                    
-                    if firstround:
-                        label.append(restmp[6])
-                        if restmp[8] == None:
-                            units.append('')
-                        else:
-                            units.append(restmp[8])
-                        innerdata[restmp[6]]=[restmp[10]]
-                    
-                    else:
-                        innerdata[restmp[6]].append(restmp[10])
-
-                aidata['data'] = innerdata
-                res[aiid]=aidata
-            
-            return res
-
-        except MySQLdb.Error as e:
-            self.logger.info('Database error when fetching active interlock data set:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise
-        
-        except KeyError as e:
-            self.logger.info('Data set error when fetching active interlock data set:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise e
-
-    
-    def saveActiveInterlock(self, data, description=None, created_by=None):
-        '''
-        Save a new data set of active interlock.
-        By default, it deactivates existing active data set, and active this new data set.
-        Only one active data is allowed.
-        
-        A logic of active interlock has to be saved first, otherwise, an AttributeError might raise if logic can not be found.
-        
-        data structure:
-        
-        .. code-block:: python
-        
-            {'label':       [], # str, column's name, also property type collections for one active interlock unit.
-             'units':       [], # str, units for each columns. Empty string if it does not have one.
-             
-             # the following are those columns appeared in ``label`` field.
-             'name':        [], # str, active interlock device name 
-             'definition':  [], # str, definition for that device
-             'logicname':   [], # str, active interlock envelop name
-             'shape':       [], # str, allowed shape in phase space
-             's':           [], # double, s position in a lattice, particularly in a installation lattice
-             'offset':      [], # double, offset relative to the center of a straight section
-             'safecurent':  [], # double, allowed beam current for safe operation.  
-                                # no need for active interlock if beam current is lower than this value.
-             'aihol':       [], # double, allowed horizontal offset limit
-             'aivol':       [], # double, allowed vertical offset limit
-             'aihal':       [], # double, allowed horizontal angle limit
-             'aival':       [], # double, allowed vertical angle limit
-             'up_name':     [], # str, upstream BPM name involved in this active interlock unit
-             'up_definition': [], #str, upstream device definition
-             'up_offset':   [], # double, offset of upstream BPM relative to the center of a straight section
-             'up_aihol':    [], # double, allowed horizontal offset limit of upstream BPM
-             'up_aivol':    [], # double, allowed vertical offset limit of upstream BPM
-             'down_name':   [], # str, downstream BPM name involved in this active interlock unit
-             'down_definition': [], #str, downstream device definition
-             'down_offset': [], # double, offset of downstream BPM relative to the center of a straight section
-             'down_aihol':  [], # double, allowed horizontal offset limit of downstream BPM
-             'down_aivol':  [], # double, allowed vertical offset limit of downstream BPM
-            }
-            
-        label is now defined as below:
-         
-        .. code-block:: python
-         
-            ['name', 'definition', 'logicname', 'shape',
-             's', 'offset', 'safecurent', 'aihol', 'aivol', 'aihal', 'aival',
-             'up_name', 'up_definition', 'up_offset', 'up_aihol', 'up_aivol',
-             'down_name', 'down_definition', 'down_offset', 'down_aihol', 'down_aivol',
-            ]
-            
-        units is for each columns contained in ``label``, therefore, it should have exact sequence as it appears in label
-        except ``units`` itself which should be the last one.
-        is most like as below:
-        
-        .. code-block:: python
-         
-            ['', '', '', '',
-             'm', 'm', 'mA', 'mm', 'mm', 'mrad', 'mrad',
-             '', '', 'm', 'mm', 'mm',
-             '', '', 'm', 'mm', 'mm'
-            ]
-            
-        :param data: original data structure is described as above.
-        :type data: dict
-            
-        :param description: comments or any other notes for this data set.
-        :type description: str
-        
-        :param active: set current data set active. It sets new data set as active by default unless it is explicitly set to keep old active data set.
-        :type active: boolean
-        
-        :param created_by: the person who set this data set.
-        :type created_by: str
-        
-        :Returns: active interlock internal id if saved successfully.
-            
-        :Raises: ValueError, MySQLError, KeyError, AttributeError 
-
-        '''
-        proptypes=data['label']
-        proptypeunits=data['units']
-
-        if len(proptypes) != len(proptypeunits):
-            raise ValueError('units are missing for %s columns.'%(len(proptypes) - len(proptypeunits)))
-        
-        try:
-            cur=self.conn.cursor()
-            
-            # get property type internal id
-            proptypeids = {}
-            
-            for i in range(len(proptypes)):
-                
-                tmp = self.retrieveActiveInterlockPropType(proptypes[i], unit=proptypeunits[i])
-                tmpKeys = tmp.keys()
-                tmpObject = tmp[tmpKeys[0]]
-                
-                if len(tmp) == 0:
-                    # should add a new entry
-                    proptypeids[proptypes[i]] = self.saveActiveInterlockPropType(proptypes[i], unit=proptypeunits[i])
-                
-                elif len(tmp) == 1:
-                    proptypeids[proptypes[i]] = tmpObject['id']
-                
-                else:
-                    raise ValueError('property type (name: %s, unit: %s) is not unique.'%(proptypes[i], proptypeunits[i]))
-            
-            # Get active interlock logic internal id
-            logicids=[]
-            
-            proptypes_tmp = proptypes[:]
-            
-            # Check if logic name is present
-            if 'logic_name' in proptypes_tmp: 
-                proptypes_tmp.remove('logic_name')
-                
-            else:
-                raise ValueError('active interlock logic is not defined.')
-            
-            # Check if shape is present
-            if 'shape' in proptypes_tmp: 
-                proptypes_tmp.remove('shape')
-            
-            else:
-                raise AttributeError('active interlock allowed shape in phase space is not defined.')
-
-            # Retrieve logic
-            for i in range(len(data['logic_name'])):
-                
-                tmp = self.retrieveActiveInterlockLogic(data['logic_name'][i], data['shape'][i])
-                tmpKeys = tmp.keys()
-                tmpObject = tmp[tmpKeys[0]]
-                
-                if len(tmp) != 1:
-                    raise AttributeError('Given activeinterlock envelop (name: %s, shape: %s) does not exist yet.'%(data['logicname'][i], data['shape'][i]))
-                
-                else:
-                    logicids.append(tmpObject['id'])
-
-            # Save header onformation of a active interlock data set
-            sql = '''
-            INSERT INTO active_interlock (created_date, status, created_by, description) VALUES (NOW(), 0, %s, %s)
-            '''
-            
-            cur.execute(sql, (created_by, description))
-            aiid = cur.lastrowid
-            
-            
-            if 'name' in proptypes_tmp: proptypes_tmp.remove('name')
-            if 'definition' in proptypes_tmp: proptypes_tmp.remove('definition')            
-            has_definition = False
-            
-            if data.has_key('definition'):
-                has_definition = True
-                
-            for i in range(len(data['name'])):
-                # save active interlock main device information
-                if has_definition:
-                    sql = '''insert into active_interlock_device
-                    (active_interlock_id, active_interlock_logic_id, device_name, definition)
-                    values
-                    (%s, %s, %s, %s)
-                    '''
-                    cur.execute(sql, (aiid, logicids[i], data['name'][i], data['definition'][i]))
-                
-                else:
-                    sql = '''insert into active_interlock_device
-                    (active_interlock_id, activeinterlock_logic_id, device_name)
-                    values
-                    (%s, %s, %s)
-                    '''
-                    cur.execute(sql, (aiid, logicids[i], data['name'][i]))
-               
-                aidid = cur.lastrowid
-                
-                # save other information of an active interlock unit
-                for ptype in proptypes_tmp:
-                    sql = '''insert into active_interlock_prop
-                    (active_interlock_device_id, active_interlock_prop_type_id, value, inserted_date)
-                    values
-                    (%s, %s, %s, now())
-                    '''
-                    cur.execute(sql, (aidid, proptypeids[ptype], data[ptype][i]))
-                
-            if self.transaction == None:
-                self.conn.commit()
-                
-        except MySQLError as e:
-            if self.transaction == None:
-                self.conn.rollback()
-            
-            self.logger.info('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise
-        
-        return aiid
-        
-    def updateActiveInterlockStatusOld(self, aiid, status, created_by=None):
-        '''
-        Update status of a data set.
-        
-        Current statuses:
-        
-            0: editable
-            1: approved
-            2: active
-            3: backup
-            4: history
-        
-        :param aiid: internal id of an active interlock data set
-        :type aiid: int
-        
-        :param status: new status code
-        :type status: int
-        
-        :param created_by: name who requests this update
-        :type created_by: str
-            
-        :Returns: boolean
-            
-            The return code: ::
-                
-                True -- when the status is changed.
-                False -- when the status is not changed.
-        
-        :Raises: MySQLError, ValueError, AttributeError
-        '''
-        
-        # Check status value
-        if status not in [0, 1, 2, 3, 4]:
-            raise ValueError('Status of active interlock data has to be either 0, 1, 2, 3 or 4.')
-
-        # Set new status variable for existing datasets
-        new_status = status + 1
-        
-        if new_status > 4:
-            new_status = 4
-
-        try:
-            cur=self.conn.cursor()
-            
-            # Get current status
-            cur.execute('''select status from active_interlock where active_interlock_id = %s''', (aiid,))
-            aiid_status = cur.fetchone()
-            
-            if aiid_status == None:
-                raise ValueError("Given internal id (%s) of active interlock data set does not exist!"%(aiid))
-            
-            aiid_status = aiid_status[0]
-            
-            # If old and new status of a dataset is the same, do nothing
-            # Nothing to do since status is same for that particular data set
-            if aiid_status == status:
-                return False
-            
-            # Get current datadata set with that status
-            cur.execute('''select active_interlock_id from active_interlock where status = %s''' , (status))
-            active_id = cur.fetchone()
-            
-            if len(active_id) != 0:
-                # find active data set, has to deactivate it before setting a new active data set.
-                active_id = active_id[0]
-            
-                sql = '''update active_interlock set status=%s, modified_by=%s, modified_date=now() where active_interlock_id = %s'''
-                cur.execute(sql, (new_status, created_by, active_id,))
-
-            sql = '''update active_interlock set status=%s, modified_by=%s, modified_date=now() where active_interlock_id = %s'''
-            cur.execute(sql, (status, created_by, aiid))
-            
-            # Commit changes
-            if self.transaction == None:
-                self.conn.commit()
-                
-            return True
-                
-        except MySQLError as e:
-            
-            # Rollback changes
-            if self.transaction == None:
-                self.conn.rollback()
-            
-            self.logger.info('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when updating active interlock data status:\n%s (%d)' %(e.args[1], e.args[0]))
-
     def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by, definition):
         '''
         Update status of a data set.
@@ -972,7 +454,6 @@ class epsai(object):
             self.logger.info('Error when updating active interlock device property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating active interlock device property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-
     def retrieveDevice(self, ai_id = None, ai_status = None, name = None, definition = None):
         '''
         Retrieve devices of particular active interlock, name and definition. Name can also be a wildcard
@@ -1332,7 +813,6 @@ class epsai(object):
             self.logger.info('Error while deleting active interlock:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error while deleting active interlock:\n%s (%d)' % (e.args[1], e.args[0]))
 
-
     def retrieveStatusInfo(self):
         '''
         Retrieve information about active interlock statuses. How many datasets are in each status.
@@ -1387,6 +867,49 @@ class epsai(object):
             'status': 4,
             'num': len(four)
         }
+        
+        return resdict
+
+    def downloadActiveInterlock(self):
+        '''
+        Retrieve complete dataset with status approved and set it to active
+        
+        :return
+         {'bm':{
+                 bm data
+             },
+          'id': {
+                id data
+            },
+          'logic': {
+                logic data
+            }
+         }
+        '''
+        
+        resdict = {}
+        
+        header = self.retrieveActiveInterlockHeader(1)
+        
+        # Check if header exists
+        if len(header) == 0:
+            resdict['result'] = "No dataset available"
+            return resdict
+        
+        headerKeys = header.keys()
+        headerObj = header[headerKeys[0]]
+        
+        # Get bm devices
+        bm = self.retrieveDevice(headerObj['id'], None, "*", "bm")
+        resdict['bm'] = bm
+        
+        # Get id devices
+        idDev = self.retrieveDevice(headerObj['id'], None, "*", "id")
+        resdict['id'] = idDev
+        
+        # Get logic
+        logic = self.retrieveActiveInterlockLogic("*")
+        resdict['logic'] = logic
         
         return resdict
 
@@ -1791,7 +1314,7 @@ class epsai(object):
             self.logger.info('Error when fetching number of occaisons logic is used:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching number of occaisons logic is used:\n%s (%d)' %(e.args[1], e.args[0]))
     
-    def retrieveActiveInterlockLogic(self, name, shape=None, logic=None):
+    def retrieveActiveInterlockLogic(self, name, shape=None, logic=None, status=None):
         '''
         Retrieve logic information according given search constrains.
         Active interlock envelop name has to be provided as a minimum requirement for this function.
@@ -1811,6 +1334,9 @@ class epsai(object):
         
         :param logic: active interlock logic.
         :type logic: str
+        
+        :param status: status of the logic
+        :type status: int
         
         :returns: dict 
             
@@ -1861,6 +1387,12 @@ class epsai(object):
             # wildmatch is supported for logic since the * is a math symbol.
             sql += ' AND logic = %s '
             vals.append(logic)
+        
+        # Append status
+        if status != None:
+            sqlVals = _checkWildcardAndAppend('status', status, sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
         
         try:
             # Execute SQL
@@ -1937,9 +1469,9 @@ class epsai(object):
         # Generate SQL statement
         sql = '''
         insert into active_interlock_logic
-        (name, shape, logic, logic_code, created_by, created_date)
+        (name, shape, logic, logic_code, created_by, status, created_date)
         values
-        (%s, %s, %s, %s, %s, now())
+        (%s, %s, %s, %s, %s, 2, now())
         '''
 
         try:
@@ -1965,7 +1497,7 @@ class epsai(object):
             self.logger.info('Error when saving active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def updateActiveInterlockLogic(self, id, name=None, shape=None, logic=None, code=None):
+    def updateActiveInterlockLogic(self, id, name=None, shape=None, logic=None, code=None, status=None):
         '''
         Save logic information for active interlock system.
         The time is automatically captured when the data is saved into RDB.
@@ -2003,9 +1535,16 @@ class epsai(object):
         _checkParameter('id', id, "prim")
         whereDict['active_interlock_logic_id'] = id
         
+        # Set status
+        if status != None:
+            queryDict['status'] = status
+            
+        else:
+            queryDict['status'] = 2
+        
         # Set name parameter
         if name != None:
-            queryDict['name'] = shape
+            queryDict['name'] = name
         
         # Set shape parameter
         if shape != None:

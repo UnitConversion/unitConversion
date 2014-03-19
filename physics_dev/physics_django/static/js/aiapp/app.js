@@ -76,7 +76,9 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 					dependencies: ['tab']
 				}).
 				segment('id', {
-					templateUrl: 'history_id.html'
+					templateUrl: 'history_id.html',
+					controller: 'historyIdCtrl',
+					dependencies: ['tab']
 				}).
 				segment('logic', {
 					templateUrl: 'history_logic.html',

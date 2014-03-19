@@ -258,7 +258,7 @@ def retrieveLogicWS(request):
     '''
     Retrieve active interlock header information
     '''
-    return _retrieveData(request, api.retrieveActiveInterlockLogic, ['name', 'shape', 'logic'])
+    return _retrieveData(request, api.retrieveActiveInterlockLogic, ['name', 'shape', 'logic', 'status'])
 
 @require_http_methods(["POST"])
 def updateStatusWS(request):
@@ -293,7 +293,7 @@ def updateLogicWS(request):
     '''
     Update active interlock logic
     '''
-    return _updateData(request, api.updateActiveInterlockLogic, ['id', 'name', 'shape', 'logic', 'code'], {})
+    return _updateData(request, api.updateActiveInterlockLogic, ['id', 'name', 'shape', 'logic', 'code', 'status'], {})
 
 def aiIndexHtml(request):
     '''

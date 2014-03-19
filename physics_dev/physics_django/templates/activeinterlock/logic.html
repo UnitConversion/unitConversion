@@ -34,7 +34,7 @@
 			<th></th>
 		</tr>
 		<tr ng-repeat="logic in logicArr" ng-class="{'warning': logic.num > 0}">
-			<td>
+			<td ng-class="{'danger': logic.status == 2}">
 				<span ng-if="logic.num == 0" class="edit-wrapper">
 					<a href="#" onbeforesave="updateItem(logic, 'name', $data)" class="edit" editable-text="logic.name">{{logic.name || '&nbsp;'}}</a>
 				</span>
@@ -42,7 +42,7 @@
 					{{logic.name || '&nbsp;'}}
 				</span>
 			</td>
-			<td>
+			<td ng-class="{'danger': logic.status == 2}">
 				<span ng-if="logic.num == 0" class="edit-wrapper">
 					<a href="#" onbeforesave="updateItem(logic, 'shape', $data)" class="edit" editable-text="logic.shape">{{logic.shape || '&nbsp;'}}</a>
 				</span>
@@ -50,7 +50,7 @@
 					{{logic.shape || '&nbsp;'}}
 				</span>
 			</td>
-			<td>
+			<td ng-class="{'danger': logic.status == 2}">
 				<span ng-if="logic.num == 0" class="edit-wrapper">
 					<a href="#" onbeforesave="updateItem(logic, 'logic', $data)" class="edit" editable-text="logic.logic">{{logic.logic || '&nbsp;'}}</a>
 				</span>
@@ -58,7 +58,7 @@
 					{{logic.logic || '&nbsp;'}}
 				</span>
 			</td>
-			<td>
+			<td ng-class="{'danger': logic.status == 2}">
 				<span ng-if="logic.num == 0" class="edit-wrapper">
 					<a href="#" onbeforesave="updateItem(logic, 'code', $data)" class="edit" editable-text="logic.code">{{logic.code || '&nbsp;'}}</a>
 				</span>
@@ -68,7 +68,7 @@
 			</td>
 			<td>
 				<span ng-if="logic.num == 0">
-					<button class="btn btn-default">Approve</button>
+					<button ng-click="approveLogic(logic)" class="btn btn-default">Approve</button>
 				</span>
 				<span ng-if="logic.num > 0">
 					Logic in use
@@ -76,7 +76,7 @@
 			</td>
 		</tr>
 		<tr ng-if="newLogic">
-			<td ng-repeat="prop in newLogic.retrieve">
+			<td ng-repeat="prop in newLogic.save">
 				<span class="form-group" ng-class="{'has-error': error[prop]}">
 					<input type="text" ng-model="newLogic[prop]" class="form-control input-sm" id="inputSuccess1" />
 				</span>

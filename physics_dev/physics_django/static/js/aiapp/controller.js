@@ -71,7 +71,12 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/approve_dataset.html',
-			controller: 'approveDatasetCtrl'
+			controller: 'approveDatasetCtrl',
+			resolve: {
+				statuses: function() {
+					return $scope.statuses;
+				}
+			}
 		});
 	}
 
@@ -79,7 +84,12 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/edit_dataset.html',
-			controller: 'editDatasetCtrl'
+			controller: 'editDatasetCtrl',
+			resolve: {
+				statuses: function() {
+					return $scope.statuses;
+				}
+			}
 		});
 	}
 
@@ -126,7 +136,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	});
 
 	// Retrieve logic
-	logicFactory.retrieveItems({}).then(function(result) {
+	logicFactory.retrieveItems({'status': 3}).then(function(result) {
 
 		l(result);
 
@@ -151,7 +161,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 			$scope.alert.show = true;
 			$scope.alert.success = false;
 			$scope.alert.title = "Error!";
-			$scope.alert.body = "Before adding a new device, logic must be inserted!";
+			$scope.alert.body = "Before adding a new device, logic must be inserted and approved!";
 
 			return;
 		}
@@ -324,7 +334,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	});
 
 	// Retrieve logic
-	logicFactory.retrieveItems({}).then(function(result) {
+	logicFactory.retrieveItems({'status': 3}).then(function(result) {
 
 		l(result);
 
@@ -351,7 +361,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 			$scope.alert.show = true;
 			$scope.alert.success = false;
 			$scope.alert.title = "Error!";
-			$scope.alert.body = "Before adding a new device, logic must be inserted!";
+			$scope.alert.body = "Before adding a new device, logic must be inserted and approved!";
 
 			return;
 		}
@@ -500,7 +510,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 /*
  * Logic controller that displays logic and manages adding and updating logics
  */
-app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
+app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory, Logic){
 	$scope.error = {};
 	$scope.logicArr = [];
 	$scope.alert = {};
@@ -579,10 +589,10 @@ app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
 		}
 	}
 
-	$scope.updateItem = function(device, propKey, propValue) {
+	$scope.updateItem = function(logic, propKey, propValue) {
 		$scope.alert.show = false;
 
-		var payload = {'id': device.id};
+		var payload = {'id': logic.id};
 		payload[propKey] = propValue;
 
 		logicFactory.updateItem(payload).then(function(data) {
@@ -590,6 +600,7 @@ app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
 			$scope.alert.body = "Value successfully updated!";
+			logic.status = 2;
 			return true;
 
 		}, function(error) {
@@ -599,6 +610,19 @@ app.controller('logicCtrl', function($scope, $routeParams, logicFactory, Logic){
 			$scope.alert.body = error;
 			return false;
 		});	
+	}
+
+	$scope.approveLogic = function(logicObj) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/approve_logic.html',
+			controller: 'approveLogicCtrl',
+			resolve: {
+				logic: function() {
+					return logicObj;
+				}
+			}
+		});
 	}
 
 });
@@ -784,12 +808,17 @@ app.controller('approveRowCtrl', function($scope, $modalInstance, $window, bmFac
 /*
  * Approve dataset controller
  */
-app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, statusFactory) {
+app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, statusFactory, statuses) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
 	$scope.showFinishButton = false;
 	var types = [];
+	$scope.message = "The whole dataset will be approved. Do you want to continue?";
+
+	if (statuses.approved > 0) {
+		$scope.message = "There is a dataset with status approved. All data will be lost! Do you want to continue?";
+	}
 
 	$scope.closeAlert = function() {
 		$scope.alert.show = false;
@@ -828,12 +857,17 @@ app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, s
 /*
  * Edit dataset controller
  */
-app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, statusFactory) {
+app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, statusFactory, statuses) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
 	$scope.showFinishButton = false;
 	var types = [];
+	$scope.message = "The whole dataset will again be editable. Do you want to continue?";
+
+	if (statuses.editable > 0) {
+		$scope.message = "There is a dataset with status editable. All data will be lost! Do you want to continue?";
+	}
 
 	$scope.closeAlert = function() {
 		$scope.alert.show = false;
@@ -896,6 +930,24 @@ app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, Bendin
 	});
 });
 
+app.controller('historyIdCtrl', function($scope, $routeParams, idFactory, InsertionDevice){
+	$scope.idArr = [];
+	$scope.urlTab = $routeParams.tab;
+	
+	// Retrieve insertion devices
+	idFactory.retrieveItems({'ai_id': $scope.datasetId}).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new InsertionDevice(item);
+			$scope.idArr.push(newItem);
+		});
+	});
+});
+
 app.controller('historyLogicCtrl', function($scope, $routeParams, logicFactory, Logic){
 	$scope.logicArr = [];
 	$scope.urlTab = $routeParams.tab;
@@ -911,4 +963,51 @@ app.controller('historyLogicCtrl', function($scope, $routeParams, logicFactory, 
 			$scope.logicArr.push(newItem);
 		});
 	});
+});
+
+/*
+ * Approve logic controller
+ */
+app.controller('approveLogicCtrl', function($scope, $modalInstance, $window, logicFactory, logic) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+
+		logicFactory.updateItem({'id': logic.id, 'status': 3}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Logic successfully approved!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+
+		// Set status to approved
+		logic.status = 3;
+		$modalInstance.dismiss('cancel');
+	};
 });
