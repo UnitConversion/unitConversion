@@ -13,16 +13,19 @@ record(ai, "%s") {
 def _getnewpvname(elemname, oldpv, pattern):
     # get cell information from element physics name
     elemname = elemname.upper()
+    
+    # avoid element name starting with C, for example corrector
+    elemname = elemname[2:]
     cell = elemname.find('C')
     if cell != -1:
-        cellname = elemname[cell+1:cell+3]
+        cellname = elemname[cell:cell+3]
     else:
         raise ValueError('Element name does not follow NSLS II physics naming conversion for %s'%(elemname))
     
     # get cell information from pv name
     cellpv = oldpv.upper().find('C')
     if cellpv != -1:
-        cellinpvname = oldpv[cellpv+1:cellpv+3]
+        cellinpvname = oldpv[cellpv:cellpv+3]
     else:
         raise ValueError('PV name does not follow NSLS II pv naming conversion for %s'%(oldpv))
     
@@ -94,12 +97,14 @@ def getpvfromfile(fname):
                 raise ValueError('Duplicated element found for %s'%(pvprop[0]))
             
             #
-            if pvprop[1] in ['HCOR','VCOR']:
-                newsppv = pvprop[2]
-                newrbpv = pvprop[3]
-            else:
-                newsppv = _getnewpvname(pvprop[0], pvprop[2], 'C')
-                newrbpv = _getnewpvname(pvprop[0], pvprop[3], 'C')
+#            if pvprop[1] in ['HCOR','VCOR']:
+#                newsppv = pvprop[2]
+#                newrbpv = pvprop[3]
+#            else:
+#                newsppv = _getnewpvname(pvprop[0], pvprop[2], 'C')
+#                newrbpv = _getnewpvname(pvprop[0], pvprop[3], 'C')
+            newsppv = _getnewpvname(pvprop[0], pvprop[2], 'C')
+            newrbpv = _getnewpvname(pvprop[0], pvprop[3], 'C')
             
             if pvprop[1] == 'QUAD':
                 sppv_gl = newsppv.replace("}I", "}GL")

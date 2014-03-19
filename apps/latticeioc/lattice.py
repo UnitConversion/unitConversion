@@ -62,23 +62,37 @@ record(bo, "%s") {
 }
 '''%(commandrbpv)
 
-statussppv = 'SR-BI{RUNMODEL}SP-STATUS'
-statussppvdb = '''
+statustemp='''
 record(stringin, "%s") {
     field(DTYP, "Soft Channel")
     field(DESC, "Simulation running status")
     field(SCAN, "Passive")
 }
-'''%(statussppv)
+record(calc, "%s")
+{
+        field(DESC, "Counter")
+        field(CALC, "A+1")
+        field(INPA, "%s  NPP NMS")
+        field(FLNK, "%s")
+}
+record(longin, "%s") {
+    field(DESC, "Simulation counter")
+    field(DTYP, "Soft Channel")
+    field(SCAN, "Passive")
+    field(INP, "%s.VAL  NPP NMS")
+    field(EGU, "Counts")
+}
+'''
+
+statussppv = 'SR-BI{RUNMODEL}SP-STATUS'
+_runcountsppv = 'SR-BI{RUNMODEL}SP-COUNT_'
+runcountsppv = 'SR-BI{RUNMODEL}SP-COUNT'
+statussppvdb = statustemp%(statussppv, _runcountsppv, runcountsppv, runcountsppv, runcountsppv, _runcountsppv)
 
 statusrbpv = 'SR-BI{RUNMODEL}RB-STATUS'
-statusrbpvdb = '''
-record(stringin, "%s") {
-    field(DTYP, "Soft Channel")
-    field(DESC, "Simulation running status")
-    field(SCAN, "Passive")
-}
-'''%(statusrbpv)
+_runcountrbpv = 'SR-BI{RUNMODEL}RB-COUNT_'
+runcountrbpv = 'SR-BI{RUNMODEL}RB-COUNT'
+statusrbpvdb = statustemp%(statusrbpv, _runcountrbpv, runcountrbpv, runcountrbpv, runcountrbpv, _runcountrbpv)
 
 betaxdesignval = None
 betaydesignval = None
@@ -493,6 +507,7 @@ def runlatticemodel(is4setpoint):
                energysplive,
                statussppv,
                deltabetaxsplive, deltabetaysplive]
+        counterpv = _runcountsppv
     else:
         ca.caput(statusrbpv, 'Running...', wait=True)
         pvs = [alphaxrblive, alphayrblive, 
@@ -508,6 +523,7 @@ def runlatticemodel(is4setpoint):
                energyrblive,
                statusrbpv,
                deltabetaxrblive, deltabetayrblive]
+        counterpv = _runcountrbpv
     #assert testtmp == ca.caget(statuspv)
     
     liveresult, _, msg = runtracy(livelat, runit=True)
@@ -531,6 +547,7 @@ def runlatticemodel(is4setpoint):
             ((matrix(liveresult['betay'])-betaydesignval)/betaydesignval).tolist()[0],
             ]
     ca.caput(pvs, vals, wait=True)
+    ca.caput("%s.PROC"%counterpv, 1, wait=True)
 
 def main(designlat, init=True):
     global energyforsimulation
