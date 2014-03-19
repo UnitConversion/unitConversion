@@ -299,7 +299,8 @@ def callback4command(value, index):
     is4setpoint = True
     if index == 1:
         is4setpoint = False
-    elif value == 1:
+
+    if value == 1:
         #start = time.time()
         runlatticemodel(is4setpoint)
         #print "cost time: %s"%(time.time()-start)
@@ -405,11 +406,12 @@ def runtracy(latfile, runit=True):
 
     msg = ''
     if runit:
-        try:
-            # remove existing parameter file
-            os.remove('%s.pm'%latname)
-        except OSError:
-            pass
+#        if os.path.isfile(tracy_cmd):
+#        try:
+#            # remove existing parameter file
+#            os.remove('%s.pm'%latname)
+#        except OSError:
+#            pass
     
         proc = subprocess.Popen('%s %s %s.pm'
                                 %(tracy_cmd, latname, latname),
@@ -420,11 +422,11 @@ def runtracy(latfile, runit=True):
         for tmp in stdoutdata.split('\n'):
             if 'unstable' in tmp:
                 #msg = '|'.join((msg, tmp))
-                msg = tmp
+                msg = 'error: lattice unstable. '
         if msg == '':
             msg = 'Tracy3 runs successfully.'
         
-        sys.stdout.write(stdoutdata)
+#        sys.stdout.write(stdoutdata)
         #print 'length: ', len(stderrdata)
         #sys.stdout.write(stderrdata)
     
@@ -525,6 +527,7 @@ def runlatticemodel(is4setpoint):
             ((matrix(liveresult['betax'])-betaxdesignval)/betaxdesignval).tolist()[0], 
             ((matrix(liveresult['betay'])-betaydesignval)/betaydesignval).tolist()[0],
             ]
+    
     ca.caput(pvs, vals, wait=True)
     ca.caput("%s.PROC"%counterpv, 1, wait=True)
 
