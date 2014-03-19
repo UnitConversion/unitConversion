@@ -15,9 +15,9 @@ from cothread import WaitForQuit
 
 from _config import getpvtablefromfile
 
-isrunning = False
-iscommanded = False
-runagain = False
+#isrunning = False
+#iscommanded = False
+#runagain = False
 
 #normalizedvalue={}
 
@@ -296,24 +296,13 @@ def startmonitorrb(pvs):
     return monstub
 
 def callback4command(value, index):
-    global isrunning
-    global runagain
     is4setpoint = True
     if index == 1:
         is4setpoint = False
-    if isrunning:
-        is4setpoint=True
     elif value == 1:
         #start = time.time()
         runlatticemodel(is4setpoint)
         #print "cost time: %s"%(time.time()-start)
-        print 'triggered by command'
-        while runagain:
-            runagain = False
-            #start = time.time()
-            runlatticemodel(is4setpoint)
-            #print "cost time: %s"%(time.time()-start)
-            print 'run again'
 
         print '#####################################'
         print '#'
@@ -321,10 +310,6 @@ def callback4command(value, index):
         print '#'
         print '#####################################'
         print 'finished running model'
-    else:
-        assert value == 0
-
-    isrunning = False
 
 def startmonitorcommand():
     monstub = ca.camonitor([commandsppv, commandrbpv], callback4command)
@@ -415,17 +400,11 @@ def _readresult(pmfile):
             
 
 def runtracy(latfile, runit=True):
+    global tracy_cmd
     latname, _ = os.path.splitext(latfile)
 
     msg = ''
     if runit:
-        if os.environ.has_key('TRACY3_CMD'):
-            tracy_cmd=os.environ['TRACY3_CMD']
-        else:
-            tracy_cmd='tracy3'
-        if not os.path.isfile(tracy_cmd):
-            raise RuntimeError("Cannot find TRACY3 simulation code.")
-
         try:
             # remove existing parameter file
             os.remove('%s.pm'%latname)
@@ -648,6 +627,13 @@ if __name__ == '__main__':
         dbonly = sys.argv[1]
     if dbonly in ['false', 'False', 'FALSE', 'F', 'f']:
         dbonly = False
+
+    global tracy_cmd
+    tracy_cmd='tracy3'
+    if os.environ.has_key('TRACY3_CMD'):
+        tracy_cmd=os.environ['TRACY3_CMD']
+    if not os.path.isfile(tracy_cmd):
+        raise RuntimeError("Cannot locate TRACY3 simulation engine.")
 
     livelat = 'nsls2srlive.lat'
     main('comm-ring-Mar13-tracy.lat', init = dbonly)
