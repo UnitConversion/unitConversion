@@ -531,8 +531,13 @@ def runlatticemodel(is4setpoint):
             ]
     try:
         ca.caput(pvs, vals, wait=True)
+        try:
+            ca.caput("%s.PROC"%counterpv, 1, wait=True)
+        except ca.ca_nothing as e:
+            print "Error when counting up", e
+            #msg = "Exception when setting value to %s"%counterpv
     except ca.ca_nothing as e:
-        print e
+        print "Error to set optics", e
         if e.name != locstatuspv:
             # last try to report an error message
             try:
@@ -540,12 +545,6 @@ def runlatticemodel(is4setpoint):
                 ca.caput(locstatuspv, msg)
             except ca.ca_nothing as e:
                 pass
-            
-    try:
-        ca.caput("%s.PROC"%counterpv, 1, wait=True)
-    except ca.ca_nothing as e:
-        print e
-        #msg = "Exception when setting value to %s"%counterpv
 
 def main(designlat, init=True):
     global energyforsimulation

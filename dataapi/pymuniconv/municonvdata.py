@@ -761,10 +761,21 @@ class municonvdata(object):
         left join inventory__install on install.install_id = inventory__install.install_id
         left join inventory on inventory__install.inventory_id = inventory.inventory_id
         left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-        left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
-        left join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
+        left join vendor on vendor.vendor_id = inventory.vendor_id
         where 
         '''
+#        sql = '''select install.install_id, inventory.inventory_id, install.field_name, install.location,
+#        inventory.serial_no, 
+#        cmpnt_type.cmpnt_type_name, cmpnt_type.description,
+#        vendor.vendor_name
+#        from install
+#        left join inventory__install on install.install_id = inventory__install.install_id
+#        left join inventory on inventory__install.inventory_id = inventory.inventory_id
+#        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
+#        left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
+#        left join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
+#        where 
+#        '''
         vals = []
         
         vals, sql = _assemblesql(sql, name, " install.field_name ", vals)
