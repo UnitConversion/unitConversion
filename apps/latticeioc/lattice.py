@@ -489,6 +489,7 @@ def runlatticemodel(is4setpoint):
                statussppv,
                deltabetaxsplive, deltabetaysplive]
         counterpv = _runcountsppv
+        locstatuspv = statussppv
     else:
         ca.caput(statusrbpv, 'Running...', wait=True)
         pvs = [alphaxrblive, alphayrblive, 
@@ -505,6 +506,7 @@ def runlatticemodel(is4setpoint):
                statusrbpv,
                deltabetaxrblive, deltabetayrblive]
         counterpv = _runcountrbpv
+        locstatuspv = statusrbpv
     #assert testtmp == ca.caget(statuspv)
     
     liveresult, _, msg = runtracy(livelat, runit=True)
@@ -527,9 +529,23 @@ def runlatticemodel(is4setpoint):
             ((matrix(liveresult['betax'])-betaxdesignval)/betaxdesignval).tolist()[0], 
             ((matrix(liveresult['betay'])-betaydesignval)/betaydesignval).tolist()[0],
             ]
-    
-    ca.caput(pvs, vals, wait=True)
-    ca.caput("%s.PROC"%counterpv, 1, wait=True)
+    try:
+        ca.caput(pvs, vals, wait=True)
+    except ca.ca_nothing as e:
+        print e
+        if e.name != locstatuspv:
+            # last try to report an error message
+            try:
+                msg = "Exception when setting value to %s"%e.name
+                ca.caput(locstatuspv, msg)
+            except ca.ca_nothing as e:
+                pass
+            
+    try:
+        ca.caput("%s.PROC"%counterpv, 1, wait=True)
+    except ca.ca_nothing as e:
+        print e
+        #msg = "Exception when setting value to %s"%counterpv
 
 def main(designlat, init=True):
     global energyforsimulation
