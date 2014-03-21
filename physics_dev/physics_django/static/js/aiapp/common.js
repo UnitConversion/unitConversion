@@ -55,3 +55,18 @@ function prepareUrlParameters(listOfKeys, dictOfValues, listOfMandatoryKeys) {
 	
 	return params.join("&");
 }
+
+/**
+ * Prepare error message for angular deferred responses
+ * @param  {str} data   error data
+ * @param  {int} status http error status code
+ * @return {str}        error data or custom error message if user doesn't have permissions to do this
+ */
+function prepareError(data, status) {
+
+	if (status === 401) {
+		data = "You do not have permission to take this action!";
+	}
+
+	return data;
+}

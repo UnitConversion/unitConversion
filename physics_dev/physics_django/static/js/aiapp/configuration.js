@@ -22,3 +22,6 @@ var aiStatusMap = {
 	'backup': 3,
 	'history': 4
 };
+
+var idNum = 0;
+var bmNum = 0;

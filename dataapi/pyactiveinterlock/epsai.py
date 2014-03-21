@@ -58,7 +58,7 @@ class epsai(object):
         # Define all the properties for the bm table
         self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
         
-    def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by, definition):
+    def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by):
         '''
         Update status of a data set.
         
@@ -94,7 +94,7 @@ class epsai(object):
         
         :Raises: MySQLError, ValueError
         '''
-        
+        print "update status"
         # Convert
         new_status = int(new_status)
         
@@ -116,7 +116,7 @@ class epsai(object):
         
         # Move statuses
         if new_status >= 2 and new_status < 4:
-            self.updateActiveInterlockStatus(None, new_status, new_status + 1, modified_by, definition)
+            self.updateActiveInterlockStatus(None, new_status, new_status + 1, modified_by)
         
         # Delete dataset that currently has this status
         if new_status == 0 or new_status == 1:
@@ -148,6 +148,8 @@ class epsai(object):
         
         # Generate SQL
         sqlVals = _generateUpdateQuery('active_interlock', queryDict, None, None, whereDict)
+        print sqlVals
+        print self.transaction
         
         try:
             cur = self.conn.cursor()
@@ -911,6 +913,9 @@ class epsai(object):
         logic = self.retrieveActiveInterlockLogic("*")
         resdict['logic'] = logic
         
+        # Update status
+        self.updateActiveInterlockStatus(None, 1, 2, "admin")
+        
         return resdict
 
     def retrieveActiveInterlockHeader(self, status=None, id=None, datefrom=None, dateto=None):
@@ -934,7 +939,7 @@ class epsai(object):
         
         :Returns: dict
         
-         {'id'; {
+         {'id': {
                  'status':,.
                  'id':,
                  'description':,

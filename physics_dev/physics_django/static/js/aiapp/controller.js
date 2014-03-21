@@ -94,7 +94,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 	}
 
 	$scope.activateDataset = function() {
-		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['active'], "modified_by":"admin", "definition":"bm"}).then(function(data) {
+		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['active'], "definition":"bm"}).then(function(data) {
 			l("ok");
 			$window.location = "#/status/active/tab/bm/bm/";
 
@@ -133,6 +133,8 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 			var newItem = new BendingMagnet(item);
 			$scope.bmArr.push(newItem);
 		});
+
+		bmNum = $scope.bmArr.length;
 	});
 
 	// Retrieve logic
@@ -286,6 +288,8 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 						var newItem = new BendingMagnet(item);
 						$scope.bmArr.push(newItem);
 					});
+
+					bmNum = $scope.bmArr.length;
 				});
 			
 			}, function(error) {
@@ -331,6 +335,8 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 			var newItem = new InsertionDevice(item);
 			$scope.idArr.push(newItem);
 		});
+
+		idNum = $scope.idArr.length;
 	});
 
 	// Retrieve logic
@@ -489,6 +495,8 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 						var newItem = new InsertionDevice(item);
 						$scope.idArr.push(newItem);
 					});
+
+					idNum = $scope.idArr.length;
 				});
 			
 			}, function(error) {
@@ -816,8 +824,19 @@ app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, s
 	var types = [];
 	$scope.message = "The whole dataset will be approved. Do you want to continue?";
 
+	l("id arr");
+	l(idNum);
+	l(bmNum);
+
 	if (statuses.approved > 0) {
 		$scope.message = "There is a dataset with status approved. All data will be lost! Do you want to continue?";
+	}
+
+	if (idNum === 0 && bmNum === 0) {
+		$scope.message = "Empty dataset cannot be approved!";
+		$scope.showYesButton = false;
+		$scope.showCancelButton = true;
+		$scope.showFinishButton = false;
 	}
 
 	$scope.closeAlert = function() {
@@ -827,7 +846,7 @@ app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, s
 	$scope.ok = function() {
 		$scope.alert.show = false;
 
-		statusFactory.updateStatus({"status":aiStatusMap['editable'], "new_status":aiStatusMap['approved'], "modified_by":"admin", "definition":"bm"}).then(function(data) {
+		statusFactory.updateStatus({"status":aiStatusMap['editable'], "new_status":aiStatusMap['approved'], "definition":"bm"}).then(function(data) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
@@ -876,7 +895,7 @@ app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, stat
 	$scope.ok = function() {
 		$scope.alert.show = false;
 
-		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['editable'], "modified_by":"admin", "definition":"bm"}).then(function(data) {
+		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['editable'], "definition":"bm"}).then(function(data) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";

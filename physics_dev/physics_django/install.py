@@ -9,6 +9,52 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
+'''
+Create auth group
+'''
+def createGroup(name):
+
+    try:
+        Group.objects.create(name=name)
+    
+    except IntegrityError:
+        sys.stderr.write("%s group already exists in the database\n" % name)
+
+'''
+Add user into group
+'''
+def addUserIntoGroup(user, group):
+    
+    try:
+        user.groups.add(group)
+    
+    except IntegrityError:
+        sys.stderr.write("user already in group\n")
+
+'''
+Create new content type and return it
+'''
+def createAndReturnContentType(name, label):
+    
+    # Create content type
+    try: 
+        ContentType.objects.create(name=name, app_label=label, model='')
+    except:
+        pass
+
+    # Get content type
+    return ContentType.objects.get(name=name)
+
+'''
+Add permission to group
+'''
+def addPermissionToGroup(group, permission):
+    
+    try:
+        group.permissions.add(permission)
+    except IntegrityError:
+        sys.stderr.write("permission already assigned to group\n")
+
 """
     Create users, groups and permissions
 """
@@ -16,31 +62,22 @@ def install():
     
     # Create user user
     try:
-        user = User.objects.create_user('user', 'admin@gmail.com', 'user')
+        User.objects.create_user('user', 'admin@gmail.com', 'user')
 
     except IntegrityError:
         sys.stderr.write("User user already exists in the database\n")
     
     # Create lattice_model group
-    try:
-        latticeGroup = Group.objects.create(name='lattice_model')
-    
-    except IntegrityError:
-        sys.stderr.write("lattice_model group already exists in the database\n")
+    createGroup('lattice_model')
         
     # Create unit_conversion group
-    try:
-        unitConversionGroup = Group.objects.create(name='unit_conversion')
-    
-    except IntegrityError:
-        sys.stderr.write("unit_conversion group already exists in the database\n")
+    createGroup('unit_conversion')
         
     # Create insertion_device group
-    try:
-        idGroup = Group.objects.create(name='insertion_device')
+    createGroup('insertion_device')
     
-    except IntegrityError:
-        sys.stderr.write("insertion_device group already exists in the database\n")
+    # Create active interlock group
+    createGroup('active_interlock')
     
     # Get user
     user = User.objects.get(username='user')
@@ -50,68 +87,54 @@ def install():
     
     # Get unit_conversion group
     unitConversionGroup = Group.objects.get(name='unit_conversion')
-	    
+    
     # Get insertion_device group
     idGroup = Group.objects.get(name='insertion_device')
     
-    # Add user into lattice_model group
-    try:
-        user.groups.add(latticeModelGroup)
+    # Get active_interlock group
+    aiGroup = Group.objects.get(name='active_interlock')
     
-    except IntegrityError:
-        sys.stderr.write("user already in lattice_model group\n")
+    
+    # Add user into lattice_model group
+    addUserIntoGroup(user, latticeModelGroup)
         
     # Add user into unit_conversion group
-    try:
-        user.groups.add(unitConversionGroup)
-    
-    except IntegrityError:
-        sys.stderr.write("user already in unit_conversion group\n")
-		        
+    addUserIntoGroup(user, unitConversionGroup)
+        
     # Add user into insertion_device group
-    try:
-        user.groups.add(idGroup)
+    addUserIntoGroup(user, idGroup)
     
-    except IntegrityError:
-        sys.stderr.write("user already in insertion_device group\n")
+    # Add user into active_interlock group
+    addUserIntoGroup(user, aiGroup)
         
     # Create lattice content type
-    #if(contentType == None):
-    try: 
-        ContentType.objects.create(name='lattice_type', app_label='lattice', model='')
-    except:
-        pass
-    #contentType = ContentType.objects.get(name='lattice_type')
-    # Get lattice content type
-    contentType = ContentType.objects.get(name='lattice_type')
-	
-	# Create id content type
-    try: 
-        ContentType.objects.create(name='insertion_device_type', app_label='id', model='')
-    except:
-        pass
+    contentType = createAndReturnContentType('lattice_type', 'lattice')
 
-    # Get insertion device content type
-    contentTypeId = ContentType.objects.get(name='insertion_device_type')
+    # Create id content type
+    contentTypeId = createAndReturnContentType('insertion_device_type', 'id')
+
+    # Create ai content type
+    contentTypeAi = createAndReturnContentType('active_interlock_type', 'ai')
     
     # Create and get can_upload permission
     Permission.objects.get_or_create(codename='can_upload', name='Can Upload Lattice', content_type=contentType)
     permission = Permission.objects.get(name='Can Upload Lattice')
-	    
+    
     # Create and get can_modify_id permission
     Permission.objects.get_or_create(codename='can_modify_id', name='Can Modify Insertion Device', content_type=contentTypeId)
     permissionId = Permission.objects.get(name='Can Modify Insertion Device')
     
+    # Create and get can_modify_ai permission
+    Permission.objects.get_or_create(codename='can_modify_ai', name='Can Modify Active Interlock', content_type=contentTypeAi)
+    permissionAi = Permission.objects.get(name='Can Modify Active Interlock')
+    
     # Add can_upload permission to lattice_model group
-    try:
-        latticeModelGroup.permissions.add(permission)
-    except IntegrityError:
-        sys.stderr.write("can_upload permission already assigned to lattice_model grop\n")
-		
+    addPermissionToGroup(latticeModelGroup, permission)
+
     # Add can_modify_id permission to insertion_device group
-    try:
-        idGroup.permissions.add(permissionId)
-    except IntegrityError:
-        sys.stderr.write("can_modify_id permission already assigned to insertion_device grop\n")
+    addPermissionToGroup(idGroup, permissionId)
+    
+    # Add can_modify_ai permission to active_interlock group
+    addPermissionToGroup(aiGroup, permissionAi)
 
 install()

@@ -7,7 +7,7 @@
 
 app.factory('statusFactory', function($http, $q){
 	var factory = {};
-	factory.update = ["status", "new_status", "modified_by", "definition"];
+	factory.update = ["status", "new_status", "modified_by"];
 
 	// Return statuses
 	factory.retrieveStatuses = function() {
@@ -20,7 +20,7 @@ app.factory('statusFactory', function($http, $q){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -37,7 +37,7 @@ app.factory('statusFactory', function($http, $q){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -55,7 +55,7 @@ app.factory('headerFactory', function($http, $q){
 	factory.saveHeader = function(description) {
 		var query = serviceurl + "/ai/saveactiveinterlockheader/";
 
-		var params = "description=" + description + "&created_by=admin";
+		var params = "description=" + description + "";
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 
@@ -63,7 +63,7 @@ app.factory('headerFactory', function($http, $q){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -79,7 +79,7 @@ app.factory('headerFactory', function($http, $q){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -127,7 +127,7 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -153,7 +153,7 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -172,7 +172,7 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -193,7 +193,7 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -211,7 +211,7 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -259,7 +259,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -285,7 +285,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -304,7 +304,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -325,7 +325,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -343,7 +343,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -366,7 +366,7 @@ app.factory('authFactory', function($http, $q) {
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -382,7 +382,7 @@ app.factory('authFactory', function($http, $q) {
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -429,7 +429,7 @@ app.factory('logicFactory', function($http, $q, Logic){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -452,7 +452,7 @@ app.factory('logicFactory', function($http, $q, Logic){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;
@@ -472,7 +472,7 @@ app.factory('logicFactory', function($http, $q, Logic){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
-			deffered.reject(data);
+			deffered.reject(prepareError(data, status));
 		});
 
 		return promise;

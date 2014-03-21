@@ -7,10 +7,9 @@ Created on May 9th, 2013
 
     @updated dejan.dezman@cosylab.com March 5th, 2014
 """
-import re
 
 #from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render_to_response
 from django.db.transaction import TransactionManagementError
@@ -22,11 +21,10 @@ except ImportError:
     import json
 
 from _mysql_exceptions import MySQLError
+from authentication import has_perm_or_basicauth
 from utils.logger import _setup_logger
 from utils.utils import _checkkeys, _retrievecmddict
 activeinterlock_log = _setup_logger('activeinterlock_view', 'activeinterlock.log')
-
-from dataprocess import (retrieveactiveinterlock, retrieveactiveinterlocklogic,retrieveactiveinterlockproptype,saveactiveinterlock,saveactiveinterlocklogic,saveactiveinterlockproptype,updateactiveinterlockstatus)
 
 from django.db import connection, transaction
 
@@ -34,83 +32,6 @@ from pyactiveinterlock.epsai import (epsai)
 
 # Init active interlock
 api = epsai(connection, transaction)
-
-def _retrievecmddict(httpcmd):
-    '''
-    Retrieve GET request parameters, lower all keys, and return parameter dictionary.
-    '''
-    cmddict = {}
-    for k, v in httpcmd.iteritems():
-        vlist = httpcmd.getlist(k)
-        if len(vlist) > 1:
-            cmddict[k.lower()] = list(set(vlist))
-        else:
-            cmddict[k.lower()] = v
-    return cmddict
-
-post_actions = (('saveActiveInterlock', saveactiveinterlock),
-                ('updateActiveInterlockStatus', updateactiveinterlockstatus),
-                ('saveActiveInterlockPropType', saveactiveinterlockproptype),
-                ('saveActiveInterlockLogic', saveactiveinterlocklogic),
-                )
-get_actions = (('retrieveActiveInterlock', retrieveactiveinterlock),
-               ('retrieveActiveInterlockPropType', retrieveactiveinterlockproptype),
-               ('retrieveActiveInterlockLogic', retrieveactiveinterlocklogic)
-               )
-
-def dispatch(params, actions):
-    '''
-    '''
-    for p, f in actions:
-        if len(p) > len(params['function']):
-            if re.match(p, params['function']):
-                return f(params)
-        else:
-            if re.match(params['function'], p):
-                return f(params)
-
-@require_http_methods(["GET", "POST"])
-def activeinterlock(request):
-    '''Interface to response a client request.
-    '''
-    try:
-        res = {'message': 'Did not found any entry.'}
-        if request.method == 'GET':
-            params = _retrievecmddict(request.GET.copy())
-            if params.has_key('function'):
-                for p, _ in post_actions:
-                    if re.match(p, params['function']): 
-                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-                res = dispatch(params, get_actions)
-            else:
-                res = {'message': 'No function specified.'}
-        elif request.method == 'POST':
-            params = _retrievecmddict(request.POST.copy())
-            if params.has_key('function'):
-                for p, _ in get_actions:
-                    if re.match(p, params['function']): 
-                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-                res = dispatch(params, post_actions)
-            else:
-                res = {'message': 'No function specified.'}
-        else:
-            activeinterlock_log.debug('Unsupported HTTP method %s'%request.method)
-            return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'), mimetype="application/json")
-    except ValueError as e:
-        activeinterlock_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
-    except KeyError as e:
-        activeinterlock_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
-    except Exception as e:
-        activeinterlock_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
-    try:
-        finalres = json.dumps(res)
-    except Exception as e:
-        activeinterlock_log.exception(e)
-        raise e
-    return HttpResponse(finalres, mimetype="application/json")
 
 '''
 Private template for the retrieve functions
@@ -226,10 +147,13 @@ def retrieveAiHeaderWS(request):
     return _retrieveData(request, api.retrieveActiveInterlockHeader, ['status', 'id', 'datefrom', 'dateto'])
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def saveAiHeaderWS(request):
     '''
     Save active interlock header
     '''
+    request.POST = request.POST.copy()
+    request.POST['created_by'] = request.user.username
     return _saveData(request, api.saveActiveInterlockHeader, ['description', 'created_by'])
 
 @require_http_methods(["GET"])
@@ -240,6 +164,7 @@ def retrieveDeviceWS(request):
     return _retrieveData(request, api.retrieveDevice, ['ai_id', 'ai_status', 'name', 'definition'])
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def saveDeviceWS(request):
     '''
     Save device
@@ -247,6 +172,7 @@ def saveDeviceWS(request):
     return _saveData(request, api.saveDevice, ['ai_status', 'name', 'definition', 'logic', 'props'])
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def updateDeviceWS(request):
     '''
     Update device
@@ -261,13 +187,17 @@ def retrieveLogicWS(request):
     return _retrieveData(request, api.retrieveActiveInterlockLogic, ['name', 'shape', 'logic', 'status'])
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def updateStatusWS(request):
     '''
     Update active interlock status
     '''
-    return _updateData(request, api.updateActiveInterlockStatus, ['status', 'new_status', 'modified_by', 'definition'], {'ai_id': None})
+    request.POST = request.POST.copy()
+    request.POST['modified_by'] = request.user.username
+    return _updateData(request, api.updateActiveInterlockStatus, ['status', 'new_status', 'modified_by'], {'ai_id': None})
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def updatePropWS(request):
     '''
     Update active interlock device property
@@ -275,6 +205,7 @@ def updatePropWS(request):
     return _updateData(request, api.updateActiveInterlockProp, ['aid_id', 'prop_type_name', 'value'], {})
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def approveCellsWS(request):
     '''
     Approve active interlock device property
@@ -282,6 +213,7 @@ def approveCellsWS(request):
     return _updateData(request, api.approveCells, ['aid_id', 'prop_types'], {})
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def saveLogicWS(request):
     '''
     Save active interlock logic
@@ -289,11 +221,20 @@ def saveLogicWS(request):
     return _saveData(request, api.saveActiveInterlockLogic, ['name', 'shape', 'logic', 'code', 'created_by'])
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def updateLogicWS(request):
     '''
     Update active interlock logic
     '''
     return _updateData(request, api.updateActiveInterlockLogic, ['id', 'name', 'shape', 'logic', 'code', 'status'], {})
+
+@require_http_methods(["POST"])
+def downloadActiveInterlockWS(request):
+    '''
+    Download active interlock data
+    '''
+    return _updateData(request, api.downloadActiveInterlock, [])
+
 
 def aiIndexHtml(request):
     '''

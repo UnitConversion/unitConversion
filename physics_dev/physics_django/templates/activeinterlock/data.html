@@ -8,7 +8,7 @@
 		<button ng-if="urlStatus == 'editable'" ng-click="approveDataset()" class="btn-space btn btn-default pull-right">Approve</button>
 		<button ng-if="urlStatus == 'approved'" ng-click="editDataset()" class="btn-space btn btn-info pull-right">Make editable</button>
 		<button ng-if="urlStatus == 'active' || urlStatus == 'backup'" class="btn btn-default pull-right">Copy to editable</button>
-		<button ng-if="urlStatus == 'approved' || urlStatus == 'backup'" ng-click="activateDataset()" class="btn btn-default pull-right">Make active!!!!! (remove afterwards)</button>
+<!-- 		<button ng-if="urlStatus == 'approved' || urlStatus == 'backup'" ng-click="activateDataset()" class="btn btn-default pull-right">Make active!!!!! (remove afterwards)</button> -->
 	</div>
 	{% endif %}
 	{% verbatim %}

@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
         self.api.saveDevice(0, 'device name', 'bm', 'log', {'cell': 'test'})
         
         # Try to change status
-        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin", "bm"))
+        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin"))
         
         # The number of datasets with status 0 should be 0
         status0 = self.api.retrieveActiveInterlockHeader(0)
@@ -100,7 +100,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(status1), 1)
         
         # Try to change status, the old one should be removed
-        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin", "bm"))
+        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin"))
         
         # The number of datasets with status 0 should be 0
         status0 = self.api.retrieveActiveInterlockHeader(0)
@@ -122,9 +122,17 @@ class Test(unittest.TestCase):
         self.api.saveDevice(0, 'device name', 'bm', 'log', {'cell': 'test'})
         
         # Try to change status
-        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin", "bm"))
+        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin"))
         
-        result = self.api.downloadActiveInterlock()
+        self.api.downloadActiveInterlock()
+        
+        # The number of datasets with status 1 should be 1
+        status1 = self.api.retrieveActiveInterlockHeader(1)
+        self.assertEqual(len(status1), 0)
+        
+        # The number of datasets with status 2 should be 1
+        status2 = self.api.retrieveActiveInterlockHeader(2)
+        self.assertEqual(len(status2), 1)
 
     '''
     Test saving and retrieving devices

@@ -15,7 +15,7 @@ password=MyPassword
 def __loadConfig():
     import os.path
     import ConfigParser
-    dflt={'BaseURL':'http://localhost:8000/activeinterlock'}
+    dflt={'BaseURL':'http://localhost:8000/ai/'}
     config=ConfigParser.SafeConfigParser(defaults=dflt)
     config.read([
         '/etc/activeinterlock.conf',

@@ -271,6 +271,8 @@ class idods(object):
             # Execute sql
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
+            
+            print self.transaction
 
             # Create transaction
             if self.transaction == None:
