@@ -47,7 +47,7 @@ def _flattentracy3lattice(latfile):
                 if end:
                     if ':' in templine:
                         lineparts = templine.strip()[:-1].split(':')
-                        latdict[lineparts[0]] = lineparts[1]
+                        latdict[lineparts[0].strip()] = lineparts[1]
                     templine = ''
     return latdict
 

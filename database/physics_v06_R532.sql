@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_6
--- Created on: 1/23/2014 2:52:12 PM
--- Diagram Version: 531
+-- Created on: 3/21/2014 11:50:42 AM
+-- Diagram Version: 532
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -253,7 +253,7 @@ CREATE TABLE `install` (
   `cmpnt_type_id` int(11) NOT NULL DEFAULT '0',
   `field_name` varchar(255),
   `location` varchar(255),
-  `coordinate_center` float(9,3),
+  `coordinate_center` float,
   PRIMARY KEY(`install_id`),
   UNIQUE INDEX `field_name`(`field_name`),
   CONSTRAINT `Ref_99` FOREIGN KEY (`cmpnt_type_id`)
@@ -747,8 +747,8 @@ CREATE TABLE `model` (
   `update_date` datetime,
   `tune_x` double,
   `tune_y` double,
-  `alphac` double(15,3),
-  `alphac2` double(15,3),
+  `alphac` double,
+  `alphac2` double,
   `chrome_x_0` double,
   `chrome_x_1` double,
   `chrome_x_2` double,

@@ -543,7 +543,7 @@ def retrievemodelstatus(params):
     #return {'result': result}
     return result
 
-def savemodel(params):
+def savemodel(params, defaultuser=None):
     '''
     Save a model.
     parameters:
@@ -551,7 +551,6 @@ def savemodel(params):
         latticename:    lattice name that this model belongs to
         latticeversion: the version of lattice
         latticebranch:  the branch of lattice
-        modelname:      the name shows that which model this API will deal with
         
         model:          a dictionary which holds all data 
             {'model name':                            # model name
@@ -617,7 +616,7 @@ def savemodel(params):
         latticebranch = nbv[2]
     
     try:
-        result = modelinst.savemodel(models, latticename, latticeversion, latticebranch)
+        result = modelinst.savemodel(models, latticename, latticeversion, latticebranch, defaultuser=defaultuser)
         
         transaction.commit_unless_managed()
     except:

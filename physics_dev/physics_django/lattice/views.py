@@ -49,18 +49,18 @@ def _retrievecmddict(httpcmd):
             cmddict[k.lower()] = v
     return cmddict
 
-post_actions = (('saveLatticeType', savelatticetype),
-                ('saveLatticeInfo', savelatticeinfo),
-                ('updateLatticeInfo', updatelatticeinfo),
-                #('saveLattice', savelattice),
-                ('updateLattice', updatelattice),
-                #('saveLatticeStatus', savelatticestatus),
-
-                ('saveModelCodeInfo', savemodelcodeinfo),
-                #('saveModelStatus', savemodelstatus),
-                #('saveModel', savemodel),
-                ('updateModel', updatemodel),
-                )
+#post_actions = (('saveLatticeType', savelatticetype),
+#                ('saveLatticeInfo', savelatticeinfo),
+#                ('updateLatticeInfo', updatelatticeinfo),
+#                #('saveLattice', savelattice),
+#                ('updateLattice', updatelattice),
+#                #('saveLatticeStatus', savelatticestatus),
+#
+#                ('saveModelCodeInfo', savemodelcodeinfo),
+#                #('saveModelStatus', savemodelstatus),
+#                #('saveModel', savemodel),
+#                ('updateModel', updatemodel),
+#                )
 get_actions = (('retrieveLatticeType', retrievelatticetype),
                ('retrieveLatticeInfo', retrievelatticeinfo),
                ('retrieveLattice', retrievelattice),
@@ -95,21 +95,21 @@ def lattices(request):
         if request.method == 'GET':
             params = _retrievecmddict(request.GET.copy())
             if params.has_key('function'):
-                for p, _ in post_actions:
-                    if re.match(p, params['function']): 
-                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
+#                for p, _ in post_actions:
+#                    if re.match(p, params['function']): 
+#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
                 res = dispatch(params, get_actions)
             else:
                 res = {'message': 'No function specified.'}
-        elif request.method == 'POST':
-            params = _retrievecmddict(request.POST.copy())
-            if params.has_key('function'):
-                for p, _ in get_actions:
-                    if re.match(p, params['function']): 
-                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
-                res = dispatch(params, post_actions)
-            else:
-                res = {'message': 'No function specified.'}
+#        elif request.method == 'POST':
+#            params = _retrievecmddict(request.POST.copy())
+#            if params.has_key('function'):
+#                for p, _ in get_actions:
+#                    if re.match(p, params['function']): 
+#                        return HttpResponseBadRequest(HttpResponse(content='Wrong HTTP method for function %s'%p))
+#                res = dispatch(params, post_actions)
+#            else:
+#                res = {'message': 'No function specified.'}
         else:
             latticemodel_log.debug('Unsupported HTTP method %s'%request.method)
             return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'), mimetype="application/json")
@@ -165,7 +165,10 @@ Call saveLattice but before that check if user is logged in and if he has needed
 def saveLattice(request):
     try:
         params = _retrievecmddict(request.POST.copy())
-        params['function'] = 'saveLattice'
+        if not params.has_key('function'):
+            params['function'] = 'saveLattice'
+        if not params.has_key('creator'):
+            params['creator'] = request.user.username
         res = savelattice(params)
     except ValueError as e:
         latticemodel_log.exception(e)
@@ -212,6 +215,33 @@ def saveLatticeStatus(request):
     return HttpResponse(finalres, mimetype="application/json")
 
 """
+Call saveLatticeType but before that check if user is logged in and if he has needed permissions
+"""
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('lattice.can_upload')
+def saveLatticeType(request):
+    try:
+        params = _retrievecmddict(request.POST.copy())
+        params['function'] = 'saveLatticeType'
+        res = savelatticetype(params)
+    except ValueError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(HttpResponse(content=e), mimetype="application/json")
+    except KeyError as e:
+        latticemodel_log.exception(e)
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+    except Exception as e:
+        latticemodel_log.exception(e)
+        return HttpResponseBadRequest(content=e, mimetype="application/json")
+    try:
+        finalres = json.dumps(res)
+    except Exception as e:
+        latticemodel_log.exception(e)
+        raise e
+
+    return HttpResponse(finalres, mimetype="application/json")
+
+"""
 Call saveModel but before that check if user is logged in and if he has needed permissions
 """
 @require_http_methods(["POST"])
@@ -219,8 +249,9 @@ Call saveModel but before that check if user is logged in and if he has needed p
 def saveModel(request):
     try:
         params = _retrievecmddict(request.POST.copy())
-        params['function'] = 'saveModel'
-        res = savemodel(params)
+        if not params.has_key('function'):
+            params['function'] = 'saveModel'
+        res = savemodel(params, defaultuser = request.user.username)
     except ValueError as e:
         latticemodel_log.exception(e)
         return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
@@ -446,6 +477,21 @@ def saveLatticeHelper(request):
         traceback.print_exc(file=sys.stdout)
         raise e
 
+
+'''
+Save lattice type helper function prepares data for saving lattice status
+'''
+@require_http_methods(["POST"])
+def saveLatticeTypeHelper(request):
+    try:
+        # Call the save lattice status function
+        request.POST = request.POST.copy()
+        result = saveLatticeType(request)
+        return result
+
+    except Exception as e:
+        traceback.print_exc(file=sys.stdout)
+
 '''
 Save lattice status helper function prepares data for saving lattice status
 '''
@@ -456,7 +502,6 @@ def saveLatticeStatusHelper(request):
         # Call the save lattice status function
         request.POST = request.POST.copy()
         request.POST['creator'] = request.user.username
-        print request.POST
         result = saveLatticeStatus(request)
         return result
 
@@ -647,8 +692,6 @@ Save model status helper function prepares data for saving model status
 '''
 @require_http_methods(["POST"])
 def saveModelStatusHelper(request):
-    print request.POST
-    
     try:
         # Call the save model status function
         request.POST = request.POST.copy()

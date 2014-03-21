@@ -1,4 +1,5 @@
 import sys, os
+import time
 
 from numpy import matrix
 
@@ -14,6 +15,9 @@ import cothread.catools as ca
 from cothread import WaitForQuit
 
 from _config import getpvtablefromfile
+
+from savelattice import (savelatticemodel)
+from latticepy.LatticeModelClient import LatticeModelClient
 
 #isrunning = False
 #iscommanded = False
@@ -188,7 +192,7 @@ rblivepvlist = {'wf':[alphaxrblive, alphayrblive, betaxrblive, betayrblive,
 lathead = """{
     This lattice is generated from live machine.
     Date: %s
-    By:   Guobao Shen
+    By:   Lattice IOC
           National Synchrotron Light Source II
           Brookhaven National Laboratory
           Upton, NY, 11973
@@ -472,7 +476,6 @@ def runlatticemodel(is4setpoint):
     global betaydesignval
     
     generatelivelat(livelat, is4setpoint=is4setpoint)
-    #testtmp = 'Running...'
     if is4setpoint:
         ca.caput(statussppv, 'Running...', wait=True)
         pvs = [alphaxsplive, alphaysplive, 
@@ -490,6 +493,7 @@ def runlatticemodel(is4setpoint):
                deltabetaxsplive, deltabetaysplive]
         counterpv = _runcountsppv
         locstatuspv = statussppv
+        source = 'set point'
     else:
         ca.caput(statusrbpv, 'Running...', wait=True)
         pvs = [alphaxrblive, alphayrblive, 
@@ -507,13 +511,11 @@ def runlatticemodel(is4setpoint):
                deltabetaxrblive, deltabetayrblive]
         counterpv = _runcountrbpv
         locstatuspv = statusrbpv
-    #assert testtmp == ca.caget(statuspv)
+        source = 'read back'
     
     liveresult, _, msg = runtracy(livelat, runit=True)
-
-    #assert liveelemno == elemno
+    version = int(time.time())
     
-
     vals = [liveresult['alphax'], liveresult['alphay'],
             liveresult['betax'], liveresult['betay'],
             liveresult['etax'], liveresult['etay'],
@@ -546,7 +548,12 @@ def runlatticemodel(is4setpoint):
             except ca.ca_nothing as e:
                 pass
 
-def main(designlat, init=True):
+    global lmc
+    if msg != 'error: lattice unstable. ' and lmc != None:
+        latname, _ = os.path.splitext(livelat)
+        savelatticemodel(livelat, '%s.pm'%latname, lmc, source=source, name=latname, version=version, branch='live')
+
+def main(designlat, designversion, init=True):
     global energyforsimulation
     if init:
         designresult, elemno, _ = runtracy(designlat, runit=True)
@@ -557,6 +564,11 @@ def main(designlat, init=True):
         
     else:
         designresult, elemno, _ = runtracy(designlat, runit=False)
+
+        global lmc
+        if lmc != None:
+            latname, _ = os.path.splitext(designlat)
+            savelatticemodel(designlat, '%s.pm'%latname, lmc, source='design', name=latname, version=designversion, branch='design')
 
         pvs = [alphaxdesign, alphaydesign, 
                betaxdesign, betaydesign, 
@@ -640,6 +652,7 @@ def main(designlat, init=True):
         print 'finish initialization'
         
 if __name__ == '__main__':
+    
     dbonly = True
     if len(sys.argv) > 1:
         dbonly = sys.argv[1]
@@ -653,8 +666,23 @@ if __name__ == '__main__':
     if not os.path.isfile(tracy_cmd):
         raise RuntimeError("Cannot locate TRACY3 simulation engine.")
 
+    # need to update to production server url
+    latticeurl = 'http://localhost:8000/lattice'
+    user =''
+    pw = ''
+    
+    global lmc 
+    lmc = None
+    try:
+        lmc = LatticeModelClient(BaseURL=latticeurl, username=user, password=pw)
+    except:
+        pass
+
     livelat = 'nsls2srlive.lat'
-    main('comm-ring-Mar13-tracy.lat', init = dbonly)
+    degign_lattice = 'comm-ring-Mar13-tracy.lat'
+    # need to change the version every time there is a new design lattice released
+    design_lattice_version = '20140313'
+    main(degign_lattice, design_lattice_version, init = dbonly)
     if not dbonly:
         WaitForQuit()
 

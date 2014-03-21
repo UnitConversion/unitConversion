@@ -2,8 +2,9 @@ from django.conf.urls.defaults import patterns, url
 
 from physics_django.lattice.views import (lattices)
 from physics_django.lattice.views import (saveLatticeInfo, saveLattice)
+from physics_django.lattice.views import (saveModel)
 from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_model_list, lattice_content_details, lattice_content_model_details)
-from physics_django.lattice.views import (lattice_modal, saveLatticeHelper, saveLatticeStatusHelper, saveModelHelper, saveModelStatusHelper)
+from physics_django.lattice.views import (lattice_modal, saveLatticeHelper, saveLatticeTypeHelper, saveLatticeStatusHelper, saveModelHelper, saveModelStatusHelper)
 
 urlpatterns = patterns(
     '',
@@ -16,12 +17,14 @@ urlpatterns = patterns(
         saveLatticeInfo,
         name='saveLatticeInfo'),
     
-    url(r'^lattice/savelattice/$',
+    url(r'^lattice/savelattice$',
         saveLattice,
         name='saveLattice'),
-#    url(r'^lattice/model/$',
-#        models,
-#        name='model'),
+
+    url(r'^lattice/savemodel$',
+        saveModel,
+        name='saveModel'),
+                       
     url(r'^lattice/web/$',
         lattice_home,
         name='lattice_home'),
@@ -50,6 +53,10 @@ urlpatterns = patterns(
     url(r'^lattice/web/modal/',
         lattice_modal,
         name='lattice_modal'),
+
+    url(r'^lattice/savelatticetype$',
+        saveLatticeTypeHelper,
+        name='saveLatticTypeeHelper'),
     
     url(r'^lattice/upload$',
         saveLatticeHelper,

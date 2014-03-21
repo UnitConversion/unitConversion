@@ -512,7 +512,7 @@ class model(object):
             sql = sql[:-1] +' where element_id = %s'%elementid
             cursor.execute(sql)
         
-    def savemodel(self, model, latticename, latticeversion, latticebranch):
+    def savemodel(self, model, latticename, latticeversion, latticebranch, defaultuser=None):
         '''
         Save a model.
         parameters:
@@ -563,6 +563,9 @@ class model(object):
                                  %(modelname, latticename, latticeversion, latticebranch))
             lattices = self.lat.retrievelatticeinfo(latticename, version=latticeversion, branch=latticebranch)
             
+            if not modeldata.has_key('creator') and defaultuser != None:
+                modeldata['creator'] = defaultuser
+            
             if len(lattices) == 0:
                 raise ValueError('lattice (name: %s, version: %s, branch: %s) does not exist yet.'
                                  %(latticename, latticeversion, latticebranch))
@@ -606,7 +609,8 @@ class model(object):
                         'chromY0': 'chrome_y_0',
                         'chromY1': 'chrome_y_1',
                         'chromY2': 'chrome_y_2',
-                        'alphac':   'alphac',
+                        'alphac':  'alphac',
+                        'alphac2': 'alphac2',
                         'finalEnergy': 'final_beam_energy',
                         'simulationControl': 'model_control_data',
                         'simulationControlFile': 'model_control_name',
@@ -745,7 +749,8 @@ class model(object):
                     'chromY0': 'chromme_y_0',
                     'chromY1': 'chromme_y_1',
                     'chromY2': 'chromme_y_2',
-                    'alphac':   'alphac',
+                    'alphac':  'alphac',
+                    'alphac2': 'alphac2',
                     'finalEnergy': 'final_beam_energy',
                     'simulationControl': 'model_control_data',
                     'simulationControlFile': 'model_control_name',
