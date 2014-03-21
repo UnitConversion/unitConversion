@@ -1,3 +1,8 @@
+""" 
+Created on Mar 10st, 2014
+@author dejan.dezman@cosylab.com
+"""
+
 from django.conf.urls.defaults import patterns, url
 
 from physics_django.activeinterlock.views import (retrieveStatusesWS) 

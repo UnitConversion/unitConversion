@@ -229,12 +229,12 @@ def updateLogicWS(request):
     return _updateData(request, api.updateActiveInterlockLogic, ['id', 'name', 'shape', 'logic', 'code', 'status'], {})
 
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def downloadActiveInterlockWS(request):
     '''
     Download active interlock data
     '''
     return _updateData(request, api.downloadActiveInterlock, [])
-
 
 def aiIndexHtml(request):
     '''

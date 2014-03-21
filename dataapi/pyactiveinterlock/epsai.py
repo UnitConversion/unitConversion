@@ -2,15 +2,14 @@
 Created on Aug 15, 2013
 
 @author: shengb
+@updated: dejan.dezman@cosylab.com Mar 15th, 2014
 
 """
 
 import logging
 import MySQLdb
 
-from collections import OrderedDict
-
-from utils import (_wildcardformat, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
+from utils import (_checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 
 from _mysql_exceptions import MySQLError
 
@@ -94,7 +93,7 @@ class epsai(object):
         
         :Raises: MySQLError, ValueError
         '''
-        print "update status"
+
         # Convert
         new_status = int(new_status)
         
@@ -148,8 +147,6 @@ class epsai(object):
         
         # Generate SQL
         sqlVals = _generateUpdateQuery('active_interlock', queryDict, None, None, whereDict)
-        print sqlVals
-        print self.transaction
         
         try:
             cur = self.conn.cursor()
@@ -500,7 +497,6 @@ class epsai(object):
         # Check that status or id is set
         if ai_status == None and ai_id == None:
             raise ValueError("Status or id must be provided to retrieve device from the database!")
-        
         
         # Check active interlock id
         if ai_id != None:
@@ -1029,64 +1025,6 @@ class epsai(object):
     def saveActiveInterlockHeader(self, description=None, created_by=None):
         '''
         Save a new data set of active interlock.
-        By default, it deactivates existing active data set, and active this new data set.
-        Only one active data is allowed.
-        
-        A logic of active interlock has to be saved first, otherwise, an AttributeError might raise if logic can not be found.
-        
-        data structure:
-        
-        .. code-block:: python
-        
-            {'label':       [], # str, column's name, also property type collections for one active interlock unit.
-             'units':       [], # str, units for each columns. Empty string if it does not have one.
-             
-             # the following are those columns appeared in ``label`` field.
-             'name':        [], # str, active interlock device name 
-             'definition':  [], # str, definition for that device
-             'logicname':   [], # str, active interlock envelop name
-             'shape':       [], # str, allowed shape in phase space
-             's':           [], # double, s position in a lattice, particularly in a installation lattice
-             'offset':      [], # double, offset relative to the center of a straight section
-             'safecurent':  [], # double, allowed beam current for safe operation.  
-                                # no need for active interlock if beam current is lower than this value.
-             'aihol':       [], # double, allowed horizontal offset limit
-             'aivol':       [], # double, allowed vertical offset limit
-             'aihal':       [], # double, allowed horizontal angle limit
-             'aival':       [], # double, allowed vertical angle limit
-             'up_name':     [], # str, upstream BPM name involved in this active interlock unit
-             'up_definition': [], #str, upstream device definition
-             'up_offset':   [], # double, offset of upstream BPM relative to the center of a straight section
-             'up_aihol':    [], # double, allowed horizontal offset limit of upstream BPM
-             'up_aivol':    [], # double, allowed vertical offset limit of upstream BPM
-             'down_name':   [], # str, downstream BPM name involved in this active interlock unit
-             'down_definition': [], #str, downstream device definition
-             'down_offset': [], # double, offset of downstream BPM relative to the center of a straight section
-             'down_aihol':  [], # double, allowed horizontal offset limit of downstream BPM
-             'down_aivol':  [], # double, allowed vertical offset limit of downstream BPM
-            }
-            
-        label is now defined as below:
-         
-        .. code-block:: python
-         
-            ['name', 'definition', 'logicname', 'shape',
-             's', 'offset', 'safecurent', 'aihol', 'aivol', 'aihal', 'aival',
-             'up_name', 'up_definition', 'up_offset', 'up_aihol', 'up_aivol',
-             'down_name', 'down_definition', 'down_offset', 'down_aihol', 'down_aivol',
-            ]
-            
-        units is for each columns contained in ``label``, therefore, it should have exact sequence as it appears in label
-        except ``units`` itself which should be the last one.
-        is most like as below:
-        
-        .. code-block:: python
-         
-            ['', '', '', '',
-             'm', 'm', 'mA', 'mm', 'mm', 'mrad', 'mrad',
-             '', '', 'm', 'mm', 'mm',
-             '', '', 'm', 'mm', 'mm'
-            ]
             
         :param data: original data structure is described as above.
         :type data: dict
@@ -1102,7 +1040,7 @@ class epsai(object):
         
         :Returns: active interlock internal id if saved successfully.
             
-        :Raises: ValueError, MySQLError, KeyError, AttributeError 
+        :Raises: ValueError, MySQLError
 
         '''
         
@@ -1165,12 +1103,12 @@ class epsai(object):
             
             .. code-block:: python
             
-                {'id: {'label':       [], # str, columns's name
-                     'id':          [], # int, internal id of property type
-                     'name':        [], # str, active interlock property type name 
-                     'unit':        [], # str, active interlock property type unit
-                     'description': [], # str, property type description
-                     'date':        [], # datetime, when this entry was created
+                {'id: {'label':     , # str, columns's name
+                     'id':          , # int, internal id of property type
+                     'name':        , # str, active interlock property type name 
+                     'unit':        , # str, active interlock property type unit
+                     'description': , # str, property type description
+                     'date':        , # datetime, when this entry was created
                     }
                 }
         
