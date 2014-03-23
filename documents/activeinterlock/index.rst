@@ -6,13 +6,16 @@
 Welcome to active interlock data service's documentation!
 ====================================================================================
 
-Active interlock data service is implementation using Django framework, and its implementation details could be found in this documen.
+Active interlock data service is implementation using Django framework, and its implementation details could be found in this document.
 
 .. toctree::
     :maxdepth: 2
     
     introduction
     service
+    client
+    dataapi
+    webclient
 
 Indices and tables
 ==================

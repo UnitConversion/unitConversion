@@ -5,13 +5,4 @@ Data API
     :members: 
 
 .. autoclass:: epsai
-    :members: __init__, 
-              retrieveactiveinterlocklogic, 
-              saveactiveinterlocklogic,
-              retrieveactiveinterlockproptype, 
-              saveactiveinterlockproptype,
-              updateactiveinterlockstatus,
-              retrieveactiveinterlock,
-              saveactiveinterlock
-    
-
+    :members:

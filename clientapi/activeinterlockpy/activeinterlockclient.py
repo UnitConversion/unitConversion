@@ -75,8 +75,8 @@ class ActiveInterlockClient(object):
         Retrieve complete dataset with status approved and set it to active
         
         :return
-         {'bm':{
-                 bm data
+        {'bm':{
+        bm data
              },
           'id': {
                 id data
@@ -92,7 +92,7 @@ class ActiveInterlockClient(object):
         # Set url
         url = 'download/'
         
-        r=self.client.post(self.__baseURL+url, verify=False, headers=self.__jsonheader)
+        r=self.client.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()

@@ -93,7 +93,7 @@ app.controller('mainCtrl', function($scope, $modal){
 /*
  * Controller for the left/search pane
  */
-app.controller('searchFormCtrl', function($scope, $window, $routeParams){
+app.controller('searchFormCtrl', function($scope, $window, $routeParams, $location){
 	$scope.search = {};
 	$scope.search.displayLattice = "display_block";
 	$scope.search.displayModel = "display_none";
@@ -120,7 +120,15 @@ app.controller('searchFormCtrl', function($scope, $window, $routeParams){
 	// Lattice search button click
 	$scope.searchForLattice = function(search) {
 		var newLocation = createLatticeListQuery(search, true) + "/list";
-		$window.location = newLocation;
+		var currentPath = "#"+$location.path();
+		
+		// If location won't change, reload the page
+		if (newLocation === currentPath) {
+			$window.location.reload();
+
+		} else {
+			$window.location = newLocation;
+		}
 	};
 
 	// Model search button click
@@ -236,6 +244,8 @@ app.controller('listLatticeCtrl', function($scope, $routeParams, $http, $window)
 
 			$scope.lattices.push(newItem);
 		});
+
+		$scope.lattices.reverse();
 	});
 
 	// Show details when user selects the lattice from a list
