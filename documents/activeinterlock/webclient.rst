@@ -1,7 +1,7 @@
 Web client
 ==============================================
 
-Web client is implemented using *Angular.js* and *jquery*. It connects to the server through RESTful Interface and is served from the django server.
+Web client is implemented using *Angular.js* and *jquery*. It connects to the server through RESTful Interface and is served by the Django server.
 
 Description and usage of the user interface
 --------------------------------------------
@@ -11,9 +11,9 @@ Description of the layout
 
 Web user interface comprises of navigation bar on the top and the body below it. Navigation bar has menu items that represent all of the available statuses of the dataset. On the right there is a dropdown element that allows user to log in and log out. By clicking on the status menu item, dataset is displayed in the body.
 
-In body part of the user interface the whole dataset is displayed. Dataset has three parts/tables and they can be viewed by selecting appropriate tab in the tab navigation bar. On the right there are buttons that enable user to move dataset from one status to another.
+In body part of the user interface the whole dataset is displayed. Dataset has three parts/tables and they can be viewed by selecting appropriate tab in the tab navigation bar. On the right there are buttons that enable user to "move" dataset from one status to another.
 
-Every dataset part (BM, ID, logic) is displayed in its own table. Every row represents a device or a logic and every cell a property of the device that must be captured. Table can be editable or not depending on user permissions. When table is editable, data in most of the cells can be changes and thus updated. After updating, some of the cell also need approval. Data in the cell can be approved by clicking on the button that appears after updating the value below the changed value. To speed up things, the whole row can be approved by clicking on the approve button which is positioned at the end of every row. New device and logic can be added by pressing the *Add new device* or *Add new logic* buttons.
+Every dataset part (BM, ID, logic) is displayed in its own table. Every row represents a device or a logic and every cell a property of the device that must be captured. Table can be editable or not depending on user permissions. When table is editable, data in most of the cells can be changed and thus updated. After updating, some of the cells also need an approval. Data in the cell can be approved by clicking on the button that appears below the value after updating. To speed up things, the whole row can be approved by clicking on the approve button which is positioned at the end of every row. New device and logic can be added by pressing the **Add new device** or **Add new logic** buttons.
 
 .. figure:: img/ui.png
    :scale: 50%
@@ -23,14 +23,14 @@ Every dataset part (BM, ID, logic) is displayed in its own table. Every row repr
 Log in / log out
 ~~~~~~~~~~~~~~~~~~
 
-Datasets are read-only by default. Adding a modifying existing data requires user to be logged in and have needed permissions. When user gen an account he can log in by clicking on the Log in button that is positioned in the top right corner.
+Datasets are read-only by default. Adding and modifying existing data requires user to be logged in and have special permissions. When user gets an account he can log in by clicking on the Log in button that is positioned at the top right corner.
 
 .. figure:: img/log_in.png
    :scale: 50%
    
    Log in button.
 
-When user is finished with adding and modifying data he can log out by clicking on the log out menu item.
+When user has finished with adding and modifying data he can log out by clicking on the log out menu item.
 
 .. figure:: img/log_out.png
    :scale: 50%
@@ -64,7 +64,7 @@ To approve the whole row, user has to click on **Approve** button that is positi
 Adding, approving the datasets and moving through statuses
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the navigation bar there are five button which represent possible statuses of the dataset. Next to the name of the status there is a badge with the number of datasets that have that status. All of the statuses except history are taken only by one dataset. All of the datasets that were active end up in history when they are replaced with the new datasets.
+In the navigation bar there are five buttons which represent possible statuses of the dataset. Next to the name of the status there is a badge with the number of datasets that have that status. All of the statuses except history are taken only by one dataset. All of the datasets that were active end up in history when they are replaced with the new datasets.
 
 When new datasets are added they have status set to editable. Consequentially in web client new datasets can be added by first selecting editable status from menu and then clicking **Create new dataset** button. Pop up shows up and user can enter description for a new dataset and then click **Create**.
 
@@ -78,7 +78,7 @@ When new datasets are added they have status set to editable. Consequentially in
    
    Enter description and click Create.
 
-After logic and devices are entered and approved, the whole dataset can be approved by pressing the **Approve** button that is places in the same line with tabs.
+After logic and devices are entered and approved, the whole dataset can be approved by pressing the **Approve** button that is placed in the line with tabs.
 
 .. figure:: img/approve_dataset.png
    :scale: 50%
@@ -90,7 +90,7 @@ After dataset is approved web client is refreshed and dataset is accessible by c
 Dataset history
 ~~~~~~~~~~~~~~~~
 
-When data is downloaded it gets the active status. If there was a dataset with active status it gets backup status and if there was a dataset with backup status it is moved to history. Therefore all active datasets are moved to history when they are replaced with new ones. When clicking on the **History** menu item, table with all datasets with status history are displayed. In the table there are important information like data created, dataset author, description etc.
+When data is downloaded it gets the active status. If there was a dataset with active status it gets backup status and if there was a dataset with backup status it is moved to history. Therefore all active datasets are moved into history when they are replaced with the new ones. By clicking on the **History** menu item, table with all datasets with status history are displayed. In the table there are important information like data created, dataset author, description etc.
 
 .. figure:: img/history.png
    :scale: 50%
