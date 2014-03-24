@@ -9,37 +9,51 @@ A RESTful style service is implemented for data saving and retrieving.
 It currently supports 2 REST methods, which are GET and POST respectively. 
 Other than those 2 methods, if server receives another http method request, it returns as a bad http request (status code: 400) with a message, which is "Unsupported HTTP method", to show that method is not supported.
 
-For each GET and POST method, there are set of functions associated with each, which are summarized as below: ::
+There are a couple of POST and GET methods that are called through a specific URL. List of URLs and methods is summarized below:
+  
++--------------------------------+---------------------------+---------+----------+
+|    URL                         |             Method        |   GET   |   POST   |
++================================+===========================+=========+==========+
+| ai/statuses/                   | retrieveStatusesWS        |    x    |          |
++--------------------------------+---------------------------+---------+----------+
+| ai/activeinterlockheader/      | retrieveAiHeaderWS        |    x    |          |
++--------------------------------+---------------------------+---------+----------+
+| ai/saveactiveinterlockheader/  | saveAiHeaderWS            |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/device/                     | retrieveDeviceWS          |    x    |          |
++--------------------------------+---------------------------+---------+----------+
+| ai/savedevice/                 | saveDeviceWS              |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/updatedevice/               | updateDeviceWS            |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/updatestatus/               | updateStatusWS            |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/updateprop/                 | updatePropWS              |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/approve/                    | approveCellsWS            |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/logic/                      | retrieveLogicWS           |    x    |          |
++--------------------------------+---------------------------+---------+----------+
+| ai/savelogic/                  | saveLogicWS               |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/updatelogic/                | updateLogicWS             |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| ai/download/                   | downloadActiveInterlockWS |         |    x     |
++--------------------------------+---------------------------+---------+----------+
+| user/login/                    | user_login                |    x    |    x     |
++--------------------------------+---------------------------+---------+----------+
+| user/logout/                   | user_logout               |    x    |    x     |
++--------------------------------+---------------------------+---------+----------+
 
-(This is old version, and new implementation should be revised according the requirement.)
-
-  ==========  ==================================   =============================
-    Method                   GET                              POST
-  ----------  ----------------------------------   -----------------------------
-   Function    retrieveActiveInterlock              saveActiveInterlock
-              ----------------------------------   -----------------------------
-                                                    updateActiveInterlockStatus
-              ----------------------------------   -----------------------------
-               retrieveActiveInterlockPropType      saveActiveInterlockPropType
-              ----------------------------------   -----------------------------
-               retrieveActiveInterlockLogic         saveActiveInterlockLogic
-  ==========  ==================================   =============================
-
-
-The server verifies each function of a method, and performs a client request if the function is supported by that method. Otherwise, it returns as a bad http request (status code: 400) with a message,
-which is "Wrong HTTP method for function ...", to show that function is not supported by requested method.
+The server verifies each method, and performs a client request. There are also two methods that are not a part of active interlock but are necessary for managing user session.
     
 A JSON encoding/decoding is adopted to transfer data over network. All data has to be encoded into a JSON string format before sending over network. An JSON header could be for example as below: ::
 
     {'content-type':'application/json', 'accept':'application/json'}
 
-For binary data, a BASE64 algorithm is supported to encode/decode the data into/from a string to enable data transferring using JSON string. A typical use case is to save original raw data, which is usually published with for example excel spreadsheet format.
+When RESTful method is called its parameters are checked and then dataapi method with the same name is called.
+    
+Authentication
+----------------
 
-Data Process Functions
------------------------
-
-.. automodule:: activeinterlock.dataprocess
-    :members: 
-    
-    
-    
+For all POST methods user needs to be authenticated before proceeding.
