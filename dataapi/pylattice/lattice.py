@@ -38,6 +38,14 @@ class lattice(object):
     def _ziplattice(self, dstfile, srcdir):
         '''Archived original files as a zipped file
         '''
+
+        ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+        savePath = os.path.split(ROOT_PATH)
+        savePath = os.path.split(savePath[0])
+        savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
+
+        dstfile = savePath + '/' + dstfile
+
         relroot = os.path.abspath(os.path.join(srcdir, ".."))
         with zipfile.ZipFile(dstfile, "w", zipfile.ZIP_DEFLATED) as zipdst:
             for src in [srcdir, srcdir+"_map"]:
