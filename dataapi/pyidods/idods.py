@@ -6,6 +6,7 @@ Created on Feb 10, 2014
 
 import logging
 import MySQLdb
+import os
 
 from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 from _mysql_exceptions import MySQLError
@@ -4279,8 +4280,8 @@ class idods(object):
         returns:
             {'path': path to a file}
         '''
-        path = _generateFilePath()
-        filePath = '/'.join((path, file_name))
+        path, absolutePath = _generateFilePath()
+        filePath = os.path.join(absolutePath, file_name)
         
         try:
             with open(filePath, 'w') as f:

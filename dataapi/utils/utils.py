@@ -113,17 +113,26 @@ def _generateFilePath():
     '''
     Generate path for the uploaded file
     '''
+    ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+    savePath = os.path.split(ROOT_PATH)
+    savePath = os.path.split(savePath[0])
+    savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
+
+    #print savePath
     #now = datetime.datetime.now()
     #dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
-    dirname = 'documents/%s'%datetime.datetime.now().strftime("%Y%m%d/%H%M%S/%f")
+    dataPart = 'documents/%s'%datetime.datetime.now().strftime("%Y%m%d/%H%M%S/%f")
+    dirname = savePath + '/' + dataPart
+    #print dirname
+
     try:
         os.makedirs(dirname)
     except OSError as exc:
         if exc.errno == errno.EEXIST and os.path.isdir(dirname):
             pass
         else: 
-            raise Exception("Could not create a directory to save lattice file")
-    return dirname
+            raise Exception("Could not create a directory (%s) to save file", dirname)
+    return dataPart, dirname
 
 def _checkParameter(parameterKey, paramaterValue, parameterTypeWeAreCheckingFor = "string"):
     '''

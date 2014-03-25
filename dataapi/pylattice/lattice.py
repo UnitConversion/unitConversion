@@ -485,8 +485,8 @@ class lattice(object):
         '''
         furl = None
         if savefile:
-            furl = _generateFilePath()
-            with open('/'.join((furl, latticefile)), 'w') as f:
+            furl, fpath = _generateFilePath()
+            with open(os.path.join(fpath, latticefile), 'w') as f:
                 for data in latticedata:
                     if data.endswith('\n'):
                         f.write(data)
@@ -869,8 +869,8 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            furl = _generateFilePath()
-            with open('/'.join((furl, params['name'])), 'w') as f:
+            furl, fpath = _generateFilePath()
+            with open(os.path.join(fpath, params['name']), 'w') as f:
                 for data in params['raw']:
                     if data.endswith('\n'):
                         f.write(data)
@@ -1257,8 +1257,8 @@ class lattice(object):
 
         # save raw lattice file
         if params.has_key('raw') and len(params['raw'])!=0:
-            furl = _generateFilePath()
-            with open('/'.join((furl, params['name'])), 'w') as f:
+            furl, fpath = _generateFilePath()
+            with open(os.path.join(fpath, params['name']), 'w') as f:
                 for data in params['raw']:
                     if data.endswith('\n'):
                         f.write(data)
