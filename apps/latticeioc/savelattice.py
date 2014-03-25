@@ -230,8 +230,8 @@ if __name__ == '__main__':
     from latticepy.LatticeModelClient import LatticeModelClient
     import time
 
-    url = 'http://phyweb.cs.nsls2.local/lattice'
-    lmc = LatticeModelClient(BaseURL=url, username='latticeioc', password='lm4latticeioc')
+    url = 'http://localhost:8080/lattice'
+    lmc = LatticeModelClient(BaseURL=url, username='', password='')
     
     latticetype = [{'name': 'tracy3', 'format': 'lat'},
                    {'name': 'tracy4', 'format': 'lat'},
