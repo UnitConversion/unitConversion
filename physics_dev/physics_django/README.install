@@ -127,7 +127,7 @@ Physics Django PROJECT README
     	)
 
 		
-		* Edit Apache configuration:
+		* Edit Apache configuration (/etc/apache2/sites-available/default):
 		
 ServerName phyweb
 
@@ -160,6 +160,7 @@ Allow from all
 </Directory>
 WSGIScriptAlias / /var/www/physics/physics_dev/physics_django/wsgi.py
 WSGIApplicationGroup %{GLOBAL}
+WSGIPassAuthorization On
         		
 		Make sure web server has permissions to access files under /var/www/physics. 
 		

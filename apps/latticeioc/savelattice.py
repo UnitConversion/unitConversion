@@ -230,12 +230,19 @@ if __name__ == '__main__':
     from latticepy.LatticeModelClient import LatticeModelClient
     import time
 
-    url = 'http://localhost:8000/lattice'
-    lmc = LatticeModelClient(BaseURL=url, username='user', password='user')
+    url = 'http://phyweb.cs.nsls2.local/lattice'
+    lmc = LatticeModelClient(BaseURL=url, username='latticeioc', password='lm4latticeioc')
     
-    latfile = 'nsls2srlive.lat'
-    params = 'nsls2srlive.pm'
-    
-    latname, _ = os.path.splitext(latfile)
-    savelatticemodel(latfile, '%s.pm'%latname, lmc, source='set point', name=latname, version=int(time.time()), branch='live')
+    latticetype = [{'name': 'tracy3', 'format': 'lat'},
+                   {'name': 'tracy4', 'format': 'lat'},
+                   {'name': 'elegant', 'format': 'lte'},
+                   {'name': 'plain', 'format': 'txt'}
+                   ]
+
+    for lt in latticetype:
+        res = lmc.retrievelattype(lt['name'], lt['format'])
+        if len(res) == 0:
+            print lmc.savelattype(lt['name'], lt['format'])
+        else:
+            print "lattice type (name: %s, format: %s) exists already"%(lt['name'], lt['format'])
 
