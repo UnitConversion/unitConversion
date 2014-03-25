@@ -4,6 +4,8 @@ Created on Apr 15, 2013
 @author: shengb
 '''
 
+from collections import OrderedDict
+
 import logging
 import MySQLdb
 
@@ -966,6 +968,7 @@ class model(object):
             sqlvals.append(end)
 
         try:
+            sql += " order by bp.pos "
             cur=self.conn.cursor()
             cur.execute(sql, sqlvals)
             results = cur.fetchall()
@@ -974,7 +977,8 @@ class model(object):
                              %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving closed orbit:\n%s (%d)'
                              %(e.args[1], e.args[0]))
-        resdict = {}
+        
+        resdict = OrderedDict()
         if len(results) != 0:
             modelid = results[0][0]
             modelname = results[0][1]
@@ -1072,6 +1076,7 @@ class model(object):
             sqlvals.append(end)
 
         try:
+            sql += " order by bp.pos "
             cur=self.conn.cursor()
             cur.execute(sql, sqlvals)
             results = cur.fetchall()
@@ -1080,7 +1085,8 @@ class model(object):
                              %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving closed orbit:\n%s (%d)'
                              %(e.args[1], e.args[0]))
-        resdict = {}
+        
+        resdict = OrderedDict()
         if len(results) != 0:
             modelid = results[0][0]
             modelname = results[0][1]
@@ -1183,6 +1189,7 @@ class model(object):
             sqlvals.append(end)
 
         try:
+            sql += " order by bp.pos "
             cur=self.conn.cursor()
             cur.execute(sql, sqlvals)
             results = cur.fetchall()
@@ -1191,7 +1198,7 @@ class model(object):
                              %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving closed orbit:\n%s (%d)'
                              %(e.args[1], e.args[0]))
-        resdict = {}
+        resdict = OrderedDict()
         if len(results) != 0:
             modelid = results[0][0]
             modelname = results[0][1]
@@ -1343,6 +1350,7 @@ class model(object):
         
 
         try:
+            sql += " order by bp.pos "
             cur=self.conn.cursor()
             cur.execute(sql, sqlvals)
             results = cur.fetchall()
@@ -1351,7 +1359,8 @@ class model(object):
                              %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving closed orbit:\n%s (%d)'
                              %(e.args[1], e.args[0]))
-        resdict = {}
+        
+        resdict = OrderedDict()
         if len(results) != 0:
             modelid = results[0][0]
             modelname = results[0][1]
