@@ -311,7 +311,7 @@ def callback4command(value, index):
 
         print '#####################################'
         print '#'
-        print '# caused by %s'%value.name
+        print '# caused by %s on %s'%(value.name, strftime("%a, %d %b %Y, %H:%M:%S %Z"))
         print '#'
         print '#####################################'
         print 'finished running model'
