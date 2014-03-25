@@ -505,6 +505,67 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 });
 
 /*
+ * Provide a factory for the install rel type entity. Install rel type can be checked, retrieved, saved and updated
+ */
+app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityError) {
+	var factory = {};
+	factory.entity = new InstallRelType();
+	factory.error = new EntityError();
+
+	// Set install rel type object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check install rel type before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get install rel type from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "installrelproptype", this.entity, InstallRelType);
+	}
+
+	// Get install rel type from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "installrelproptype", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new install rel type
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinstallrelproptype", this.entity);
+	}
+
+	// Update install rel type
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinstallrelproptype", this.entity);
+	}
+
+	return factory;
+});
+
+/*
  * Provide a factory for the data method entity. Data method can be checked, retrieved, saved and updated
  */
 app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {

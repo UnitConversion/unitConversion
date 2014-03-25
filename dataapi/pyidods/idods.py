@@ -2957,13 +2957,13 @@ class idods(object):
 
         # Start SQL
         sql = '''
-        SELECT cmpnt_type_id, cmpnt_type_name, description FROM cmpnt_type WHERE
+        SELECT cmpnt_type_id, cmpnt_type_name, description FROM cmpnt_type WHERE description != %s
         '''
 
-        vals = []
+        vals = ['__system__']
 
         # Append component type
-        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals)
+        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals, "AND")
 
         # Append desciprtion if exists
         if description != None:
@@ -4221,13 +4221,13 @@ class idods(object):
             ct.cmpnt_type_name
         FROM install inst
         LEFT JOIN cmpnt_type ct ON(inst.cmpnt_type_id = ct.cmpnt_type_id)
-        WHERE
+        WHERE ct.description != %s
         '''
         
-        vals = []
+        vals = ['__system__']
         
         # Append name parameter
-        sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals)
+        sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals, "AND")
         
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
@@ -4769,7 +4769,27 @@ class idods(object):
             for r in res:
                 inventoryname = r[2]
                 results = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status)
+                
+            return resdict
             
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
+        
+    def idodsInstall(self):
+        '''
+        Create necessary database entries
+        '''
+        self.saveComponentType('root', '__system__')
+        self.saveComponentType('branch', '__system__')
+        self.saveComponentType('beamline', '__system__')
+        self.saveComponentType('project', '__system__')
+        
+        self.saveInstall('Trees', cmpnt_type='root')
+        self.saveInstall('Installation', cmpnt_type='branch')
+        self.saveInstall('Beamline', cmpnt_type='branch')
+        
+        self.saveInstallRel('Trees', 'Installation')
+        self.saveInstallRel('Trees', 'Beamline')
+        
+        return {'result': 'ok'}

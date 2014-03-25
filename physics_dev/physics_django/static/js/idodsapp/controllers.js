@@ -1109,6 +1109,157 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Controller for the left/search pane
  */
+app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[4];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "install_rel_type", ["name"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listInstallRelTypeCtrl', function($scope, $routeParams, $http, $window, InstallRelTypeInfo, InstallRelType, installRelTypeFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = InstallRelTypeInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	installRelTypeFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new InstallRelType(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "install_rel_type", ["name"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.name = item.name;
+
+		var location = createRouteUrl($routeParams, "install_rel_type", ["name"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $window, InstallRelTypeInfo, InstallRelType, installRelTypeFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new InstallRelType();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = InstallRelTypeInfo;
+
+	// Get install rel type from the factory if updating
+	if($routeParams.action != "save") {
+		
+		installRelTypeFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "install_rel_type", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new InstallRelType(newItem);
+		var result = installRelTypeFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = installRelTypeFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = installRelTypeFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Install rel type successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
 app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;

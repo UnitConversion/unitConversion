@@ -453,6 +453,13 @@ def updateOnlineDataWS(request):
     return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status'])
 
 '''
+Install idods
+'''
+@require_http_methods(["GET"])
+def idodsInstallWS(request):
+    return _updateData(request, idodsi.idodsInstall, [])
+
+'''
 Test authentication
 '''
 @require_http_methods(["POST"])

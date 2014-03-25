@@ -15,6 +15,7 @@ from physics_django.idods.views import (retrieveOfflineDataWS, saveOfflineDataWS
 from physics_django.idods.views import (uploadFileWS)
 from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS)
 from physics_django.idods.views import (testAuth)
+from physics_django.idods.views import (idodsInstallWS)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
 
 urlpatterns = patterns(
@@ -86,6 +87,9 @@ urlpatterns = patterns(
     url(r'^id/device/onlinedata/$', retrieveOnlineDataWS),
     url(r'^id/device/saveonlinedata/$', saveOnlineDataWS),
     url(r'^id/device/updateonlinedata/$', updateOnlineDataWS),
+    
+    # Idods install
+    url(r'^id/device/idods_install/$', idodsInstallWS),
     
     # Test authentication
     url(r'^id/device/test/$', testAuth),

@@ -371,6 +371,80 @@ app.value('InventoryTypeInfo', {
  });
 
  /*
+ * Install rel type info object
+ */
+app.value('InstallRelTypeInfo', {
+	'save_title': 'Save Install relationship type',
+	'save_button': 'Save Install relationship type',
+	'retrieve_title': 'Install relationship type',
+	'retrieve_update_button': 'Update Install relationship type',
+	'update_title': 'Update Install relationship type',
+	'update_button': 'Update Install relationship type',
+	'search_button': 'Add Install relationship type',
+	'search_filter': 'Filter Install relationships ...'
+});
+
+/*
+ * Install rel type object
+ */
+ app.value('InstallRelType', function(obj){
+ 	
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["name"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ["id", "name", "description", "unit"];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["name", "description", "unit"];
+
+ 	// Parameters used for save URL
+ 	this.save = ["name", "description", "unit"];
+ 	
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = ["name", "description", "unit"];
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ["old_name", "name", "description", "unit"];
+
+ 	this.display = {
+ 		"id": "Id",
+ 		"name": "Name",
+ 		"description": "Description",
+ 		"unit": "Unit"
+ 	};
+
+ 	this.id = "";
+ 	this.old_name = "";
+ 	this.name = "";
+ 	this.description = "";
+ 	this.unit = "";
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+ 		
+ 		if('id' in obj) {
+ 			this.id = obj.id;
+ 			this.old_name = obj.old_name;
+ 		}
+
+ 		this.name = obj.name;
+ 		this.description = obj.description;
+ 		this.unit = obj.unit;
+ 	}
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
+ /*
  * Install info object
  */
 app.value('InstallInfo', {

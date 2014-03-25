@@ -25,6 +25,7 @@ var dataTypes = [
 	{name:"inventory", value:"Inventory"},
 	{name:"inventory_type", value:"Inventory property type"},
 	{name:"install", value:"Install"},
+	{name:"install_rel_type", value:"Install relationship property type"},
 	{name:"data_method", value:"Data method"},
 	{name:"offline_data", value:"Offline data"},
 	{name:"online_data", value:"Online data"}
