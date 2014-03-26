@@ -817,7 +817,7 @@ function showTooltip(x, y, contents) {
  * @param {type} data json data object
  * @returns {String} html with tree content
  */
-function drawDataTree(html, data){
+function drawDataTree(html, data, level){
 
 	if(data === undefined) {
 		return "";
@@ -826,12 +826,18 @@ function drawDataTree(html, data){
 		html += "<ul>";
 
 		for(var prop in data) {
+			l(prop);
+			l(data);
 			html += "<li>";
 			html += "<b>" + prop + "</b>";
 
+			if (level > 0) {
+				html += " <a href='#'>Add child</a>";
+			}
+
 			// Find object
 			if($.type(data[prop]) === 'object') {
-				html = drawDataTree(html, data[prop]);
+				html = drawDataTree(html, data[prop]['children'], level+1);
 
 			} else {
 				html += ': ' + data[prop];

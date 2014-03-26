@@ -316,6 +316,8 @@ app.controller('listModelCtrl', function($scope, $routeParams, $http, $window) {
 
 			index ++;
 		});
+
+		$scope.modelsArray.reverse();
 	});
 
 	// Set flag when new model was selected
@@ -415,8 +417,8 @@ app.controller('showLatticeDetailsCtrl', function($scope, $routeParams, $http, $
 				model[i] = $sce.trustAsHtml(model[i].toString());
 			});
 
-			var location = createModelListQuery(route, true) + "/id/" + name;
-			model.link = $sce.trustAsHtml('<a href="' + location + '">link to model</a>');
+			var location = createModelListQuery(route, true) + "/id/" + model.id;
+			model.link = $sce.trustAsHtml('<a href="' + location + '">go to model</a>');
 			$scope.latticeModels.push(model);
 		});
 	});

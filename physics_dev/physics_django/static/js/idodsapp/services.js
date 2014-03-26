@@ -505,6 +505,80 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 });
 
 /*
+ * Provide a factory for the install rel entity. Install rel can be checked, retrieved, saved and updated
+ */
+app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
+	var factory = {};
+	factory.entity = new InstallRel();
+	factory.error = new EntityError();
+
+	// Set install rel type object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check install rel type before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get install rel type from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+		
+		var query = serviceurl + "/trees/?";
+		query += prepareUrlParameters(this.entity.search_m, this.entity);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.get(query).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
+	// Get install rel type from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "installrelproptype", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new install rel type
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinstallrelproptype", this.entity);
+	}
+
+	// Update install rel type
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinstallrelproptype", this.entity);
+	}
+
+	return factory;
+});
+
+/*
  * Provide a factory for the install rel type entity. Install rel type can be checked, retrieved, saved and updated
  */
 app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityError) {

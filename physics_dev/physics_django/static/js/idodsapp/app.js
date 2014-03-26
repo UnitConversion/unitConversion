@@ -38,6 +38,10 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/list',						'index.install.list').
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',		'index.install.list.details').
 
+		when('/install_rel',																								'index.install_rel').
+		when('/install_rel/search/:search/name/:name?/list',																'index.install_rel.list').
+		when('/install_rel/search/:search/name/:name?/id/:id/action/:action',												'index.install_rel.list.details').
+
 		when('/install_rel_type',																							'index.install_rel_type').
 		when('/install_rel_type/search/:search/name/:name?/list',															'index.install_rel_type.list').
 		when('/install_rel_type/search/:search/name/:name?/id/:id/action/:action',											'index.install_rel_type.list.details').
@@ -179,6 +183,27 @@ app.config(function($routeSegmentProvider, $routeProvider){
 					segment('details', {
 						templateUrl: 'details/install.html',
 						controller: 'showInstallCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('install_rel', {
+				templateUrl: 'search/install_rel.html',
+				controller: 'searchInstallRelCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/install_rel.html',
+					controller: 'listInstallRelCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/install_rel.html',
+						controller: 'showInstallRelCtrl',
 						dependencies: ['id', 'action']
 					}).
 				up().

@@ -16,6 +16,7 @@ from physics_django.idods.views import (uploadFileWS)
 from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS)
 from physics_django.idods.views import (testAuth)
 from physics_django.idods.views import (idodsInstallWS)
+from physics_django.idods.views import (retrieveTreesWS)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
 
 urlpatterns = patterns(
@@ -90,6 +91,9 @@ urlpatterns = patterns(
     
     # Idods install
     url(r'^id/device/idods_install/$', idodsInstallWS),
+    
+    # Make tree
+    url(r'^id/device/trees/$', retrieveTreesWS),
     
     # Test authentication
     url(r'^id/device/test/$', testAuth),

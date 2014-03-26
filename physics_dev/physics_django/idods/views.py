@@ -460,6 +460,13 @@ def idodsInstallWS(request):
     return _updateData(request, idodsi.idodsInstall, [])
 
 '''
+Retrieve trees
+'''
+@require_http_methods(["GET"])
+def retrieveTreesWS(request):
+    return _retrieveData(request, idodsi.retrieveTrees, ['install_name'])
+
+'''
 Test authentication
 '''
 @require_http_methods(["POST"])

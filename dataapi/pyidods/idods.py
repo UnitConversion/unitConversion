@@ -2921,7 +2921,7 @@ class idods(object):
             self.logger.info('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def retrieveComponentType(self, name, description = None):
+    def retrieveComponentType(self, name, description = None, all_cmpnt_types = None):
         '''Retrieve a component type using the key words:
 
         - name
@@ -2932,6 +2932,9 @@ class idods(object):
 
         :param description: description for this device
         :type desctiprion: str
+
+        :param all_cmpnt_types: return also system component types
+        :type all_cmpnt_types: boolean
 
         :return: a map with structure like:
 
@@ -2957,10 +2960,15 @@ class idods(object):
 
         # Start SQL
         sql = '''
-        SELECT cmpnt_type_id, cmpnt_type_name, description FROM cmpnt_type WHERE description != %s
+        SELECT cmpnt_type_id, cmpnt_type_name, description FROM cmpnt_type WHERE 1=1
         '''
 
-        vals = ['__system__']
+        vals = []
+
+        # Exclude all system component types
+        if all_cmpnt_types == None or all_cmpnt_types == False:
+            sql += ' AND description != %s '
+            vals.append('__system__')
 
         # Append component type
         sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals, "AND")
@@ -3966,6 +3974,24 @@ class idods(object):
             self.logger.info('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def retrieveTrees(self, install_name, tree = None):
+        
+        if tree == None:
+            tree = {}
+        
+        tree[install_name] = {}
+        tree[install_name]['children'] = {}
+        tree[install_name]['name'] = install_name
+        newTree = tree[install_name]['children']
+        
+        children = self.retrieveInstallRel(None, install_name)
+        
+        for childKey in children.keys():
+            child = children[childKey]
+            self.retrieveTrees(child['childname'], newTree)
+        
+        return tree
+
     def saveInsertionDevice(self, installName, **kws):
         '''Save insertion device installation using any of the acceptable key words:
 
@@ -4007,7 +4033,7 @@ class idods(object):
         
         # Check component type
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
-            componentType = self.retrieveComponentType(kws['cmpnt_type'])
+            componentType = self.retrieveComponentType(kws['cmpnt_type'], all_cmpnt_types = True)
             componentTypeKeys = componentType.keys()
         
         else:
@@ -4036,7 +4062,9 @@ class idods(object):
         try:
             # Insert record into database
             cur = self.conn.cursor()
-            cur.execute(sql, (componentType[componentTypeKeys[0]]['id'], name, description, coordinate))
+            key = componentType[componentTypeKeys[0]]['id']
+            print componentTypeKeys
+            cur.execute(sql, (key, name, description, coordinate))
         
             # Get last row id
             invid = cur.lastrowid
@@ -4192,6 +4220,7 @@ class idods(object):
         - description: installation description
         - cmpnt_type: component type name of the device
         - coordinatecenter: coordinate center number
+        - all_install: retrieve also system installs
         
         raises:
             ValueError, MySQLError
@@ -4221,10 +4250,15 @@ class idods(object):
             ct.cmpnt_type_name
         FROM install inst
         LEFT JOIN cmpnt_type ct ON(inst.cmpnt_type_id = ct.cmpnt_type_id)
-        WHERE ct.description != %s
+        WHERE 1=1
         '''
         
-        vals = ['__system__']
+        vals = []
+        
+        # Exclude all system component types
+        if 'all_install' in kws == False or ('all_install' in kws and kws['all_install'] == False):
+            sql += ' AND ct.description != %s '
+            vals.append('__system__')
         
         # Append name parameter
         sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals, "AND")
@@ -4780,16 +4814,51 @@ class idods(object):
         '''
         Create necessary database entries
         '''
-        self.saveComponentType('root', '__system__')
-        self.saveComponentType('branch', '__system__')
-        self.saveComponentType('beamline', '__system__')
-        self.saveComponentType('project', '__system__')
         
-        self.saveInstall('Trees', cmpnt_type='root')
-        self.saveInstall('Installation', cmpnt_type='branch')
-        self.saveInstall('Beamline', cmpnt_type='branch')
+        # Create component types
+        if len(self.retrieveComponentType('root', all_cmpnt_types = True).keys()) == 0:
+            self.saveComponentType('root', '__system__')
         
-        self.saveInstallRel('Trees', 'Installation')
-        self.saveInstallRel('Trees', 'Beamline')
+        if len(self.retrieveComponentType('branch', all_cmpnt_types = True).keys()) == 0:
+            self.saveComponentType('branch', '__system__')
+        
+        if len(self.retrieveComponentType('beamline', all_cmpnt_types = True).keys()) == 0:
+            self.saveComponentType('beamline', '__system__')
+        
+        if len(self.retrieveComponentType('project', all_cmpnt_types = True).keys()) == 0:
+            self.saveComponentType('project', '__system__')
+        
+        # Create install elements
+        if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install = True).keys()) == 0:
+            self.saveInstall('Trees', cmpnt_type='root')
+        
+        if len(self.retrieveInstall('Installation', cmpnt_type='branch', all_install = True).keys()) == 0:
+            self.saveInstall('Installation', cmpnt_type='branch')
+        
+        if len(self.retrieveInstall('Beamline', cmpnt_type='branch', all_install = True).keys()) == 0:
+            self.saveInstall('Beamline', cmpnt_type='branch')
+        
+        # Create install relationship
+        if len(self.retrieveInstallRel(None, 'Trees', 'Installation')) == 0:
+            self.saveInstallRel('Trees', 'Installation')
+        
+        if len(self.retrieveInstallRel(None, 'Trees', 'Beamline')) == 0:
+            self.saveInstallRel('Trees', 'Beamline')
+        
+        # Create test project
+        if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
+            self.saveInstall('Project1', cmpnt_type='project')
+        
+        # Create test project relationship
+        if len(self.retrieveInstallRel(None, 'Installation', 'Project1')) == 0:
+            self.saveInstallRel('Installation', 'Project1')
+        
+        # Create test beamline
+        if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
+            self.saveInstall('Beamline1', cmpnt_type='beamline')
+        
+        # Create test beamline relationship
+        if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1')) == 0:
+            self.saveInstallRel('Project1', 'Beamline1')
         
         return {'result': 'ok'}
