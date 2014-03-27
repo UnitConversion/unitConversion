@@ -243,16 +243,22 @@ def callback4sp(value, index):
     global elems
     global monitorspvals
     
-    if value != monitorspvals[elems[index]]:
-        monitorspvals[elems[index]] = value 
+    if value.ok:
+        if value != monitorspvals[elems[index]]:
+            monitorspvals[elems[index]] = value
+    else:
+        monitorspvals[elems[index]] = 0.0
 
 def callback4rb(value, index):
     # run on command mode only
     global elems
     global monitorrbvals
     
-    if value != monitorrbvals[elems[index]]:
-        monitorrbvals[elems[index]] = value 
+    if value.ok:
+        if value != monitorrbvals[elems[index]]:
+            monitorrbvals[elems[index]] = value 
+    else:
+        monitorrbvals[elems[index]] = 0.0 
     
 def generatelivelat(livelat, is4setpoint=True):
     global monitorspvals
@@ -293,11 +299,11 @@ def generatelivelat(livelat, is4setpoint=True):
         f.write('\nEND;\n')
 
 def startmonitorsp(pvs):
-    monstub = ca.camonitor(pvs, callback4sp)
+    monstub = ca.camonitor(pvs, callback4sp, notify_disconnect = True)
     return monstub
 
 def startmonitorrb(pvs):
-    monstub = ca.camonitor(pvs, callback4rb)
+    monstub = ca.camonitor(pvs, callback4rb, notify_disconnect = True)
     return monstub
 
 def callback4command(value, index):
@@ -318,15 +324,18 @@ def callback4command(value, index):
         print 'finished running model'
 
 def startmonitorcommand():
-    monstub = ca.camonitor([commandsppv, commandrbpv], callback4command)
+    monstub = ca.camonitor([commandsppv, commandrbpv], callback4command, notify_disconnect = True)
     return monstub
 
 def callback4energy(value):
     global energyforsimulation
-    energyforsimulation = value
+    if value.ok:
+        energyforsimulation = value
+    else:
+        energyforsimulation = 0.0
 
 def startmonitorenergy():
-    monstub = ca.camonitor(energysppv, callback4energy)
+    monstub = ca.camonitor(energysppv, callback4energy, notify_disconnect = True)
     return monstub
 
 def _readresult(pmfile):

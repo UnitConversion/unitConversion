@@ -94,143 +94,187 @@ def _setpv(pvname, origval):
         subpvs = pvrbsdict[pvname]
     else:
         raise ValueError('Cannot initialize associated pvs for %s'%(pvname))
-    
+
     pvs = []
     vals = []
     for k, v in subpvs.iteritems():
-        if quadparams.has_key(k):
-            try:
-                bresult = conversion('i', 'b', origval, quadparams[k]['municonv'])
-                
-                val = bresult['standard']['conversionResult']['value']
-                pvs.append(v['B'])
-                radius = quadparams[k]['municonv']['standard']['measurementData']['referenceRadius']
-                vals.append(val/radius)
-                pvs.append("%s.EGU"%v['B'])
-                unit = bresult['standard']['conversionResult']['unit']
-                if unit == 'T-m':
-                    unit = 'T'
-                else:
-                    unit = '/'.join((unit, 'm'))
-                vals.append(unit)
-                pvs.append("%s.DESC"%v['B'])
-                vals.append('Conversion succeeded')
-            except ValueError:
+        if origval.ok:
+            if quadparams.has_key(k):
+                try:
+                    bresult = conversion('i', 'b', origval, quadparams[k]['municonv'])
+                    
+                    val = bresult['standard']['conversionResult']['value']
+                    pvs.append(v['B'])
+                    radius = quadparams[k]['municonv']['standard']['measurementData']['referenceRadius']
+                    vals.append(val/radius)
+                    pvs.append("%s.EGU"%v['B'])
+                    unit = bresult['standard']['conversionResult']['unit']
+                    if unit == 'T-m':
+                        unit = 'T'
+                    else:
+                        unit = '/'.join((unit, 'm'))
+                    vals.append(unit)
+                    pvs.append("%s.DESC"%v['B'])
+                    vals.append('Conversion succeeded')
+                except ValueError:
+                    pvs.append(v['B'])
+                    vals.append(0.0)
+                    pvs.append("%s.DESC"%v['B'])
+                    vals.append('Conversion error')
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append('T')
+                try:
+                    kresult = conversion('i', 'k', origval, quadparams[k]['municonv'])
+    
+                    pvs.append(v['K'])
+                    vals.append(kresult['standard']['conversionResult']['value'])
+                    unit = kresult['standard']['conversionResult']['unit']
+                    if unit == '1/m2':
+                        unit = '1/m'
+                    else:
+                        unit = '*'.join((unit, 'm'))
+                    pvs.append("%s.EGU"%v['K'])
+                    vals.append(unit)
+                    pvs.append("%s.DESC"%v['K'])
+                    vals.append('Conversion succeeded')
+    
+                except ValueError:
+                    pvs.append(v['K'])
+                    vals.append(0.0)
+                    pvs.append("%s.DESC"%v['K'])
+                    vals.append('Conversion error')
+                    pvs.append("%s.EGU"%v['K'])
+                    vals.append('1/m')
+            elif sextparams.has_key(k):
+                try:
+                    bresult = conversion('i', 'b', origval, sextparams[k]['municonv'])
+                    
+                    pvs.append(v['B'])
+                    val = bresult['standard']['conversionResult']['value']
+                    radius = sextparams[k]['municonv']['standard']['measurementData']['referenceRadius']
+                    vals.append(val/radius**2)
+    
+                    unit = bresult['standard']['conversionResult']['unit']
+                    if unit == 'T-m':
+                        unit = 'T/m'
+                    else:
+                        unit = '/'.join((unit, 'm2'))
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append(unit)
+                    
+                    pvs.append("%s.DESC"%v['B'])
+                    vals.append('Conversion succeeded')
+                except ValueError:
+                    pvs.append(v['B'])
+                    vals.append(0.0)
+                    pvs.append("%s.DESC"%v['B'])
+                    vals.append('Conversion error')
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append('T/m')
+                try:
+                    kresult = conversion('i', 'k', origval, sextparams[k]['municonv'])
+    
+                    pvs.append(v['K'])
+                    vals.append(kresult['standard']['conversionResult']['value'])
+                    
+                    pvs.append("%s.EGU"%v['K'])
+                    unit = kresult['standard']['conversionResult']['unit']
+                    if unit == '1/m3':
+                        unit = '1/m2'
+                    else:
+                        unit = '*'.join((unit, 'm'))
+                    vals.append(unit)
+    
+                    pvs.append("%s.DESC"%v['K'])
+                    vals.append('Conversion succeeded')
+                except ValueError:
+                    pvs.append(v['K'])
+                    vals.append(0.0)
+                    pvs.append("%s.DESC"%v['K'])
+                    vals.append('Conversion error')
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append('1/m2')
+            elif corrparams.has_key(k):
+                try:
+                    pvs.append(v['B'])
+                    vals.append(corrparams[k]*origval)
+    
+                    unit = 'T-m'
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append(unit)
+                    
+                    pvs.append("%s.DESC"%v['B'])
+                    vals.append('Conversion succeeded')
+                except ValueError:
+                    pvs.append(v['B'])
+                    vals.append(0.0)
+                    pvs.append("%s.DESC"%v['B'])
+                    vals.append('Conversion error')
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append('T-m')
+                try:
+                    pvs.append(v['K'])
+                    # B0rho is 10.0007 for NSLS II storage ring
+                    vals.append(corrparams[k]*origval/10.007)
+    
+                    pvs.append("%s.EGU"%v['K'])
+                    unit = 'rad'
+                    vals.append(unit)
+    
+                    pvs.append("%s.DESC"%v['K'])
+                    vals.append('Conversion succeeded')
+                except ValueError:
+                    pvs.append(v['K'])
+                    vals.append(0.0)
+                    pvs.append("%s.DESC"%v['K'])
+                    vals.append('Conversion error')
+                    pvs.append("%s.EGU"%v['B'])
+                    vals.append('rad')
+            else:
+                raise ValueError('Cannot find element for %s'%(k))
+        else:
+            if quadparams.has_key(k):
                 pvs.append(v['B'])
                 vals.append(0.0)
                 pvs.append("%s.DESC"%v['B'])
-                vals.append('Conversion error')
+                vals.append('PS Current PV disconnected')
                 pvs.append("%s.EGU"%v['B'])
                 vals.append('T')
-            try:
-                kresult = conversion('i', 'k', origval, quadparams[k]['municonv'])
-
-                pvs.append(v['K'])
-                vals.append(kresult['standard']['conversionResult']['value'])
-                unit = kresult['standard']['conversionResult']['unit']
-                if unit == '1/m2':
-                    unit = '1/m'
-                else:
-                    unit = '*'.join((unit, 'm'))
-                pvs.append("%s.EGU"%v['K'])
-                vals.append(unit)
-                pvs.append("%s.DESC"%v['K'])
-                vals.append('Conversion succeeded')
-
-            except ValueError:
+                
                 pvs.append(v['K'])
                 vals.append(0.0)
                 pvs.append("%s.DESC"%v['K'])
-                vals.append('Conversion error')
+                vals.append('PS Current PV disconnected')
                 pvs.append("%s.EGU"%v['K'])
                 vals.append('1/m')
-        elif sextparams.has_key(k):
-            try:
-                bresult = conversion('i', 'b', origval, sextparams[k]['municonv'])
-                
-                pvs.append(v['B'])
-                val = bresult['standard']['conversionResult']['value']
-                radius = sextparams[k]['municonv']['standard']['measurementData']['referenceRadius']
-                vals.append(val/radius**2)
-
-                unit = bresult['standard']['conversionResult']['unit']
-                if unit == 'T-m':
-                    unit = 'T/m'
-                else:
-                    unit = '/'.join((unit, 'm2'))
-                pvs.append("%s.EGU"%v['B'])
-                vals.append(unit)
-                
-                pvs.append("%s.DESC"%v['B'])
-                vals.append('Conversion succeeded')
-            except ValueError:
+            elif sextparams.has_key(k):
                 pvs.append(v['B'])
                 vals.append(0.0)
                 pvs.append("%s.DESC"%v['B'])
-                vals.append('Conversion error')
+                vals.append('PS Current PV disconnected')
                 pvs.append("%s.EGU"%v['B'])
                 vals.append('T/m')
-            try:
-                kresult = conversion('i', 'k', origval, sextparams[k]['municonv'])
-
-                pvs.append(v['K'])
-                vals.append(kresult['standard']['conversionResult']['value'])
                 
-                pvs.append("%s.EGU"%v['K'])
-                unit = kresult['standard']['conversionResult']['unit']
-                if unit == '1/m3':
-                    unit = '1/m2'
-                else:
-                    unit = '*'.join((unit, 'm'))
-                vals.append(unit)
-
-                pvs.append("%s.DESC"%v['K'])
-                vals.append('Conversion succeeded')
-            except ValueError:
                 pvs.append(v['K'])
                 vals.append(0.0)
                 pvs.append("%s.DESC"%v['K'])
-                vals.append('Conversion error')
+                vals.append('PS Current PV disconnected')
                 pvs.append("%s.EGU"%v['B'])
                 vals.append('1/m2')
-        elif corrparams.has_key(k):
-            try:
-                pvs.append(v['B'])
-                vals.append(corrparams[k]*origval)
-
-                unit = 'T-m'
-                pvs.append("%s.EGU"%v['B'])
-                vals.append(unit)
-                
-                pvs.append("%s.DESC"%v['B'])
-                vals.append('Conversion succeeded')
-            except ValueError:
+            elif corrparams.has_key(k):
                 pvs.append(v['B'])
                 vals.append(0.0)
                 pvs.append("%s.DESC"%v['B'])
-                vals.append('Conversion error')
+                vals.append('PS Current PV disconnected')
                 pvs.append("%s.EGU"%v['B'])
                 vals.append('T-m')
-            try:
-                pvs.append(v['K'])
-                # B0rho is 10.0007 for NSLS II storage ring
-                vals.append(corrparams[k]*origval/10.007)
-
-                pvs.append("%s.EGU"%v['K'])
-                unit = 'rad'
-                vals.append(unit)
-
-                pvs.append("%s.DESC"%v['K'])
-                vals.append('Conversion succeeded')
-            except ValueError:
+                
                 pvs.append(v['K'])
                 vals.append(0.0)
                 pvs.append("%s.DESC"%v['K'])
-                vals.append('Conversion error')
+                vals.append('PS Current PV disconnected')
                 pvs.append("%s.EGU"%v['B'])
                 vals.append('rad')
-        else:
-            raise ValueError('Cannot find element for %s'%(k))
     try:
         ca.caput(pvs, vals)
     except ca.ca_nothing:
@@ -248,7 +292,7 @@ def startmonitor(pvsdict, readback=False):
         evs = 6
         
     for keypv in pvsdict.keys():
-        monstub.append(ca.camonitor(keypv, callback, events=evs))
+        monstub.append(ca.camonitor(keypv, callback, events=evs, notify_disconnect = True))
         try:
             val = ca.caget(keypv)
             _setpv(keypv, val)
