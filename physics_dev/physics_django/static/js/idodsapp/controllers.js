@@ -998,6 +998,7 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -1045,7 +1046,7 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	$scope.types = [];
 
 	// Retrieve all Component types
-	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
+	cmpntTypeFactory.retrieveCompntTypes({'all_cmpnt_types': true}).then(function(result) {
 
 		$.each(result, function(i, item){
 			$scope.types.push(item.name);
@@ -1112,7 +1113,7 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[4];
+	$scope.search.type = dataTypes[6];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1123,8 +1124,23 @@ app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
 
 	// Item search button click
 	$scope.searchForItem = function(search) {
+
+		// Set description if is not set
+		if (search.description === undefined || search.description === "") {
+			search.description = "*";
+		}
+
 		search.search = new Date().getTime();
-		var newLocation = createRouteUrl(search, "install_rel", ["name"]) + "/list";
+		var newLocation = createRouteUrl(search, "install_rel", ["description", "parent_install"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.showTree = function(search) {
+		search.description = "";
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "install_rel", ["description", "parent_install"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -1133,7 +1149,7 @@ app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
 /*
  * List items in the middle pane
  */
-app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $window, InstallRelInfo, InstallRel, installRelFactory) {
+app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $window, $sce, InstallRelInfo, InstallRel, installRelFactory) {
 	// Remove image from the middle pane if there is something to show
 	$scope.style.middle_class = "container-scroll-middle-no-img";
 
@@ -1141,18 +1157,58 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 	$scope.info = InstallRelInfo;
 
 	$scope.items = [];
+
 	var previousItem = undefined;
 	$scope.tree = {};
+	$scope.showTree = false;
 
-	installRelFactory.retrieveItem({'install_name': 'Trees'}).then(function(result) {
+	if ($routeParams.description === undefined) {
+		$scope.showTree = true;
 
-		l(result);
-		$("#tree").html(drawDataTree("", result, 0));
-	});
+		installRelFactory.retrieveTree({'install_name': 'Trees'}).then(function(result) {
+
+			l(result);
+			//$scope.tree = $sce.trustAsHtml(drawDataTree("", result, 0));
+			$scope.tree = drawDataTree("", result, 0);
+			//$("#tree").html(drawDataTree("", result, 0));
+		});
+	
+	} else {
+
+		installRelFactory.retrieveItems($routeParams).then(function(result) {
+
+			l(result);
+
+			$.each(result, function(i, item){
+
+				// Build customized object
+				var newItem = new InstallRel(item);
+
+				// Alternate background colors
+				if(i%2 === 0) {
+					newItem.color = "bg_dark";
+
+				} else {
+					newItem.color = "bg_light";
+				}
+
+				$scope.items.push(newItem);
+			});
+			$scope.items.reverse();
+		});
+	}
 	
 	// Show add form in the right pane
-	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, "install_rel", ["name"]) + "/id/new/action/save";
+	$scope.addItem = function(parent) {
+
+		if (parent !== undefined) {
+			$routeParams.parent_install = parent;
+		}
+
+		l(parent);
+
+		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/new/action/save";
+		l(location);
 		$window.location = location;
 	}
 
@@ -1171,7 +1227,14 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 		$routeParams.click = "item_click";
 		$routeParams.name = item.name;
 
-		var location = createRouteUrl($routeParams, "install_rel", ["name"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+
+	// Show details when user selects item from a list
+	$scope.showTreeNodeDetails = function(id) {
+
+		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -1179,7 +1242,7 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 /*
  * Show details in the right pane
  */
-app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $window, InstallRelInfo, InstallRel, installRelFactory, EntityError){
+app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $window, InstallRelInfo, InstallRel, installRelFactory, EntityError, installFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1188,20 +1251,42 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = InstallRelInfo;
+	$scope.installs = [];
+	$scope.parentDisabled = false;
+
+	// Get install
+	installFactory.retrieveItems({'name': '*', 'all_install': 'True'}).then(function(result) {
+		$.each(result, function(i, item){
+
+			$scope.installs.push(item.name);
+		});
+
+		l($scope.isntalls);
+	});
 
 	// Get install rel type from the factory if updating
 	if($routeParams.action != "save") {
 		
 		installRelFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
-			$scope.element.old_name = result.name;
+			$scope.element.child_install = result.childname;
+			$scope.element.parent_install = result.parentname;
 			l($scope.element);
 		});
+	
+	} else {
+		$scope.new.parent_install = $routeParams.parent_install;
+		$scope.new.parentname = $routeParams.parent_install;
+	}
+
+	// Disable parent if parent is set in url
+	if ($routeParams.parent_install !== undefined && $routeParams.parent_install != "") {
+		$scope.parentDisabled = true;
 	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "install_rel", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 	
@@ -1249,7 +1334,7 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[4];
+	$scope.search.type = dataTypes[7];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1400,7 +1485,7 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[6];
+	$scope.search.type = dataTypes[8];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1552,7 +1637,7 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[7];
+	$scope.search.type = dataTypes[9];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1704,7 +1789,7 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[8];
+	$scope.search.type = dataTypes[10];
 
 	// Change entity
 	$scope.changeEntity = function() {

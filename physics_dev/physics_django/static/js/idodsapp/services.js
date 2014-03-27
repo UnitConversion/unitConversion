@@ -527,15 +527,15 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		return checkItem(this.entity, this.error);
 	}
 
-	// Get install rel type from server
-	factory.retrieveItem = function(item) {
+	// Get install rel tree from server
+	factory.retrieveTree = function(item) {
 
 		if(item !== undefined) {
 			this.setItem(item);
 		}
 		
 		var query = serviceurl + "/trees/?";
-		query += prepareUrlParameters(this.entity.search_m, this.entity);
+		query += prepareUrlParameters(["install_name"], this.entity);
 
 		var deffered = $q.defer();
 		var promise = deffered.promise;
@@ -550,9 +550,19 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		return promise;
 	}
 
+	// Get install from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "installrel", this.entity, InstallRel);
+	}
+
 	// Get install rel type from server
 	factory.retrieveItems = function(params) {
-		return retrieveItems($q, $http, "installrelproptype", this.entity.list, params, this.entity.search_m);
+		return retrieveItems($q, $http, "installrel", this.entity.list, params, this.entity.search_m);
 	}
 
 	// Save new install rel type
@@ -562,7 +572,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 			this.setItem(item);
 		}
 
-		return saveItem($q, $http, "saveinstallrelproptype", this.entity);
+		return saveItem($q, $http, "saveinstallrel", this.entity);
 	}
 
 	// Update install rel type
@@ -572,7 +582,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 			this.setItem(item);
 		}
 
-		return updateItem($q, $http, "updateinstallrelproptype", this.entity);
+		return updateItem($q, $http, "updateinstallrel", this.entity);
 	}
 
 	return factory;

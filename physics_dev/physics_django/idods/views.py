@@ -150,7 +150,7 @@ Retrieve component type
 '''
 @require_http_methods(["GET"])
 def retrieveCompntTypeWS(request):
-    return _retrieveData(request, idodsi.retrieveComponentType, ['name', 'description'])
+    return _retrieveData(request, idodsi.retrieveComponentType, ['name', 'description', 'all_cmpnt_types'])
 
 '''
 Save component type
@@ -234,7 +234,7 @@ Retrieve install
 '''
 @require_http_methods(["GET"])
 def retrieveInstallWS(request):
-    return _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
+    return _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter', 'all_install'])
 
 '''
 Save install

@@ -39,8 +39,8 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',		'index.install.list.details').
 
 		when('/install_rel',																								'index.install_rel').
-		when('/install_rel/search/:search/name/:name?/list',																'index.install_rel.list').
-		when('/install_rel/search/:search/name/:name?/id/:id/action/:action',												'index.install_rel.list.details').
+		when('/install_rel/search/:search/description/:description?/parent_install/:parent_install?/list',					'index.install_rel.list').
+		when('/install_rel/search/:search/description/:description?/parent_install/:parent_install?/id/:id/action/:action',	'index.install_rel.list.details').
 
 		when('/install_rel_type',																							'index.install_rel_type').
 		when('/install_rel_type/search/:search/name/:name?/list',															'index.install_rel_type.list').
@@ -204,7 +204,7 @@ app.config(function($routeSegmentProvider, $routeProvider){
 					segment('details', {
 						templateUrl: 'details/install_rel.html',
 						controller: 'showInstallRelCtrl',
-						dependencies: ['id', 'action']
+						dependencies: ['id', 'action', 'parent_install']
 					}).
 				up().
 			up().
@@ -294,5 +294,5 @@ app.config(function($routeSegmentProvider, $routeProvider){
 			up().
 		up();
 	
-		$routeProvider.otherwise({redirectTo: '/vendor'});
+		//$routeProvider.otherwise({redirectTo: '/vendor'});
 });

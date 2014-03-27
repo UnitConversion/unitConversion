@@ -51,9 +51,10 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 							
-							<select ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
+							<select ng-if="property == 'child_install'" ng-model="new[property]" ng-options="install for install in installs"></select>
+							<select ng-disabled="parentDisabled" ng-if="property == 'parent_install'" ng-model="new[property]" ng-options="install for install in installs"></select>
 							
-							<input ng-if="property != 'cmpnt_type'" type="text" ng-model="new[property]" />
+							<input ng-if="property != 'child_install' && property != 'parent_install'" type="text" ng-model="new[property]" />
 							
 							<span class="help-inline">{{error[property]}}</span>
 						</span>

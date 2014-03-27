@@ -10,7 +10,13 @@
 		<br />
 		<br />
 	</div>
-
+	<div class="">
+		Install name:
+		<br />
+		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.install_name" name="install_name" />
+		<br />
+		<br />
+	</div>
 	<div class="">
 		Description:
 		<br />
@@ -20,12 +26,6 @@
 	</div>
 	<div class="">
 		<button ng-click="searchForItem(search)" class="btn">Search</button>
-	</div>
-
-	<hr />
-
-	<div class="">
-		<button ng-click="showTree(search)" class="btn">Show tree</button>
 	</div>
 </div>
 {% endverbatim %}

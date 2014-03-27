@@ -85,7 +85,7 @@ app.value('CmpntTypeInfo', {
  	this.m = ["name"];
  	this.search_m = ["name"];
  	this.retrieve = ["id", "name", "description"];
- 	this.list = ["name", "description"];
+ 	this.list = ["name", "description", "all_cmpnt_types"];
  	this.save = ["name", "description", "props"];
  	this.save_show = ["name", "description"];
  	this.update = ["old_name", "name", "description", "props"];
@@ -390,38 +390,47 @@ app.value('InstallRelInfo', {
  app.value('InstallRel', function(obj){
  	
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name"];
+ 	this.m = ["description"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["install_name"];
+ 	this.search_m = ["description"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "name", "description", "unit"];
+ 	this.retrieve = ["id", "parentname", "childname", "description", "order", "date"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "description", "unit"];
+ 	this.list = ["parent_install", "child_install", "description", "order"];
 
  	// Parameters used for save URL
- 	this.save = ["name", "description", "unit"];
+ 	this.save = ["parent_install", "child_install", "description", "order"];
  	
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "description", "unit"];
+ 	this.save_show = ["parent_install", "child_install", "description", "order"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["old_name", "name", "description", "unit"];
+ 	this.update = ["parent_install", "child_install", "description", "order"];
 
  	this.display = {
  		"id": "Id",
- 		"name": "Name",
+ 		"parentname": "Parent name",
+ 		"parent_install": "Parent name",
+ 		"childname": "Child name",
+ 		"child_install": "Child name",
  		"description": "Description",
- 		"unit": "Unit"
+ 		"order": "Order",
+ 		"date": "Date created"
  	};
 
  	this.id = "";
  	this.old_name = "";
  	this.install_name = "";
+ 	this.parentname = "";
+ 	this.childname = "";
+ 	this.order = undefined;
  	this.description = "";
- 	this.unit = "";
+ 	this.date = "";
+ 	this.parent_install = "";
+ 	this.child_install = "";
 
  	this.set = function(obj) {
 
@@ -436,7 +445,12 @@ app.value('InstallRelInfo', {
 
  		this.install_name = obj.install_name;
  		this.description = obj.description;
- 		this.unit = obj.unit;
+ 		this.date = obj.date;
+ 		this.order = obj.order;
+ 		this.childname = obj.childname;
+ 		this.parentname = obj.parentname;
+ 		this.parent_install = obj.parent_install;
+ 		this.child_install = obj.child_install;
  	}
 
  	if(obj !== undefined) {
@@ -547,7 +561,7 @@ app.value('InstallInfo', {
  	this.retrieve = ["id", "name", "cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter", "all_install"];
 
  	// Parameters used for save URL
  	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
@@ -570,7 +584,7 @@ app.value('InstallInfo', {
  	this.name = "";
  	this.cmpnt_type = "";
  	this.description = "";
- 	this.coordinatecenter = "";
+ 	this.coordinatecenter = undefined;
 
  	this.set = function(obj) {
 

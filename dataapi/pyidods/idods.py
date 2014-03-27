@@ -3659,7 +3659,7 @@ class idods(object):
             raise ValueError("Same relationship already exists in the database!")
         
         # Check if parent exists in install
-        existingParent = self.retrieveInstall(parent_install)
+        existingParent = self.retrieveInstall(parent_install, all_install=True)
         
         if len(existingParent) == 0:
             raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
@@ -3668,7 +3668,7 @@ class idods(object):
         parentObject = existingParent[parentKeys[0]]
         
         # Check if child exists in install
-        existingChild = self.retrieveInstall(child_install)
+        existingChild = self.retrieveInstall(child_install, all_install=True)
         
         if len(existingChild) == 0:
             raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
@@ -3713,7 +3713,7 @@ class idods(object):
                 
             return {'id': idrel}
            
-        except MySQLdb.Error as e:
+        except Exception as e:
             
             # Rollback changes
             if self.transaction == None:
@@ -3750,7 +3750,7 @@ class idods(object):
         whereDict = {}
         
         # Check if parent exists in install
-        existingParent = self.retrieveInstall(parent_install)
+        existingParent = self.retrieveInstall(parent_install, all_install=True)
         
         if len(existingParent) == 0:
             raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
@@ -3761,7 +3761,7 @@ class idods(object):
         whereDict['parent_install_id'] = parentObject['id']
         
         # Check if child exists in install
-        existingChild = self.retrieveInstall(child_install)
+        existingChild = self.retrieveInstall(child_install, all_install=True)
         
         if len(existingChild) == 0:
             raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
@@ -3974,7 +3974,22 @@ class idods(object):
             self.logger.info('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def retrieveTrees(self, install_name, tree = None):
+    def retrieveTrees(self, install_name, rel_id = None, tree = None):
+        '''
+        Retrieve installation relation as a tree
+        
+        :param install_name: name of the install
+        :type install_name: str
+        
+        :param rel_id: relation id
+        :type rel_id: int
+        
+        :param tree: current tree structure
+        :type tree: str
+        
+        :return:
+            install relations in a tree
+        '''
         
         if tree == None:
             tree = {}
@@ -3982,13 +3997,14 @@ class idods(object):
         tree[install_name] = {}
         tree[install_name]['children'] = {}
         tree[install_name]['name'] = install_name
+        tree[install_name]['id'] = rel_id
         newTree = tree[install_name]['children']
         
         children = self.retrieveInstallRel(None, install_name)
         
         for childKey in children.keys():
             child = children[childKey]
-            self.retrieveTrees(child['childname'], newTree)
+            self.retrieveTrees(child['childname'], child['id'], newTree)
         
         return tree
 
@@ -4227,11 +4243,12 @@ class idods(object):
             
         returns:
             {'id': {
-                    'id':                #int,
-                    'name':              #string,
-                    'description':       #string,
-                    'cmpnt_type':         #string,
-                    'coordinatecenter':  #float
+                    'id':                     #int,
+                    'name':                   #string,
+                    'description':            #string,
+                    'cmpnt_type':             #string,
+                    'cmpnt_type_description': #string,
+                    'coordinatecenter':       #float
                 }
             }
         '''
@@ -4247,7 +4264,8 @@ class idods(object):
             inst.field_name,
             inst.location,
             inst.coordinate_center,
-            ct.cmpnt_type_name
+            ct.cmpnt_type_name,
+            ct.description
         FROM install inst
         LEFT JOIN cmpnt_type ct ON(inst.cmpnt_type_id = ct.cmpnt_type_id)
         WHERE 1=1
@@ -4256,7 +4274,7 @@ class idods(object):
         vals = []
         
         # Exclude all system component types
-        if 'all_install' in kws == False or ('all_install' in kws and kws['all_install'] == False):
+        if ('all_install' in kws) == False or ('all_install' in kws and kws['all_install'] == False):
             sql += ' AND ct.description != %s '
             vals.append('__system__')
         
@@ -4291,7 +4309,8 @@ class idods(object):
                     'name': r[2],
                     'description': r[3],
                     'cmpnt_type': r[5],
-                    'coordinatecenter': r[4]
+                    'coordinatecenter': r[4],
+                    'cmpnt_type_description': r[6]
                 }
                 
             return resdict

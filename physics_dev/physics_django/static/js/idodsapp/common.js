@@ -96,7 +96,10 @@ function prepareUrlParameters(listOfKeys, dictOfValues, listOfMandatoryKeys) {
 	$.each(listOfKeys, function(i, key) {
 
 		if(key in dictOfValues) {
-			params.push(key + "=" + dictOfValues[key]);
+
+			if (dictOfValues[key] !== undefined) {
+				params.push(key + "=" + dictOfValues[key]);
+			}
 		
 		} else if(listOfMandatoryKeys && listOfMandatoryKeys.indexOf(key) >= 0) {
 			params.push(key + "=*");
@@ -829,10 +832,10 @@ function drawDataTree(html, data, level){
 			l(prop);
 			l(data);
 			html += "<li>";
-			html += "<b>" + prop + "</b>";
+			html += "<b><a href ng-click='showTreeNodeDetails(\"" + data[prop]['id'] + "\")'>" + prop + "</a></b>";
 
 			if (level > 0) {
-				html += " <a href='#'>Add child</a>";
+				html += " <a ng-click='addItem(\"" + prop + "\")' href>Add child</a>";
 			}
 
 			// Find object
