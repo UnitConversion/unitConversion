@@ -1,4 +1,5 @@
 import sys, os
+import traceback
 import time
 
 from numpy import matrix
@@ -477,7 +478,11 @@ def runlatticemodel(is4setpoint):
     
     generatelivelat(livelat, is4setpoint=is4setpoint)
     if is4setpoint:
-        ca.caput(statussppv, 'Running...', wait=True)
+        try:
+            #consume status output error
+            ca.caput(statussppv, 'Running...', wait=True)
+        except ca.ca_nothing:
+            print traceback.format_exc()
         pvs = [alphaxsplive, alphaysplive, 
                betaxsplive, betaysplive, 
                etaxsplive, etaysplive, 
@@ -495,7 +500,11 @@ def runlatticemodel(is4setpoint):
         locstatuspv = statussppv
         source = 'set point'
     else:
-        ca.caput(statusrbpv, 'Running...', wait=True)
+        try:
+            #consume status output error
+            ca.caput(statusrbpv, 'Running...', wait=True)
+        except ca.ca_nothing:
+            print traceback.format_exc()
         pvs = [alphaxrblive, alphayrblive, 
                betaxrblive, betayrblive, 
                etaxrblive, etayrblive, 
@@ -602,6 +611,8 @@ def main(designlat, designversion, init=True):
                 designresult['energy'],
                 energyforsimulation,
                ]
+        
+        # do not need to capture the error.
         ca.caput(pvs, vals, wait=True)
         
         global elems
@@ -626,6 +637,7 @@ def main(designlat, designversion, init=True):
         for k, v in pvrbsdict.iteritems():
             rbpvs.append(v['K'])
         
+        # do not need to capture the error.
         vals = ca.caget(sppvs)
         for i in range(len(elems)):
             assert sppvs[i] == vals[i].name

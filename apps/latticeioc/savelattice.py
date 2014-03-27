@@ -109,7 +109,9 @@ def _readtracyresult(latfile, result):
     
     modeldata={'simulationCode': 'tracy3',
                'sumulationAlgorithm': 'SI'}
-    beamparameter={}
+    
+    # store beam parameter in order
+    beamparameter=OrderedDict()
     head = ['name','position',
             'alphax','betax','phasex','etax','etapx',
             'alphay','betay','phasey','etay','etapy',

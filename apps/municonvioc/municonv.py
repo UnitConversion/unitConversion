@@ -1,6 +1,8 @@
 import os
 import sys
 
+import traceback
+
 import numpy as np
 
 import cothread.catools as ca
@@ -229,8 +231,10 @@ def _setpv(pvname, origval):
                 vals.append('rad')
         else:
             raise ValueError('Cannot find element for %s'%(k))
-    
-    ca.caput(pvs, vals)
+    try:
+        ca.caput(pvs, vals)
+    except ca.ca_nothing:
+        print traceback.format_exc()
     
 def startmonitor(pvsdict, readback=False):
     '''
@@ -245,7 +249,11 @@ def startmonitor(pvsdict, readback=False):
         
     for keypv in pvsdict.keys():
         monstub.append(ca.camonitor(keypv, callback, events=evs))
-        _setpv(keypv, ca.caget(keypv))
+        try:
+            val = ca.caget(keypv)
+            _setpv(keypv, val)
+        except ca.ca_nothing:
+            print traceback.format_exc()
     
     return monstub
 
