@@ -64,9 +64,10 @@
 
 		<input ng-model="raw.search.from" title="From" type="text" placeholder="From ..." />
 		<input ng-model="raw.search.to" title="To" type="text" placeholder="To ..." />
-		<select ng-model="raw.search.detail" title="Details type">
+		<!-- <select ng-model="raw.search.detail" title="Details type">
 			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
-		</select>
+		</select> -->
+		<select ng-model="raw.search.detail" title="Details type" ng-options="detail.value for detail in raw.modelDetails"></select>
 		<br/>
 		<button class="btn" ng-click="searchForModelDetails()">Search</button>
 		<br/>

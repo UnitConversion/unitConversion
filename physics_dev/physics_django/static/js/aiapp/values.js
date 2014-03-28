@@ -248,9 +248,7 @@ app.value('InsertionDevice', function(obj) {
  		this.props = JSON.stringify(this.props_raw);
 	}
 
-	this.set = function(obj) {
-		l(this.all);
-		l(obj);
+	this.setObj = function(obj) {
 
 		if(obj === undefined || this.all === undefined) {
  			return undefined;
@@ -262,6 +260,6 @@ app.value('InsertionDevice', function(obj) {
 	}
 
 	if(obj !== undefined) {
- 		this.set(obj);
+ 		this.setObj(obj);
  	}
 });

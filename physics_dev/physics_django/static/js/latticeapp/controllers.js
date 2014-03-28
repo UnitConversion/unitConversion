@@ -134,7 +134,15 @@ app.controller('searchFormCtrl', function($scope, $window, $routeParams, $locati
 	// Model search button click
 	$scope.searchForModel = function(search) {
 		var newLocation = createModelListQuery(search, true) + "/list";
-		$window.location = newLocation;
+		var currentPath = "#"+$location.path();
+		
+		// If location won't change, reload the page
+		if (newLocation === currentPath) {
+			$window.location.reload();
+
+		} else {
+			$window.location = newLocation;
+		}
 	};
 
 	$scope.$watch('search.status', function(newValue, oldValue) {
@@ -626,6 +634,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
 	$scope.raw.search = {};
+	$scope.raw.search.detail = "retrieveTwiss";
 	$scope.raw.search.precision = 4;
 	$scope.raw.data = {};
 	$scope.raw.header = {};
@@ -705,9 +714,16 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 
 	// Plot data when properties are selected
 	$scope.plotData = function() {
+		$scope.settings = {'interactiveZoom': false};
 		$scope.plotPlaceholder.show = true;
 		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
 	};
+
+	$scope.enableInteractiveZoom = function() {
+		($scope.settings['interactiveZoom']) ? $scope.settings['interactiveZoom'] = false : $scope.settings['interactiveZoom'] = true;
+		$scope.plotPlaceholder.show = true;
+		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+	}
 
 	// Export data to csv file
 	$scope.exportData = function() {

@@ -56,7 +56,14 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					
+					<span class="control-group" ng-class="{'error': error[property]}">
+						<span class="controls">
+							
+							<input type="text" ng-model="new[property]" />
+							
+							<span class="help-inline">{{error[property]}}</span>
+						</span>
+					</span>
 				</td>
 			</tr>
 		</table>

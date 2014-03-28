@@ -52,8 +52,13 @@
 
 			<br/>
 			<br/>
+
+			<div ng-show="plotPlaceholder.show" class="alert alert-info">
+				<strong>Quick Tip!</strong> Click on a plot to enable or disable interactive zoom
+			</div>
+
 			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">
-				<div class="placeholder"></div>
+				<div ng-click="enableInteractiveZoom()" class="placeholder"></div>
 				<div class='x_label axisLabel xaxisLabel'></div>
 				<div class='y2_label axisLabel yaxis2Label'></div>
 				<div class='y_label axisLabel yaxisLabel'></div>
@@ -64,9 +69,10 @@
 
 		<input ng-model="raw.search.from" title="From" type="text" placeholder="From ..." />
 		<input ng-model="raw.search.to" title="To" type="text" placeholder="To ..." />
-		<select ng-model="raw.search.detail" title="Details type">
+		<!-- <select ng-model="raw.search.detail" title="Details type">
 			<option ng-repeat="modelDetail in raw.modelDetails" value="{{modelDetail.value}}">{{modelDetail.name}}</option>
-		</select>
+		</select> -->
+		<select ng-model="raw.search.detail" title="Details type" ng-options="detail.value as detail.name for detail in raw.modelDetails"></select>
 		<br/>
 		<button class="btn" ng-click="searchForModelDetails()">Search</button>
 		<br/>

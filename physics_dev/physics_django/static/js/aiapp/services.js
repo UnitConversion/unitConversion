@@ -225,11 +225,13 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
  */
 app.factory('idFactory', function($http, $q, InsertionDevice){
 	var factory = {};
-	factory.id = new InsertionDevice();
+	factory.idO = new InsertionDevice();
 
 	// Set item
 	factory.setItem = function(item) {
-		factory.id.set(item);
+		l("set factory");
+		l(factory.idO);
+		factory.idO.setObj(item);
 	}
 
 	// Check if all mandatory parameters are set
@@ -250,7 +252,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 	factory.retrieveItems = function(params) {
 		var query = serviceurl + "/ai/device/?";
 		params['definition'] = 'id';
-		query += prepareUrlParameters(factory.id.retrieve, params, factory.id.retrieve_m);
+		query += prepareUrlParameters(factory.idO.retrieve, params, factory.idO.retrieve_m);
 
 		var deffered = $q.defer();
 		var promise = deffered.promise;
@@ -273,11 +275,11 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 		}
 
 		var query = serviceurl + "/ai/savedevice/";
-		factory.id.definition = "id";
+		factory.idO.definition = "id";
 
-		l(factory.id);
+		l(factory.idO);
 
-		var params = prepareUrlParameters(factory.id.save, factory.id);
+		var params = prepareUrlParameters(factory.idO.save, factory.idO);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 
@@ -296,7 +298,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 
 		var query = serviceurl + "/ai/updateprop/";
 
-		var params = prepareUrlParameters(factory.id.update, params);
+		var params = prepareUrlParameters(factory.idO.update, params);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 
@@ -316,7 +318,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 
 		var query = serviceurl + "/ai/updatedevice/";
 
-		var params = prepareUrlParameters(factory.id.update_device, params);
+		var params = prepareUrlParameters(factory.idO.update_device, params);
 		l(params);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
@@ -335,7 +337,7 @@ app.factory('idFactory', function($http, $q, InsertionDevice){
 	factory.approveItem = function(params) {
 		var query = serviceurl + "/ai/approve/";
 
-		var params = prepareUrlParameters(factory.id.approve, params);
+		var params = prepareUrlParameters(factory.idO.approve, params);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 

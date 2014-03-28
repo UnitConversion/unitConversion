@@ -697,7 +697,7 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 			position: "right"
 		}],
 		zoom: {
-			interactive: true
+			interactive: scope.settings.interactiveZoom
 		},
 		pan: {
 			interactive: true

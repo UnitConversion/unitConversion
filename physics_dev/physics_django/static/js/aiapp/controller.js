@@ -7,7 +7,6 @@
 
 app.controller('indexCtrl', function($scope){
 	$scope.version = version;
-	l("reload");
 });
 
 app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statusFactory, authFactory){
@@ -95,7 +94,6 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 
 	$scope.activateDataset = function() {
 		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['active'], "definition":"bm"}).then(function(data) {
-			l("ok");
 			$window.location = "#/status/active/tab/bm/bm/";
 
 		}, function(error) {
@@ -115,8 +113,6 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	var aiStatus = aiStatusMap[$routeParams.status];
 	$scope.urlTab = $routeParams.tab;
 
-	l("bm controller");
-
 	// If status is not defined, skip this controller
 	if ($routeParams.status === undefined) {
 		return;
@@ -124,8 +120,6 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 
 	// Retrieve bending magnets
 	bmFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
-
-		l(result);
 
 		$.each(result, function(i, item){
 
@@ -139,8 +133,6 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 
 	// Retrieve logic
 	logicFactory.retrieveItems({'status': 3}).then(function(result) {
-
-		l(result);
 
 		$.each(result, function(i, item){
 
@@ -163,7 +155,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 			$scope.alert.show = true;
 			$scope.alert.success = false;
 			$scope.alert.title = "Error!";
-			$scope.alert.body = "Before adding a new device, logic must be inserted and approved!";
+			$scope.alert.body = "Before adding new data, logic must be inserted and approved!";
 
 			return;
 		}
@@ -264,7 +256,6 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 		$scope.newBm.ai_status = aiStatus;
 
 		$scope.error = bmFactory.checkItem($scope.newBm);
-		l($scope.error);
 
 		if (Object.keys($scope.error).length === 0) {
 			$scope.newBm.updateProps();
@@ -275,7 +266,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
-				$scope.alert.body = "Device successfully saved!";
+				$scope.alert.body = "Data successfully saved!";
 
 				bmFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
 
@@ -317,8 +308,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	$scope.urlTab = $routeParams.tab;
 	$scope.logicShapeDict = {};
 
-	l("id controller");
-
 	// If status is not defined, skip this controller
 	if ($routeParams.status === undefined) {
 		return;
@@ -326,8 +315,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 
 	// Retrieve insertion devices
 	idFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
-
-		l(result);
 
 		$.each(result, function(i, item){
 
@@ -341,8 +328,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 
 	// Retrieve logic
 	logicFactory.retrieveItems({'status': 3}).then(function(result) {
-
-		l(result);
 
 		$.each(result, function(i, item){
 
@@ -360,26 +345,23 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	}
 
 	$scope.addRow = function(item) {
-		l("add row " + item);
+		l("add row ");
 		$scope.alert.show = false;
 
 		if($scope.logicArr.length == 0) {
 			$scope.alert.show = true;
 			$scope.alert.success = false;
 			$scope.alert.title = "Error!";
-			$scope.alert.body = "Before adding a new device, logic must be inserted and approved!";
+			$scope.alert.body = "Before adding new data, logic must be inserted and approved!";
 
 			return;
 		}
 
 		$scope.newInsD = new InsertionDevice();
-		l($scope.newInsD);
-		//$scope.newInsD.bm_type = "BPM";
 
 		// Set properties if Copy&Create action
 		if (item !== undefined) {
-			l("set!");
-			$scope.newInsD.set(item);
+			$scope.newInsD.setObj(item);
 		}
 	}
 
@@ -471,7 +453,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		$scope.newInsD.ai_status = aiStatus;
 
 		$scope.error = idFactory.checkItem($scope.newInsD);
-		l($scope.error);
 
 		if (Object.keys($scope.error).length === 0) {
 			$scope.newInsD.updateProps();
@@ -482,11 +463,9 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
-				$scope.alert.body = "Device successfully saved!";
+				$scope.alert.body = "Data successfully saved!";
 
 				idFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
-
-					l(result);
 					$scope.idArr = [];
 
 					$.each(result, function(i, item){
@@ -526,8 +505,6 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 
 	logicFactory.retrieveItems({}).then(function(result) {
 
-		l(result);
-
 		$.each(result, function(i, item){
 
 			// Build customized object
@@ -554,10 +531,8 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 	$scope.saveItem = function(newItem) {
 		$scope.alert.show = false;
 		$scope.newLogic = new Logic(newItem);
-		l($scope.newLogic);
 
 		$scope.error = logicFactory.checkItem($scope.newLogic);
-		l($scope.error);
 
 		if (Object.keys($scope.error).length === 0) {
 			var promise = logicFactory.saveItem($scope.newLogic);
@@ -571,7 +546,6 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 
 				logicFactory.retrieveItems({}).then(function(result) {
 
-					l(result);
 					$scope.logicArr = [];
 
 					$.each(result, function(i, item){
@@ -637,11 +611,8 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 
 app.controller('historyCtrl', function($scope, headerFactory, History, $window){
 	$scope.historyArr = [];
-	l("history controller");
 
 	headerFactory.retrieveHeader().then(function(result) {
-
-		l(result);
 
 		$.each(result, function(i, item){
 
@@ -823,10 +794,6 @@ app.controller('approveDatasetCtrl', function($scope, $modalInstance, $window, s
 	$scope.showFinishButton = false;
 	var types = [];
 	$scope.message = "The whole dataset will be approved. Do you want to continue?";
-
-	l("id arr");
-	l(idNum);
-	l(bmNum);
 
 	if (statuses.approved > 0) {
 		$scope.message = "There is a dataset with status approved. All data will be lost! Do you want to continue?";
