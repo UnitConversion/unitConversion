@@ -324,6 +324,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		});
 
 		idNum = $scope.idArr.length;
+		l($scope.idArr);
 	});
 
 	// Retrieve logic
@@ -716,6 +717,7 @@ app.controller('approveCellCtrl', function($scope, $modalInstance, $window, bmFa
 		// Set status to approved
 		if (device.prop_statuses[type_name] === 2) {
 			device.prop_statuses[type_name] = 3;
+			device.prop_statuses.num_unapproved -=1;
 		}
 
 		$modalInstance.dismiss('cancel');
@@ -777,6 +779,7 @@ app.controller('approveRowCtrl', function($scope, $modalInstance, $window, bmFac
 
 			if (status === 2) {
 				device.prop_statuses[prop] = 3;
+				device.prop_statuses.num_unapproved = 0;
 			}
 		});
 

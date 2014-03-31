@@ -78,12 +78,12 @@
 				<button ng-click="approveCell(bm, 'bm_aiolv')" ng-if="bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
 			</td>
 			<td>
-				<button ng-click="approveRow(bm)" class="btn btn-default">Approve</button>
+				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
 				<button ng-click="addRow(bm)" class="btn btn-default">Copy&Create</button>
 			</td>
 		</tr>
 		<tr ng-if="newBm">
-			<td ng-repeat="prop in newBm.save_display track by $index">
+			<td ng-repeat="prop in newBm.save_display track by $index" ng-class="{'danger': newBm.approvable[prop] == true}">
 				<span class="form-group" ng-class="{'has-error': error[prop]}">
 					<input ng-if="prop != 'logic'" type="text" ng-model="newBm[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
 					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>

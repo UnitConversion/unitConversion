@@ -113,6 +113,9 @@ app.value('BendingMagnet', function(obj) {
 
 	// Approve parameters
 	this.approve = ["aid_id", "prop_types"];
+
+	// Cells that need to be approved after saving
+	this.approvable = {"bm_aiolh":true, "bm_aiolv":true};
 	
 	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv"];
 
@@ -168,10 +171,10 @@ app.value('InsertionDevice', function(obj) {
 	this.save = ["ai_status", "name", "definition", "logic", "props"];
 
 	// Save parameters in data
-	this.save_data = ["cell", "type", "set", "str_sect", "defined_by", "pos", "pos_from_cent", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_post_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_post_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
+	this.save_data = ["cell", "type", "set", "str_sect", "defined_by", "pos", "pos_from_cent", "safe_current", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_name_s1", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_name_s2", "x_lat_pos_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_name_s1", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_name_s2", "y_lat_pos_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
 	
 	// Parameters that are displayed for saving
-	this.save_display = ["cell", "type", "set", "str_sect", "logic", "shape", "defined_by", "name", "pos", "pos_from_cent", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_post_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_post_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
+	this.save_display = ["cell", "type", "set", "str_sect", "logic", "shape", "defined_by", "name", "pos", "pos_from_cent", "safe_current", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_name_s1", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_name_s2", "x_lat_pos_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_name_s1", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_name_s2", "y_lat_pos_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
 
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name", "definition"];
@@ -187,8 +190,11 @@ app.value('InsertionDevice', function(obj) {
 
 	// Approve parameters
 	this.approve = ["aid_id", "prop_types"];
-	
-	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "pos", "pos_from_cent", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_post_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_post_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
+
+	// Cells that need to be approved after saving
+	this.approvable = {"x_max_offset": true, "x_max_angle": true, "x_extra_offset": true, "x_lat_name_s1": true, "x_lat_pos_s1": true, "x_pos_from_cent_s1": true, "x_offset_s1": true, "x_logic_1": true, "x_lat_name_s2": true, "x_lat_pos_s2": true, "x_pos_from_cent_s2": true, "x_offset_s2": true, "x_lat_pos_s3": true, "x_pos_from_cent_s3": true, "x_offset_s3": true, "x_logic_2": true, "x_angle": true, "y_max_offset": true, "y_max_angle": true, "y_extra_offset": true, "y_lat_name_s1": true, "y_lat_pos_s1": true, "y_pos_from_cent_s1": true, "y_offset_s1": true, "y_logic_1": true, "y_lat_name_s2": true, "y_lat_pos_s2": true, "y_pos_from_cent_s2": true, "y_offset_s2": true, "y_lat_pos_s3": true, "y_pos_from_cent_s3": true, "y_offset_s3": true, "y_logic_2": true, "y_angle": true};
+
+	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "pos", "pos_from_cent", "safe_current", "x_max_offset", "x_max_angle", "x_extra_offset", "x_lat_name_s1", "x_lat_pos_s1", "x_pos_from_cent_s1", "x_offset_s1", "x_logic_1", "x_lat_name_s2", "x_lat_pos_s2", "x_pos_from_cent_s2", "x_offset_s2", "x_lat_pos_s3", "x_pos_from_cent_s3", "x_offset_s3", "x_logic_2", "x_angle", "y_max_offset", "y_max_angle", "y_extra_offset", "y_lat_name_s1", "y_lat_pos_s1", "y_pos_from_cent_s1", "y_offset_s1", "y_logic_1", "y_lat_name_s2", "y_lat_pos_s2", "y_pos_from_cent_s2", "y_offset_s2", "y_lat_pos_s3", "y_pos_from_cent_s3", "y_offset_s3", "y_logic_2", "y_angle"];
 
 	this.cell = "";
 	this.type = "";
@@ -200,11 +206,14 @@ app.value('InsertionDevice', function(obj) {
 	this.x_max_offset = "";
 	this.x_max_angle = "";
 	this.x_extra_offset = "";
+	this.x_lat_name_s1 = "";
 	this.x_lat_pos_s1 = "";
 	this.x_pos_from_cent_s1 = "";
+	this.safe_current = "";
 	this.x_offset_s1 = "";
 	this.x_logic_1 = "";
-	this.x_lat_post_s2 = "";
+	this.x_lat_name_s2 = "";
+	this.x_lat_pos_s2 = "";
 	this.x_pos_from_cent_s2 = "";
 	this.x_offset_s2 = "";
 	this.x_lat_pos_s3 = "";
@@ -215,11 +224,13 @@ app.value('InsertionDevice', function(obj) {
 	this.y_max_offset = "";
 	this.y_max_angle = "";
 	this.y_extra_offset = "";
+	this.y_lat_name_s1 = "";
 	this.y_lat_pos_s1 = "";
 	this.y_pos_from_cent_s1 = "";
 	this.y_offset_s1 = "";
 	this.y_logic_1 = "";
-	this.y_lat_post_s2 = "";
+	this.y_lat_name_s2 = "";
+	this.y_lat_pos_s2 = "";
 	this.y_pos_from_cent_s2 = "";
 	this.y_offset_s2 = "";
 	this.y_lat_pos_s3 = "";

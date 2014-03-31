@@ -68,7 +68,7 @@
 			</td>
 			<td>
 				<span ng-if="logic.num == 0">
-					<button ng-click="approveLogic(logic)" class="btn btn-default">Approve</button>
+					<button ng-click="approveLogic(logic)" class="btn" ng-class="{'btn-danger': logic.status == 2, 'btn-default': logic.status == 3}">Approve</button>
 				</span>
 				<span ng-if="logic.num > 0">
 					Logic in use
@@ -76,7 +76,7 @@
 			</td>
 		</tr>
 		<tr ng-if="newLogic">
-			<td ng-repeat="prop in newLogic.save">
+			<td ng-repeat="prop in newLogic.save" class="danger">
 				<span class="form-group" ng-class="{'has-error': error[prop]}">
 					<input type="text" ng-model="newLogic[prop]" class="form-control input-sm" id="inputSuccess1" />
 				</span>

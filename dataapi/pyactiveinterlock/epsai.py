@@ -52,7 +52,7 @@ class epsai(object):
         self.transaction = transaction
         
         # Define all the properties for id table
-        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['pos', 'm', ''], ['pos_from_cent', 'm', ''], ['x_max_offset', 'mm', 'approvable'], ['x_max_angle', 'mrad', 'approvable'], ['x_extra_offset', '', 'approvable'], ['x_lat_pos_s1', 'm', 'approvable'], ['x_pos_from_cent_s1', 'm', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_logic_1', '', 'approvable'], ['x_lat_post_s2', 'm', 'approvable'], ['x_pos_from_cent_s2', 'm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_lat_pos_s3', 'm', 'approvable'], ['x_pos_from_cent_s3', 'm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_logic_2', '', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_max_offset', 'mm', 'approvable'], ['y_max_angle', 'mrad', 'approvable'], ['y_extra_offset', '', 'approvable'], ['y_lat_pos_s1', 'm', 'approvable'], ['y_pos_from_cent_s1', 'm', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_logic_1', '', 'approvable'], ['y_lat_post_s2', 'm', 'approvable'], ['y_pos_from_cent_s2', 'm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_lat_pos_s3', 'm', 'approvable'], ['y_pos_from_cent_s3', 'm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_logic_2', '', 'approvable'], ['y_angle', 'mrad', 'approvable']]
+        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['pos', 'm', ''], ['pos_from_cent', 'm', ''], ['safe_current', 'mA', ''], ['x_max_offset', 'mm', 'approvable'], ['x_max_angle', 'mrad', 'approvable'], ['x_extra_offset', '', 'approvable'], ['x_lat_name_s1', '', 'approvable'], ['x_lat_pos_s1', 'm', 'approvable'], ['x_pos_from_cent_s1', 'm', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_logic_1', '', 'approvable'], ['x_lat_name_s2', '', 'approvable'], ['x_lat_pos_s2', 'm', 'approvable'], ['x_pos_from_cent_s2', 'm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_lat_pos_s3', 'm', 'approvable'], ['x_pos_from_cent_s3', 'm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_logic_2', '', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_max_offset', 'mm', 'approvable'], ['y_max_angle', 'mrad', 'approvable'], ['y_extra_offset', '', 'approvable'], ['y_lat_name_s1', '', 'approvable'], ['y_lat_pos_s1', 'm', 'approvable'], ['y_pos_from_cent_s1', 'm', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_logic_1', '', 'approvable'], ['y_lat_name_s2', '', 'approvable'], ['y_lat_pos_s2', 'm', 'approvable'], ['y_pos_from_cent_s2', 'm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_lat_pos_s3', 'm', 'approvable'], ['y_pos_from_cent_s3', 'm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_logic_2', '', 'approvable'], ['y_angle', 'mrad', 'approvable']]
         
         # Define all the properties for the bm table
         self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
@@ -419,6 +419,10 @@ class epsai(object):
             
             # Go through all of the properties
             for prop in prop_types:
+                
+                if prop == 'num_unapproved':
+                    continue
+                
                 # Check property type
                 proptype = self.retrieveActiveInterlockPropType(prop)
                 
@@ -573,9 +577,18 @@ class epsai(object):
                 prop = self.retrieveActiveInterlockProp(r[0], '*')
                 propKeys = prop.keys()
                 
+                numUnapproved = 0
+                
                 for key in propKeys:
                     resdict[r[0]][prop[key]['name']] = prop[key]['value']
-                    resdict[r[0]]['prop_statuses'][prop[key]['name']] = prop[key]['status']
+                    propStatus = prop[key]['status']
+                    
+                    if propStatus == 2:
+                        numUnapproved += 1
+                    
+                    resdict[r[0]]['prop_statuses'][prop[key]['name']] = propStatus
+                    
+                resdict[r[0]]['prop_statuses']['num_unapproved'] = numUnapproved
 
             return resdict
 
