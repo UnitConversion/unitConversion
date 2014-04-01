@@ -554,19 +554,18 @@ class lattice(object):
             
             skipcount = 0
             unitdict={}
-            try:
-                for i in range(len(cols)):
-                    
-                    if str.lower(cols[i]) in ['elementtype', 'type', 'elementname', 'name', 'map', 'kickmap', 'fieldmap']:
-                        skipcount += 1
-                    else:
-                        unitdict[cols[i]] = units[i-skipcount]
-            except IndexError:
-                print i
-                print cols[i], len(unitdict), unitdict
-                print i-skipcount, len(units), units
-                print 
-                raise
+            #try:
+            for i in range(len(cols)):
+                if str.lower(cols[i]) in ['elementtype', 'type', 'elementname', 'name', 'map', 'kickmap', 'fieldmap']:
+                    skipcount += 1
+                else:
+                    unitdict[cols[i]] = units[i-skipcount]
+            #except IndexError:
+            #    print i
+            #    print cols[i], len(unitdict), unitdict
+            #    print i-skipcount, len(units), units
+            #    print 
+            #    raise
             latticebody = latticedata[headerlen+1:]
             for i in range(len(latticebody)):
                 body = latticebody[i]

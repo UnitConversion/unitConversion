@@ -273,8 +273,6 @@ class idods(object):
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
             
-            print self.transaction
-
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
@@ -4079,7 +4077,6 @@ class idods(object):
             # Insert record into database
             cur = self.conn.cursor()
             key = componentType[componentTypeKeys[0]]['id']
-            print componentTypeKeys
             cur.execute(sql, (key, name, description, coordinate))
         
             # Get last row id

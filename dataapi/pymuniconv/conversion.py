@@ -344,7 +344,6 @@ def doconversion(src, dst, value, paramsdict, energy=None):
                         if res == None:
                             message = 'Failed to convert current to K value.'
                         else:
-                            print res
                             res, message = _doi2b(paramsdict, res, revert=True)
                             if res == None:
                                 message = 'Failed to convert K value to current.'

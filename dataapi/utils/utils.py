@@ -118,12 +118,10 @@ def _generateFilePath():
     savePath = os.path.split(savePath[0])
     savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
 
-    #print savePath
     #now = datetime.datetime.now()
     #dirname = 'documents/%s/%s/%s'%(now.year, now.month, now.day)
     dataPart = 'documents/%s'%datetime.datetime.now().strftime("%Y%m%d/%H%M%S/%f")
     dirname = savePath + '/' + dataPart
-    #print dirname
 
     try:
         os.makedirs(dirname)
