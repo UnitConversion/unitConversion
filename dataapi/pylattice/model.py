@@ -1191,6 +1191,7 @@ class model(object):
         try:
             sql += " order by bp.pos "
             cur=self.conn.cursor()
+            print sql, sqlvals
             cur.execute(sql, sqlvals)
             results = cur.fetchall()
         except MySQLdb.Error as e:

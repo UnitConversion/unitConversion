@@ -628,6 +628,7 @@ function filterTableItems(filters, name, table){
 function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x_axis, scope){
 	//container.addClass("placeholder_hidden");
 
+	var flotPlot = undefined;
 	var series = [];
 	var yaxisLabel = [];
 	var yaxis2Label = [];
@@ -667,11 +668,11 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 				}
 
 				if(prop === "betax" || prop === "betay") {
-					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 1});
+					series.push({label: seriesLabel, data: seriesData, yaxis: 1});
 					yaxisLabel.push(seriesLabel);
 
 				} else {
-					series.push({label: seriesLabel, lines: { show: true }, points: { show: true }, data: seriesData, yaxis: 2});
+					series.push({label: seriesLabel, data: seriesData, yaxis: 2});
 					yaxis2Label.push(seriesLabel);
 				}
 			}
@@ -686,6 +687,10 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 			show: true,
 			position: "nw"
 		},
+		series: {
+			lines: {show: true},
+			points: {show: scope.settings.points}
+		},
 		xaxis: {
 			tickDecimals: 4
 		},
@@ -696,16 +701,28 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 			alignTicksWithAxis: null,
 			position: "right"
 		}],
-		zoom: {
-			interactive: scope.settings.interactiveZoom
-		},
-		pan: {
-			interactive: true
-		},
 		grid: {
 			hoverable: true
 		}
 	};
+
+	// Set zooming type
+	if (scope.settings.zoom === "mouse") {
+		optionsFlot.zoom = {};
+		optionsFlot.zoom.interactive = true;
+		optionsFlot.pan = {};
+		optionsFlot.pan.interactive = true;
+	
+	} else if(scope.settings.zoom === "x") {
+		optionsFlot.selection = {};
+		optionsFlot.selection.mode = "x";
+	
+	} else if(scope.settings.zoom === "y") {
+		optionsFlot.selection = {};
+		optionsFlot.selection.mode = "y";
+	}
+
+	l(optionsFlot);
 
 	var container = $(placeholder);
 	var resizeContainer = $(".resize_container");
@@ -715,7 +732,35 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 		//container.removeClass("placeholder_hidden");
 
 		// Initialize plot
-		var flotPlot = $.plot(container, series, optionsFlot);
+		flotPlot = $.plot(container, series, optionsFlot);
+
+		// Watch for selection
+		container.bind('plotselected', function(e, ranges) {
+
+			if (ranges.yaxis !== undefined) {
+				optionsFlot.yaxes[0].min = ranges.yaxis.from;
+				optionsFlot.yaxes[0].max = ranges.yaxis.to;
+				optionsFlot.yaxes[1].min = ranges.yaxis.from;
+				optionsFlot.yaxes[1].max = ranges.yaxis.to;
+			
+			} 
+
+			if (ranges.y2axis !== undefined) {
+				optionsFlot.yaxes[0].min = ranges.y2axis.from;
+				optionsFlot.yaxes[0].max = ranges.y2axis.to;
+				optionsFlot.yaxes[1].min = ranges.y2axis.from;
+				optionsFlot.yaxes[1].max = ranges.y2axis.to;
+			
+			}
+
+			if (ranges.xaxis !== undefined) {
+				optionsFlot.xaxis.min = ranges.xaxis.from;
+				optionsFlot.xaxis.max = ranges.xaxis.to;
+			}
+
+			flotPlot = $.plot(container, series, optionsFlot);
+			setPlotLabelsAndControls(flotPlot, container, yaxisLabel, yaxis2Label, x_axis);
+		});
 
 		resizeContainer.resizable({
 			maxWidth: 2000,
@@ -723,44 +768,6 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 			minWidth: 900,
 			minHeight: 400
 		});
-
-		// If there are too many element, just write all the rest
-		if(yaxis2Label.length > 2) {
-			yaxis2Label = ["All the rest"];
-		}
-
-		// Create y axis labe
-		var yaxisLabel = $(".y_label").text(yaxisLabel.join(",."));
-
-		// Create second y axis labe
-		var yaxis2Label = $(".y2_label").text(yaxis2Label.join(", "));
-
-		// Create x axis label
-		var xaxisLabel = $(".x_label").text(x_axis);
-
-		// Create zoom out button
-		$("<div class='zoom zoom_out'></div>")
-			.appendTo(container)
-			.click(function (event) {
-				event.preventDefault();
-				flotPlot.zoomOut();
-			}
-		);
-
-		// Create zoom in button
-		$("<div class='zoom zoom_in'></div>")
-			.appendTo(container)
-			.click(function (event) {
-				event.preventDefault();
-				flotPlot.zoom();
-			}
-		);
-
-		// Create pan arrows
-		addArrow("up", {top: -100}, container, flotPlot);
-		addArrow("left", {left: -100}, container, flotPlot);
-		addArrow("down", {top: 100}, container, flotPlot);
-		addArrow("right", {left: 100}, container, flotPlot);
 
 		// Create tooltips when hovering over points
 		container.bind("plothover", function (event, pos, item) {
@@ -776,7 +783,50 @@ function drawPlotTransposed(placeholder, selection, factor, data, nameToIdMap, x
 			}
 		});
 
+		setPlotLabelsAndControls(flotPlot, container, yaxisLabel, yaxis2Label, x_axis);
 	}
+
+	return flotPlot;
+}
+
+function setPlotLabelsAndControls(flotPlot, container, yaxisLabel, yaxis2Label, x_axis) {
+	// If there are too many element, just write all the rest
+	if(yaxis2Label.length > 2) {
+		yaxis2Label = ["All the rest"];
+	}
+
+	// Create y axis labe
+	var yaxisLabel = $(".y_label").text(yaxisLabel.join(",."));
+
+	// Create second y axis labe
+	var yaxis2Label = $(".y2_label").text(yaxis2Label.join(", "));
+
+	// Create x axis label
+	var xaxisLabel = $(".x_label").text(x_axis);
+
+	// Create zoom out button
+	$("<div class='zoom zoom_out'></div>")
+		.appendTo(container)
+		.click(function (event) {
+			event.preventDefault();
+			flotPlot.zoomOut();
+		}
+	);
+
+	// Create zoom in button
+	$("<div class='zoom zoom_in'></div>")
+		.appendTo(container)
+		.click(function (event) {
+			event.preventDefault();
+			flotPlot.zoom();
+		}
+	);
+
+	// Create pan arrows
+	addArrow("up", {top: -100}, container, flotPlot);
+	addArrow("left", {left: -100}, container, flotPlot);
+	addArrow("down", {top: 100}, container, flotPlot);
+	addArrow("right", {left: 100}, container, flotPlot);
 }
 
 /*

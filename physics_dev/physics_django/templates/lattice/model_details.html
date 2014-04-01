@@ -53,8 +53,14 @@
 			<br/>
 			<br/>
 
-			<div ng-show="plotPlaceholder.show" class="alert alert-info">
-				<strong>Quick Tip!</strong> Click on a plot to enable or disable interactive zoom
+			<div ng-show="plotPlaceholder.show">
+				<button ng-click="zoomY()" class="btn" ng-class="{'active': settings.zoom == 'y'}">Zoom V</button>
+				<button ng-click="zoomX()" class="btn" ng-class="{'active': settings.zoom == 'x'}">Zoom H</button>
+				<button ng-click="zoomMouse()" class="btn" ng-class="{'active': settings.zoom == 'mouse'}">Zoom Mouse</button>
+				<button ng-click="showPoints()" class="btn" ng-class="{'active': settings.points}">Show points</button>
+				<button ng-click="exportImage()" class="btn">Export image</button>
+				<br/>
+				<br/>
 			</div>
 
 			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">

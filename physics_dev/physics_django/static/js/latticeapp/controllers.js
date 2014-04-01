@@ -654,6 +654,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 
 	var keys = [];
 	var privateModel = {};
+	var flot = undefined;
 
 	var query = serviceurl + 'lattice/?function=retrieveModel&name=*&id=' + $routeParams.id;
 
@@ -712,17 +713,79 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 		}
 	};
 
+	$scope.settings = {};
+	$scope.settings.zoom = "x";
+	$scope.settings['points'] = false;
+
 	// Plot data when properties are selected
 	$scope.plotData = function() {
-		$scope.settings = {'interactiveZoom': false};
 		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
-	};
+		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+	}
+
+	$scope.zoomX = function() {
+		$scope.settings.zoom = "x";
+		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+	}
+
+	$scope.zoomY = function() {
+		$scope.settings.zoom = "y";
+		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+	}
+
+	$scope.zoomMouse = function() {
+		$scope.settings.zoom = "mouse";
+		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+	}
+
+	$scope.showPoints = function() {
+		$scope.settings['points'] ? $scope.settings['points'] = false : $scope.settings['points'] = true;
+
+		if (flot !== undefined) {
+
+			$.each(flot.getData(), function(i, opt) {
+				if ($scope.settings['points']) {
+					opt.points.show = true;
+					
+				} else {
+					opt.points.show = false;
+				}
+			});
+
+			flot.setupGrid();
+			flot.draw();
+		}
+	}
+
+	$scope.exportImage = function() {
+
+		if (flot !== undefined) {
+			var myCanvas = flot.getCanvas();
+			var image = myCanvas.toDataURL();
+			image = image.replace("image/png","image/octet-stream");
+			document.location.href=image;
+		}
+	}
 
 	$scope.enableInteractiveZoom = function() {
 		($scope.settings['interactiveZoom']) ? $scope.settings['interactiveZoom'] = false : $scope.settings['interactiveZoom'] = true;
 		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+		//drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+
+		if (flot !== undefined) {
+			opt = flot.getOptions();
+			l(opt);
+			l(flot.getData());
+
+			opt.zoom.interactive = true;
+
+			flot.getData()[0].points.show = false;
+			//flot.setupGrid();
+			//flot.draw();
+
+			//opt.zoom.interactive = true;
+			//flot.setupGrid();
+		}
 	}
 
 	// Export data to csv file

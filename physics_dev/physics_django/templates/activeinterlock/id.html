@@ -29,17 +29,17 @@
 			<th colspan="2">Radiation source</th>
 			<th></th>
 			<th colspan="6">AIE-ID</th>
+			<th colspan="3"></th>
+			<th colspan="4">BPM-ID1 (s1)</th>
+			<th rowspan="3">Logic</th>
+			<th colspan="4">BPM-ID2 (s2)</th>
+			<th colspan="5">E-beam (s3)</th>
+			<th colspan="3"></th>
+			<th colspan="4">BPM-ID1 (s1)</th>
+			<th rowspan="3">Logic</th>
+			<th colspan="4">BPM-ID2 (s2)</th>
+			<th colspan="5">E-beam (s3)</th>
 			<th></th>
-			<th colspan="3"></th>
-			<th colspan="4">BPM-ID1 (s1)</th>
-			<th rowspan="3">Logic</th>
-			<th colspan="4">BPM-ID2 (s2)</th>
-			<th colspan="5">E-beam (s3)</th>
-			<th colspan="3"></th>
-			<th colspan="4">BPM-ID1 (s1)</th>
-			<th rowspan="3">Logic</th>
-			<th colspan="4">BPM-ID2 (s2)</th>
-			<th colspan="5">E-beam (s3)</th>
 			<th></th>
 		</tr>
 		<tr>
@@ -49,15 +49,15 @@
 			<th colspan="3"></th>
 			<th colspan="2">Lattice</th>
 			<th></th>
+			<th colspan="3"></th>
+			<th colspan="4">Down-stream of Str. Sect.</th>
+			<th colspan="4">Up-stream of Str. Sect.</th>
+			<th colspan="5">AIE location</th>
+			<th colspan="3"></th>
+			<th colspan="4">Down-stream of Str. Sect.</th>
+			<th colspan="4">Up-stream of Str. Sect.</th>
+			<th colspan="5">AIE location</th>
 			<th></th>
-			<th colspan="3"></th>
-			<th colspan="4">Down-stream of Str. Sect.</th>
-			<th colspan="4">Up-stream of Str. Sect.</th>
-			<th colspan="5">AIE location</th>
-			<th colspan="3"></th>
-			<th colspan="4">Down-stream of Str. Sect.</th>
-			<th colspan="4">Up-stream of Str. Sect.</th>
-			<th colspan="5">AIE location</th>
 			<th></th>
 		</tr>
 		<tr>
@@ -71,7 +71,6 @@
 			<th>Name</th>
 			<th>Position (s)</th>
 			<th>Pos. from cent. Str. Sect.</th>
-			<th>Safe current</th>
 			
 			<th>Max. offset</th>
 			<th>Max. angle</th>
@@ -106,6 +105,7 @@
 			<th>Offset (AIOLV)</th>
 			<th>Logic</th>
 			<th>Angle (AIOLV)</th>
+			<th>Safe current</th>
 			<th></th>
 		</tr>
 		<tr>
@@ -119,7 +119,6 @@
 			<th></th>
 			<th>m</th>
 			<th>m</th>
-			<th>mA</th>
 			
 			<th>mm</th>
 			<th>mrad</th>
@@ -156,10 +155,10 @@
 			<th>mm</th>
 			<th></th>
 			<th>mrad</th>
+			<th>mA</th>
 			<th></th>
 		</tr>
 		<tr>
-			<th></th>
 			<th></th>
 			<th></th>
 			<th></th>
@@ -206,6 +205,7 @@
 			<th>|y1+(y2-y1)*(s3-s1)/(s2-s1)|&lt;</th>
 			<th></th>
 			<th>|(y2-y1)/(s2-s1)|&lt;</th>
+			<th></th>
 			<th></th>
 		</tr>
 		
@@ -272,7 +272,7 @@
 		{% endif %}
 		{% verbatim %}
 
-			<td colspan="41"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
+			<td colspan="46"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
 		</tr>
 	</table>
 </div>
