@@ -92,7 +92,12 @@ class ActiveInterlockClient(object):
         # Set url
         url = 'download/'
         
-        r=self.client.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
+        # Set parameters
+        params={
+            'modified_by': self.__userName
+        }
+        
+        r=self.client.post(self.__baseURL+url, data=params, verify=False, headers=self.__jsonheader, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()

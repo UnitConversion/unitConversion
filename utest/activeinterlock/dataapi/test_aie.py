@@ -124,7 +124,7 @@ class Test(unittest.TestCase):
         # Try to change status
         self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 1, "admin"))
         
-        self.api.downloadActiveInterlock()
+        self.api.downloadActiveInterlock("admin")
         
         # The number of datasets with status 1 should be 1
         status1 = self.api.retrieveActiveInterlockHeader(1)

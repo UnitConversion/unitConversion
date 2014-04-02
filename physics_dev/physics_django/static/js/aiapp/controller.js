@@ -308,6 +308,9 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	$scope.urlTab = $routeParams.tab;
 	$scope.logicShapeDict = {};
 
+	$scope.orderByField = 'id';
+	$scope.reverseSort = false;
+
 	// If status is not defined, skip this controller
 	if ($routeParams.status === undefined) {
 		return;
@@ -922,6 +925,9 @@ app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, Bendin
 app.controller('historyIdCtrl', function($scope, $routeParams, idFactory, InsertionDevice){
 	$scope.idArr = [];
 	$scope.urlTab = $routeParams.tab;
+
+	$scope.orderByField = 'id';
+	$scope.reverseSort = false;
 	
 	// Retrieve insertion devices
 	idFactory.retrieveItems({'ai_id': $scope.datasetId}).then(function(result) {

@@ -109,3 +109,13 @@ html, body {
 .login_error {
     color: #b94a48;
 }
+
+.sort_button {
+    color: #39b3d7;
+    cursor: pointer;
+}
+
+.sort_button_active {
+    color: #d2322d;
+    cursor: pointer;
+}
