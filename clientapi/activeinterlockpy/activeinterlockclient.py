@@ -3,10 +3,11 @@ Copyright (c) 2013 Brookhaven National Laboratory
 
 All rights reserved. Use is subject to license terms and conditions.
 
-Created on Sep 10, 2013
 
-@author: shengb
-@updated: dejan.dezman@cosylab.com, March 20, 2014
+    Created on Sep 10, 2013
+
+    @author: shengb
+    @updated: dejan.dezman@cosylab.com, March 20, 2014
 
 '''
 
@@ -74,26 +75,30 @@ class ActiveInterlockClient(object):
         '''
         Retrieve complete dataset with status approved and set it to active
         
-        :return
-        {'bm':{
-        bm data
-             },
-          'id': {
-                id data
-            },
-          'logic': {
-                logic data
-            }
-         }
-        
+        :return:
+            A Python dictionary is returned as::
+
+                {
+                    'bm':{
+                        bm data
+                    },
+                    'id': {
+                        id data
+                    },
+                   'logic': {
+                       logic data
+                   }
+                }
+
         :Raises: HTTPError
         '''
-        
+
         # Set url
         url = 'download/'
         
         # Set parameters
         params={
+            'status': 1,
             'modified_by': self.__userName
         }
         

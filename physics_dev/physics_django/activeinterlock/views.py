@@ -234,7 +234,7 @@ def downloadActiveInterlockWS(request):
     '''
     Download active interlock data
     '''
-    return _updateData(request, api.downloadActiveInterlock, ['modified_by'])
+    return _updateData(request, api.downloadActiveInterlock, ['status', 'modified_by'])
 
 def aiIndexHtml(request):
     '''

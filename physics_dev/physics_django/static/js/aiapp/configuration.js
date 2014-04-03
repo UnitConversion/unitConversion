@@ -9,7 +9,7 @@
 var serviceurl = "http://localhost:8000";
 
 //Version number
-var version = "0.1";
+var version = "1.0";
 
 // Write logs to console
 var writeLogs = true;

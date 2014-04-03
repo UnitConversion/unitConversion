@@ -171,10 +171,10 @@ app.value('InsertionDevice', function(obj) {
 	this.save = ["ai_status", "name", "definition", "logic", "props"];
 
 	// Save parameters in data
-	this.save_data = ["cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_logic_1", "x_offset_s2", "x_offset_s3", "x_logic_2", "x_angle", "y_offset_s1", "y_logic_1", "y_offset_s2", "y_offset_s3", "y_logic_2", "y_angle", "safe_current"];
+	this.save_data = ["cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_s2", "y_offset_s3", "y_angle", "safe_current"];
 	
 	// Parameters that are displayed for saving
-	this.save_display = ["cell", "type", "set", "str_sect", "logic", "shape", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "name", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_logic_1", "x_offset_s2", "x_offset_s3", "x_logic_2", "x_angle", "y_offset_s1", "y_logic_1", "y_offset_s2", "y_offset_s3", "y_logic_2", "y_angle", "safe_current"];
+	this.save_display = ["cell", "type", "set", "str_sect", "logic", "shape", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "name", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_s2", "y_offset_s3", "y_angle", "safe_current"];
 
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name", "definition"];
@@ -192,9 +192,9 @@ app.value('InsertionDevice', function(obj) {
 	this.approve = ["aid_id", "prop_types"];
 
 	// Cells that need to be approved after saving
-	this.approvable = {"max_offset": true, "max_angle": true, "extra_offset": true, "x_offset_s1": true, "x_logic_1": true, "x_offset_s2": true, "x_offset_s3": true, "x_logic_2": true, "x_angle": true, "y_offset_s1": true, "y_logic_1": true, "y_offset_s2": true, "y_offset_s3": true, "y_logic_2": true, "y_angle": true, "safe_current": true};
+	this.approvable = {"max_offset": true, "max_angle": true, "extra_offset": true, "x_offset_s1": true, "x_offset_s2": true, "x_offset_s3": true, "x_angle": true, "y_offset_s1": true, "y_offset_s2": true, "y_offset_s3": true, "y_angle": true, "safe_current": true};
 
-	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_logic_1", "x_offset_s2", "x_offset_s3", "x_logic_2", "x_angle", "y_offset_s1", "y_logic_1", "y_offset_s2", "y_offset_s3", "y_logic_2", "y_angle", "safe_current"];
+	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_s2", "y_offset_s3", "y_angle", "safe_current"];
 
 	this.cell = "";
 	this.type = "";

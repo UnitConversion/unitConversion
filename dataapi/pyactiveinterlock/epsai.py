@@ -52,7 +52,7 @@ class epsai(object):
         self.transaction = transaction
         
         # Define all the properties for id table
-        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['s1_name', '', ''], ['s1_pos', 'm', ''], ['s1_pos_from', 'm', ''], ['s2_name', '', ''], ['s2_pos', 'm', ''], ['s2_pos_from', 'm', ''], ['s3_pos', 'm', ''], ['s3_pos_from', 'm', ''], ['max_offset', 'mm', 'approvable'], ['max_angle', 'mrad', 'approvable'], ['extra_offset', '', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_logic_1', '', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_logic_2', '', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_logic_1', '', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_logic_2', '', 'approvable'], ['y_angle', 'mrad', 'approvable'], ['safe_current', 'mA', 'approvable']]
+        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['s1_name', '', ''], ['s1_pos', 'm', ''], ['s1_pos_from', 'm', ''], ['s2_name', '', ''], ['s2_pos', 'm', ''], ['s2_pos_from', 'm', ''], ['s3_pos', 'm', ''], ['s3_pos_from', 'm', ''], ['max_offset', 'mm', 'approvable'], ['max_angle', 'mrad', 'approvable'], ['extra_offset', '', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_angle', 'mrad', 'approvable'], ['safe_current', 'mA', 'approvable']]
         
         # Define all the properties for the bm table
         self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
@@ -63,11 +63,11 @@ class epsai(object):
         
         Current statuses:
         
-            0: editable
-            1: approved
-            2: active
-            3: backup
-            4: history
+         - 0: editable
+         - 1: approved
+         - 2: active
+         - 3: backup
+         - 4: history
         
         :param ai_id: internal id of an active interlock data set
         :type ai_id: int
@@ -169,7 +169,7 @@ class epsai(object):
 
     def saveDeviceProperties(self):
         '''
-        When creating new active interlock for the first time, create all needed properties
+        When creating new active interlock for the first time, create all needed property types
         '''
         
         # Get current properties
@@ -196,17 +196,19 @@ class epsai(object):
         :param prop_type_name: active interlock property  type name
         :type prop_type_name: str
         
-        :returns dict
-            {'id':
-                'id':            , #int, property id
-                'aid_id':        , #int, active interlock device id
-                'value':         , #str, property value
-                'status':        , #int, property status
-                'date':          , #str, date property was set
-                'name':          , #str, name of the property type
-                'description':   , #str, description of the property type
-                'unit':          , #str, property unit
-            }
+        :returns:
+            Returned dictionary::
+            
+                {'id':
+                    'id':            , #int, property id
+                    'aid_id':        , #int, active interlock device id
+                    'value':         , #str, property value
+                    'status':        , #int, property status
+                    'date':          , #str, date property was set
+                    'name':          , #str, name of the property type
+                    'description':   , #str, description of the property type
+                    'unit':          , #str, property unit
+                }
         '''
         
         # Check active interlock device id
@@ -269,7 +271,24 @@ class epsai(object):
         
     def saveActiveInterlockProp(self, aid_id, prop_type_name, value):
         '''
-        Save active interlock property into database. Property type must exist before saving property value
+        Save active interlock property into database. Property type must exist before saving property value.
+        
+        :param aid_id: Id of the saved active interlock
+        :type aid_id: int
+        
+        :param prop_type_name: Name of the property type
+        :type prop_type_name: string
+        
+        :param value: Value of the property
+        :type value: string
+        
+        :returns:
+            Python dictionary::
+            
+                {'id': id of the new property}
+        
+        :raises:
+            ValueError, MySQLError
         '''
         
         # Check active interlock device id
@@ -322,7 +341,7 @@ class epsai(object):
 
     def updateActiveInterlockProp(self, aid_id, prop_type_name, value):
         '''
-        Update active interlock property in the database. Property type must exist before saving property value
+        Update active interlock property in the database. Property type must exist before saving property value.
         
         :param ai_id: active interlock id
         :type ai_id: int
@@ -333,10 +352,10 @@ class epsai(object):
         :param value: value of the property
         :type value: str
         
-        :returns boolean or Exception
+        :returns: boolean or Exception.
             True if everything is ok
         
-        :raises
+        :raises:
             MySQLError, ValueError
         '''
         
@@ -394,12 +413,12 @@ class epsai(object):
         from unapproved (2) to approved (3)
         
         :param aid_id: active interlock device id
-        :type int
+        :type aid_id: int
         
         :param props: list of property type names that should be updated
-        :type list
+        :type props: list
         
-        :returns
+        :returns:
             True if everything is ok or exception
         '''
         
@@ -474,28 +493,30 @@ class epsai(object):
         :param definition: type of the dataset (bm/id)
         :type definition: str
         
-        :returns: dict 
+        :returns:
             
-            .. code-block:: python
+            Retrieved Python dictionary::
             
-            {'id':
-                {'id':              , #int, id of the device in the database
-                 'ai_id':           , #int, id of the active interlock
-                 'name':            , #str, name of the device
-                 'definition':      , #str, definition of the device
-                 'logic':           , #str, name of the logic
-                 'shape':           , #str, shape of the logic
-                 'prop1key':        , #str, first property
-                 ...
-                 'propNkey':        , #str, Nth property
-                 'prop_statuses': {
-                         'prop1key': , #int, status of the property,
-                         ...
-                         'propNkey': , #int, status of the property
-                     }
+                {'id':
+                    {'id':              , #int, id of the device in the database
+                     'ai_id':           , #int, id of the active interlock
+                     'name':            , #str, name of the device
+                     'definition':      , #str, definition of the device
+                     'logic':           , #str, name of the logic
+                     'shape':           , #str, shape of the logic
+                     'prop1key':        , #str, first property
+                     ...
+                     'propNkey':        , #str, Nth property
+                     'prop_statuses': {
+                             'prop1key': , #int, status of the property,
+                             ...
+                             'propNkey': , #int, status of the property
+                         }
+                    }
                 }
-            }
         
+        :raises:
+            ValueError, MySQLError
         '''
         
         # Check that status or id is set
@@ -615,8 +636,16 @@ class epsai(object):
         :param logic: name of the logic that has t be saved in the database
         :type logic: str
         
-        :return
-         {'id': id of the saved device}
+        :param props: device properties' values in a Python dictionary format
+        :type props: dict
+        
+        :return:
+            Python dictionary::
+            
+                 {'id': id of the saved device}
+        
+        :raises:
+            ValueError, MySQLError
         '''
         
         ai_id = None
@@ -698,15 +727,15 @@ class epsai(object):
         Update device's name and logic
         
         :param aid_id: active interlock device id
-        :type int
+        :type aid_id: int
         
         :param name: device name
-        :type string
+        :type name: string
         
         :param logic: device logic name
-        :type string
+        :type logic: string
         
-        :return
+        :return:
             True if everything is ok
         '''
         
@@ -760,13 +789,16 @@ class epsai(object):
 
     def deleteDevice(self, status):
         '''
-        Delete active interlock device by its id
+        Delete active interlock device by active interlock status
         
         :param status: active interlock status
-        :type int
+        :type status: int
         
-        :returns
+        :returns:
             True if everything is ok
+        
+        :Raises:
+            MySQLError
         '''
         
         # Get active interlock id with specific status
@@ -826,15 +858,17 @@ class epsai(object):
 
     def retrieveStatusInfo(self):
         '''
-        Retrieve information about active interlock statuses. How many datasets are in each status.
+        Retrieve information about active interlock statuses. The returned Python dictionary will include the number of datasets in each status.
         
-        :returns dict
-        {'status':
-            {
-                'status':, #int
-                'num':     #int
-            }
-        }
+        :returns:
+            Returned Python dictionary::
+            
+                {'status':
+                    {
+                        'status':, #int
+                        'num':     #int
+                    }
+                }
         '''
         
         resdict = {}
@@ -881,21 +915,30 @@ class epsai(object):
         
         return resdict
 
-    def downloadActiveInterlock(self, modified_by):
+    def downloadActiveInterlock(self, status, modified_by):
         '''
-        Retrieve complete dataset with status approved and set it to active
+        Retrieve complete dataset by status and set it to active if previous status is approved
         
-        :return
-         {'bm':{
-                 bm data
-             },
-          'id': {
-                id data
-            },
-          'logic': {
-                logic data
-            }
-         }
+        :param status: status of the active interlock we want to download
+        :type status: int
+        
+        :param modified_by: who modified active interlock
+        :type modified_by: string
+        
+        :return:
+        
+            Python dictionary::
+        
+             {'bm':{
+                     bm data
+                 },
+              'id': {
+                    id data
+                },
+              'logic': {
+                    logic data
+                }
+             }
         '''
         
         resdict = {}
@@ -946,20 +989,21 @@ class epsai(object):
         :param withdata: get data set. Default is true, which means always gets data by default. Otherwise, only device names are retrieved for desired data set.
         :type withdata: boolean
         
-        :Returns: dict
+        :Returns:
+            Python dictionary::
         
-         {'id': {
-                 'status':,.
-                 'id':,
-                 'description':,
-                 'created_by':,
-                 'created_date':,
-                 'modified_by':,
-                 'modified_date':
+             {'id': {
+                     'status':,.
+                     'id':,
+                     'description':,
+                     'created_by':,
+                     'created_date':,
+                     'modified_by':,
+                     'modified_date':
+                 }
              }
-         }
             
-        :Raises: KeyError, AttributeError
+        :Raises: MySQLError, ValueError
         
         '''
         
@@ -1037,21 +1081,15 @@ class epsai(object):
 
     def saveActiveInterlockHeader(self, description=None, created_by=None):
         '''
-        Save a new data set of active interlock.
-            
-        :param data: original data structure is described as above.
-        :type data: dict
+        Save a new active interlock.
             
         :param description: comments or any other notes for this data set.
         :type description: str
         
-        :param active: set current data set active. It sets new data set as active by default unless it is explicitly set to keep old active data set.
-        :type active: boolean
-        
         :param created_by: the person who set this data set.
         :type created_by: str
         
-        :Returns: active interlock internal id if saved successfully.
+        :Returns: Active interlock internal id if saved successfully.
             
         :Raises: ValueError, MySQLError
 
@@ -1110,11 +1148,9 @@ class epsai(object):
         :param description: description of given property type.
         :type description: str
         
-        :returns: dict
+        :returns:
             
-            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below:
-            
-            .. code-block:: python
+            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below::
             
                 {'id: {'label':     , # str, columns's name
                      'id':          , # int, internal id of property type
@@ -1175,7 +1211,7 @@ class epsai(object):
         
     def saveActiveInterlockPropType(self, name, unit=None, description=None):
         '''
-        Each involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, and so on.
+        Each device involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, and so on.
         This method is to save active interlock property type information with given name, unit, and/or description.
         
         The property name with given unit is unique in the database. It allows user to reuse a property type name, but given it 
@@ -1190,7 +1226,10 @@ class epsai(object):
         :param description: description of given property type.
         :type description: str
         
-        :returns: {'id': internal property type id}
+        :returns:
+            Python dictionary::
+            
+                {'id': internal property type id}
             
         :raises: MySQLError, ValueError
         '''
@@ -1236,10 +1275,12 @@ class epsai(object):
         Retrieve the number of uses of specific logic
         
         :param logic: name of the logic
-        :type str
+        :type logic: str
         
-        :return
-            {'num': usage count}
+        :return:
+            Python dictionary::
+            
+                {'num': usage count}
         '''
         
         # Check logic parameter
@@ -1294,25 +1335,23 @@ class epsai(object):
         :param status: status of the logic
         :type status: int
         
-        :returns: dict 
+        :returns:
             
-            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below:
+            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below::
             
-            .. code-block:: python
-            
-            {'id':
-                {'label':          , # str, column's name
-                 'id':             , # int, internal id of active interlock logic
-                 'name':           , # str, name of active interlock envelop 
-                 'shape':          , # str, allowed envelop shape in phase space
-                 'logic':          , # str, logic expression
-                 'code':           , # int, logic code for hardware convenience
-                 'status':         , # int, satus of the logic
-                 'created_by':     , # str, who created this entry
-                 'created_date':   , # datetime, when this entry was created
-                 'num':            , # int, usage count of this logic
+                {'id':
+                    {'label':          , # str, column's name
+                     'id':             , # int, internal id of active interlock logic
+                     'name':           , # str, name of active interlock envelop 
+                     'shape':          , # str, allowed envelop shape in phase space
+                     'logic':          , # str, logic expression
+                     'code':           , # int, logic code for hardware convenience
+                     'status':         , # int, satus of the logic
+                     'created_by':     , # str, who created this entry
+                     'created_date':   , # datetime, when this entry was created
+                     'num':            , # int, usage count of this logic
+                    }
                 }
-            }
         
         :raises: MySQLError, ValueError
         '''
@@ -1387,9 +1426,6 @@ class epsai(object):
         
         It checks whether given envelop name with given phase space shape and logic exists. If yes, it raises a ValueError exception.
         
-        Currently implementation assumes that an active interlock envelop is for a particular shap, which is unique globally. 
-        If logic is changed, a new name should be defined.
-        
         :param name: active interlock envelop name
         :type name: str
         
@@ -1405,7 +1441,10 @@ class epsai(object):
         :param created_by: who creates this data set
         :type created_by: str
             
-        :returns: {'id': internal id of active interlock logic}
+        :returns:
+            Returned Python dictionary::
+            
+                {'id': internal id of active interlock logic}
                 
         :Raises: ValueError, Exception
         '''
