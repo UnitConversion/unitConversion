@@ -59,6 +59,10 @@ class Test(unittest.TestCase):
         r = self.client.downloadActiveInterlock()
         
         self.assertNotEqual(r, "")
+        
+        r = self.client.downloadActiveInterlock("active")
+        
+        self.assertNotEqual(r, "")
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

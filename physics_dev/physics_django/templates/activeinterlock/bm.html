@@ -80,6 +80,7 @@
 			<td>
 				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
 				<button ng-click="addRow(bm)" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button>
 			</td>
 		</tr>
 		<tr ng-if="newBm">

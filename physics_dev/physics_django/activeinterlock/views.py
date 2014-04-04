@@ -179,6 +179,14 @@ def updateDeviceWS(request):
     '''
     return _updateData(request, api.updateDevice, ['aid_id', 'name', 'logic'])
 
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
+def deleteDeviceWS(request):
+    '''
+    Delete device
+    '''
+    return _updateData(request, api.deleteDevice, ['aid_id'])
+
 @require_http_methods(["GET"])
 def retrieveLogicWS(request):
     '''
@@ -227,6 +235,14 @@ def updateLogicWS(request):
     Update active interlock logic
     '''
     return _updateData(request, api.updateActiveInterlockLogic, ['id', 'name', 'shape', 'logic', 'code', 'status'], {})
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
+def deleteLogicWS(request):
+    '''
+    Delete active interlock logic
+    '''
+    return _updateData(request, api.deleteActiveInterlockLogic, ['logic_id'], {})
 
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('ai.can_modify_ai')

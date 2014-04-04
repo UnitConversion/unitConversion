@@ -145,9 +145,6 @@ class Test(unittest.TestCase):
         # Prepare logic
         self.api.saveActiveInterlockLogic('name', 'shape', 'logic', 10, 'author')
         
-        # Prepare device property type
-        self.assertRaises(ValueError, self.api.saveActiveInterlockPropType, 'cell', '', 'a cell')
-        
         # Save device
         savedDevice = self.api.saveDevice(0, 'device name', 'bm', 'name', {'cell': 'test'})
         

@@ -69,6 +69,7 @@
 			<td>
 				<span ng-if="logic.num == 0">
 					<button ng-click="approveLogic(logic)" class="btn" ng-class="{'btn-danger': logic.status == 2, 'btn-default': logic.status == 3}">Approve</button>
+					<button ng-click="deleteLogic(logic)" class="btn btn-default">Delete</button>
 				</span>
 				<span ng-if="logic.num > 0">
 					Logic in use

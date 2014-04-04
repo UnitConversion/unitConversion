@@ -71,9 +71,12 @@ class ActiveInterlockClient(object):
         else:
             return value
 
-    def downloadActiveInterlock(self):
+    def downloadActiveInterlock(self, status="approved"):
         '''
         Retrieve complete dataset with status approved and set it to active
+        
+        :param status: AI status we want to download. Acceptable values are **approved** and **active**
+        :type status: string
         
         :return:
             A Python dictionary is returned as::
@@ -93,12 +96,24 @@ class ActiveInterlockClient(object):
         :Raises: HTTPError
         '''
 
+        # Set status
+        statusParam = 1
+        
+        if status == "approved":
+            statusParam = 1
+            
+        elif status == "active":
+            statusParam = 2
+            
+        else:
+            self.__raise_for_status(400, "Status parameter not acceptable!")
+
         # Set url
         url = 'download/'
         
         # Set parameters
         params={
-            'status': 1,
+            'status': statusParam,
             'modified_by': self.__userName
         }
         

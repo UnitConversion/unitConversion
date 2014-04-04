@@ -169,6 +169,22 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 		}
 	}
 
+	$scope.deleteRow = function(deviceObj, typeName) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_data.html',
+			controller: 'deleteDataCtrl',
+			resolve: {
+				device: function() {
+					return deviceObj;
+				},
+				type_name: function() {
+					return typeName;
+				}
+			}
+		});
+	}
+
 	$scope.cancel = function() {
 		$scope.newBm = undefined;
 	}
@@ -369,6 +385,22 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		}
 	}
 
+	$scope.deleteRow = function(deviceObj, typeName) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_data.html',
+			controller: 'deleteDataCtrl',
+			resolve: {
+				device: function() {
+					return deviceObj;
+				},
+				type_name: function() {
+					return typeName;
+				}
+			}
+		});
+	}
+
 	$scope.cancel = function() {
 		$scope.newInsD = undefined;
 	}
@@ -528,6 +560,19 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 		$scope.newLogic = new Logic();
 	}
 
+	$scope.deleteLogic = function(logicObj) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_logic.html',
+			controller: 'deleteLogicCtrl',
+			resolve: {
+				logic: function() {
+					return logicObj;
+				}
+			}
+		});
+	}
+
 	$scope.cancel = function() {
 		$scope.newLogic = undefined;
 	}
@@ -674,6 +719,94 @@ app.controller('createDatasetCtrl', function($scope, $modalInstance, $window, he
 
 	$scope.finish = function() {
 		$window.location.reload();
+	};
+});
+
+/*
+ * Delete device controller
+ */
+app.controller('deleteDataCtrl', function($scope, $modalInstance, $window, bmFactory, device, type_name) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		bmFactory.deleteItem(device.id).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Data successfully deleted!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$window.location.reload();
+
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Delete device controller
+ */
+app.controller('deleteLogicCtrl', function($scope, $modalInstance, $window, logicFactory, logic) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		logicFactory.deleteItem(logic.id).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Logic successfully deleted!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$window.location.reload();
+
+		$modalInstance.dismiss('cancel');
 	};
 });
 

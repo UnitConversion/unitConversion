@@ -217,6 +217,24 @@ app.factory('bmFactory', function($http, $q, BendingMagnet){
 		return promise;
 	}
 
+	// Delete item
+	factory.deleteItem = function(params) {
+		var query = serviceurl + "/ai/deletedevice/";
+
+		var params = "aid_id=" + params;
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(prepareError(data, status));
+		});
+
+		return promise;
+	}
+
 	return factory;
 });
 
@@ -447,6 +465,24 @@ app.factory('logicFactory', function($http, $q, Logic){
 		var query = serviceurl + "/ai/savelogic/";
 
 		var params = prepareUrlParameters(factory.logic.save, factory.logic);
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(prepareError(data, status));
+		});
+
+		return promise;
+	}
+
+	// Delete item
+	factory.deleteItem = function(params) {
+		var query = serviceurl + "/ai/deletelogic/";
+
+		var params = "logic_id=" + params;
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 

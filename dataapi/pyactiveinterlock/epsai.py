@@ -53,9 +53,43 @@ class epsai(object):
         
         # Define all the properties for id table
         self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['s1_name', '', ''], ['s1_pos', 'm', ''], ['s1_pos_from', 'm', ''], ['s2_name', '', ''], ['s2_pos', 'm', ''], ['s2_pos_from', 'm', ''], ['s3_pos', 'm', ''], ['s3_pos_from', 'm', ''], ['max_offset', 'mm', 'approvable'], ['max_angle', 'mrad', 'approvable'], ['extra_offset', '', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_angle', 'mrad', 'approvable'], ['safe_current', 'mA', 'approvable']]
+        self.id_props_dict = {
+            'cell': ['cell', '', ''],
+            'type': ['type', '', ''],
+            'set': ['set', '', ''],
+            'str_sect': ['str_sect', '', ''],
+            'defined_by': ['defined_by', '', ''],
+            's1_name': ['s1_name', '', ''],
+            's1_pos': ['s1_pos', 'm', ''],
+            's1_pos_from': ['s1_pos_from', 'm', ''],
+            's2_name': ['s2_name', '', ''],
+            's2_pos': ['s2_pos', 'm', ''],
+            's2_pos_from': ['s2_pos_from', 'm', ''],
+            's3_pos': ['s3_pos', 'm', ''],
+            's3_pos_from': ['s3_pos_from', 'm', ''],
+            'max_offset': ['max_offset', 'mm', 'approvable'],
+            'max_angle': ['max_angle', 'mrad', 'approvable'],
+            'extra_offset': ['extra_offset', '', 'approvable'],
+            'x_offset_s1': ['x_offset_s1', 'mm', 'approvable'],
+            'x_offset_s2': ['x_offset_s2', 'mm', 'approvable'],
+            'x_offset_s3': ['x_offset_s3', 'mm', 'approvable'],
+            'x_angle': ['x_angle', 'mrad', 'approvable'],
+            'y_offset_s1': ['y_offset_s1', 'mm', 'approvable'],
+            'y_offset_s2': ['y_offset_s2', 'mm', 'approvable'],
+            'y_offset_s3': ['y_offset_s3', 'mm', 'approvable'],
+            'y_angle': ['y_angle', 'mrad', 'approvable'],
+            'safe_current': ['safe_current', 'mA', 'approvable']
+        }
         
         # Define all the properties for the bm table
         self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
+        self.bm_props_dict = {
+            'bm_cell': ['bm_cell', '', ''],
+            'bm_type': ['bm_type', '', ''],
+            'bm_s': ['bm_s', 'm', ''],
+            'bm_aiolh': ['bm_aiolh', 'mm', 'approvable'],
+            'bm_aiolv': ['bm_aiolv', 'mm', 'approvable']
+        }
         
     def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by):
         '''
@@ -119,7 +153,7 @@ class epsai(object):
         
         # Delete dataset that currently has this status
         if new_status == 0 or new_status == 1:
-            self.deleteDevice(new_status)
+            self.deleteActiveInterlock(new_status)
         
         # Check if all properties are approved
         if new_status == 1:
@@ -299,7 +333,15 @@ class epsai(object):
         
         # Check if property type exists in the database
         if len(existingPropType) == 0:
-            raise ValueError("Active interlock property type (%s) doesn't exist in the database!" % prop_type_name)
+            
+            if prop_type_name in self.id_props_dict:
+                prop_type = self.id_props_dict[prop_type_name]
+            
+            else:
+                prop_type = self.bm_props_dict[prop_type_name]
+            
+            self.saveActiveInterlockPropType(prop_type_name, prop_type[1], prop_type[2])
+            existingPropType = self.retrieveActiveInterlockPropType(prop_type_name)
         
         propTypeKeys = existingPropType.keys()
         propTypeObject = existingPropType[propTypeKeys[0]]
@@ -367,7 +409,15 @@ class epsai(object):
         proptype = self.retrieveActiveInterlockPropType(prop_type_name)
         
         if len(proptype) == 0:
-            raise ValueError("Property type (%s) doesn't exist in the database!" % prop_type_name)
+            
+            if prop_type_name in self.id_props_dict:
+                prop_type = self.id_props_dict[prop_type_name]
+            
+            else:
+                prop_type = self.bm_props_dict[prop_type_name]
+            
+            self.saveActiveInterlockPropType(prop_type_name, prop_type[1], prop_type[2])
+            proptype = self.retrieveActiveInterlockPropType(prop_type_name)
         
         typeKeys = proptype.keys()
         typeObject = proptype[typeKeys[0]]
@@ -787,9 +837,58 @@ class epsai(object):
             self.logger.info('Error when updating active interlock device:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating active interlock device:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def deleteDevice(self, status):
+    def deleteDevice(self, aid_id):
         '''
-        Delete active interlock device by active interlock status
+        Delete active interlock device by active interlock device id
+        
+        :param aid_id: active interlock device id
+        :type aid_id: int
+        
+        :returns:
+            True if everything is ok
+        
+        :Raises:
+            MySQLError
+        '''
+
+        # Check id
+        _checkParameter('device id', aid_id, "prim")
+        
+        # Delete properties
+        sqlP = '''
+        DELETE FROM active_interlock_prop WHERE
+        active_interlock_device_id = %s
+        '''
+        
+        # Delete device
+        sqlD = '''
+        DELETE FROM active_interlock_device
+        WHERE active_interlock_device_id = %s
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlP, aid_id)
+            cur.execute(sqlD, aid_id)
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error while deleting active interlock device:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error while deleting active interlock device:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def deleteActiveInterlock(self, status):
+        '''
+        Delete active interlock by active interlock status
         
         :param status: active interlock status
         :type status: int
@@ -943,7 +1042,7 @@ class epsai(object):
         
         resdict = {}
         
-        header = self.retrieveActiveInterlockHeader(1)
+        header = self.retrieveActiveInterlockHeader(status)
         
         # Check if header exists
         if len(header) == 0:
@@ -966,7 +1065,8 @@ class epsai(object):
         resdict['logic'] = logic
         
         # Update status
-        self.updateActiveInterlockStatus(None, 1, 2, modified_by)
+        if str(status) == "1":
+            self.updateActiveInterlockStatus(None, 1, 2, modified_by)
         
         return resdict
 
@@ -1099,7 +1199,7 @@ class epsai(object):
         _checkParameter('author', created_by)
         
         # Create property types if there are none
-        self.saveDeviceProperties()
+        #self.saveDeviceProperties()
         
         # Save header onformation of a active interlock data set
         sql = '''
@@ -1575,4 +1675,45 @@ class epsai(object):
 
             self.logger.info('Error when updating active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating active interlock logic:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def deleteActiveInterlockLogic(self, logic_id):
+        '''
+        Delete active interlock logic by active interlock logic id
         
+        :param logic_id: active interlock logic id
+        :type logic_id: int
+        
+        :returns:
+            True if everything went ok
+        
+        :Raises:
+            MySQLError
+        '''
+
+        # Check id
+        _checkParameter('logic id', logic_id, "prim")
+        
+        # Delete logic
+        sqlL = '''
+        DELETE FROM active_interlock_logic
+        WHERE active_interlock_logic_id = %s
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlL, logic_id)
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error while deleting active interlock logic:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error while deleting active interlock logic:\n%s (%d)' % (e.args[1], e.args[0]))
