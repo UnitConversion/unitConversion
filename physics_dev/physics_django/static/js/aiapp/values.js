@@ -180,7 +180,7 @@ app.value('InsertionDevice', function(obj) {
 	this.retrieve_m = ["name", "definition"];
 	
 	// All parameters for retrieving
-	this.retrieve = ["ai_id", "ai_status", "name", "definition"];
+	this.retrieve = ["ai_id", "aid_id", "ai_status", "name", "definition"];
 
 	// Update parameters
 	this.update = ["aid_id", "prop_type_name", "value"];
@@ -194,7 +194,7 @@ app.value('InsertionDevice', function(obj) {
 	// Cells that need to be approved after saving
 	this.approvable = {"max_offset": true, "max_angle": true, "extra_offset": true, "x_offset_s1": true, "x_offset_s2": true, "x_offset_s3": true, "x_angle": true, "y_offset_s1": true, "y_offset_s2": true, "y_offset_s3": true, "y_angle": true, "safe_current": true};
 
-	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_s2", "y_offset_s3", "y_angle", "safe_current"];
+	this.all = ["id", "ai_id", "aid_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "shape", "cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_s2", "y_offset_s3", "y_angle", "safe_current"];
 
 	this.cell = "";
 	this.type = "";
@@ -240,7 +240,9 @@ app.value('InsertionDevice', function(obj) {
 	this.props = {};
 
 	this.updateProps = function() {
+		
 		for(i=0; i<this.save_data.length; i++) {
+
  			this.props_raw[this.save_data[i]] = this[this.save_data[i]];
  		}
 
@@ -254,7 +256,14 @@ app.value('InsertionDevice', function(obj) {
  		}
 
  		for(i=0; i<this.all.length; i++) {
- 			this[this.all[i]] = obj[this.all[i]];
+ 			
+ 			if(this.all[i] === 's1_pos' || this.all[i] === 's2_pos' || this.all[i] === 's3_pos') {
+ 				this[this.all[i]] = parseFloat(obj[this.all[i]]);
+ 				
+ 			} else {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+ 			
  		}
 	}
 

@@ -318,6 +318,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory, InsertionDevice, $modal){
 	$scope.error = {};
 	$scope.idArr = [];
+	$scope.idArr2 = [];
 	$scope.logicArr = [];
 	$scope.alert = {};
 	var aiStatus = aiStatusMap[$routeParams.status];
@@ -357,6 +358,20 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		});
 	});
 
+	$scope.checkArrays = function() {
+
+		if($scope.idArr2.length === 0) {
+			return;
+		
+		} else {
+
+			$.each($scope.idArr2, function(ind, obj) {
+				$scope.idArr.push(obj);
+			});
+
+			$scope.idArr2 = [];
+		}
+	}
 
 	$scope.newInsD = undefined;
 
@@ -501,17 +516,20 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Data successfully saved!";
 
-				idFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
-					$scope.idArr = [];
+				//$scope.idArr.push($scope.newInsD);
+
+				idFactory.retrieveItems({'ai_status': aiStatus, 'aid_id': data['id']}).then(function(result) {
+					//$scope.idArr = [];
 
 					$.each(result, function(i, item){
 
 						// Build customized object
 						var newItem = new InsertionDevice(item);
-						$scope.idArr.push(newItem);
+						$scope.idArr2.push(newItem);
 					});
+					l($scope.idArr2);
 
-					idNum = $scope.idArr.length;
+					idNum = $scope.idArr2.length;
 				});
 			
 			}, function(error) {

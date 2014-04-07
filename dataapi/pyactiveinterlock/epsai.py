@@ -526,7 +526,7 @@ class epsai(object):
             self.logger.info('Error when updating active interlock device property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating active interlock device property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def retrieveDevice(self, ai_id = None, ai_status = None, name = None, definition = None):
+    def retrieveDevice(self, ai_id = None, ai_status = None, name = None, definition = None, aid_id = None):
         '''
         Retrieve devices of particular active interlock, name and definition. Name can also be a wildcard
         character to select all devices.
@@ -542,6 +542,9 @@ class epsai(object):
         
         :param definition: type of the dataset (bm/id)
         :type definition: str
+        
+        :param aid_id: active interlock device id
+        :type aid_id: int
         
         :returns:
             
@@ -570,12 +573,16 @@ class epsai(object):
         '''
         
         # Check that status or id is set
-        if ai_status == None and ai_id == None:
+        if ai_status == None and ai_id == None and aid_id == None:
             raise ValueError("Status or id must be provided to retrieve device from the database!")
         
         # Check active interlock id
         if ai_id != None:
             _checkParameter('active interlock id', ai_id, 'prim')
+        
+        # Check active interlock device id
+        if aid_id != None:
+            _checkParameter('active interlock device id', aid_id, 'prim')
         
         # Check status
         if ai_status != None:
@@ -610,18 +617,25 @@ class epsai(object):
             aid.active_interlock_id
         FROM active_interlock_device aid
         LEFT JOIN active_interlock_logic ail ON(aid.active_interlock_logic_id = ail.active_interlock_logic_id)
-        WHERE
+        WHERE 1=1
         '''
         
         # Append active interlock id
-        sql += " aid.active_interlock_id = %s "
-        vals.append(ai_id)
+        if ai_id != None:
+            sql += " AND aid.active_interlock_id = %s "
+            vals.append(ai_id)
+        
+        # Append active interlock device id
+        if aid_id != None:
+            sql += " AND aid.active_interlock_device_id = %s "
+            vals.append(int(aid_id))
         
         # Append device name
         sqlVals = _checkWildcardAndAppend('aid.device_name', name, sql, vals, 'AND')
         
         # Append definition
         sqlVals = _checkWildcardAndAppend('aid.definition', definition, sqlVals[0], sqlVals[1], 'AND')
+        print sqlVals
         
         try:
             # Execute sql

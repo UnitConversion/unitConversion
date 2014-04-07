@@ -161,7 +161,7 @@ def retrieveDeviceWS(request):
     '''
     Retrieve device
     '''
-    return _retrieveData(request, api.retrieveDevice, ['ai_id', 'ai_status', 'name', 'definition'])
+    return _retrieveData(request, api.retrieveDevice, ['ai_id', 'ai_status', 'name', 'definition', 'aid_id'])
 
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('ai.can_modify_ai')

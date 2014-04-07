@@ -57,20 +57,20 @@
 
 			<th>Name</th>
 			<th>Position (s1)<br/>
-				<i ng-class="(orderByField == 's1_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s1_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's1_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s1_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's1_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s1_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's1_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s1_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Position from AIE-ID location</th>
 
 			<th>Name</th>
 			<th>Position (s2)<br/>
-				<i ng-class="(orderByField == 's2_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s2_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's2_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s2_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's2_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s2_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's2_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s2_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Position from AIE-ID location</th>
 
 			<th>Name</th>
 			<th>Position (s3)<br/>
-				<i ng-class="(orderByField == 's3_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s3_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's3_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s3_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's3_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s3_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's3_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s3_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Pos. from cent. Str. Sect.</th>
 			
 			<th>Max. offset</th>
@@ -125,12 +125,39 @@
 			<th>mA</th>
 		</tr>
 		
-		<!--Editable-->
+		<!--Editable FIRST-->
 		{% endverbatim %}
 		{% if user.is_authenticated %}
 		<tr ng-if="urlStatus == 'editable'" ng-repeat="id in idArr|orderBy:orderByField:reverseSort">
 		{% else %}
 		<tr ng-if="false" ng-repeat="id in idArr" ng-repeat="id in idArr|orderBy:orderByField:reverseSort">
+		{% endif %}
+		{% verbatim %}
+
+			<td ng-repeat="prop in id.save_display" ng-class="{'danger': id.prop_statuses[prop] && id.prop_statuses[prop] == 2}">
+				<span ng-if="prop != 'shape'" class="edit-wrapper">
+					<a ng-if="prop != 'logic' && prop != 'name'" href="#" onbeforesave="updateItem(id, prop, $data)" class="edit" editable-text="id[prop]">{{id[prop] || '&nbsp;'}}</a>
+					<a ng-if="prop == 'name'" href="#" onbeforesave="updateItemFixed(id, prop, $data)" class="edit" editable-text="id[prop]">{{id[prop] || '&nbsp;'}}</a>
+					<a ng-if="prop == 'logic'" href="#" onbeforesave="updateItemFixed(id, prop, $data)" class="edit select" editable-select="id[prop]" e-ng-options="name for name in logicArr">{{id[prop] || '&nbsp;'}}</a>
+				</span>
+				<span ng-if="prop == 'shape'">
+					{{id[prop] || '&nbsp;'}}
+				</span>
+				<button ng-click="approveCell(id, prop)" ng-if="id.prop_statuses[prop] && id.prop_statuses[prop] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<button ng-click="approveRow(id)" class="btn btn-default" ng-class="{'btn-danger': id.prop_statuses.num_unapproved > 0, 'btn-default': id.prop_statuses.num_unapproved == 0}">Approve</button>
+				<button ng-click="addRow(id)" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(id)" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
+
+		<!--Editable SECOND-->
+		{% endverbatim %}
+		{% if user.is_authenticated %}
+		<tr ng-if="urlStatus == 'editable'" ng-repeat="id in idArr2">
+		{% else %}
+		<tr ng-if="false" ng-repeat="id in idArr" ng-repeat="id in idArr2">
 		{% endif %}
 		{% verbatim %}
 

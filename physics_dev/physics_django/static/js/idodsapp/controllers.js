@@ -1728,6 +1728,22 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = OfflineDataInfo;
+	var uploadData = undefined;
+	$scope.uploadFileName = "";
+
+	$scope.options = {
+		url: serviceurl + "/saverawdata/",
+		maxFileSize: 5000000,
+		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
+	};
+
+	$scope.$on('fileuploadadd', function(e, data) {
+		l(data);
+		var id = data.fileInput.context.id;
+		$scope.uploadFileName = data.files[0].name;
+
+		uploadData = data;
+	});
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
@@ -1745,42 +1761,43 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		$window.location = location;
 	}*/
 	
-	/*$scope.saveItem = function(newItem, action) {
-		$scope.alert.show = false;
-		var item = new DataMethod(newItem);
-		var result = dataMethodFactory.checkItem(item);
-		l(result);
+	$scope.saveItem = function(newItem, action) {
+		uploadData.submit();
+	// 	$scope.alert.show = false;
+	// 	var item = new OfflineData(newItem);
+	// 	var result = offlineDataFactory.checkItem(item);
+	// 	l(result);
 
-		if(result !== true) {
-			$scope.error = result.errorDict;
+	// 	if(result !== true) {
+	// 		$scope.error = result.errorDict;
 		
-		} else {
-			var propsObject = {};
+	// 	} else {
+	// 		var propsObject = {};
 
-			delete $scope.error;
-			var promise;
+	// 		delete $scope.error;
+	// 		var promise;
 			
-			if(action === "update") {
-				promise = dataMethodFactory.updateItem($scope.element);
+	// 		if(action === "update") {
+	// 			promise = offlineDataFactory.updateItem($scope.element);
 
-			} else if(action == "save") {
-				promise = dataMethodFactory.saveItem($scope.new);
-			}
+	// 		} else if(action == "save") {
+	// 			promise = offlineDataFactory.saveItem($scope.new);
+	// 		}
 			
-			promise.then(function(data) {
-				$scope.alert.show = true;
-				$scope.alert.success = true;
-				$scope.alert.title = "Success!";
-				$scope.alert.body = "Data method item successfully saved!";
+	// 		promise.then(function(data) {
+	// 			$scope.alert.show = true;
+	// 			$scope.alert.success = true;
+	// 			$scope.alert.title = "Success!";
+	// 			$scope.alert.body = "Offline data successfully saved!";
 			
-			}, function(error) {
-				$scope.alert.show = true;
-				$scope.alert.success = false;
-				$scope.alert.title = "Error!";
-				$scope.alert.body = error;
-			});
-		}
-	}*/
+	// 		}, function(error) {
+	// 			$scope.alert.show = true;
+	// 			$scope.alert.success = false;
+	// 			$scope.alert.title = "Error!";
+	// 			$scope.alert.body = error;
+	// 		});
+	// 	}
+	}
 });
 
 /*

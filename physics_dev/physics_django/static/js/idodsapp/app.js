@@ -294,5 +294,5 @@ app.config(function($routeSegmentProvider, $routeProvider){
 			up().
 		up();
 	
-		//$routeProvider.otherwise({redirectTo: '/vendor'});
+		$routeProvider.otherwise({redirectTo: '/vendor'});
 });
