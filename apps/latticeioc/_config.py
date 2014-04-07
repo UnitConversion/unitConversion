@@ -36,6 +36,12 @@ def getpvtablefromfile(fname):
     #  ...
     # }
     
+    elemtypes = {}
+    # element type mapping
+    # { 'element name': type,
+    #   ...
+    # }
+    
     for pvs in pvlist:
         pvs = pvs.strip()
         if not (pvs.startswith("#") or pvs.startswith("//")) and pvs.strip() != "":
@@ -52,8 +58,11 @@ def getpvtablefromfile(fname):
             pvrbsdict[pvprop[0]] = {'I': pvprop[3],
                                     'B': pvprop[5],
                                     'K': pvprop[7]}
+            elemtypes[pvprop[0]] = {'etype': pvprop[1]}
+            #elemtypes[pvprop[6]] = {'ename': pvprop[1], 'etype': pvprop[1]}
+            #elemtypes[pvprop[7]] = {'ename': pvprop[1], 'etype': pvprop[1]}
     
-    return pvspsdict, pvrbsdict
+    return pvspsdict, pvrbsdict, elemtypes
 
 def getnormalizedvalue(valfile):
     '''Check the file format. It suppose having a header like

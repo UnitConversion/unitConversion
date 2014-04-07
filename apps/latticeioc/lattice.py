@@ -3,6 +3,7 @@ import traceback
 import time
 
 from numpy import matrix
+import math
 
 import subprocess
 
@@ -290,7 +291,9 @@ def generatelivelat(livelat, is4setpoint=True):
                 if 'SEXTUPOLE' in v.upper():
                     value=value/2.0
                 
-                value = abs(value)*cmp(float(designdict[k]['field']), 0)
+                #value = abs(value)*cmp(float(designdict[k]['field']), 0)
+                # change to copysign since cmp is removed from Python 3.0
+                value = math.copysign(value, float(designdict[k]['field']))
                 
                 f.write(v.replace(designdict[k]['field'], str(value))+'\n')
             else:
@@ -403,7 +406,7 @@ def _readresult(pmfile):
             'alphax': alphax,
             'betax': betax,
             'nux': nux,
-            'etax': etax ,
+            'etax': etax,
             'etapx': etapx,
             'alphay': alphay,
             'betay': betay,
@@ -628,7 +631,7 @@ def main(designlat, designversion, init=True):
         global monitorspvals
         global monitorrbvals
 
-        pvspsdict, pvrbsdict = getpvtablefromfile('pvtable.txt')
+        pvspsdict, pvrbsdict, _ = getpvtablefromfile('pvtable.txt')
         
         elems = []
         sppvs = []
