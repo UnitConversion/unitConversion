@@ -704,7 +704,7 @@ app.value('OfflineDataInfo', {
  app.value('OfflineData', function(obj){
  	
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_name"];
+ 	this.m = ["inventory_name", "data_id", "status", "method_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["inventory_name"];
@@ -716,13 +716,13 @@ app.value('OfflineDataInfo', {
  	this.list = ["inventory_name", "description"];
 
  	// Parameters used for save URL
- 	this.save = ["inventory_name", "description"];
+ 	this.save = ["inventory_name", "description", "data_file_name", "data_id", "method_name", "status"];
  	
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["inventory_name", "description"];
+ 	this.save_show = ["inventory_name", "description", "data_file_name", "method_name", "status"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["offline_data_id", "inventory_name", "description"];
+ 	this.update = ["offline_data_id", "inventory_name", "description", "status"];
 
  	this.display = {
  		"id": "Id",
@@ -734,7 +734,8 @@ app.value('OfflineDataInfo', {
  		"data_file_name": "Data file name",
  		"script_name": "Script name",
  		"method_name": "Method name",
- 		"data_id": "Data id"
+ 		"data_id": "Data id",
+ 		"status": "Data status"
  	};
 
  	this.id = "";

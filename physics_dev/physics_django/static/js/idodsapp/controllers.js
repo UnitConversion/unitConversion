@@ -184,10 +184,13 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.alert.show = false;
 	
 	// Get vendor from the factory
-	vendorFactory.retrieveVendor($routeParams).then(function(result) {
-		$scope.element = result;
-		$scope.element.old_name = result.name;
-	});
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		vendorFactory.retrieveVendor($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+		});
+	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
@@ -1719,7 +1722,7 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 /*
  * Show details in the right pane
  */
-app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory, EntityError){
+app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1730,6 +1733,25 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	$scope.info = OfflineDataInfo;
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
+	
+	$scope.inventories = [];
+	$scope.methods = [];
+
+	// Retrieve all Component types
+	inventoryFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inventories.push(item.name);
+		});
+	});
+
+	// Retrieve all Component types
+	dataMethodFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.methods.push(item.name);
+		});
+	});
 
 	$scope.options = {
 		url: serviceurl + "/saverawdata/",
@@ -1738,11 +1760,58 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	};
 
 	$scope.$on('fileuploadadd', function(e, data) {
-		l(data);
 		var id = data.fileInput.context.id;
 		$scope.uploadFileName = data.files[0].name;
 
 		uploadData = data;
+		delete $scope.error.data_id;
+	});
+
+	$scope.$on('fileuploaddone', function(e, data) {
+		l(data.jqXHR.responseText);
+		var response = data.jqXHR.responseText;
+		l(e);
+
+		$scope.new.data_id = JSON.parse(response)["id"];
+		l($scope.new);
+
+		$scope.alert.show = false;
+		var result = offlineDataFactory.checkItem($scope.new);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if($scope.action === "update") {
+				promise = offlineDataFactory.updateItem($scope.element);
+
+			} else if($scope.action == "save") {
+				promise = offlineDataFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Offline data successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	});
+
+	$scope.$on('fileuploadfail', function(e, data) {
+		l(data);
 	});
 
 	// Get inventory from the factory if updating
@@ -1761,42 +1830,14 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		$window.location = location;
 	}*/
 	
-	$scope.saveItem = function(newItem, action) {
-		uploadData.submit();
-	// 	$scope.alert.show = false;
-	// 	var item = new OfflineData(newItem);
-	// 	var result = offlineDataFactory.checkItem(item);
-	// 	l(result);
+	$scope.saveItem = function(action) {
 
-	// 	if(result !== true) {
-	// 		$scope.error = result.errorDict;
-		
-	// 	} else {
-	// 		var propsObject = {};
+		if (uploadData === undefined) {
+			$scope.error['data_id'] = "Raw data filed is mandatory!";
 
-	// 		delete $scope.error;
-	// 		var promise;
-			
-	// 		if(action === "update") {
-	// 			promise = offlineDataFactory.updateItem($scope.element);
-
-	// 		} else if(action == "save") {
-	// 			promise = offlineDataFactory.saveItem($scope.new);
-	// 		}
-			
-	// 		promise.then(function(data) {
-	// 			$scope.alert.show = true;
-	// 			$scope.alert.success = true;
-	// 			$scope.alert.title = "Success!";
-	// 			$scope.alert.body = "Offline data successfully saved!";
-			
-	// 		}, function(error) {
-	// 			$scope.alert.show = true;
-	// 			$scope.alert.success = false;
-	// 			$scope.alert.title = "Error!";
-	// 			$scope.alert.body = error;
-	// 		});
-	// 	}
+		} else {
+			uploadData.submit();
+		}
 	}
 });
 

@@ -17,13 +17,16 @@
 			<th>Cell</th>
 			<th>Element Name</th>
 			<th>Element Type</th>
-			<th>s</th>
+			<th>s<br/>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i>
+			</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Hor. (AIOLH)</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Ver. (AIOLV)</th>
 		</tr>
-		<tr ng-repeat="bm in bmArr">
+		<tr ng-repeat="bm in bmArr|orderBy:orderByField:reverseSort">
 			<td>{{bm.bm_cell || '&nbsp;'}}</td>
 			<td>{{bm.name || '&nbsp;'}}</td>
 			<td>{{bm.bm_type || '&nbsp;'}}</td>

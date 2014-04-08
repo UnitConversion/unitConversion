@@ -108,10 +108,14 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory, BendingMagnet, $modal){
 	$scope.error = {};
 	$scope.bmArr = [];
+	$scope.bmArr2 = [];
 	$scope.logicArr = [];
 	$scope.alert = {};
 	var aiStatus = aiStatusMap[$routeParams.status];
 	$scope.urlTab = $routeParams.tab;
+
+	$scope.orderByField = 'id';
+	$scope.reverseSort = false;
 
 	// If status is not defined, skip this controller
 	if ($routeParams.status === undefined) {
@@ -141,6 +145,20 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 		});
 	});
 
+	$scope.checkArrays = function() {
+
+		if($scope.bmArr2.length === 0) {
+			return;
+		
+		} else {
+
+			$.each($scope.bmArr2, function(ind, obj) {
+				$scope.bmArr.push(obj);
+			});
+
+			$scope.bmArr2 = [];
+		}
+	}
 
 	$scope.newBm = undefined;
 
@@ -167,6 +185,8 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 		if (item !== undefined) {
 			$scope.newBm.set(item);
 		}
+		
+		$('html, body').animate({ scrollTop: $(document).height() }, "fast");
 	}
 
 	$scope.deleteRow = function(deviceObj, typeName) {
@@ -201,6 +221,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 			// Set status back to unapproved
 			if (device.prop_statuses[typeName] === 3) {
 				device.prop_statuses[typeName] = 2;
+				device.prop_statuses.num_unapproved +=1;
 			}
 
 			return true;
@@ -284,19 +305,19 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Data successfully saved!";
 
-				bmFactory.retrieveItems({'ai_status': aiStatus}).then(function(result) {
+				bmFactory.retrieveItems({'ai_status': aiStatus, 'aid_id': data['id']}).then(function(result) {
 
 					l(result);
-					$scope.bmArr = [];
+					//$scope.bmArr = [];
 
 					$.each(result, function(i, item){
 
 						// Build customized object
 						var newItem = new BendingMagnet(item);
-						$scope.bmArr.push(newItem);
+						$scope.bmArr2.push(newItem);
 					});
 
-					bmNum = $scope.bmArr.length;
+					bmNum = $scope.bmArr2.length;
 				});
 			
 			}, function(error) {
@@ -398,6 +419,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		if (item !== undefined) {
 			$scope.newInsD.setObj(item);
 		}
+		$('html, body').animate({ scrollTop: $(document).height() }, "fast");
 	}
 
 	$scope.deleteRow = function(deviceObj, typeName) {
@@ -432,6 +454,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 			// Set status back to unapproved
 			if (device.prop_statuses[typeName] === 3) {
 				device.prop_statuses[typeName] = 2;
+				device.prop_statuses.num_unapproved +=1;
 			}
 
 			return true;
@@ -515,8 +538,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Data successfully saved!";
-
-				//$scope.idArr.push($scope.newInsD);
 
 				idFactory.retrieveItems({'ai_status': aiStatus, 'aid_id': data['id']}).then(function(result) {
 					//$scope.idArr = [];
@@ -1058,6 +1079,9 @@ app.controller('historyDataCtrl', function($scope, $routeParams){
 app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, BendingMagnet){
 	$scope.bmArr = [];
 	$scope.urlTab = $routeParams.tab;
+
+	$scope.orderByField = 'id';
+	$scope.reverseSort = false;
 	
 	// Retrieve bending magnets
 	bmFactory.retrieveItems({'ai_id': $scope.datasetId}).then(function(result) {

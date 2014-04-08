@@ -36,6 +36,8 @@
 			<strong>{{alert.title}}</strong> {{alert.body}}
 		</div>
 
+		<form data-file-upload="options" method="post" enctype="multipart/form-data">
+
 		<table class="table table-bordered">
 			<tr>
 				<th>Key</th>
@@ -47,7 +49,11 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 							
-							<input type="text" ng-model="new[property]" />
+							<select ng-if="property == 'inventory_name'" ng-model="new[property]" ng-options="inv for inv in inventories"></select>
+
+							<select ng-if="property == 'method_name'" ng-model="new[property]" ng-options="method for method in methods"></select>
+
+							<input ng-if="property != 'inventory_name' && property != 'method_name'" type="text" ng-model="new[property]" />
 							
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
@@ -67,18 +73,22 @@
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
 					</span> -->
-					<div class="controls">
-						<span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+					<div class="control-group" ng-class="{'error': error.data_id}">
+						<span class="btn btn-success fileinput-button">
 							<i class="icon-file icon-white"></i>
-							<input id="rawFile" type="file" name="files" ng-disabled="disabled">
+							<input id="rawFile" type="file" name="file">
 						</span>
 						{{uploadFileName}}
+						<span class="help-inline">{{error.data_id}}</span>
 					</div>
 				</td>
 			</tr>
 		</table>
+
+		</form>
+
 		<br/>
-		<button ng-click="saveItem(new, 'save')" class="btn btn-success">{{info.save_button}}</button>
+		<button ng-click="saveItem('save')" class="btn btn-success">{{info.save_button}}</button>
 	</div>
 </div>
 

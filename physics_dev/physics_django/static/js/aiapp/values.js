@@ -103,7 +103,7 @@ app.value('BendingMagnet', function(obj) {
 	this.retrieve_m = ["name", "definition"];
 	
 	// All parameters for retrieving
-	this.retrieve = ["ai_id", "ai_status", "name", "definition"];
+	this.retrieve = ["ai_id", "aid_id", "ai_status", "name", "definition"];
 
 	// Update parameters
 	this.update = ["aid_id", "prop_type_name", "value"];
@@ -117,7 +117,7 @@ app.value('BendingMagnet', function(obj) {
 	// Cells that need to be approved after saving
 	this.approvable = {"bm_aiolh":true, "bm_aiolv":true};
 	
-	this.all = ["id", "ai_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv"];
+	this.all = ["id", "ai_id", "aid_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv"];
 
 	this.id = "";
 	this.ai_id = "";
@@ -151,7 +151,17 @@ app.value('BendingMagnet', function(obj) {
  		}
 
  		for(i=0; i<this.all.length; i++) {
- 			this[this.all[i]] = obj[this.all[i]];
+
+ 			for(i=0; i<this.all.length; i++) {
+ 			
+	 			if(this.all[i] === 'bm_s') {
+	 				this[this.all[i]] = parseFloat(obj[this.all[i]]);
+	 				
+	 			} else {
+	 				this[this.all[i]] = obj[this.all[i]];
+	 			}
+	 			
+	 		}
  		}
 	}
 

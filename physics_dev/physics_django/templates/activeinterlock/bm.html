@@ -29,14 +29,19 @@
 			<th>Cell</th>
 			<th>Element Name</th>
 			<th>Element Type</th>
-			<th>s</th>
+			<th>s<br/>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i>
+			</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Hor. (AIOLH)</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Ver. (AIOLV)</th>
 			<th></th>
 		</tr>
-		<tr ng-repeat="bm in bmArr">
+
+		<!-- Show retrieved -->
+		<tr ng-repeat="bm in bmArr|orderBy:orderByField:reverseSort">
 			<td ng-class="{'danger': bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2}">
 				<span class="edit-wrapper">
 					<a href="#" onbeforesave="updateItem(bm, 'bm_cell', $data)" class="edit" editable-text="bm.bm_cell">{{bm.bm_cell || '&nbsp;'}}</a>
@@ -83,8 +88,58 @@
 				<button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button>
 			</td>
 		</tr>
+
+		<!-- Show new -->
+		<tr ng-repeat="bm in bmArr2">
+			<td ng-class="{'danger': bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_cell', $data)" class="edit" editable-text="bm.bm_cell">{{bm.bm_cell || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_cell')" ng-if="bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'name', $data)" class="edit" editable-text="bm.name">{{bm.name || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>{{bm.bm_type || '&nbsp;'}}</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_s'] && bm.prop_statuses['bm_s'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_s', $data)" class="edit" editable-text="bm.bm_s">{{bm.bm_s || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_s')" ng-if="bm.prop_statuses['bm_s'] && bm.prop_statuses['bm_s'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolh', $data)" class="edit" editable-text="bm.bm_aiolh">{{bm.bm_aiolh || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiolh')" ng-if="bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolv', $data)" class="edit" editable-text="bm.bm_aiolv">{{bm.bm_aiolv || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiolv')" ng-if="bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
+				<button ng-click="addRow(bm)" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
+
 		<tr ng-if="newBm">
-			<td ng-repeat="prop in newBm.save_display track by $index" ng-class="{'danger': newBm.approvable[prop] == true}">
+			<td class="new_data" ng-repeat="prop in newBm.save_display track by $index" ng-class="{'danger': newBm.approvable[prop] == true}">
 				<span class="form-group" ng-class="{'has-error': error[prop]}">
 					<input ng-if="prop != 'logic'" type="text" ng-model="newBm[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
 					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
@@ -114,13 +169,16 @@
 			<th>Cell</th>
 			<th>Element Name</th>
 			<th>Element Type</th>
-			<th>s</th>
+			<th>s<br/>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i>
+			</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Hor. (AIOLH)</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Ver. (AIOLV)</th>
 		</tr>
-		<tr ng-repeat="bm in bmArr">
+		<tr ng-repeat="bm in bmArr|orderBy:orderByField:reverseSort">
 			<td>{{bm.bm_cell || '&nbsp;'}}</td>
 			<td>{{bm.name || '&nbsp;'}}</td>
 			<td>{{bm.bm_type || '&nbsp;'}}</td>

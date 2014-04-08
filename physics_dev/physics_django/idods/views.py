@@ -346,6 +346,7 @@ Save raw data
 '''
 @require_http_methods(["POST"])
 def saveRawDataWS(request):
+    print request.FILES
     rawFile = request.FILES.getlist('file')[0]
     
     res = {}
