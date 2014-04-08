@@ -1227,9 +1227,18 @@ class lattice(object):
                     etypeproptidunit = typedict[etypename][etypeprop]
 
                     if len(etypeproptidunit) > 0:
-                            elempropsql += '''('%s', '%s', '%s', NULL),'''%(elementid, 
-                                                                            typedict[etypename][etypeprop][0],
-                                                                            v[etypeprop])
+                        if "\"" in v[etypeprop] or "'" in v[etypeprop]:
+                            sqltmp = '''('%s', '%s', %s, NULL),'''
+                        else:
+                            sqltmp = '''('%s', %s, '%s', NULL),'''
+                        if "%" in v[etypeprop]:
+                            elempropsql +=  sqltmp%(elementid, 
+                                                    typedict[etypename][etypeprop][0],
+                                                    v[etypeprop].replace("%", "%%"))
+                        else:
+                            elempropsql += sqltmp%(elementid, 
+                                                   typedict[etypename][etypeprop][0],
+                                                   v[etypeprop])
                     else:
                         raise TypeError("Unknown structure for element type property value and unit.")
         # get rid of last comma from SQL statement.

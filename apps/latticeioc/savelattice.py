@@ -162,6 +162,7 @@ def _readtracyresult(latfile, result):
         if k != '0':
             # twiss file includes element 'BEGIN'
             props = [x.strip() for x in latdict[v['name']].split(',')]
+
             if props[0].upper() == 'CORRECTOR':
                 # find direction info for corrector
                 etype = props[0]
@@ -189,7 +190,8 @@ def _readtracyresult(latfile, result):
     return flattenlatdict, modeldata
 
 def savelatticemodel(latfile, pfile, lmc, source=None, name=None, version=None, branch='live'):
-    name = os.path.splitext(os.path.basename(latfile))[0]
+    if name == None:
+        name = os.path.splitext(os.path.basename(latfile))[0]
     
     if version == None:
         version = int(time.time())
@@ -230,7 +232,6 @@ def savelatticemodel(latfile, pfile, lmc, source=None, name=None, version=None, 
 
 if __name__ == '__main__':
     from latticepy.LatticeModelClient import LatticeModelClient
-    import time
 
     url = 'http://localhost:8080/lattice'
     lmc = LatticeModelClient(BaseURL=url, username='', password='')

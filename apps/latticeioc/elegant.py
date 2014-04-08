@@ -10,8 +10,6 @@ import math
 
 import subprocess
 
-#from decimal import (getcontext, Decimal)
-#import time
 from time import strftime
 from collections import OrderedDict
 import copy
@@ -21,22 +19,14 @@ from cothread import WaitForQuit
 
 from _config import getpvtablefromfile
 
-from savelattice import (savelatticemodel)
+from saveelegant import (savelatticemodel)
 from latticepy.LatticeModelClient import LatticeModelClient
-
-#isrunning = False
-#iscommanded = False
-#runagain = False
-
-#normalizedvalue={}
 
 monitorspvals = {}
 monitorrbvals = {}
 
 energyforsimulation = 3.000
 energysppv = 'SR-BI{RUNMODEL}ENERGY-SP'
-
-#beamcurrentpv = 'SR:C03-BI{DCCT:1}I:Total-I'
 
 wfrectemplate = '''record(waveform, "%s") {
     field(DTYP, "Soft Channel")
@@ -474,7 +464,7 @@ def _readelegantresult(elename, ltename):
 
     return modeldata, len(cod)
 
-def runelegant(elefile, ltefile, runit=True):
+def runelegant(elefile, ltefile, runit=True, passit = False):
     '''elefile {'name': , 'content': }
     ltefile {'name': , 'content': }
     '''
@@ -517,7 +507,8 @@ def runelegant(elefile, ltefile, runit=True):
             msg = 'closed orbit did not converge'
         else:
             msg = 'elegant runs successfully'
-    else:
+
+    if passit:
         global elemtypes
         tmp = np.loadtxt('/'.join((runelegantdir, "%s-par.txt"%(elename))), dtype=str)
         ename = tmp[:, 0]
@@ -712,10 +703,11 @@ def runlatticemodel(is4setpoint):
             except ca.ca_nothing as e:
                 pass
 
-#    global lmc
-#    if msg != 'error: lattice unstable. ' and lmc != None:
-#        latname, _ = os.path.splitext(livelat)
-#        savelatticemodel(livelat, '%s.pm'%latname, lmc, source=source, name=latname, version=version, branch='live')
+    global lmc
+    if msg not in ['closed orbit did not converge', "beamline unstable"] and lmc != None:
+        savelatticemodel(ele_new+'.lte', {'name': ele_new+'.ele', 'content': elecontent}, lmc, source=source, name=ele_new, version=version, branch='live')
+    else:
+        print msg
 
 savelattice_template = '''&save_lattice
    filename = %s.lte
@@ -733,6 +725,8 @@ def main(designlat, designversion, init=True):
         
         save_lattice= ""
         alter_elem = ""
+        global design_elecontent
+        
         elecontent = elefile_template%('design', time.strftime("%a, %d %b %Y, %H:%M:%S %Z"),
                                        ele_pre, ele_pre, ele_pre, ele_pre, ele_pre, ele_pre,
                                        alter_elem, ele_pre, ele_pre, ele_pre, ele_pre, ele_pre, 
@@ -757,13 +751,12 @@ def main(designlat, designversion, init=True):
                                        ele_pre, ele_pre, ele_pre, ele_pre, ele_pre, ele_pre,
                                        alter_elem, ele_pre, ele_pre, ele_pre, ele_pre, ele_pre, 
                                        save_lattice)
-        designresult, elemcount, _ = runelegant({'name': ele_name, 'content': elecontent}, designlat, runit=False)
+        designresult, elemcount, _ = runelegant({'name': ele_name, 'content': elecontent}, designlat, runit=True, passit=True)
 
-#        global lmc
-#        if lmc != None:
-#            latname, _ = os.path.splitext(designlat)
-#            savelatticemodel(designlat, '%s.pm'%latname, lmc, source='design', name=latname, version=designversion, branch='design')
-#
+        global lmc
+        if lmc != None:
+            savelatticemodel(degign_lattice, {'name': ele_name, 'content': elecontent}, lmc, source='design', name=ele_pre+" [elegant]", version=designversion, branch='design')
+
         pvs = [alphaxdesign, alphaydesign, 
                betaxdesign, betaydesign, 
                etaxdesign, etaydesign, 
@@ -855,17 +848,17 @@ if __name__ == '__main__':
     if not os.path.isfile(elegant_cmd):
         raise RuntimeError("Cannot locate ELEGANT simulation engine.")
 
-#    # need to update to production server url
-#    latticeurl = 'http://localhost:8000/lattice'
-#    user =''
-#    pw = ''
-#    
-#    global lmc 
-#    lmc = None
-#    try:
-#        lmc = LatticeModelClient(BaseURL=latticeurl, username=user, password=pw)
-#    except:
-#        pass
+    # need to update to production server url
+    latticeurl = 'http://localhost:8000/lattice'
+    user =''
+    pw = ''
+    
+    global lmc 
+    lmc = None
+    try:
+        lmc = LatticeModelClient(BaseURL=latticeurl, username=user, password=pw)
+    except:
+        pass
 
     degign_lattice = 'comm-ring.lte'
     livelat = 'comm-ring.lte'

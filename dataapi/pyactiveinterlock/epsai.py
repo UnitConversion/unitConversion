@@ -635,7 +635,7 @@ class epsai(object):
         
         # Append definition
         sqlVals = _checkWildcardAndAppend('aid.definition', definition, sqlVals[0], sqlVals[1], 'AND')
-        print sqlVals
+        #print sqlVals
         
         try:
             # Execute sql
