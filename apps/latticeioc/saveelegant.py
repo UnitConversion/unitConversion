@@ -292,10 +292,15 @@ def savelatticemodel(latfile, params, lmc, source=None, name=None, version=None,
         print "Not save mode: %s"%modelname
 
     try:
-        # delete intermediate files except the lte and ele files
-        subprocess.Popen('ls |grep -v lte|grep -v ele|xargs rm', 
-                         shell=True, 
+        # delete intermediate files except the lte and ele files under directory runelegant
+        files = subprocess.Popen('ls %s |grep -v lte|grep -v ele'%runelegantdir,
+                         shell=True,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
+        for line in files.stdout:
+            subprocess.Popen('rm %s'%("/".join((runelegantdir, line[:-1]))),
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
     except OSError:
         pass
