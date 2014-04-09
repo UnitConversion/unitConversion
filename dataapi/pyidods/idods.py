@@ -1550,7 +1550,7 @@ class idods(object):
         scriptname = None
         
         if 'script_name' in kws and kws['script_name'] != None:
-            scriptname = kws['scriptname']
+            scriptname = kws['script_name']
             
         # Check script
         script = None

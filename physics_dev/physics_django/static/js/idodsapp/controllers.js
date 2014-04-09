@@ -1772,7 +1772,16 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		var response = data.jqXHR.responseText;
 		l(e);
 
-		$scope.new.data_id = JSON.parse(response)["id"];
+		if($scope.action === "update") {
+			$scope.element.data_id = JSON.parse(response)["id"];
+
+		} else if($scope.action == "save") {
+			$scope.new.data_id = JSON.parse(response)["id"];
+		}
+
+		saveOfflineData($scope, offlineDataFactory);
+
+		/*$scope.new.data_id = JSON.parse(response)["id"];
 		l($scope.new);
 
 		$scope.alert.show = false;
@@ -1807,7 +1816,7 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 				$scope.alert.title = "Error!";
 				$scope.alert.body = error;
 			});
-		}
+		}*/
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -1825,19 +1834,34 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	}
 	
 	// Show update form in the right pane
-	/*$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
-	}*/
+	}
 	
 	$scope.saveItem = function(action) {
 
-		if (uploadData === undefined) {
-			$scope.error['data_id'] = "Raw data filed is mandatory!";
+		if (uploadData === undefined && action === "save") {
+			$scope.error['data_id'] = "Raw data field is mandatory!";
+
+		} else if (uploadData === undefined && action !== "save") {
+			saveOfflineData($scope, offlineDataFactory);
 
 		} else {
 			uploadData.submit();
 		}
+	}
+
+	$scope.downloadScript = function(element) {
+		download(element.script_name, element.script);
+	}
+
+	$scope.downloadRawData = function(element) {
+		// Retrieve raw file
+		offlineDataFactory.retrieveRawFile(element.data_id).then(function(result) {
+			l(result);
+			download(element.data_file_name, result[element.data_id]['data']);
+		});
 	}
 });
 

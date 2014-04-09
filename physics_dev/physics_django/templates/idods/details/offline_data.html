@@ -9,9 +9,9 @@
 		
 		{% endverbatim %}
 			{% if user.is_authenticated %}
-			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
 			{% endif %}
 		{% verbatim %}
+			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
 
 
 		<table class="table table-bordered">
@@ -21,7 +21,12 @@
 			</tr>
 			<tr ng-repeat="property in element.retrieve">
 				<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
-				<td>{{element[property]}}</td>
+
+				<td ng-if="property != 'script_name' && property != 'data_file_name'">{{element[property]}}</td>
+				
+				<td ng-if="property == 'script_name'"><span ng-if="!element.script">Script was not saved!</span><button ng-if="element.script" class="btn btn-info" ng-click="downloadScript(element)">Download script file</button></td>
+
+				<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(element)" class="btn btn-info">Download raw file</button></td>
 			</tr>
 		</table>
 	</div>
@@ -38,52 +43,46 @@
 
 		<form data-file-upload="options" method="post" enctype="multipart/form-data">
 
-		<table class="table table-bordered">
-			<tr>
-				<th>Key</th>
-				<th>Value</th>
-			</tr>
-			<tr ng-repeat="property in new.save_show">
-				<td>{{new.display[property]}}</td>
-				<td>
-					<span class="control-group" ng-class="{'error': error[property]}">
-						<span class="controls">
-							
-							<select ng-if="property == 'inventory_name'" ng-model="new[property]" ng-options="inv for inv in inventories"></select>
+			<table class="table table-bordered">
+				<tr>
+					<th>Key</th>
+					<th>Value</th>
+				</tr>
+				<tr ng-repeat="property in new.save_show">
+					<td>{{new.display[property]}}</td>
+					<td>
+						<span class="control-group" ng-class="{'error': error[property]}">
+							<span class="controls">
+								
+								<select ng-if="property == 'inventory_name'" ng-model="new[property]" ng-options="inv for inv in inventories"></select>
 
-							<select ng-if="property == 'method_name'" ng-model="new[property]" ng-options="method for method in methods"></select>
+								<select ng-if="property == 'method_name'" ng-model="new[property]" ng-options="method for method in methods"></select>
 
-							<input ng-if="property != 'inventory_name' && property != 'method_name'" type="text" ng-model="new[property]" />
-							
-							<span class="help-inline">{{error[property]}}</span>
+								<textarea rows="8" ng-if="property == 'script'" ng-model="new[property]"></textarea>
+
+								<input ng-if="property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="new[property]" />
+								
+								<span class="help-inline">{{error[property]}}</span>
+							</span>
 						</span>
-					</span>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					Raw data
-				</td>
-				<td>
-<!-- 					<span class="control-group" ng-class="{'error': error[property]}">
-						<span class="controls">
-							
-							<input type="text" ng-model="new[property]" />
-							
-							<span class="help-inline">{{error[property]}}</span>
-						</span>
-					</span> -->
-					<div class="control-group" ng-class="{'error': error.data_id}">
-						<span class="btn btn-success fileinput-button">
-							<i class="icon-file icon-white"></i>
-							<input id="rawFile" type="file" name="file">
-						</span>
-						{{uploadFileName}}
-						<span class="help-inline">{{error.data_id}}</span>
-					</div>
-				</td>
-			</tr>
-		</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Raw data
+					</td>
+					<td>
+						<div class="control-group" ng-class="{'error': error.data_id}">
+							<span class="btn btn-success fileinput-button">
+								<i class="icon-file icon-white"></i>
+								<input id="rawFile" type="file" name="file">
+							</span>
+							{{uploadFileName}}
+							<span class="help-inline">{{error.data_id}}</span>
+						</div>
+					</td>
+				</tr>
+			</table>
 
 		</form>
 
@@ -100,30 +99,56 @@
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
 		</div>
-		
-		<table class="table table-bordered">
-			<tr>
-				<th>Key</th>
-				<th>Value</th>
-			</tr>
-			<tr ng-repeat="property in element.save_show">
-				<td>
-					{{element.display[property]}}
-				</td>
-				<td>
-					<span class="control-group" ng-class="{'error': error[property]}">
-						<span class="controls">
-							
-							<input type="text" ng-model="element[property]" />
 
-							<span class="help-inline">{{error[property]}}</span>
+		<form data-file-upload="options" method="post" enctype="multipart/form-data">
+		
+			<table class="table table-bordered">
+				<tr>
+					<th>Key</th>
+					<th>Value</th>
+				</tr>
+				<tr ng-repeat="property in element.save_show">
+					<td>
+						{{element.display[property]}}
+					</td>
+					<td>
+						<span class="control-group" ng-class="{'error': error[property]}">
+							<span class="controls">
+
+								<select ng-if="property == 'inventory_name'" ng-model="element[property]" ng-options="inv for inv in inventories"></select>
+
+								<select ng-if="property == 'method_name'" ng-model="element[property]" ng-options="method for method in methods"></select>
+
+								<textarea rows="8" ng-if="property == 'script'" ng-model="element[property]"></textarea>
+
+								<input ng-if="property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="element[property]" />
+
+								<span class="help-inline">{{error[property]}}</span>
+							</span>
 						</span>
-					</span>
-				</td>
-			</tr>
-		</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Raw data
+					</td>
+					<td>
+						<div class="control-group" ng-class="{'error': error.data_id}">
+							<span class="btn btn-success fileinput-button">
+								<i class="icon-file icon-white"></i>
+								<input id="rawFile" type="file" name="file">
+							</span>
+							{{uploadFileName}}
+							<span class="help-inline">{{error.data_id}}</span>
+						</div>
+					</td>
+				</tr>
+			</table>
+
+		</form>
+
 		<br/>
-		<button ng-click="saveItem(element, 'update')" class="btn btn-success">{{info.update_button}}</button>
+		<button ng-click="saveItem('update')" class="btn btn-success">{{info.update_button}}</button>
 	</div>
 </div>
 {% endverbatim %}

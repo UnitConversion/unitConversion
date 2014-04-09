@@ -743,6 +743,23 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 		return retrieveItem($q, $http, "offlinedata", this.entity, OfflineData);
 	}
 
+	// Raw data file
+	factory.retrieveRawFile = function(id) {
+		var query = serviceurl + "/rawdata/?raw_data_id=" + id;
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.get(query).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
 	// Get offline data from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "offlinedata", this.entity.list, params, this.entity.search_m);

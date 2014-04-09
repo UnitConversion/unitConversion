@@ -710,16 +710,16 @@ app.value('OfflineDataInfo', {
  	this.search_m = ["inventory_name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "script", "method_name", "methoddesc", "data_id"];
+ 	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
  	this.list = ["inventory_name", "description"];
 
  	// Parameters used for save URL
- 	this.save = ["inventory_name", "description", "data_file_name", "data_id", "method_name", "status"];
+ 	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
  	
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["inventory_name", "description", "data_file_name", "method_name", "status"];
+ 	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
 
  	// Parameters used as update URL parameters
  	this.update = ["offline_data_id", "inventory_name", "description", "status"];
@@ -735,6 +735,13 @@ app.value('OfflineDataInfo', {
  		"script_name": "Script name",
  		"method_name": "Method name",
  		"data_id": "Data id",
+ 		"gap": "Gap",
+ 		"phase1": "Phase 1",
+ 		"phase2": "Phase 2",
+ 		"phase3": "Phase 3",
+ 		"phase4": "Phase 4",
+ 		"script_name": "Script file name",
+ 		"script": "Script file content",
  		"status": "Data status"
  	};
 
@@ -743,11 +750,11 @@ app.value('OfflineDataInfo', {
  	this.description = "";
  	this.username = "";
  	this.date = "";
- 	this.gap = "";
- 	this.phase1 = "";
- 	this.phase2 = "";
- 	this.phase3 = "";
- 	this.phase4 = "";
+ 	this.gap = undefined;
+ 	this.phase1 = undefined;
+ 	this.phase2 = undefined;
+ 	this.phase3 = undefined;
+ 	this.phase4 = undefined;
  	this.phasemode = "";
  	this.polarmode = "";
  	this.status = "";

@@ -207,6 +207,62 @@ function checkDiff(keys) {
 }
 
 /*
+ * Download text as a file
+ * @param filename name of the file that will be downloaded
+ * @param text text that will be present in the downloaded file
+ */
+function download(filename, text) {
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:application/octet-stream,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+    pom.click();
+}
+
+function saveOfflineData($scope, offlineDataFactory) {
+
+	$scope.alert.show = false;
+	var result;
+	l(result);
+
+	if($scope.action === "update") {
+		result = offlineDataFactory.checkItem($scope.element);
+
+	} else if($scope.action == "save") {
+		result = offlineDataFactory.checkItem($scope.new);
+	}
+
+	if(result !== true) {
+		$scope.error = result.errorDict;
+	
+	} else {
+		var propsObject = {};
+
+		delete $scope.error;
+		var promise;
+		
+		if($scope.action === "update") {
+			promise = offlineDataFactory.updateItem($scope.element);
+
+		} else if($scope.action == "save") {
+			promise = offlineDataFactory.saveItem($scope.new);
+		}
+		
+		promise.then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Offline data successfully saved!";
+		
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	}
+}
+
+/*
  * Create lattice data table
  * @param {type} header array of header columns
  * @param {type} lattice lattice object data
