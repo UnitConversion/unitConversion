@@ -33,6 +33,7 @@
 			<th>Code</th>
 			<th></th>
 		</tr>
+		<tbody>
 		<tr ng-repeat="logic in logicArr" ng-class="{'warning': logic.num > 0}">
 			<td ng-class="{'danger': logic.status == 2}">
 				<span ng-if="logic.num == 0" class="edit-wrapper">
@@ -90,6 +91,7 @@
 		<tr>
 			<td colspan="5"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new logic</button></td>
 		</tr>
+		</tbody>
 	</table>
 </div>
 
@@ -109,12 +111,14 @@
 			<th>Logic</th>
 			<th>Code</th>
 		</tr>
+		<tbody>
 		<tr ng-repeat="logic in logicArr">
 			<td>{{logic.name || '&nbsp;'}}</td>
 			<td>{{logic.shape || '&nbsp;'}}</td>
 			<td>{{logic.logic || '&nbsp;'}}</td>
 			<td>{{logic.code || '&nbsp;'}}</td>
 		</tr>
+		</tbody>
 	</table>
 </div>
 

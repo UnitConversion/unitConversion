@@ -94,10 +94,10 @@ app.value('BendingMagnet', function(obj) {
 	this.save = ["ai_status", "name", "definition", "logic", "props"];
 
 	// Save parameters in data
-	this.save_data = ["bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv"];
+	this.save_data = ["bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv", "bm_safe_current"];
 	
 	// Parameters that are displayed for saving
-	this.save_display = ["bm_cell", "name", "bm_type", "bm_s", "logic", "bm_aiolh", "logic", "bm_aiolv"];
+	this.save_display = ["bm_cell", "name", "bm_type", "bm_s", "logic", "bm_aiolh", "logic", "bm_aiolv", "bm_safe_current"];
 
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name", "definition"];
@@ -115,9 +115,9 @@ app.value('BendingMagnet', function(obj) {
 	this.approve = ["aid_id", "prop_types"];
 
 	// Cells that need to be approved after saving
-	this.approvable = {"bm_aiolh":true, "bm_aiolv":true};
+	this.approvable = {"bm_aiolh":true, "bm_aiolv":true, "bm_safe_current":true};
 	
-	this.all = ["id", "ai_id", "aid_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv"];
+	this.all = ["id", "ai_id", "aid_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_type", "bm_s", "bm_aiolh", "bm_aiolv", "bm_safe_current"];
 
 	this.id = "";
 	this.ai_id = "";
@@ -131,6 +131,7 @@ app.value('BendingMagnet', function(obj) {
 	this.bm_s = "";
 	this.bm_aiolh = "";
 	this.bm_aiolv = "";
+	this.bm_safe_current = "";
 	this.prop_statuses = "";
 
 	this.props_raw = {};

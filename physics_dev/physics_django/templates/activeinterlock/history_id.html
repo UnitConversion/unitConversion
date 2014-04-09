@@ -120,12 +120,17 @@
 			<th>mA</th>
 		</tr>
 
+		<tbody>
+
 		<tr ng-if="true" ng-repeat="id in idArr|orderBy:orderByField:reverseSort">
 			<td ng-repeat="prop in id.save_display">
 				{{id[prop] || '&nbsp;'}}
 			</td>
 			<td></td>
 		</tr>
+
+		</tbody>
+
 	</table>
 </div>
 

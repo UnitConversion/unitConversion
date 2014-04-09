@@ -82,13 +82,14 @@ class epsai(object):
         }
         
         # Define all the properties for the bm table
-        self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable']]
+        self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable'], ['bm_safe_current', 'mA', 'approvable']]
         self.bm_props_dict = {
             'bm_cell': ['bm_cell', '', ''],
             'bm_type': ['bm_type', '', ''],
             'bm_s': ['bm_s', 'm', ''],
             'bm_aiolh': ['bm_aiolh', 'mm', 'approvable'],
-            'bm_aiolv': ['bm_aiolv', 'mm', 'approvable']
+            'bm_aiolv': ['bm_aiolv', 'mm', 'approvable'],
+            'bm_safe_current': ['bm_safe_current', 'mA', 'approvable']
         }
         
     def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by):
@@ -564,6 +565,11 @@ class epsai(object):
                              'prop1key': , #int, status of the property,
                              ...
                              'propNkey': , #int, status of the property
+                         },
+                     'prop_units': {
+                             'prop1key': , #string, property unit,
+                             ...
+                             'propNkey': , #string, property unit
                          }
                     }
                 }
@@ -635,7 +641,6 @@ class epsai(object):
         
         # Append definition
         sqlVals = _checkWildcardAndAppend('aid.definition', definition, sqlVals[0], sqlVals[1], 'AND')
-        print sqlVals
         
         try:
             # Execute sql

@@ -37,9 +37,23 @@
 			<th>AI Offset Limit Hor. (AIOLH)</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Ver. (AIOLV)</th>
+			<th>Safe current</th>
+			<th></th>
+		</tr>
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>mm</th>
+			<th></th>
+			<th>mm</th>
+			<th>mA</th>
 			<th></th>
 		</tr>
 
+		<tbody>
 		<!-- Show retrieved -->
 		<tr ng-repeat="bm in bmArr|orderBy:orderByField:reverseSort">
 			<td ng-class="{'danger': bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2}">
@@ -81,6 +95,12 @@
 					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolv', $data)" class="edit" editable-text="bm.bm_aiolv">{{bm.bm_aiolv || '&nbsp;'}}</a>
 				</span>
 				<button ng-click="approveCell(bm, 'bm_aiolv')" ng-if="bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_safe_current', $data)" class="edit" editable-text="bm.bm_safe_current">{{bm.bm_safe_current || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_safe_current')" ng-if="bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
 			</td>
 			<td>
 				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
@@ -131,6 +151,12 @@
 				</span>
 				<button ng-click="approveCell(bm, 'bm_aiolv')" ng-if="bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
 			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_safe_current', $data)" class="edit" editable-text="bm.bm_safe_current">{{bm.bm_safe_current || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_safe_current')" ng-if="bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
 			<td>
 				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
 				<button ng-click="addRow(bm)" class="btn btn-default">Copy&Create</button>
@@ -151,8 +177,9 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="9"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
+			<td colspan="10"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
 		</tr>
+		</tbody>
 	</table>
 </div>
 
@@ -177,7 +204,21 @@
 			<th>AI Offset Limit Hor. (AIOLH)</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Ver. (AIOLV)</th>
+			<th>Safe current</th>
 		</tr>
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>mm</th>
+			<th></th>
+			<th>mm</th>
+			<th>mA</th>
+			<th></th>
+		</tr>
+		<tbody>
 		<tr ng-repeat="bm in bmArr|orderBy:orderByField:reverseSort">
 			<td>{{bm.bm_cell || '&nbsp;'}}</td>
 			<td>{{bm.name || '&nbsp;'}}</td>
@@ -187,7 +228,9 @@
 			<td>{{bm.bm_aiolh || '&nbsp;'}}</td>
 			<td>{{bm.logic || '&nbsp;'}}</td>
 			<td>{{bm.bm_aiolv || '&nbsp;'}}</td>
+			<td>{{bm.bm_safe_current || '&nbsp;'}}</td>
 		</tr>
+		</tbody>
 	</table>
 </div>
 

@@ -114,7 +114,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	var aiStatus = aiStatusMap[$routeParams.status];
 	$scope.urlTab = $routeParams.tab;
 
-	$scope.orderByField = 'id';
+	$scope.orderByField = 'bm_s';
 	$scope.reverseSort = false;
 
 	// If status is not defined, skip this controller
@@ -346,7 +346,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	$scope.urlTab = $routeParams.tab;
 	$scope.logicShapeDict = {};
 
-	$scope.orderByField = 'id';
+	$scope.orderByField = 's3_pos';
 	$scope.reverseSort = false;
 
 	// If status is not defined, skip this controller
@@ -1080,7 +1080,7 @@ app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, Bendin
 	$scope.bmArr = [];
 	$scope.urlTab = $routeParams.tab;
 
-	$scope.orderByField = 'id';
+	$scope.orderByField = 'bm_s';
 	$scope.reverseSort = false;
 	
 	// Retrieve bending magnets
@@ -1101,7 +1101,7 @@ app.controller('historyIdCtrl', function($scope, $routeParams, idFactory, Insert
 	$scope.idArr = [];
 	$scope.urlTab = $routeParams.tab;
 
-	$scope.orderByField = 'id';
+	$scope.orderByField = 's3_pos';
 	$scope.reverseSort = false;
 	
 	// Retrieve insertion devices
