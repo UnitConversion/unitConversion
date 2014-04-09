@@ -55,7 +55,7 @@ class LatticeModelClient(object):
         else:
             return value
     
-    def saveLattice(self, name, branch, version, latfile, latdata=None, description=None, latticetype=None, kickmap=None, elefile=None, binarymap=False):
+    def saveLattice(self, name, branch, version, latfile, latdata=None, description=None, latticetype=None, kickmap=None, elefile=None, binarymap=False, topdir=None):
         '''
         Save lattice
         
@@ -73,15 +73,24 @@ class LatticeModelClient(object):
                         kmdata = f.readlines()
                 kmdict[km] = kmdata
         
-        with file(latfile, 'r') as f:
-            rawlatdata = f.readlines()
+        if topdir != None:
+            with file('/'.join((topdir, latfile)), 'r') as f:
+                rawlatdata = f.readlines()
+        else:
+            with file(latfile, 'r') as f:
+                rawlatdata = f.readlines()
+            
 
         ctrldict = None
         if elefile != None:
             ctrldict = {'name': elefile}
-            with file(elefile, 'r') as f:
-                ctrldict['data'] = f.readlines()
-
+            if topdir != None:
+                with file('/'.join((topdir, elefile)), 'r') as f:
+                    ctrldict['data'] = f.readlines()
+            else:
+                with file(elefile, 'r') as f:
+                    ctrldict['data'] = f.readlines()
+                
         payload = {'name': name,
                    'version': version,
                    'branch': branch,
