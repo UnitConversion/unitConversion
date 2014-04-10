@@ -18,8 +18,8 @@
 			<th>Element Name</th>
 			<th>Element Type</th>
 			<th>s<br/>
-				<i ng-class="(orderByField == 'bm_s' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 'bm_s' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='bm_s'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('bm_s', false); orderByField='bm_s'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 'bm_s' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('bm_s', true); orderByField='bm_s'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i>
 			</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Hor. (AIOLH)</th>
@@ -39,7 +39,7 @@
 			<th>mA</th>
 		</tr>
 		<tbody>
-		<tr ng-repeat="bm in bmArr|orderBy:orderByField:reverseSort">
+		<tr ng-repeat="bm in bmArr">
 			<td>{{bm.bm_cell || '&nbsp;'}}</td>
 			<td>{{bm.name || '&nbsp;'}}</td>
 			<td>{{bm.bm_type || '&nbsp;'}}</td>

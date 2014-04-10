@@ -25,3 +25,5 @@ var aiStatusMap = {
 
 var idNum = 0;
 var bmNum = 0;
+
+var alertTimeout = 3000;

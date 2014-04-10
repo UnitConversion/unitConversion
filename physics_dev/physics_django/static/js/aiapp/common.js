@@ -70,3 +70,21 @@ function prepareError(data, status) {
 
 	return data;
 }
+
+function sort(arr, key, reverse) {
+
+	arr.sort(function(a, b) {
+		isNaN(a[key]) ? a[key] = 0 : true;
+		isNaN(b[key]) ? b[key] = 0 : true;
+
+		if (reverse) {
+			return b[key] - a[key];
+			
+		} else {
+			return a[key] - b[key];
+		}
+
+	});
+
+	return arr;
+}

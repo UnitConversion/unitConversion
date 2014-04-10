@@ -52,20 +52,20 @@
 
 			<th>Name</th>
 			<th>Position (s1)<br/>
-				<i ng-class="(orderByField == 's1_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s1_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's1_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s1_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's1_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s1_pos', false); orderByField='s1_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's1_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s1_pos', true); orderByField='s1_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Position from AIE-ID location</th>
 
 			<th>Name</th>
 			<th>Position (s2)<br/>
-				<i ng-class="(orderByField == 's2_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s2_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's2_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s2_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's2_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s2_pos', false); orderByField='s2_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's2_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s2_pos', true); orderByField='s2_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Position from AIE-ID location</th>
 
 			<th>Name</th>
 			<th>Position (s3)<br/>
-				<i ng-class="(orderByField == 's3_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s3_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's3_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="orderByField='s3_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's3_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s3_pos', false); orderByField='s3_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's3_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="ocheckArrays('s3_pos', true); rderByField='s3_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Pos. from cent. Str. Sect.</th>
 			
 			<th>Max. offset</th>
@@ -122,7 +122,7 @@
 
 		<tbody>
 
-		<tr ng-if="true" ng-repeat="id in idArr|orderBy:orderByField:reverseSort">
+		<tr ng-if="true" ng-repeat="id in idArr">
 			<td ng-repeat="prop in id.save_display">
 				{{id[prop] || '&nbsp;'}}
 			</td>

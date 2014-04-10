@@ -105,7 +105,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 /*
  * Bending magnet controller that displays anf manages everything connected to bending magnet table
  */
-app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory, BendingMagnet, $modal){
+app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory, BendingMagnet, $modal, $timeout){
 	$scope.error = {};
 	$scope.bmArr = [];
 	$scope.bmArr2 = [];
@@ -133,6 +133,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 		});
 
 		bmNum = $scope.bmArr.length;
+		$scope.bmArr = sort($scope.bmArr, 'bm_s', false);
 	});
 
 	// Retrieve logic
@@ -145,12 +146,9 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 		});
 	});
 
-	$scope.checkArrays = function() {
+	$scope.checkArrays = function(field, reverse) {
 
-		if($scope.bmArr2.length === 0) {
-			return;
-		
-		} else {
+		if($scope.bmArr2.length !== 0) {
 
 			$.each($scope.bmArr2, function(ind, obj) {
 				$scope.bmArr.push(obj);
@@ -158,6 +156,8 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 
 			$scope.bmArr2 = [];
 		}
+
+		$scope.bmArr = sort($scope.bmArr, field, reverse);
 	}
 
 	$scope.newBm = undefined;
@@ -174,7 +174,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 			$scope.alert.success = false;
 			$scope.alert.title = "Error!";
 			$scope.alert.body = "Before adding new data, logic must be inserted and approved!";
-
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return;
 		}
 
@@ -212,6 +212,11 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	$scope.updateItem = function(device, typeName, propValue) {
 		$scope.alert.show = false;
 
+		// Convert to float
+		if(typeName === 'bm_s') {
+			device[typeName] = parseFloat(propValue);
+		}
+
 		bmFactory.updateItem({'aid_id': device.id, 'prop_type_name': typeName, 'value': propValue}).then(function(data) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
@@ -224,6 +229,8 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 				device.prop_statuses.num_unapproved +=1;
 			}
 
+			$scope.orderByField = "";
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return true;
 
 		}, function(error) {
@@ -247,6 +254,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
 			$scope.alert.body = "Value successfully updated!";
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return true;
 
 		}, function(error) {
@@ -319,6 +327,8 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 
 					bmNum = $scope.bmArr2.length;
 				});
+
+				$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			
 			}, function(error) {
 				$scope.alert.show = true;
@@ -336,7 +346,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	}
 });
 
-app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory, InsertionDevice, $modal){
+app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory, InsertionDevice, $modal, $timeout){
 	$scope.error = {};
 	$scope.idArr = [];
 	$scope.idArr2 = [];
@@ -365,7 +375,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		});
 
 		idNum = $scope.idArr.length;
-		l($scope.idArr);
+		$scope.idArr = sort($scope.idArr, 's3_pos', false);
 	});
 
 	// Retrieve logic
@@ -379,12 +389,9 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		});
 	});
 
-	$scope.checkArrays = function() {
+	$scope.checkArrays = function(field, reverse) {
 
-		if($scope.idArr2.length === 0) {
-			return;
-		
-		} else {
+		if($scope.idArr2.length !== 0) {
 
 			$.each($scope.idArr2, function(ind, obj) {
 				$scope.idArr.push(obj);
@@ -392,6 +399,11 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 
 			$scope.idArr2 = [];
 		}
+
+		l(field);
+		l(reverse);
+
+		$scope.idArr = sort($scope.idArr, field, reverse);
 	}
 
 	$scope.newInsD = undefined;
@@ -401,7 +413,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	}
 
 	$scope.addRow = function(item) {
-		l("add row ");
 		$scope.alert.show = false;
 
 		if($scope.logicArr.length == 0) {
@@ -409,7 +420,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 			$scope.alert.success = false;
 			$scope.alert.title = "Error!";
 			$scope.alert.body = "Before adding new data, logic must be inserted and approved!";
-
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return;
 		}
 
@@ -443,6 +454,12 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	}
 
 	$scope.updateItem = function(device, typeName, propValue) {
+
+		// Convert to float
+		if(typeName === 's1_pos' || typeName === 's2_pos' || typeName === 's3_pos') {
+			device[typeName] = parseFloat(propValue);
+		}
+
 		$scope.alert.show = false;
 
 		idFactory.updateItem({'aid_id': device.id, 'prop_type_name': typeName, 'value': propValue}).then(function(data) {
@@ -457,6 +474,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 				device.prop_statuses.num_unapproved +=1;
 			}
 
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return true;
 
 		}, function(error) {
@@ -481,6 +499,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 			$scope.alert.title = "Success!";
 			$scope.alert.body = "Value successfully updated!";
 			device.shape = $scope.logicShapeDict[device.logic];
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return true;
 
 		}, function(error) {
@@ -552,6 +571,8 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 
 					idNum = $scope.idArr2.length;
 				});
+
+				$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			
 			}, function(error) {
 				$scope.alert.show = true;
@@ -572,7 +593,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 /*
  * Logic controller that displays logic and manages adding and updating logics
  */
-app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory, Logic){
+app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory, Logic, $timeout){
 	$scope.error = {};
 	$scope.logicArr = [];
 	$scope.alert = {};
@@ -643,6 +664,8 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 						$scope.logicArr.push(newItem);
 					});
 				});
+
+				$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			
 			}, function(error) {
 				$scope.alert.show = true;
@@ -671,6 +694,7 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 			$scope.alert.title = "Success!";
 			$scope.alert.body = "Value successfully updated!";
 			logic.status = 2;
+			$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			return true;
 
 		}, function(error) {
@@ -1082,6 +1106,11 @@ app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, Bendin
 
 	$scope.orderByField = 'bm_s';
 	$scope.reverseSort = false;
+
+	// Sort dict
+	$scope.checkArrays = function(field, reverse) {
+		$scope.bmArr = sort($scope.bmArr, field, reverse);
+	}
 	
 	// Retrieve bending magnets
 	bmFactory.retrieveItems({'ai_id': $scope.datasetId}).then(function(result) {
@@ -1094,6 +1123,8 @@ app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, Bendin
 			var newItem = new BendingMagnet(item);
 			$scope.bmArr.push(newItem);
 		});
+
+		$scope.bmArr = sort($scope.bmArr, 'bm_s', false);
 	});
 });
 
@@ -1103,6 +1134,11 @@ app.controller('historyIdCtrl', function($scope, $routeParams, idFactory, Insert
 
 	$scope.orderByField = 's3_pos';
 	$scope.reverseSort = false;
+
+	// Sort dict
+	$scope.checkArrays = function(field, reverse) {
+		$scope.idArr = sort($scope.idArr, field, reverse);
+	}
 	
 	// Retrieve insertion devices
 	idFactory.retrieveItems({'ai_id': $scope.datasetId}).then(function(result) {
@@ -1115,6 +1151,8 @@ app.controller('historyIdCtrl', function($scope, $routeParams, idFactory, Insert
 			var newItem = new InsertionDevice(item);
 			$scope.idArr.push(newItem);
 		});
+
+		$scope.idArr = sort($scope.idArr, 's3_pos', false);
 	});
 });
 

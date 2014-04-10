@@ -11,9 +11,11 @@
 
 <br />
 
-<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
-	<button type="button" class="close" ng-click="closeAlert()">&times;</button>
-	<strong>{{alert.title}}</strong> {{alert.body}}
+<div style="height: 72px;">
+	<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
+		<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+		<strong>{{alert.title}}</strong> {{alert.body}}
+	</div>
 </div>
 
 

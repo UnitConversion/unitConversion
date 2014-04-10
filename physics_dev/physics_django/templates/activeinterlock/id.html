@@ -11,9 +11,11 @@
 
 <br />
 
-<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
-	<button type="button" class="close" ng-click="closeAlert()">&times;</button>
-	<strong>{{alert.title}}</strong> {{alert.body}}
+<div style="height: 72px;">
+	<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
+		<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+		<strong>{{alert.title}}</strong> {{alert.body}}
+	</div>
 </div>
 
 <div class="table-responsive id-table">
@@ -57,20 +59,20 @@
 
 			<th>Name</th>
 			<th>Position (s1)<br/>
-				<i ng-class="(orderByField == 's1_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s1_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's1_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s1_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's1_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s1_pos', false); orderByField='s1_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's1_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s1_pos', true); orderByField='s1_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Position from AIE-ID location</th>
 
 			<th>Name</th>
 			<th>Position (s2)<br/>
-				<i ng-class="(orderByField == 's2_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s2_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's2_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s2_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's2_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s2_pos', false); orderByField='s2_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's2_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s2_pos', true); orderByField='s2_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Position from AIE-ID location</th>
 
 			<th>Name</th>
 			<th>Position (s3)<br/>
-				<i ng-class="(orderByField == 's3_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s3_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
-				<i ng-class="(orderByField == 's3_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays(); orderByField='s3_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
+				<i ng-class="(orderByField == 's3_pos' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s3_pos', false); orderByField='s3_pos'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
+				<i ng-class="(orderByField == 's3_pos' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('s3_pos', true); orderByField='s3_pos'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i></th>
 			<th>Pos. from cent. Str. Sect.</th>
 			
 			<th>Max. offset</th>
@@ -130,9 +132,9 @@
 		<!--Editable FIRST-->
 		{% endverbatim %}
 		{% if user.is_authenticated %}
-		<tr ng-if="urlStatus == 'editable'" ng-repeat="id in idArr|orderBy:orderByField:reverseSort">
+		<tr ng-if="urlStatus == 'editable'" ng-repeat="id in idArr">
 		{% else %}
-		<tr ng-if="false" ng-repeat="id in idArr" ng-repeat="id in idArr|orderBy:orderByField:reverseSort">
+		<tr ng-if="false" ng-repeat="id in idArr">
 		{% endif %}
 		{% verbatim %}
 
@@ -159,7 +161,7 @@
 		{% if user.is_authenticated %}
 		<tr ng-if="urlStatus == 'editable'" ng-repeat="id in idArr2">
 		{% else %}
-		<tr ng-if="false" ng-repeat="id in idArr" ng-repeat="id in idArr2">
+		<tr ng-if="false" ng-repeat="id in idArr2">
 		{% endif %}
 		{% verbatim %}
 
