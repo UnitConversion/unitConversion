@@ -1797,7 +1797,7 @@ class idods(object):
             
         # Check script_name
         if 'script_name' in kws:
-            queryDict['script_file_name'] = kws['scriptname']
+            queryDict['script_file_name'] = kws['script_name']
             
         # Check script
         if 'script' in kws:
@@ -1831,7 +1831,7 @@ class idods(object):
                 
             return True
         
-        except MySQLdb.Error as e:
+        except Exception as e:
             
             # Rollback changes
             if self.transaction == None:
@@ -4443,7 +4443,7 @@ class idods(object):
             
             return {'id': onlinedataid}
             
-        except MySQLdb.Error as e:
+        except Exception as e:
             
             # Rollback changes
             if self.transaction == None:
@@ -4664,7 +4664,7 @@ class idods(object):
                 
             return True
         
-        except MySQLdb.Error as e:
+        except Exception as e:
             
             # Rollback changes
             if self.transaction == None:

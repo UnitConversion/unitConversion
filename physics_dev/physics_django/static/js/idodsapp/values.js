@@ -722,7 +722,10 @@ app.value('OfflineDataInfo', {
  	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["offline_data_id", "inventory_name", "description", "status"];
+ 	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+
+ 	// All props
+ 	this.all = ["id", "offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
  	this.display = {
  		"id": "Id",
@@ -770,33 +773,13 @@ app.value('OfflineDataInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
- 		if('id' in obj) {
- 			this.id = obj.id;
- 		}
 
- 		if('offline_data_id' in obj) {
- 			this.offline_data_id = obj.offline_data_id;
- 		}
+ 		for(i=0; i<this.all.length; i++) {
 
- 		this.inventory_name = obj.inventory_name;
- 		this.description = obj.description;
- 		this.username = obj.username;
- 		this.date = obj.date;
- 		this.gap = obj.gap;
- 		this.phase1 = obj.phase1;
- 		this.phase2 = obj.phase2;
- 		this.phase3 = obj.phase3;
- 		this.phase4 = obj.phase4;
- 		this.phasemode = obj.phasemode;
- 		this.polarmode = obj.polarmode;
- 		this.status = obj.status;
-	 	this.data_file_name = obj.data_file_name;
-	 	this.script_name = obj.script_name;
-	 	this.script = obj.script;
-	 	this.method_name = obj.method_name;
-	 	this.methoddesc = obj.methoddesc;
-	 	this.data_id = obj.data_id;
+ 			if(this.all[i] in obj && obj[this.all[i]] != null) {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+ 		}
  	}
 
  	if(obj !== undefined) {
@@ -824,7 +807,7 @@ app.value('OnlineDataInfo', {
  app.value('OnlineData', function(obj){
  	
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["install_name"];
+ 	this.m = ["install_name", "status", "url"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["install_name"];
@@ -836,18 +819,20 @@ app.value('OnlineDataInfo', {
  	this.list = ["install_name", "description"];
 
  	// Parameters used for save URL
- 	this.save = ["install_name", "description"];
+ 	this.save = ["install_name", "description", "status", "url"];
  	
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["install_name", "description"];
+ 	this.save_show = ["install_name", "description", "status"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["online_data_id", "install_name", "description"];
+ 	this.update = ["online_data_id", "install_name", "description", "status", "url"];
 
  	this.display = {
  		"id": "Id",
  		"install_name": "Install name",
- 		"description": "Description"
+ 		"description": "Description",
+ 		"status": "Status",
+ 		"url": "Data file"
  	};
 
  	this.id = "";
