@@ -11,7 +11,13 @@
 
 <br />
 
-<div style="height: 72px;">
+{% endverbatim %}
+{% if user.is_authenticated %}
+<div ng-class="{'alert_placeholder': urlStatus == 'editable'}">
+{% else %}
+<div>
+{% endif %}
+{% verbatim %}
 	<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
 		<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 		<strong>{{alert.title}}</strong> {{alert.body}}

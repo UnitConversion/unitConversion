@@ -206,6 +206,16 @@ def updateStatusWS(request):
 
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('ai.can_modify_ai')
+def copyAiWS(request):
+    '''
+    Copy active interlock
+    '''
+    request.POST = request.POST.copy()
+    request.POST['modified_by'] = request.user.username
+    return _updateData(request, api.copyActiveInterlock, ['status', 'modified_by'], {})
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
 def updatePropWS(request):
     '''
     Update active interlock device property

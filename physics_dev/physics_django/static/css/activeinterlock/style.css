@@ -119,3 +119,7 @@ html, body {
     color: #d2322d;
     cursor: pointer;
 }
+
+.alert_placeholder {
+    height: 72px;
+}

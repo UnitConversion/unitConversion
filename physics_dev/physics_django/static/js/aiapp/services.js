@@ -8,6 +8,7 @@
 app.factory('statusFactory', function($http, $q){
 	var factory = {};
 	factory.update = ["status", "new_status", "modified_by"];
+	factory.copy = ["status"];
 
 	// Return statuses
 	factory.retrieveStatuses = function() {
@@ -30,6 +31,23 @@ app.factory('statusFactory', function($http, $q){
 		var query = serviceurl + "/ai/updatestatus/";
 		
 		var payload = prepareUrlParameters(factory.update, params);
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, payload).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(prepareError(data, status));
+		});
+
+		return promise;
+	}
+
+	factory.copyStatus = function(params) {
+		var query = serviceurl + "/ai/copyactiveinterlock/";
+		
+		var payload = prepareUrlParameters(factory.copy, params);
 		var deffered = $q.defer();
 		var promise = deffered.promise;
 

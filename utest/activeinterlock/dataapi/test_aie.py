@@ -63,6 +63,42 @@ class Test(unittest.TestCase):
         # Test status
         self.assertEqual(aiObject['status'], 0)
 
+    def testCopyActiveInterloc(self):
+        
+        # Save active interlock
+        self.api.saveActiveInterlockHeader('header desc', 'admin')
+        
+        # Prepare logic
+        self.api.saveActiveInterlockLogic('log', 'shape', 'logic', 10, 'author')
+        
+        # Save device
+        devId = self.api.saveDevice(0, 'device name', 'bm', 'log', {})
+        
+        for prop in self.api.bm_props:
+            self.api.saveActiveInterlockProp(devId['id'], prop[0], 'sth')
+        
+        # Try to change status
+        self.assertTrue(self.api.updateActiveInterlockStatus(None, 0, 2, "admin"))
+        
+        # The number of datasets with status 0 should be 0
+        status0 = self.api.retrieveActiveInterlockHeader(0)
+        self.assertEqual(len(status0), 0)
+        
+        # The number of datasets with status 2 should be 1
+        status1 = self.api.retrieveActiveInterlockHeader(2)
+        self.assertEqual(len(status1), 1)
+        
+        # Copy AI to editable
+        self.assertTrue(self.api.copyActiveInterlock(2, "user"))
+        
+        # The number of datasets with status 0 should be 1
+        status0 = self.api.retrieveActiveInterlockHeader(0)
+        self.assertEqual(len(status0), 1)
+        
+        # The number of datasets with status 2 should be 1
+        status1 = self.api.retrieveActiveInterlockHeader(2)
+        self.assertEqual(len(status1), 1)
+
     def testActiveInterlockStatusChange(self):
         
         # Save active interlock

@@ -92,6 +92,22 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 		});
 	}
 
+	$scope.copyDataset = function(status) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/copy_dataset.html',
+			controller: 'copyDatasetCtrl',
+			resolve: {
+				statuses: function() {
+					return $scope.statuses;
+				},
+				status: function() {
+					return aiStatusMap[status];
+				}
+			}
+		});
+	}
+
 	$scope.activateDataset = function() {
 		statusFactory.updateStatus({"status":aiStatusMap['approved'], "new_status":aiStatusMap['active'], "definition":"bm"}).then(function(data) {
 			$window.location = "#/status/active/tab/bm/bm/";
@@ -644,6 +660,10 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 		$scope.error = logicFactory.checkItem($scope.newLogic);
 
 		if (Object.keys($scope.error).length === 0) {
+
+			// URL encode logic
+			$scope.newLogic.logic = encodeURIComponent($scope.newLogic.logic);
+
 			var promise = logicFactory.saveItem($scope.newLogic);
 
 			promise.then(function(data) {
@@ -668,6 +688,7 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 				$timeout(function() {$scope.closeAlert()}, alertTimeout);
 			
 			}, function(error) {
+				$scope.newLogic.logic = decodeURIComponent($scope.newLogic.logic);
 				$scope.alert.show = true;
 				$scope.alert.success = false;
 				$scope.alert.title = "Error!";
@@ -684,9 +705,16 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 
 	$scope.updateItem = function(logic, propKey, propValue) {
 		$scope.alert.show = false;
-
 		var payload = {'id': logic.id};
-		payload[propKey] = propValue;
+
+		// Url encode logic
+		if (propKey === 'logic') {
+			payload[propKey] = encodeURIComponent(propValue);
+			
+		} else {
+			payload[propKey] = propValue;
+		}
+		l(payload);
 
 		logicFactory.updateItem(payload).then(function(data) {
 			$scope.alert.show = true;
@@ -1092,6 +1120,55 @@ app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, stat
 });
 
 /*
+ * Copy dataset controller
+ */
+app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, statusFactory, statuses, status) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.message = "The whole dataset will be copied. Do you want to continue?";
+
+	if (statuses.editable > 0) {
+		$scope.message = "There is a dataset with status editable. All data will be lost! Do you want to continue?";
+	}
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		statusFactory.copyStatus({"status":status}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Dataset status successfully copied!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$window.location = "#/status/editable/tab/bm/bm/";
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
  * Retrieve dataset by id
  */
 
@@ -1100,9 +1177,14 @@ app.controller('historyDataCtrl', function($scope, $routeParams){
 	$scope.datasetId = $routeParams.id;
 });
 
-app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, BendingMagnet){
+app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, BendingMagnet, $window){
 	$scope.bmArr = [];
 	$scope.urlTab = $routeParams.tab;
+
+	// Check if have required parameters
+	if ($scope.datasetId === undefined) {
+		$window.location.reload()
+	}
 
 	$scope.orderByField = 'bm_s';
 	$scope.reverseSort = false;

@@ -12,6 +12,7 @@ import MySQLdb
 from utils import (_checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 
 from _mysql_exceptions import MySQLError
+from ctypes.test.test_array_in_pointer import Value
 
 try:
     from django.utils import simplejson as json
@@ -91,6 +92,71 @@ class epsai(object):
             'bm_aiolv': ['bm_aiolv', 'mm', 'approvable'],
             'bm_safe_current': ['bm_safe_current', 'mA', 'approvable']
         }
+        
+    def copyActiveInterlock(self, status, modified_by):
+        '''
+        Copy existing active interlock to an editable status
+        
+        Current statuses:
+        
+         - 0: editable
+         - 1: approved
+         - 2: active
+         - 3: backup
+         - 4: history
+        
+        :param status: status of the active interlock we are copying
+        :type status: int
+        
+        :param modified_by: user who requests this update
+        :type modified_by: str
+            
+        :Returns: boolean
+            
+            The return code: ::
+                
+                True -- when the active interlock was successfully copied.
+                Exception -- when there was an error.
+        
+        :Raises: MySQLError, ValueError
+        '''
+        
+        # Get active interlock header
+        ai = self.retrieveActiveInterlockHeader(status)
+        
+        if len(ai) == 0:
+            raise ValueError("There is no active interlock with status %s", status)
+        
+        aiKeys = ai.keys()
+        aiObj = ai[aiKeys[0]]
+        
+        # Delete devices with status 0
+        self.deleteActiveInterlock(0)
+        
+        # Create new header with status 0
+        self.saveActiveInterlockHeader(aiObj['description'] + ' - Copy', modified_by)
+        
+        # Retrieve devices
+        devices = self.retrieveDevice(None, status, "*", "*")
+        
+        # Go through devices and copy all of them
+        for deviceId in devices.keys():
+            deviceObj = devices[deviceId]
+            deviceProps = {}
+            
+            if deviceObj['definition'] == 'bm':
+                
+                for prop in self.bm_props:
+                    deviceProps[prop[0]] = deviceObj[prop[0]]
+            
+            else:
+                
+                for prop in self.id_props:
+                    deviceProps[prop[0]] = deviceObj[prop[0]]
+            
+            self.saveDevice(0, deviceObj['name'], deviceObj['definition'], deviceObj['logic'], deviceProps)
+        
+        return True
         
     def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by):
         '''
