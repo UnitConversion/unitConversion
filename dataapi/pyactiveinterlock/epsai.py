@@ -93,7 +93,7 @@ class epsai(object):
             'bm_safe_current': ['bm_safe_current', 'mA', 'approvable']
         }
         
-    def copyActiveInterlock(self, status, modified_by):
+    def copyActiveInterlock(self, status, description, modified_by):
         '''
         Copy existing active interlock to an editable status
         
@@ -107,6 +107,9 @@ class epsai(object):
         
         :param status: status of the active interlock we are copying
         :type status: int
+        
+        :param description: active interlock description
+        :type description: str
         
         :param modified_by: user who requests this update
         :type modified_by: str
@@ -127,14 +130,11 @@ class epsai(object):
         if len(ai) == 0:
             raise ValueError("There is no active interlock with status %s", status)
         
-        aiKeys = ai.keys()
-        aiObj = ai[aiKeys[0]]
-        
         # Delete devices with status 0
         self.deleteActiveInterlock(0)
         
         # Create new header with status 0
-        self.saveActiveInterlockHeader(aiObj['description'] + ' - Copy', modified_by)
+        self.saveActiveInterlockHeader(description, modified_by)
         
         # Retrieve devices
         devices = self.retrieveDevice(None, status, "*", "*")
@@ -143,18 +143,26 @@ class epsai(object):
         for deviceId in devices.keys():
             deviceObj = devices[deviceId]
             deviceProps = {}
+            approveProps = []
             
             if deviceObj['definition'] == 'bm':
                 
                 for prop in self.bm_props:
                     deviceProps[prop[0]] = deviceObj[prop[0]]
+                    
+                    if prop[2] == 'approvable':
+                        approveProps.append(prop[0])
             
             else:
                 
                 for prop in self.id_props:
                     deviceProps[prop[0]] = deviceObj[prop[0]]
+                    
+                    if prop[2] == 'approvable':
+                        approveProps.append(prop[0])
             
-            self.saveDevice(0, deviceObj['name'], deviceObj['definition'], deviceObj['logic'], deviceProps)
+            newDeviceObj = self.saveDevice(0, deviceObj['name'], deviceObj['definition'], deviceObj['logic'], deviceProps)
+            self.approveCells(newDeviceObj['id'], json.dumps(approveProps))
         
         return True
         
@@ -721,7 +729,7 @@ class epsai(object):
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
-                    'ai_id': r[4],
+                    'ai_id': r[5],
                     'name': r[1],
                     'definition': r[2],
                     'logic': r[3],
@@ -1050,7 +1058,8 @@ class epsai(object):
                 {'status':
                     {
                         'status':, #int
-                        'num':     #int
+                        'num':,    #int
+                        'ai_id':   #int
                     }
                 }
         '''
@@ -1065,6 +1074,11 @@ class epsai(object):
             'num': len(zero)
         }
         
+        # Append ai id
+        if len(zero) > 0:
+            zeroKeys = zero.keys()
+            resdict[0]['ai_id'] = zeroKeys[0]
+        
         # Retrieve 1 status
         one = self.retrieveActiveInterlockHeader(status=1)
         
@@ -1072,6 +1086,11 @@ class epsai(object):
             'status': 1,
             'num': len(one)
         }
+        
+        # Append ai id
+        if len(one) > 0:
+            keys = one.keys()
+            resdict[1]['ai_id'] = keys[0]
         
         # Retrieve 2 status
         two = self.retrieveActiveInterlockHeader(status=2)
@@ -1081,6 +1100,11 @@ class epsai(object):
             'num': len(two)
         }
         
+        # Append ai id
+        if len(two) > 0:
+            keys = two.keys()
+            resdict[2]['ai_id'] = keys[0]
+        
         # Retrieve 3 status
         three = self.retrieveActiveInterlockHeader(status=3)
         
@@ -1088,6 +1112,11 @@ class epsai(object):
             'status': 3,
             'num': len(three)
         }
+        
+        # Append ai id
+        if len(three) > 0:
+            keys = three.keys()
+            resdict[3]['ai_id'] = keys[0]
         
         # Retrieve 4 status
         four = self.retrieveActiveInterlockHeader(status=4)
@@ -1496,7 +1525,7 @@ class epsai(object):
             self.logger.info('Error when fetching number of occaisons logic is used:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching number of occaisons logic is used:\n%s (%d)' %(e.args[1], e.args[0]))
     
-    def retrieveActiveInterlockLogic(self, name, shape=None, logic=None, status=None):
+    def retrieveActiveInterlockLogic(self, name, shape=None, logic=None, status=None, ai_id=None):
         '''
         Retrieve logic information according given search constrains.
         Active interlock envelop name has to be provided as a minimum requirement for this function.
@@ -1519,6 +1548,9 @@ class epsai(object):
         
         :param status: status of the logic
         :type status: int
+        
+        :param ai_id: active interlock id
+        :type ai_id: int
         
         :returns:
             
@@ -1573,6 +1605,11 @@ class epsai(object):
             sqlVals = _checkWildcardAndAppend('status', status, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
+            
+        # Only logic user for specific active interlock
+        if ai_id != None:
+            sql += ' AND active_interlock_logic_id IN (SELECT DISTINCT active_interlock_logic_id FROM active_interlock_device WHERE active_interlock_id = %s) '
+            vals.append(ai_id)
         
         try:
             # Execute SQL

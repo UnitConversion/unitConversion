@@ -4337,7 +4337,7 @@ class idods(object):
             with open(filePath, 'w') as f:
                 f.write(data)
         
-            return {'path': filePath}
+            return {'path': os.path.join(path, file_name)}
             
         except IOError as e:
             self.logger.info('Error when writing to a file:\n%s (%d)' %(e.args[1], e.args[0]))

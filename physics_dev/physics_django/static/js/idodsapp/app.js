@@ -58,6 +58,10 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/list',						'index.online_data.list').
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/id/:id/action/:action',		'index.online_data.list.details').
 
+		when('/beamline',																									'index.beamline').
+		when('/beamline/search/:search/install_name/:install_name?/list',													'index.beamline.list').
+		when('/beamline/search/:search/install_name/:install_name?/id/:id/action/:action',									'index.beamline.list.details').
+
 		segment('index', {
 			templateUrl: 'content.html',
 			controller: 'mainCtrl'
@@ -277,6 +281,27 @@ app.config(function($routeSegmentProvider, $routeProvider){
 			segment('online_data', {
 				templateUrl: 'search/online_data.html',
 				controller: 'searchOnlineDataCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/online_data.html',
+					controller: 'listOnlineDataCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/online_data.html',
+						controller: 'showOnlineDataCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('beamline', {
+				templateUrl: 'search/beamline.html',
+				controller: 'searchBeamlineCtrl'
 			}).
 			within().
 				segment('list', {

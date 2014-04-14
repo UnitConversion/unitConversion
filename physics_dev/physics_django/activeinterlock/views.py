@@ -192,7 +192,7 @@ def retrieveLogicWS(request):
     '''
     Retrieve active interlock header information
     '''
-    return _retrieveData(request, api.retrieveActiveInterlockLogic, ['name', 'shape', 'logic', 'status'])
+    return _retrieveData(request, api.retrieveActiveInterlockLogic, ['name', 'shape', 'logic', 'status', 'ai_id'])
 
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('ai.can_modify_ai')
@@ -212,7 +212,7 @@ def copyAiWS(request):
     '''
     request.POST = request.POST.copy()
     request.POST['modified_by'] = request.user.username
-    return _updateData(request, api.copyActiveInterlock, ['status', 'modified_by'], {})
+    return _updateData(request, api.copyActiveInterlock, ['status', 'description', 'modified_by'], {})
 
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('ai.can_modify_ai')

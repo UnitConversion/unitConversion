@@ -8,7 +8,7 @@
 app.factory('statusFactory', function($http, $q){
 	var factory = {};
 	factory.update = ["status", "new_status", "modified_by"];
-	factory.copy = ["status"];
+	factory.copy = ["status", "description"];
 
 	// Return statuses
 	factory.retrieveStatuses = function() {
@@ -87,8 +87,14 @@ app.factory('headerFactory', function($http, $q){
 		return promise;
 	}
 
-	factory.retrieveHeader = function(){
-		var query = serviceurl + "/ai/activeinterlockheader/?status=" + aiStatusMap['history'];
+	factory.retrieveHeader = function(status){
+		statusUrl = aiStatusMap['history'];
+
+		if (status !== undefined) {
+			statusUrl = status;
+		}
+
+		var query = serviceurl + "/ai/activeinterlockheader/?status=" + statusUrl;
 
 		var deffered = $q.defer();
 		var promise = deffered.promise;

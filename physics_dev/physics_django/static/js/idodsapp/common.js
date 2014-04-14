@@ -909,6 +909,41 @@ function drawDataTree(html, data, level){
 	return html;
 }
 
+/**
+ * Represent jason data as a tree with <ul> and <li> elements.
+ * @param {type} html html code to start with
+ * @param {type} data json data object
+ * @returns {String} html with tree content
+ */
+function drawDataTree2(html, data, level){
+
+	if(data === undefined) {
+		return "";
+
+	} else {
+		html += "<ul>";
+
+		for(var prop in data) {
+			l(prop);
+			l(data);
+			html += "<li>";
+			html += "<b><a href ng-click='listData(\"" + prop + "\")'>" + prop + "</a></b>";
+
+			// Find object
+			if($.type(data[prop]) === 'object') {
+				html = drawDataTree2(html, data[prop]['children'], level+1);
+
+			} else {
+				html += ': ' + data[prop];
+			}
+			html += "</li>";
+		}
+		html += "</ul>";
+	}
+
+	return html;
+}
+
 /*
  * Prepare form for login. Form is a part on a dropdown so some mesures should
  * be taken to change the dropdown functionality.

@@ -89,7 +89,7 @@ class Test(unittest.TestCase):
         self.assertEqual(len(status1), 1)
         
         # Copy AI to editable
-        self.assertTrue(self.api.copyActiveInterlock(2, "user"))
+        self.assertTrue(self.api.copyActiveInterlock(2, "desc", "user"))
         
         # The number of datasets with status 0 should be 1
         status0 = self.api.retrieveActiveInterlockHeader(0)

@@ -807,7 +807,7 @@ app.value('OnlineDataInfo', {
  app.value('OnlineData', function(obj){
  	
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["install_name", "status", "url"];
+ 	this.m = ["install_name", "status", "file_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["install_name"];
@@ -832,7 +832,8 @@ app.value('OnlineDataInfo', {
  		"install_name": "Install name",
  		"description": "Description",
  		"status": "Status",
- 		"url": "Data file"
+ 		"url": "Data file",
+ 		"file_name": "Data file name"
  	};
 
  	this.id = "";
@@ -842,6 +843,7 @@ app.value('OnlineDataInfo', {
  	this.date = "";
  	this.status = "";
  	this.url = "";
+ 	this.file_name = "";
 
  	this.set = function(obj) {
 
@@ -863,6 +865,15 @@ app.value('OnlineDataInfo', {
  		this.date = obj.date;
  		this.status = obj.status;
  		this.url = obj.url;
+
+ 		if(this.url !== undefined) {
+
+	 		var urlParts = obj.url.split(/[\/\\]/);
+
+	 		if (urlParts.length >= 1) {
+	 			this.file_name = urlParts[urlParts.length-1];
+	 		}
+ 		}
  	}
 
  	if(obj !== undefined) {

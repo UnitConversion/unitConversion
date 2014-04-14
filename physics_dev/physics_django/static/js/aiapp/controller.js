@@ -14,6 +14,7 @@ app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statu
 	$scope.path = $route.current.originalPath;
 	setUpLoginForm();
 	$scope.login = {};
+	$scope.statusIdMap = {};
 
 	$scope.statuses = {};
 	$scope.statuses.editable = 0;
@@ -24,9 +25,13 @@ app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statu
 
 	statusFactory.retrieveStatuses().then(function(result) {
 		$scope.statuses.editable = result[0]['num'];
+		$scope.statusIdMap['editable'] = result[0]['ai_id']
 		$scope.statuses.approved = result[1]['num'];
+		$scope.statusIdMap['approved'] = result[1]['ai_id']
 		$scope.statuses.active = result[2]['num'];
+		$scope.statusIdMap['active'] = result[2]['ai_id']
 		$scope.statuses.backup = result[3]['num'];
+		$scope.statusIdMap['backup'] = result[3]['ai_id']
 		$scope.statuses.history = result[4]['num'];
 	});
 
@@ -103,6 +108,9 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 				},
 				status: function() {
 					return aiStatusMap[status];
+				},
+				map: function() {
+					return $scope.statusIdMap;
 				}
 			}
 		});
@@ -614,8 +622,18 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 	$scope.logicArr = [];
 	$scope.alert = {};
 	$scope.urlTab = $routeParams.tab;
+	var aiStatus = aiStatusMap[$routeParams.status];
 
-	logicFactory.retrieveItems({}).then(function(result) {
+	params = {};
+
+	// Retrieve only logic that is used by current status
+	if ($routeParams.status !== 'editable') {
+		params['ai_id'] = $scope.statusIdMap[$routeParams.status];
+	}
+
+	l($scope.statusIdMap);
+
+	logicFactory.retrieveItems(params).then(function(result) {
 
 		$.each(result, function(i, item){
 
@@ -1122,12 +1140,24 @@ app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, stat
 /*
  * Copy dataset controller
  */
-app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, statusFactory, statuses, status) {
+app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, statusFactory, headerFactory, statuses, status, map) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
 	$scope.showFinishButton = false;
 	var types = [];
+	$scope.ai = undefined;
+	$scope.description = "";
+
+	headerFactory.retrieveHeader(status).then(function (data) {
+
+		if (data !== undefined) {
+			var keys = Object.keys(data);
+			$scope.ai = data[keys[0]];
+			$scope.description = "Copy from dataset id: " + $scope.ai.id + ", " + $scope.ai.description;
+		}
+	});
+
 	$scope.message = "The whole dataset will be copied. Do you want to continue?";
 
 	if (statuses.editable > 0) {
@@ -1141,7 +1171,7 @@ app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, stat
 	$scope.ok = function() {
 		$scope.alert.show = false;
 
-		statusFactory.copyStatus({"status":status}).then(function(data) {
+		statusFactory.copyStatus({"status":status, "description": $scope.description}).then(function(data) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
@@ -1242,7 +1272,7 @@ app.controller('historyLogicCtrl', function($scope, $routeParams, logicFactory, 
 	$scope.logicArr = [];
 	$scope.urlTab = $routeParams.tab;
 
-	logicFactory.retrieveItems({}).then(function(result) {
+	logicFactory.retrieveItems({'ai_id': $routeParams.id}).then(function(result) {
 
 		l(result);
 

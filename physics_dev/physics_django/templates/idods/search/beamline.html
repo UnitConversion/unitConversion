@@ -10,22 +10,8 @@
 		<br />
 		<br />
 	</div>
-	<div class="">
-		Install name:
-		<br />
-		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.install_name" name="install_name" />
-		<br />
-		<br />
-	</div>
-	<div class="">
-		Description:
-		<br />
-		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.description" name="description" />
-		<br />
-		<br />
-	</div>
-	<div class="">
-		<button ng-click="searchForItem(search)" class="btn">Search</button>
-	</div>
+
+	<br />
+	<div id="tree" compile="tree"></div>
 </div>
 {% endverbatim %}

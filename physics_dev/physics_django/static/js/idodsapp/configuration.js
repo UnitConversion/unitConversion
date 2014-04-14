@@ -9,7 +9,8 @@
  */
 
 // For accessing the REST service
-var serviceurl = "http://localhost:8000/id/device";
+var serviceurlraw = "http://localhost:8000/";
+var serviceurl = serviceurlraw + "id/device";
 
 //Version number
 var version = "0.1";

@@ -55,11 +55,12 @@ app.value('Logic', function(obj) {
 	this.update = ["id", "name", "shape", "logic", "code", "status"];
 	
 	// All parameters for retrieving
-	this.retrieve = ["name", "shape", "logic", "code", "status"];
+	this.retrieve = ["name", "shape", "logic", "code", "status", "ai_id"];
 	
-	this.all = ["id", "name", "shape", "logic", "code", "status", "num"];
+	this.all = ["id", "name", "shape", "logic", "code", "status", "num", "ai_id"];
 
 	this.id = "";
+	this.ai_id = "";
 	this.name = "";
 	this.shape = "";
 	this.logic = "";

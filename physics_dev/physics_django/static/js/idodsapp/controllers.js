@@ -1968,10 +1968,10 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 		l(e);
 
 		if($scope.action === "update") {
-			$scope.element.data_id = JSON.parse(response)["id"];
+			$scope.element.url = JSON.parse(response)["path"];
 
 		} else if($scope.action == "save") {
-			$scope.new.data_id = JSON.parse(response)["id"];
+			$scope.new.url = JSON.parse(response)["path"];
 		}
 
 		saveOfflineData($scope, onlineDataFactory);
@@ -1980,6 +1980,10 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	$scope.$on('fileuploadfail', function(e, data) {
 		l(data);
 	});
+
+	$scope.download = function(url) {
+		$window.location.href = serviceurlraw + url;
+	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
@@ -1989,14 +1993,63 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	
 	$scope.saveItem = function(action) {
 
-		if (uploadData === undefined && action === "save") {
-			$scope.error['url'] = "Data file field is mandatory!";
+		if($scope.action === "update") {
+			result = onlineDataFactory.checkItem($scope.element);
 
-		} else if (uploadData === undefined && action !== "save") {
-			saveOfflineData($scope, onlineDataFactory);
+		} else if($scope.action == "save") {
+			result = onlineDataFactory.checkItem($scope.new);
+		}
 
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
 		} else {
-			uploadData.submit();
+
+			if (uploadData === undefined && action === "save") {
+				$scope.error['url'] = "Data file field is mandatory!";
+
+			} else if (uploadData === undefined && action !== "save") {
+				saveOfflineData($scope, onlineDataFactory);
+
+			} else {
+				l(uploadData);
+				uploadData.submit();
+			}
 		}
 	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, installRelFactory){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[11];
+
+	installRelFactory.retrieveTree({'install_name': 'installation'}).then(function(result) {
+
+		l(result);
+		$scope.tree = drawDataTree2("", result, 0);
+	});
+
+	$scope.listData = function(install_name) {
+		l(install_name);
+	};
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		search.description = "*";
+		var newLocation = createRouteUrl(search, "online_data", ["install_name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
 });
