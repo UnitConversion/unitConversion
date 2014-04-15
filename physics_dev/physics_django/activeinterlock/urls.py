@@ -6,7 +6,7 @@ Created on Mar 10st, 2014
 from django.conf.urls.defaults import patterns, url
 
 from physics_django.activeinterlock.views import (retrieveStatusesWS) 
-from physics_django.activeinterlock.views import (retrieveAiHeaderWS, saveAiHeaderWS) 
+from physics_django.activeinterlock.views import (retrieveAiHeaderWS, saveAiHeaderWS, updateAiHeaderWS) 
 from physics_django.activeinterlock.views import (retrieveDeviceWS, saveDeviceWS, updateDeviceWS, deleteDeviceWS) 
 from physics_django.activeinterlock.views import (updateStatusWS, copyAiWS) 
 from physics_django.activeinterlock.views import (updatePropWS) 
@@ -22,6 +22,7 @@ urlpatterns = patterns(
 
     url(r'^ai/activeinterlockheader/$', retrieveAiHeaderWS),
     url(r'^ai/saveactiveinterlockheader/$', saveAiHeaderWS),
+    url(r'^ai/updateactiveinterlockheader/$', updateAiHeaderWS),
 
     url(r'^ai/device/$', retrieveDeviceWS),
     url(r'^ai/savedevice/$', saveDeviceWS),

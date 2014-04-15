@@ -123,3 +123,7 @@ html, body {
 .alert_placeholder {
     height: 72px;
 }
+
+.description_container {
+    padding: 5px;
+}

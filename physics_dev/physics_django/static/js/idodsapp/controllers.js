@@ -1855,7 +1855,7 @@ app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 /*
  * List items in the middle pane
  */
-app.controller('listOnlineDataCtrl', function($scope, $routeParams, $http, $window, OnlineDataInfo, OnlineData, onlineDataFactory) {
+app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $http, $window, OnlineDataInfo, OnlineData, onlineDataFactory) {
 	// Remove image from the middle pane if there is something to show
 	$scope.style.middle_class = "container-scroll-middle-no-img";
 
@@ -1864,6 +1864,8 @@ app.controller('listOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 
 	$scope.items = [];
 	var previousItem = undefined;
+
+	var type = $location.path().split('/')[1];
 
 	onlineDataFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -1888,7 +1890,7 @@ app.controller('listOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, "online_data", ["install_name", "description"]) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -1908,7 +1910,7 @@ app.controller('listOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 		$routeParams.install_name = item.install_name;
 		$routeParams.description = item.description;
 
-		var location = createRouteUrl($routeParams, "online_data", ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -1928,6 +1930,8 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	$scope.installs = [];
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
+
+	var type = $location.path().split('/')[1];
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
@@ -1987,7 +1991,7 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "online_data", ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 	
@@ -2035,6 +2039,7 @@ app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, ins
 
 	$scope.listData = function(install_name) {
 		l(install_name);
+		$scope.searchForItem({'install_name': install_name});
 	};
 
 	// Change entity
@@ -2048,7 +2053,7 @@ app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, ins
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
 		search.description = "*";
-		var newLocation = createRouteUrl(search, "online_data", ["install_name", "description"]) + "/list";
+		var newLocation = createRouteUrl(search, "beamline", ["install_name", "description"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};

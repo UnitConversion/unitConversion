@@ -156,6 +156,16 @@ def saveAiHeaderWS(request):
     request.POST['created_by'] = request.user.username
     return _saveData(request, api.saveActiveInterlockHeader, ['description', 'created_by'])
 
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('ai.can_modify_ai')
+def updateAiHeaderWS(request):
+    '''
+    Update active interlock header
+    '''
+    request.POST = request.POST.copy()
+    request.POST['modified_by'] = request.user.username
+    return _updateData(request, api.updateActiveInterlockHeader, ['description', 'modified_by'], {})
+
 @require_http_methods(["GET"])
 def retrieveDeviceWS(request):
     '''

@@ -15,6 +15,7 @@ app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statu
 	setUpLoginForm();
 	$scope.login = {};
 	$scope.statusIdMap = {};
+	$scope.header = {};
 
 	$scope.statuses = {};
 	$scope.statuses.editable = 0;
@@ -33,6 +34,11 @@ app.controller('mainCtrl', function($scope, $routeParams, $window, $route, statu
 		$scope.statuses.backup = result[3]['num'];
 		$scope.statusIdMap['backup'] = result[3]['ai_id']
 		$scope.statuses.history = result[4]['num'];
+
+		// Retrieve desciption from returned data
+		if(result[aiStatusMap[$scope.urlStatus]]) {
+			$scope.header.description = result[aiStatusMap[$scope.urlStatus]]['description'];
+		}
 	});
 
 	$scope.login = function() {
@@ -92,6 +98,19 @@ app.controller('dataCtrl', function($scope, $routeParams, $route, $modal, $windo
 			resolve: {
 				statuses: function() {
 					return $scope.statuses;
+				}
+			}
+		});
+	}
+
+	$scope.updateHeader = function() {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/update_dataset.html',
+			controller: 'updateDatasetCtrl',
+			resolve: {
+				description: function() {
+					return $scope.header.description;
 				}
 			}
 		});
@@ -767,24 +786,6 @@ app.controller('logicCtrl', function($scope, $routeParams, $modal, logicFactory,
 
 });
 
-app.controller('historyCtrl', function($scope, headerFactory, History, $window){
-	$scope.historyArr = [];
-
-	headerFactory.retrieveHeader().then(function(result) {
-
-		$.each(result, function(i, item){
-
-			// Build customized object
-			var newItem = new History(item);
-			$scope.historyArr.push(newItem);
-		});
-	});
-
-	$scope.goTo = function(id) {
-		$window.location = "#/dataset/" + id + "/tab/bm/bm/";
-	}
-});
-
 /*
  * Create dataset controller
  */
@@ -1138,6 +1139,51 @@ app.controller('editDatasetCtrl', function($scope, $modalInstance, $window, stat
 });
 
 /*
+ * Update dataset controller
+ */
+app.controller('updateDatasetCtrl', function($scope, $modalInstance, $window, headerFactory, description) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.header = {};
+	$scope.header.description = description;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		headerFactory.updateHeader({"description":$scope.header.description}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Description successfully updated!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$window.location.reload();
+	};
+});
+
+/*
  * Copy dataset controller
  */
 app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, statusFactory, headerFactory, statuses, status, map) {
@@ -1201,10 +1247,31 @@ app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, stat
 /*
  * Retrieve dataset by id
  */
+app.controller('historyCtrl', function($scope, headerFactory, History, $window){
+	$scope.historyArr = [];
 
-app.controller('historyDataCtrl', function($scope, $routeParams){
+	headerFactory.retrieveHeader().then(function(result) {
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new History(item);
+			$scope.historyArr.push(newItem);
+		});
+	});
+
+	$scope.goTo = function(id) {
+		$window.location = "#/dataset/" + id + "/tab/bm/bm/";
+	}
+});
+
+app.controller('historyDataCtrl', function($scope, $routeParams, statusFactory){
 	$scope.urlTab = $routeParams.tab;
 	$scope.datasetId = $routeParams.id;
+
+	statusFactory.retrieveStatuses().then(function(result) {
+		$scope.header = result[4];
+	});
 });
 
 app.controller('historyBmCtrl', function($scope, $routeParams, bmFactory, BendingMagnet, $window){

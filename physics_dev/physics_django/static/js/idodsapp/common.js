@@ -927,7 +927,13 @@ function drawDataTree2(html, data, level){
 			l(prop);
 			l(data);
 			html += "<li>";
-			html += "<b><a href ng-click='listData(\"" + prop + "\")'>" + prop + "</a></b>";
+
+			if (level >= 3) {
+				html += "<b><a href ng-click='listData(\"" + prop + "\")'>" + prop + "</a></b>";
+
+			} else {
+				html += "<b>" + prop + "</b>";
+			}
 
 			// Find object
 			if($.type(data[prop]) === 'object') {

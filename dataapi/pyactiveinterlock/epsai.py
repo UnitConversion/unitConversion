@@ -1057,9 +1057,10 @@ class epsai(object):
             
                 {'status':
                     {
-                        'status':, #int
-                        'num':,    #int
-                        'ai_id':   #int
+                        'status':,      #int
+                        'num':,         #int
+                        'ai_id':,       #int
+                        'description':  #string
                     }
                 }
         '''
@@ -1078,6 +1079,7 @@ class epsai(object):
         if len(zero) > 0:
             zeroKeys = zero.keys()
             resdict[0]['ai_id'] = zeroKeys[0]
+            resdict[0]['description'] = zero[zeroKeys[0]]['description']
         
         # Retrieve 1 status
         one = self.retrieveActiveInterlockHeader(status=1)
@@ -1091,6 +1093,7 @@ class epsai(object):
         if len(one) > 0:
             keys = one.keys()
             resdict[1]['ai_id'] = keys[0]
+            resdict[1]['description'] = one[keys[0]]['description']
         
         # Retrieve 2 status
         two = self.retrieveActiveInterlockHeader(status=2)
@@ -1104,6 +1107,7 @@ class epsai(object):
         if len(two) > 0:
             keys = two.keys()
             resdict[2]['ai_id'] = keys[0]
+            resdict[2]['description'] = two[keys[0]]['description']
         
         # Retrieve 3 status
         three = self.retrieveActiveInterlockHeader(status=3)
@@ -1117,14 +1121,22 @@ class epsai(object):
         if len(three) > 0:
             keys = three.keys()
             resdict[3]['ai_id'] = keys[0]
+            resdict[3]['description'] = three[keys[0]]['description']
         
         # Retrieve 4 status
         four = self.retrieveActiveInterlockHeader(status=4)
         
         resdict[4] = {
             'status': 4,
-            'num': len(four)
+            'num': len(four),
+            'ai_id': 'multiple',
+            'description': {}
         }
+        
+        # Go through headers
+        for key in four.keys():
+            obj = four[key]
+            resdict[4]['description'][key] = obj['description']
         
         return resdict
 
@@ -1342,6 +1354,55 @@ class epsai(object):
 
             self.logger.info('Error when saving active interlock header:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving active interlock header:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def updateActiveInterlockHeader(self, description=None, modified_by=None):
+        '''
+        Update active interlock header
+        
+        :param ai_id: active interlock id
+        :type ai_id: int
+        
+        :param description: active interlock description
+        :type description: string
+        
+        :param modified_by: user that modified active interlock
+        :type modified_by: string
+        
+        :return:
+            True if everything is ok
+        '''
+        
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+        
+        # Set where
+        whereDict['status'] = 0
+        
+        # Set description
+        queryDict['description'] = description
+            
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('active_interlock', queryDict, None, None, whereDict)
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when updating active interlock:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating active interlock:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveActiveInterlockPropType(self, name, unit=None, description=None):
         '''

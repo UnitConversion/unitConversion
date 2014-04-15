@@ -69,6 +69,7 @@ app.factory('statusFactory', function($http, $q){
  */
 app.factory('headerFactory', function($http, $q){
 	var factory = {};
+	factory.update = ["description"];
 
 	factory.saveHeader = function(description) {
 		var query = serviceurl + "/ai/saveactiveinterlockheader/";
@@ -100,6 +101,24 @@ app.factory('headerFactory', function($http, $q){
 		var promise = deffered.promise;
 
 		$http.get(query).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(prepareError(data, status));
+		});
+
+		return promise;
+	}
+
+	factory.updateHeader = function(params){
+
+		var query = serviceurl + "/ai/updateactiveinterlockheader/?";
+		var payload = prepareUrlParameters(factory.update, params);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, payload).success(function(data){
 			deffered.resolve(data);
 		
 		}).error(function(data, status, headers, config) {
