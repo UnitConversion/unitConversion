@@ -2320,13 +2320,15 @@ class idods(object):
             
         # Check inventory name
         if inv_name:
-            sql += ' AND inv.name = %s '
-            vals.append(inv_name)
+            sqlVals = _checkWildcardAndAppend('inv.name', inv_name, sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
             
         # Check install name
         if install_name:
-            sql += ' AND inst.field_name = %s '
-            vals.append(install_name)
+            sqlVals = _checkWildcardAndAppend('inst.field_name', install_name, sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
             
         try:
             cur = self.conn.cursor()
@@ -2387,11 +2389,17 @@ class idods(object):
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
         
-        # Check if map already exists
-        existing = self.retrieveInventoryToInstall(None, install_name, inv_name)
+        # Check if inventory already installed
+        existing = self.retrieveInventoryToInstall(None, None, inv_name)
         
         if len(existing):
             raise ValueError("Inventory already installed!")
+        
+        # Check if install already exists
+        existing = self.retrieveInventoryToInstall(None, install_name, None)
+        
+        if len(existing):
+            raise ValueError("Install position already taken!")
         
         # Generate SQL
         sql = '''
@@ -2439,6 +2447,19 @@ class idods(object):
         :Raises: ValueError, MySQLError
         '''
         
+        # Get current map
+        i2iMap = self.retrieveInventoryToInstall(inventory_to_install_id, None, None)
+        
+        if len(i2iMap) < 1:
+            raise ValueError("Inventory to install map with id (%s) doesn't exist in the database!" % inventory_to_install_id)
+        
+        i2iKeys = i2iMap.keys()
+        i2i = i2iMap[i2iKeys[0]]
+        
+        # Check if nothing has changed
+        if i2i['installname'] == install_name and i2i['inventoryname'] == inv_name:
+            return True
+        
         # Define query dict
         queryDict = {}
         
@@ -2466,6 +2487,24 @@ class idods(object):
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
         queryDict['inventory_id'] = inventoryObject['id']
+        
+        # Check if inventory already installed
+        existing = self.retrieveInventoryToInstall(None, None, inv_name)
+        print i2i['inventoryname'] == inv_name
+        if i2i['inventoryname'] == inv_name and len(existing) > 1:
+            raise ValueError("Inventory already installed!")
+        
+        elif i2i['inventoryname'] != inv_name and len(existing):
+            raise ValueError("Inventory already installed!")
+        
+        # Check if install already exists
+        existing = self.retrieveInventoryToInstall(None, install_name, None)
+        
+        if i2i['installname'] == install_name and len(existing) > 1:
+            raise ValueError("Install position already taken!")
+        
+        elif i2i['installname'] != install_name and len(existing):
+            raise ValueError("Install position already taken!")
         
         # Generate SQL
         sqlVals = _generateUpdateQuery('inventory__install', queryDict, whereKey, whereValue)

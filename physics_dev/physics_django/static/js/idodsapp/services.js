@@ -505,6 +505,67 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 });
 
 /*
+ * Provide a factory for the install entity. Install can be checked, retrieved, saved and updated
+ */
+app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall, EntityError) {
+	var factory = {};
+	factory.entity = new InventoryToInstall();
+	factory.error = new EntityError();
+
+	// Set inventory to install object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check inventory to install before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get inventory to install from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "inventorytoinstall", this.entity, InventoryToInstall);
+	}
+
+	// Get inventory to install from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "inventorytoinstall", this.entity.list, params, this.entity.search_m);
+	}
+
+	// Save new inventory to install
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinventorytoinstall", this.entity);
+	}
+
+	// Update inventory to install
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinventorytoinstall", this.entity);
+	}
+
+	return factory;
+});
+
+/*
  * Provide a factory for the install rel entity. Install rel can be checked, retrieved, saved and updated
  */
 app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {

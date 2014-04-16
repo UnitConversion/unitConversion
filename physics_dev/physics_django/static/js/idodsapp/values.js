@@ -612,6 +612,85 @@ app.value('InstallInfo', {
  });
 
  /*
+ * Inventory to Install info object
+ */
+app.value('InventoryToInstallInfo', {
+	'save_title': 'Save Inventory to Install',
+	'save_button': 'Save Inventory to Install',
+	'retrieve_title': 'Inventory to Install',
+	'retrieve_update_button': 'Update Inventory to Install',
+	'update_title': 'Update Inventory to Install',
+	'update_button': 'Update Inventory to Install',
+	'search_button': 'Add Inventory to Install',
+	'search_filter': 'Filter Inventory to Install items ...'
+});
+
+/*
+ * Inventory to Install object
+ */
+ app.value('InventoryToInstall', function(obj){
+ 	
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["install_name", "inv_name"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["install_name", "inv_name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ["inventory_to_install_id", "install_name", "inv_name"];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["install_name", "inv_name"];
+
+ 	// Parameters used for save URL
+ 	this.save = ["install_name", "inv_name"];
+ 	
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = ["install_name", "inv_name"];
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ["inventory_to_install_id", "install_name", "inv_name"];
+
+ 	// All parameters
+ 	this.all = ["inventory_to_install_id", "install_name", "inv_name"];
+
+ 	this.display = {
+ 		"inventory_to_install_id": "Id",
+ 		"install_name": "Install name",
+ 		"inv_name": "Inventory name"
+ 	};
+
+ 	this.id = "";
+ 	this.inventory_to_install_id = "";
+ 	this.install_name = "";
+ 	this.inv_name = "";
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+ 		
+ 		this.inventory_to_install_id = obj.id;
+ 		this.id = obj.id;
+ 		this.install_name = obj.installname;
+ 		this.inv_name = obj.inventoryname;
+
+ 		if(obj.install_name) {
+ 			this.install_name = obj.install_name;
+ 		}
+
+ 		if(obj.inv_name) {
+ 			this.inv_name = obj.inv_name;
+ 		}
+ 	}
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
+ /*
  * Data method info object
  */
 app.value('DataMethodInfo', {
@@ -702,6 +781,109 @@ app.value('OfflineDataInfo', {
  * Offline data object
  */
  app.value('OfflineData', function(obj){
+ 	
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["inventory_name", "data_id", "status", "method_name"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["inventory_name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["inventory_name", "description"];
+
+ 	// Parameters used for save URL
+ 	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+ 	
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+
+ 	// All props
+ 	this.all = ["id", "offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
+
+ 	this.display = {
+ 		"id": "Id",
+ 		"inventory_name": "Inventory name",
+ 		"description": "Description",
+ 		"polarmode": "Polar mode",
+ 		"methoddesc": "Method description",
+ 		"phasemode": "Phase mode",
+ 		"data_file_name": "Data file name",
+ 		"script_name": "Script name",
+ 		"method_name": "Method name",
+ 		"data_id": "Data id",
+ 		"gap": "Gap",
+ 		"phase1": "Phase 1",
+ 		"phase2": "Phase 2",
+ 		"phase3": "Phase 3",
+ 		"phase4": "Phase 4",
+ 		"script_name": "Script file name",
+ 		"script": "Script file content",
+ 		"status": "Data status"
+ 	};
+
+ 	this.id = "";
+ 	this.inventory_name = "";
+ 	this.description = "";
+ 	this.username = "";
+ 	this.date = "";
+ 	this.gap = undefined;
+ 	this.phase1 = undefined;
+ 	this.phase2 = undefined;
+ 	this.phase3 = undefined;
+ 	this.phase4 = undefined;
+ 	this.phasemode = "";
+ 	this.polarmode = "";
+ 	this.status = "";
+ 	this.data_file_name = "";
+ 	this.script_name = "";
+ 	this.script = "";
+ 	this.method_name = "";
+ 	this.methoddesc = "";
+ 	this.data_id = "";
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+
+ 			if(this.all[i] in obj && obj[this.all[i]] != null) {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+ 		}
+ 	}
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
+ /*
+ * Offline data (via install) info object
+ */
+app.value('OfflineDataInstallInfo', {
+	'save_title': 'Save Offline data',
+	'save_button': 'Save Offline data',
+	'retrieve_title': 'Offline data',
+	'retrieve_update_button': 'Update Offline data',
+	'update_title': 'Update Offline data',
+	'update_button': 'Update Offline data',
+	'search_button': 'Add Offline data',
+	'search_filter': 'Filter Offline data ...'
+});
+
+/*
+ * Offline data (via install) object
+ */
+ app.value('OfflineDataInstall', function(obj){
  	
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["inventory_name", "data_id", "status", "method_name"];

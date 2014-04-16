@@ -1113,10 +1113,182 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
+app.controller('searchInventoryToInstallCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[6];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "inventory_to_install", ["inv_name", "install_name"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listInventoryToInstallCtrl', function($scope, $routeParams, $http, $window, InventoryToInstallInfo, InventoryToInstall, inventoryToInstallFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = InventoryToInstallInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	inventoryToInstallFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new InventoryToInstall(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+		$scope.items.reverse();
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.inv_name = item.inv_name;
+		$routeParams.install_name = item.install_name;
+
+		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showInventoryToInstallCtrl', function($scope, $routeParams, $http, $window, InventoryToInstallInfo, InventoryToInstall, inventoryToInstallFactory, installFactory, inventoryFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new InventoryToInstall();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = InventoryToInstallInfo;
+
+	$scope.inv = [];
+	$scope.inst = [];
+
+	// Retrieve all Inventory items
+	inventoryFactory.retrieveItems({'name': '*'}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inv.push(item.name);
+		});
+	});
+	// Retrieve all Install items
+	installFactory.retrieveItems({'name': '*'}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inst.push(item.name);
+		});
+	});
+
+	// Get inventory to install from the factory if updating
+	if($routeParams.action != "save") {
+		
+		inventoryToInstallFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new InventoryToInstall(newItem);
+		l(item);
+		var result = inventoryToInstallFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+		
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+			
+			if(action === "update") {
+				promise = inventoryToInstallFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = inventoryToInstallFactory.saveItem($scope.new);
+			}
+			
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Install item successfully saved!";
+			
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	}
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[7];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1337,7 +1509,7 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[7];
+	$scope.search.type = dataTypes[8];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1488,7 +1660,7 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[8];
+	$scope.search.type = dataTypes[9];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1640,7 +1812,7 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[9];
+	$scope.search.type = dataTypes[10];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1834,7 +2006,7 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[10];
+	$scope.search.type = dataTypes[11];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2029,7 +2201,7 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, installRelFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[11];
+	$scope.search.type = dataTypes[12];
 
 	installRelFactory.retrieveTree({'install_name': 'installation'}).then(function(result) {
 

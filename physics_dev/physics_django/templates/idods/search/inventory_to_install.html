@@ -1,0 +1,31 @@
+{% load verbatim %} {% verbatim %}
+<div class="clear"></div>
+<div id="search_form">
+	<div class="">
+		<h5>Search</h5>
+	</div>
+
+	<div>
+		<select ng-model="search.type" ng-options="s.value for s in dataTypes" ng-change="changeEntity()"></select>
+		<br />
+		<br />
+	</div>
+	<div class="">
+		Inventory Name:
+		<br />
+		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.inv_name" name="inv_name" />
+		<br />
+		<br />
+	</div>
+	<div class="">
+		Install Name:
+		<br />
+		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.install_name" name="install_name" />
+		<br />
+		<br />
+	</div>
+	<div class="">
+		<button ng-click="searchForItem(search)" class="btn">Search</button>
+	</div>
+</div>
+{% endverbatim %}

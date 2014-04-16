@@ -37,6 +37,10 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/install',																																			'index.install').
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/list',						'index.install.list').
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',		'index.install.list.details').
+		
+		when('/inventory_to_install',																						'index.inventory_to_install').
+		when('/inventory_to_install/search/:search/inv_name/:inv_name?/install_name/:install_name?/list',					'index.inventory_to_install.list').
+		when('/inventory_to_install/search/:search/inv_name/:inv_name?/install_name/:install_name?/id/:id/action/:action',	'index.inventory_to_install.list.details').
 
 		when('/install_rel',																								'index.install_rel').
 		when('/install_rel/search/:search/description/:description?/parent_install/:parent_install?/list',					'index.install_rel.list').
@@ -53,14 +57,18 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/offline_data',																								'index.offline_data').
 		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/list',					'index.offline_data.list').
 		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/id/:id/action/:action','index.offline_data.list.details').
+				
+		when('/offline_data_install',																							'index.offline_data_install').
+		when('/offline_data_install/search/:search/install_name/:install_name?/description/:description?/list',					'index.offline_data_install.list').
+		when('/offline_data_install/search/:search/install_name/:install_name?/description/:description?/id/:id/action/:action','index.offline_data_install.list.details').
 		
 		when('/online_data',																								'index.online_data').
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/list',						'index.online_data.list').
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/id/:id/action/:action',		'index.online_data.list.details').
 
 		when('/beamline',																									'index.beamline').
-		when('/beamline/search/:search/install_name/:install_name?/description/:description?/list',													'index.beamline.list').
-		when('/beamline/search/:search/install_name/:install_name?/description/:description?/id/:id/action/:action',									'index.beamline.list.details').
+		when('/beamline/search/:search/install_name/:install_name?/description/:description?/list',							'index.beamline.list').
+		when('/beamline/search/:search/install_name/:install_name?/description/:description?/id/:id/action/:action',		'index.beamline.list.details').
 
 		segment('index', {
 			templateUrl: 'content.html',
@@ -194,6 +202,27 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		up().
 
 		within().
+			segment('inventory_to_install', {
+				templateUrl: 'search/inventory_to_install.html',
+				controller: 'searchInventoryToInstallCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/inventory_to_install.html',
+					controller: 'listInventoryToInstallCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/inventory_to_install.html',
+						controller: 'showInventoryToInstallCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
 			segment('install_rel', {
 				templateUrl: 'search/install_rel.html',
 				controller: 'searchInstallRelCtrl'
@@ -271,6 +300,27 @@ app.config(function($routeSegmentProvider, $routeProvider){
 					segment('details', {
 						templateUrl: 'details/offline_data.html',
 						controller: 'showOfflineDataCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('offline_data_install', {
+				templateUrl: 'search/offline_data_install.html',
+				controller: 'searchOfflineDataInstallCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/offline_data_install.html',
+					controller: 'listOfflineDataInstallCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/offline_data_install.html',
+						controller: 'showOfflineDataInstallCtrl',
 						dependencies: ['id', 'action']
 					}).
 				up().
