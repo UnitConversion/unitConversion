@@ -2000,13 +2000,208 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	}
 });
 
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeParams){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[11];
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = OfflineDataInstallInfo;
+
+	$scope.items = [];
+	var previousItem = undefined;
+
+	offlineDataInstallFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new OfflineDataInstall(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+	});
+	
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "offline_data_install", ["install_name", "description"]) + "/id/new/action/save";
+		$window.location = location;
+	}
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.inventory_name = item.inventory_name;
+		$routeParams.description = item.description;
+
+		var location = createRouteUrl($routeParams, "offline_data_install", ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new OfflineDataInstall();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = OfflineDataInstallInfo;
+	var uploadData = undefined;
+	$scope.uploadFileName = "";
+	
+	$scope.inventories = [];
+	$scope.methods = [];
+
+	// Retrieve all Inventories
+	inventoryFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inventories.push(item.name);
+		});
+	});
+
+	// Retrieve all Component types
+	dataMethodFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.methods.push(item.name);
+		});
+	});
+
+	$scope.options = {
+		url: serviceurl + "/saverawdata/",
+		maxFileSize: 5000000,
+		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
+	};
+
+	$scope.$on('fileuploadadd', function(e, data) {
+		var id = data.fileInput.context.id;
+		$scope.uploadFileName = data.files[0].name;
+
+		uploadData = data;
+		delete $scope.error.data_id;
+	});
+
+	$scope.$on('fileuploaddone', function(e, data) {
+		l(data.jqXHR.responseText);
+		var response = data.jqXHR.responseText;
+		l(e);
+
+		if($scope.action === "update") {
+			$scope.element.data_id = JSON.parse(response)["id"];
+
+		} else if($scope.action == "save") {
+			$scope.new.data_id = JSON.parse(response)["id"];
+		}
+
+		saveOfflineData($scope, offlineDataFactory);
+	});
+
+	$scope.$on('fileuploadfail', function(e, data) {
+		l(data);
+	});
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+		
+		offlineDataFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.offline_data_id = result.id;
+			l($scope.element);
+		});
+	}
+	
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "offline_data_install", ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		$window.location = location;
+	}
+	
+	$scope.saveItem = function(action) {
+
+		if (uploadData === undefined && action === "save") {
+			$scope.error['data_id'] = "Raw data field is mandatory!";
+
+		} else if (uploadData === undefined && action !== "save") {
+			saveOfflineData($scope, offlineDataFactory);
+
+		} else {
+			uploadData.submit();
+		}
+	}
+
+	$scope.downloadScript = function(element) {
+		download(element.script_name, element.script);
+	}
+
+	$scope.downloadRawData = function(element) {
+		// Retrieve raw file
+		offlineDataFactory.retrieveRawFile(element.data_id).then(function(result) {
+			l(result);
+			download(element.data_file_name, result[element.data_id]['data']);
+		});
+	}
+});
+
 /*
  * Controller for the left/search pane
  */
 app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[11];
+	$scope.search.type = dataTypes[12];
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2201,7 +2396,7 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, installRelFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[12];
+	$scope.search.type = dataTypes[13];
 
 	installRelFactory.retrieveTree({'install_name': 'installation'}).then(function(result) {
 

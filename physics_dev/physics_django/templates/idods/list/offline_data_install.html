@@ -1,0 +1,23 @@
+{% load verbatim %} {% verbatim %}
+<div class="form_search" id="form-search">
+	<input type="text" placeholder="{{info.search_filter}}" id="search-query" ng-model="search_filter" class="search_input">
+	<button class="btn add_btn" ng-click="addItem()"><i class="icon-plus"></i> {{info.search_button}}</button>
+</div>
+<div ng-repeat="item in items | filter:search_filter" class="item {{item.click}} {{item.color}}">
+
+	<table ng-click="showDetails(item)">
+		<tr ng-if="item.id">
+			<td><b>Id: </b></td>
+			<td class="item_list"><span class="text-info">{{item.id}}</span></td>
+		</tr>
+		<tr ng-if="item.inventory_name">
+			<td><b>Inv name: </b></td>
+			<td class="item_list"><span class="text-info">{{item.inventory_name}}</span></td>
+		</tr>
+		<tr ng-if="item.description">
+			<td><b>Desc: </b></td>
+			<td class="item_list"><span class="text-info">{{item.description}}</span></td>
+		</tr>
+	</table>
+</div>
+{% endverbatim %}

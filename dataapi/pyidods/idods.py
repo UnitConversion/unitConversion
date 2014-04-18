@@ -4863,6 +4863,7 @@ class idods(object):
                 for key in offlineData:
                     offlineDatum = offlineData[key]
                     resdict[key] = offlineDatum
+                    resdict[key]['install_name'] = install_name
                 
             return resdict
             

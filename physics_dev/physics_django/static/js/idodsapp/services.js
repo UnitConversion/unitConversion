@@ -879,7 +879,7 @@ app.factory('offlineDataInstallFactory', function($http, $q, OfflineDataInstall,
 			this.setItem(item);
 		}
 
-		return retrieveItem($q, $http, "offlinedatainstall", this.entity, OfflineData);
+		return retrieveItem($q, $http, "offlinedatainstall", this.entity, OfflineDataInstall);
 	}
 
 	// Get offline data install from server

@@ -889,7 +889,7 @@ app.value('OfflineDataInstallInfo', {
  	this.m = ["inventory_name", "data_id", "status", "method_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["inventory_name"];
+ 	this.search_m = ["install_name"];
 
  	// Parameters that are displayed when showing item details
  	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
@@ -907,10 +907,11 @@ app.value('OfflineDataInstallInfo', {
  	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// All props
- 	this.all = ["id", "offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
+ 	this.all = ["id", "offline_data_id", "install_name", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
  	this.display = {
  		"id": "Id",
+ 		"install_name": "Install name",
  		"inventory_name": "Inventory name",
  		"description": "Description",
  		"polarmode": "Polar mode",
@@ -931,6 +932,7 @@ app.value('OfflineDataInstallInfo', {
  	};
 
  	this.id = "";
+ 	this.install_name = "";
  	this.inventory_name = "";
  	this.description = "";
  	this.username = "";
