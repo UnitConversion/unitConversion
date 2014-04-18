@@ -11,7 +11,7 @@ from physics_django.idods.views import (retrieveInstallRelPropTypeWS, saveInstal
 from physics_django.idods.views import (retrieveInventoryToInstallWS, saveInventoryToInstallWS, updateInventoryToInstallWS)
 from physics_django.idods.views import (retrieveDataMethodWS, saveDataMethodWS, updateDataMethodWS)
 from physics_django.idods.views import (retrieveRawDataWS, saveRawDataWS)
-from physics_django.idods.views import (retrieveOfflineDataWS, saveOfflineDataWS, updateOfflineDataWS)
+from physics_django.idods.views import (retrieveOfflineDataWS, retrieveOfflineDataInstallWS, saveOfflineDataWS, updateOfflineDataWS)
 from physics_django.idods.views import (uploadFileWS)
 from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS)
 from physics_django.idods.views import (testAuth)
@@ -78,6 +78,7 @@ urlpatterns = patterns(
     
     # Retrieve, save and update offline data
     url(r'^id/device/offlinedata/$', retrieveOfflineDataWS),
+    url(r'^id/device/offlinedatainstall/$', retrieveOfflineDataInstallWS),
     url(r'^id/device/saveofflinedata/$', saveOfflineDataWS),
     url(r'^id/device/updateofflinedata/$', updateOfflineDataWS),
     

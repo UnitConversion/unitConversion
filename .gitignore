@@ -7,3 +7,9 @@ rdbinfo.py
 /physics_dev/physics_django/documents/
 /physics_dev/physics_django/runtracy/
 _build
+/utest/idods/clientapi/downloadedfile
+/utest/idods/clientapi/downloadedfile2
+/utest/idods/clientapi/large
+/utest/idods/clientapi/large2
+/utest/idods/dataapi/download_128
+/utest/idods/dataapi/download_4

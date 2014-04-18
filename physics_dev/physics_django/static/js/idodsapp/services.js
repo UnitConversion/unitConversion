@@ -850,6 +850,47 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 });
 
 /*
+ * Provide a factory for the offline data (via install) entity. Offline data can be checked, retrieved, saved and updated
+ */
+app.factory('offlineDataInstallFactory', function($http, $q, OfflineDataInstall, EntityError) {
+	var factory = {};
+	factory.entity = new OfflineDataInstall();
+	factory.error = new EntityError();
+
+	// Set offline data install object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	}
+
+	// Check offline data install before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	}
+
+	// Get offline data install from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "offlinedatainstall", this.entity, OfflineData);
+	}
+
+	// Get offline data install from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "offlinedatainstall", this.entity.list, params, this.entity.search_m);
+	}
+
+	return factory;
+});
+
+/*
  * Provide a factory for the online data entity. Online data can be checked, retrieved, saved and updated
  */
 app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {

@@ -4857,7 +4857,12 @@ class idods(object):
             # Construct return dict
             for r in res:
                 inventoryname = r[2]
-                results = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status)
+                offlineData = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status)
+                
+                # Go though the results and map them in result dictionary
+                for key in offlineData:
+                    offlineDatum = offlineData[key]
+                    resdict[key] = offlineDatum
                 
             return resdict
             
