@@ -363,11 +363,13 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 	}
 	
 	// Get component type from the factory
-	cmpntTypeFactory.retrieveCmpntType($routeParams).then(function(result) {
-		$scope.element = result;
-		$scope.element.old_name = result.name;
-		l($scope.element);
-	});
+	if($routeParams.action != "save") {
+		cmpntTypeFactory.retrieveCmpntType($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+			l($scope.element);
+		});
+	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
@@ -1018,6 +1020,7 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 		if(previousItem !== undefined) {
 			previousItem.click = "";
 		}
+		l(item);
 
 		previousItem = item;
 		item.click = "item_click";
@@ -1058,6 +1061,7 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
+		l($routeParams);
 		
 		installFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
@@ -2028,7 +2032,7 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 /*
  * List items in the middle pane
  */
-app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory) {
+app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $http, $window, $location, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory) {
 	// Remove image from the middle pane if there is something to show
 	$scope.style.middle_class = "container-scroll-middle-no-img";
 
@@ -2037,6 +2041,14 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 
 	$scope.items = [];
 	var previousItem = undefined;
+
+	var pathParts = $location.path().split('/');
+	var type = pathParts[1];
+
+	// Append second part of the path
+	if (type === "beamline" || type === "installation") {
+		type += "/" + pathParts[2];
+	}
 
 	offlineDataInstallFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -2061,7 +2073,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, "offline_data_install", ["install_name", "description"]) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -2078,10 +2090,10 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 		item.click = "item_click";
 		item.search = $routeParams.search;
 		$routeParams.click = "item_click";
-		$routeParams.inventory_name = item.inventory_name;
+		$routeParams.install_name = item.install_name;
 		$routeParams.description = item.description;
 
-		var location = createRouteUrl($routeParams, "offline_data_install", ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -2103,6 +2115,14 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 	
 	$scope.inventories = [];
 	$scope.methods = [];
+
+	var pathParts = $location.path().split('/');
+	var type = pathParts[1];
+
+	// Append second part of the path
+	if (type === "beamline" || type === "installation") {
+		type += "/" + pathParts[2];
+	}
 
 	// Retrieve all Inventories
 	inventoryFactory.retrieveItems({}).then(function(result) {
@@ -2156,7 +2176,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
 		
-		offlineDataFactory.retrieveItem($routeParams).then(function(result) {
+		offlineDataInstallFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
@@ -2165,7 +2185,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "offline_data_install", ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 	
@@ -2232,7 +2252,13 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 	$scope.items = [];
 	var previousItem = undefined;
 
-	var type = $location.path().split('/')[1];
+	var pathParts = $location.path().split('/');
+	var type = pathParts[1];
+
+	// Append second part of the path
+	if (type === "beamline" || type === "installation") {
+		type += "/" + pathParts[2];
+	}
 
 	onlineDataFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -2298,7 +2324,13 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
 
-	var type = $location.path().split('/')[1];
+	var pathParts = $location.path().split('/');
+	var type = pathParts[1];
+
+	// Append second part of the path
+	if (type === "beamline" || type === "installation") {
+		type += "/" + pathParts[2];
+	}
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
@@ -2393,10 +2425,60 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 /*
  * Controller for the left/search pane
  */
-app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, installRelFactory){
+app.controller('searchBeamlineCtrl', function($scope, $location, $window, $routeParams, installRelFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[13];
+	$scope.display = "online_data";
+
+	var pathParts = $location.path().split('/');
+
+	if (pathParts.length > 2) {
+		$scope.display = pathParts[2];
+	}
+
+	installRelFactory.retrieveTree({'install_name': 'beamline'}).then(function(result) {
+
+		l(result);
+		$scope.tree = drawDataTree2("", result, 0);
+	});
+
+	$scope.listData = function(install_name) {
+		l(install_name);
+		$scope.searchForItem({'install_name': install_name});
+	};
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		search.description = "*";
+		var newLocation = createRouteUrl(search, "beamline/" + $scope.display, ["install_name", "description"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchInstallationCtrl', function($scope, $location, $window, $routeParams, installRelFactory){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.search.type = dataTypes[14];
+	$scope.display = "online_data";
+
+	var pathParts = $location.path().split('/');
+
+	if (pathParts.length > 2) {
+		$scope.display = pathParts[2];
+	}
 
 	installRelFactory.retrieveTree({'install_name': 'installation'}).then(function(result) {
 
@@ -2420,7 +2502,7 @@ app.controller('searchBeamlineCtrl', function($scope, $window, $routeParams, ins
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
 		search.description = "*";
-		var newLocation = createRouteUrl(search, "beamline", ["install_name", "description"]) + "/list";
+		var newLocation = createRouteUrl(search, "installation/" + $scope.display, ["install_name", "description"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};

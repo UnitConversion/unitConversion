@@ -46,7 +46,7 @@ class idods(object):
         # Use django transaction manager
         self.transaction = transaction
 
-    def _checkRangeAndAppend(self, parameterKey, parameterValue, sqlString, valsList, prependedOperator = None):
+    def _checkRangeAndAppend(self, parameterKey, parameterValue, sqlString, valsList, prependedOperator = None, valueType = None):
         '''
         Check for ranges in a parameter value and append appropriate sql
         
@@ -60,6 +60,10 @@ class idods(object):
         return:
             tuple of new sql string and new list of values
         '''
+        
+        # If value type is set, cast a value
+        if valueType == "float":
+            parameterValue = float(parameterValue)
         
         # Prepend operator if it exists
         if prependedOperator != None:
@@ -80,7 +84,7 @@ class idods(object):
         
         # There is not tuple so just append equals
         else:
-            sqlString += ' ' + parameterKey + ' = %s'
+            sqlString += " " + parameterKey + " = %s"
             valsList.append(parameterValue)
             
         return (sqlString, valsList)
@@ -3002,22 +3006,32 @@ class idods(object):
 
         vals = []
 
+        # Append component type
+        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals, "AND")
+        sql = sqlAndVals[0]
+        vals = sqlAndVals[1]
+
+        # Append desciprtion if exists
+        if description != None:
+            
+            # Append __system__ component types if descriptions is set to retrieve them
+            if description == '__system__':
+                all_cmpnt_types = True
+                
+            else:
+                sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
+                sql = sqlAndVals[0]
+                vals = sqlAndVals[1]
+
         # Exclude all system component types
         if all_cmpnt_types == None or all_cmpnt_types == False:
             sql += ' AND description != %s '
             vals.append('__system__')
 
-        # Append component type
-        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals, "AND")
-
-        # Append desciprtion if exists
-        if description != None:
-            sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
-
         # Execute SQL
         try:
             cur = self.conn.cursor()
-            cur.execute(sqlAndVals[0], sqlAndVals[1])
+            cur.execute(sql, vals)
             res = cur.fetchall()
 
             # Create return dictionry
@@ -4309,17 +4323,17 @@ class idods(object):
         
         vals = []
         
-        # Exclude all system component types
-        if ('all_install' in kws) == False or ('all_install' in kws and kws['all_install'] == False):
-            sql += ' AND ct.description != %s '
-            vals.append('__system__')
-        
         # Append name parameter
         sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals, "AND")
         
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
-            sqlVals = _checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
+            # Append __system__ installs if description is set to __system__
+            if kws['description'] == '__system__':
+                kws['all_install'] = True
+            
+            else:
+                sqlVals = _checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
             
         # Append component type parameter
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
@@ -4327,7 +4341,17 @@ class idods(object):
 
         # Append coordination center parameter
         if 'coordinatecenter' in kws and kws['coordinatecenter'] != None:
-            sqlVals = self._checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = self._checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND', 'float')
+
+        # Exclude all system component types
+        if ('all_install' in kws) == False or ('all_install' in kws and kws['all_install'] == False):
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+            
+            sql += ' AND ct.description != %s '
+            vals.append('__system__')
+            
+            sqlVals = (sql, vals)
 
         try:
             # Execute SQL
@@ -4813,30 +4837,44 @@ class idods(object):
             gap = kws['gap']
         
         # Check phase1
+        phase1 = None
+        
         if 'phase1' in kws and kws['phase1'] != None:
             phase1 = kws['phase1']
         
         # Check phase2
+        phase2 = None
+        
         if 'phase2' in kws and kws['phase2'] != None:
             phase2 = kws['phase2']
         
         # Check phase3
+        phase3 = None
+        
         if 'phase3' in kws and kws['phase3'] != None:
             phase3 = kws['phase3']
         
         # Check phase4
+        phase4 = None
+        
         if 'phase4' in kws and kws['phase4'] != None:
             phase4 = kws['phase4']
         
         # Check phasemode
+        phasemode = None
+        
         if 'phasemode' in kws and kws['phasemode'] != None:
             phasemode = kws['phasemode']
         
         # Check polarmode
+        polarmode = None
+        
         if 'polarmode' in kws and kws['polarmode'] != None:
             polarmode = kws['polarmode']
         
         # Check status
+        status = None
+        
         if 'status' in kws and kws['status'] != None:
             status = kws['status']
         
@@ -4857,6 +4895,7 @@ class idods(object):
             # Construct return dict
             for r in res:
                 inventoryname = r[2]
+                print inventoryname
                 offlineData = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status)
                 
                 # Go though the results and map them in result dictionary

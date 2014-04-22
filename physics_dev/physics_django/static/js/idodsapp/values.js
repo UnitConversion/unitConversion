@@ -603,7 +603,13 @@ app.value('InstallInfo', {
  		this.name = obj.name;
  		this.cmpnt_type = obj.cmpnt_type;
  		this.description = obj.description;
- 		this.coordinatecenter = obj.coordinatecenter;
+
+ 		if (obj.coordinatecenter === null) {
+ 			this.coordinatecenter = undefined;
+ 		
+ 		} else {
+ 			this.coordinatecenter = obj.coordinatecenter;
+ 		}
  	}
 
  	if(obj !== undefined) {
@@ -804,7 +810,7 @@ app.value('OfflineDataInfo', {
  	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// All props
- 	this.all = ["id", "offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
+ 	this.all = ["id", "offline_data_id", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
  	this.display = {
  		"id": "Id",
@@ -855,10 +861,14 @@ app.value('OfflineDataInfo', {
 
  		for(i=0; i<this.all.length; i++) {
 
- 			if(this.all[i] in obj && obj[this.all[i]] != null) {
+ 			if(obj[this.all[i]] === null) {
+ 				this[this.all[i]] = undefined;
+ 			
+ 			} else {
  				this[this.all[i]] = obj[this.all[i]];
  			}
- 		}
+
+  		}
  	}
 
  	if(obj !== undefined) {
@@ -895,7 +905,7 @@ app.value('OfflineDataInstallInfo', {
  	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["inventory_name", "description"];
+ 	this.list = ["inventory_name", "install_name", "description"];
 
  	// Parameters used for save URL
  	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
@@ -907,7 +917,7 @@ app.value('OfflineDataInstallInfo', {
  	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// All props
- 	this.all = ["id", "offline_data_id", "install_name", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
+ 	this.all = ["id", "offline_data_id", "install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
  	this.display = {
  		"id": "Id",

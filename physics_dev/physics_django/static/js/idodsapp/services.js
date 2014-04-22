@@ -53,10 +53,13 @@ function checkItem(item, error) {
  */
 function retrieveItem($q, $http, url, obj, Class) {
 	var query = serviceurl + "/" + url + "/?";
-	query += prepareUrlParameters(obj.search_m, obj);
+	query += prepareUrlParameters(obj.list, obj, obj.search_m);
 
 	var deffered = $q.defer();
 	var promise = deffered.promise;
+
+	l(query);
+	l(obj);
 
 	$http.get(query).success(function(data){
 		deffered.resolve(new Class(data[obj.id]));
