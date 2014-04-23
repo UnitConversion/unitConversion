@@ -156,6 +156,7 @@ app.controller('bmCtrl', function($scope, $routeParams, bmFactory, logicFactory,
 	$scope.alert = {};
 	var aiStatus = aiStatusMap[$routeParams.status];
 	$scope.urlTab = $routeParams.tab;
+	$scope.inUse = ["Yes", "No"];
 
 	$scope.orderByField = 'bm_s';
 	$scope.reverseSort = false;
@@ -398,6 +399,7 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 	var aiStatus = aiStatusMap[$routeParams.status];
 	$scope.urlTab = $routeParams.tab;
 	$scope.logicShapeDict = {};
+	$scope.inUse = ["Yes", "No"];
 
 	$scope.orderByField = 's3_pos';
 	$scope.reverseSort = false;

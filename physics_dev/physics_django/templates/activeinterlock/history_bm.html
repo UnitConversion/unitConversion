@@ -3,8 +3,8 @@
 
 <div>
 	<ul class="nav nav-tabs">
-		<li ng-class="{active: urlTab == 'bm'}"><a href="#/dataset/{{datasetId}}/tab/bm/bm/">AI-BM</a></li>
-		<li ng-class="{active: urlTab == 'id'}"><a href="#/dataset/{{datasetId}}/tab/id/id/">AI-ID</a></li>
+		<li ng-class="{active: urlTab == 'bm'}"><a href="#/dataset/{{datasetId}}/tab/bm/bm/">SR-BPM</a></li>
+		<li ng-class="{active: urlTab == 'id'}"><a href="#/dataset/{{datasetId}}/tab/id/id/">ID-BPM</a></li>
 		<li ng-class="{active: urlTab == 'logic'}"><a href="#/dataset/{{datasetId}}/tab/logic/logic/">Logic</a></li>
 	</ul>
 </div>
@@ -15,6 +15,7 @@
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
 			<th>Cell</th>
+			<th>Sequence</th>
 			<th>Element Name</th>
 			<th>Element Type</th>
 			<th>s<br/>
@@ -23,9 +24,12 @@
 			</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Hor. (AIOLH)</th>
+			<th>AI Offset Origin Hor. (AIORH)</th>
 			<th>BPM-SR</th>
 			<th>AI Offset Limit Ver. (AIOLV)</th>
+			<th>AI Offset Origin Ver. (AIORV)</th>
 			<th>Safe current</th>
+			<th>In use</th>
 		</tr>
 		<tr>
 			<th></th>
@@ -33,22 +37,30 @@
 			<th></th>
 			<th></th>
 			<th></th>
+			<th></th>
+			<th>mm</th>
 			<th>mm</th>
 			<th></th>
 			<th>mm</th>
+			<th>mm</th>
 			<th>mA</th>
+			<th></th>
 		</tr>
 		<tbody>
 		<tr ng-repeat="bm in bmArr">
 			<td>{{bm.bm_cell || '&nbsp;'}}</td>
+			<td>{{bm.bm_sequence || '&nbsp;'}}</td>
 			<td>{{bm.name || '&nbsp;'}}</td>
 			<td>{{bm.bm_type || '&nbsp;'}}</td>
 			<td>{{bm.bm_s || '&nbsp;'}}</td>
 			<td>{{bm.logic || '&nbsp;'}}</td>
 			<td>{{bm.bm_aiolh || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiorh || '&nbsp;'}}</td>
 			<td>{{bm.logic || '&nbsp;'}}</td>
 			<td>{{bm.bm_aiolv || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiorv || '&nbsp;'}}</td>
 			<td>{{bm.bm_safe_current || '&nbsp;'}}</td>
+			<td>{{bm.bm_in_use || '&nbsp;'}}</td>
 		</tr>
 		</tbody>
 	</table>

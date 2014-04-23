@@ -53,7 +53,7 @@ class epsai(object):
         self.transaction = transaction
         
         # Define all the properties for id table
-        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['s1_name', '', ''], ['s1_pos', 'm', ''], ['s1_pos_from', 'm', ''], ['s2_name', '', ''], ['s2_pos', 'm', ''], ['s2_pos_from', 'm', ''], ['s3_pos', 'm', ''], ['s3_pos_from', 'm', ''], ['max_offset', 'mm', 'approvable'], ['max_angle', 'mrad', 'approvable'], ['extra_offset', '', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_angle', 'mrad', 'approvable'], ['safe_current', 'mA', 'approvable']]
+        self.id_props = [['cell', '', ''], ['type', '', ''], ['set', '', ''], ['str_sect', '', ''], ['defined_by', '', ''], ['s1_name', '', ''], ['s1_pos', 'm', ''], ['s1_pos_from', 'm', ''], ['s2_name', '', ''], ['s2_pos', 'm', ''], ['s2_pos_from', 'm', ''], ['s3_pos', 'm', ''], ['s3_pos_from', 'm', ''], ['max_offset', 'mm', 'approvable'], ['max_angle', 'mrad', 'approvable'], ['extra_offset', '', 'approvable'], ['x_offset_s1', 'mm', 'approvable'], ['x_offset_origin_s1', 'mm', 'approvable'], ['x_offset_s2', 'mm', 'approvable'], ['x_offset_origin_s2', 'mm', 'approvable'], ['x_offset_s3', 'mm', 'approvable'], ['x_angle', 'mrad', 'approvable'], ['y_offset_s1', 'mm', 'approvable'], ['y_offset_origin_s1', 'mm', 'approvable'], ['y_offset_s2', 'mm', 'approvable'], ['y_offset_origin_s2', 'mm', 'approvable'], ['y_offset_s3', 'mm', 'approvable'], ['y_angle', 'mrad', 'approvable'], ['safe_current', 'mA', 'approvable'], ['in_use', '', 'approvable']]
         self.id_props_dict = {
             'cell': ['cell', '', ''],
             'type': ['type', '', ''],
@@ -72,25 +72,34 @@ class epsai(object):
             'max_angle': ['max_angle', 'mrad', 'approvable'],
             'extra_offset': ['extra_offset', '', 'approvable'],
             'x_offset_s1': ['x_offset_s1', 'mm', 'approvable'],
+            'x_offset_origin_s1': ['x_offset_origin_s1', 'mm', 'approvable'],
             'x_offset_s2': ['x_offset_s2', 'mm', 'approvable'],
+            'x_offset_origin_s2': ['x_offset_origin_s2', 'mm', 'approvable'],
             'x_offset_s3': ['x_offset_s3', 'mm', 'approvable'],
             'x_angle': ['x_angle', 'mrad', 'approvable'],
             'y_offset_s1': ['y_offset_s1', 'mm', 'approvable'],
+            'y_offset_origin_s1': ['y_offset_origin_s1', 'mm', 'approvable'],
             'y_offset_s2': ['y_offset_s2', 'mm', 'approvable'],
+            'y_offset_origin_s2': ['y_offset_origin_s2', 'mm', 'approvable'],
             'y_offset_s3': ['y_offset_s3', 'mm', 'approvable'],
             'y_angle': ['y_angle', 'mrad', 'approvable'],
-            'safe_current': ['safe_current', 'mA', 'approvable']
+            'safe_current': ['safe_current', 'mA', 'approvable'],
+            'in_use': ['in_use', '', 'approvable']
         }
         
         # Define all the properties for the bm table
-        self.bm_props = [['bm_cell', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable'], ['bm_safe_current', 'mA', 'approvable']]
+        self.bm_props = [['bm_cell', '', ''], ['bm_sequence', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiorh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable'], ['bm_aiorv', 'mm', 'approvable'], ['bm_safe_current', 'mA', 'approvable'], ['bm_in_use', '', 'approvable']]
         self.bm_props_dict = {
             'bm_cell': ['bm_cell', '', ''],
+            'bm_sequence': ['bm_sequence', '', ''],
             'bm_type': ['bm_type', '', ''],
             'bm_s': ['bm_s', 'm', ''],
             'bm_aiolh': ['bm_aiolh', 'mm', 'approvable'],
+            'bm_aiorh': ['bm_aiorh', 'mm', 'approvable'],
             'bm_aiolv': ['bm_aiolv', 'mm', 'approvable'],
-            'bm_safe_current': ['bm_safe_current', 'mA', 'approvable']
+            'bm_aiorv': ['bm_aiorv', 'mm', 'approvable'],
+            'bm_safe_current': ['bm_safe_current', 'mA', 'approvable'],
+            'bm_in_use': ['bm_in_use', '', 'approvable']
         }
         
     def copyActiveInterlock(self, status, description, modified_by):
