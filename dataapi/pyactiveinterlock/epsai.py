@@ -88,10 +88,10 @@ class epsai(object):
         }
         
         # Define all the properties for the bm table
-        self.bm_props = [['bm_cell', '', ''], ['bm_sequence', '', ''], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiorh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable'], ['bm_aiorv', 'mm', 'approvable'], ['bm_safe_current', 'mA', 'approvable'], ['bm_in_use', '', 'approvable']]
+        self.bm_props = [['bm_cell', '', ''], ['bm_sequence', '', 'approvable'], ['bm_type', '', ''], ['bm_s', 'm', ''], ['bm_aiolh', 'mm', 'approvable'], ['bm_aiorh', 'mm', 'approvable'], ['bm_aiolv', 'mm', 'approvable'], ['bm_aiorv', 'mm', 'approvable'], ['bm_safe_current', 'mA', 'approvable'], ['bm_in_use', '', 'approvable']]
         self.bm_props_dict = {
             'bm_cell': ['bm_cell', '', ''],
-            'bm_sequence': ['bm_sequence', '', ''],
+            'bm_sequence': ['bm_sequence', '', 'approvable'],
             'bm_type': ['bm_type', '', ''],
             'bm_s': ['bm_s', 'm', ''],
             'bm_aiolh': ['bm_aiolh', 'mm', 'approvable'],

@@ -116,7 +116,7 @@ app.value('BendingMagnet', function(obj) {
 	this.approve = ["aid_id", "prop_types"];
 
 	// Cells that need to be approved after saving
-	this.approvable = {"bm_aiolh":true, "bm_aiorh":true, "bm_aiolv":true, "bm_aiorv":true, "bm_safe_current":true, "bm_in_use":true};
+	this.approvable = {"bm_sequence":true, "bm_aiolh":true, "bm_aiorh":true, "bm_aiolv":true, "bm_aiorv":true, "bm_safe_current":true, "bm_in_use":true};
 	
 	this.all = ["id", "ai_id", "aid_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_sequence", "bm_type", "bm_s", "bm_aiolh", "bm_aiorh", "bm_aiolv", "bm_aiorv", "bm_safe_current", "bm_in_use"];
 

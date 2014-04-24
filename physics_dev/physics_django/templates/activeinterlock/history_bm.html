@@ -14,22 +14,25 @@
 <div class="table-responsive">
 	<table class="table table-bordered table-hover table-condensed">
 		<tr>
-			<th>Cell</th>
-			<th>Sequence</th>
-			<th>Element Name</th>
-			<th>Element Type</th>
-			<th>s<br/>
+			<th colspan="2">Cell</th>
+			<th rowspan="2">Element Name</th>
+			<th rowspan="2">Element Type</th>
+			<th rowspan="2">s<br/>
 				<i ng-class="(orderByField == 'bm_s' && reverseSort == false) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('bm_s', false); orderByField='bm_s'; reverseSort = false" class="glyphicon glyphicon-chevron-up"></i>
 				<i ng-class="(orderByField == 'bm_s' && reverseSort == true) ? 'sort_button_active' : 'sort_button'" ng-click="checkArrays('bm_s', true); orderByField='bm_s'; reverseSort = true" class="glyphicon glyphicon-chevron-down"></i>
 			</th>
-			<th>BPM-SR</th>
-			<th>AI Offset Limit Hor. (AIOLH)</th>
-			<th>AI Offset Origin Hor. (AIORH)</th>
-			<th>BPM-SR</th>
-			<th>AI Offset Limit Ver. (AIOLV)</th>
-			<th>AI Offset Origin Ver. (AIORV)</th>
-			<th>Safe current</th>
-			<th>In use</th>
+			<th rowspan="2">BPM-SR</th>
+			<th rowspan="2">AI Offset Limit Hor. (AIOLH)</th>
+			<th rowspan="2">AI Offset Origin Hor. (AIORH)</th>
+			<th rowspan="2">BPM-SR</th>
+			<th rowspan="2">AI Offset Limit Ver. (AIOLV)</th>
+			<th rowspan="2">AI Offset Origin Ver. (AIORV)</th>
+			<th rowspan="2">Safe current</th>
+			<th rowspan="2">In use</th>
+		</tr>
+		<tr>
+			<th></th>
+			<th>Sequence</th>
 		</tr>
 		<tr>
 			<th></th>
