@@ -909,6 +909,22 @@ function drawDataTree(html, data, level){
 	return html;
 }
 
+function toggleChildren(el) {
+	var elObj = $(el).find(':first-child');
+
+	if (elObj.hasClass('icon-chevron-down')) {
+		elObj.removeClass('icon-chevron-down');
+		elObj.addClass('icon-chevron-right');
+	
+	} else {
+		elObj.removeClass('icon-chevron-right');
+		elObj.addClass('icon-chevron-down');
+	}
+
+	var block = $(el).next().next();
+	block.toggle();
+}
+
 /**
  * Represent jason data as a tree with <ul> and <li> elements.
  * @param {type} html html code to start with
@@ -921,17 +937,16 @@ function drawDataTree2(html, data, level){
 		return "";
 
 	} else {
-		html += "<ul>";
+		html += "<ul class='none-style'>";
 
 		for(var prop in data) {
-			l(prop);
-			l(data);
 			html += "<li>";
 
 			if (level >= 3) {
 				html += "<b><a href ng-click='listData(\"" + prop + "\")'>" + prop + "</a></b>";
 
 			} else {
+				html += "<span onclick='toggleChildren(this);'><i class='icon-chevron-down'></i></span>";
 				html += "<b>" + prop + "</b>";
 			}
 

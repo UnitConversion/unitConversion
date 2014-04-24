@@ -447,7 +447,7 @@ app.controller('searchCmpntTypeTypeCtrl', function($scope, $window, $routeParams
 	// Item search button click
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
-		var newLocation = createRouteUrl(search, ["name", "cmpnt_type_type", "description"]) + "/list";
+		var newLocation = createRouteUrl(search, "cmpnt_type_type", ["name", "description"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -527,11 +527,13 @@ app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 	$scope.alert.show = false;
 	$scope.info = CmpntTypeTypeInfo;
 
-	// Get component type from the factory
-	cmpntTypeTypeFactory.retrieveCmpntTypeType($routeParams).then(function(result) {
-		$scope.element = result;
-		$scope.element.old_name = result.name;
-	});
+	// Get component type from the factory 
+	if($routeParams.action != "save") {
+		cmpntTypeTypeFactory.retrieveCmpntTypeType($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.old_name = result.name;
+		});
+	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
@@ -2101,7 +2103,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 /*
  * Show details in the right pane
  */
-app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
+app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $location, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2311,7 +2313,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 /*
  * Show details in the right pane
  */
-app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $window, OnlineDataInfo, OnlineData, onlineDataFactory, EntityError, installFactory){
+app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $window, $location, OnlineDataInfo, OnlineData, onlineDataFactory, EntityError, installFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;

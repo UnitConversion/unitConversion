@@ -161,6 +161,7 @@ app.value('CmpntTypeTypeInfo', {
  	this.save = ["name", "description"];
  	this.update = ["old_name", "name", "description"];
  	this.display = {"name": "Name", "description": "Description", "id": "Id"};
+ 	
  	this.id = "";
  	this.old_name = "";
  	this.name = "";
@@ -905,7 +906,7 @@ app.value('OfflineDataInstallInfo', {
  	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["inventory_name", "install_name", "description"];
+ 	this.list = ["install_name", "description"];
 
  	// Parameters used for save URL
  	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
@@ -970,9 +971,11 @@ app.value('OfflineDataInstallInfo', {
 
  		for(i=0; i<this.all.length; i++) {
 
- 			if(this.all[i] in obj && obj[this.all[i]] != null) {
- 				this[this.all[i]] = obj[this.all[i]];
+ 			if (obj[this.all[i]] === null) {
+ 				this[this.all[i]] = undefined;
  			}
+
+ 			this[this.all[i]] = obj[this.all[i]];
  		}
  	}
 
