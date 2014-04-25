@@ -31,7 +31,7 @@ app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope, $modal){
+app.controller('mainCtrl', function($scope, $window, $modal){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
@@ -43,16 +43,15 @@ app.controller('mainCtrl', function($scope, $modal){
 	$scope.authenticated.error = false;
 
 	$scope.login = function() {
-		l($scope.loginData);
 
 		$.ajax({
-			url: serviceurl + "user/login/",
+			url: serviceurlraw + "user/login/",
 			method: "POST",
 			data: "username=" + $scope.session.username + "&password=" + $scope.session.password
 		}).success(function(data, status, headers, config) {
 			$scope.authenticated.error = false;
 			$scope.$apply();
-			location.reload();
+			$window.location.reload();
 
 		}).error(function(data, status, headers, config) {
 			$scope.authenticated.error = true;
@@ -63,28 +62,13 @@ app.controller('mainCtrl', function($scope, $modal){
 	$scope.logout = function() {
 
 		$.ajax({
-			url: serviceurl + "user/logout/",
+			url: serviceurlraw + "user/logout/",
 			method: "POST"
 		}).success(function(data, status, headers, config) {
-			l(data);
-			location.reload();
+			$window.location.reload();
 
 		}).error(function(data, status, headers, config) {
 
-		});
-	};
-
-	$scope.uploadLattice = function() {
-		var modalInstance = $modal.open({
-			templateUrl: 'modal/save_lattice.html',
-			controller: 'uploadLatticeModalCtrl'
-		});
-	};
-
-	$scope.uploadModel = function() {
-		var modalInstance = $modal.open({
-			templateUrl: 'modal/save_model.html',
-			controller: 'uploadModelModalCtrl'
 		});
 	};
 });
@@ -1957,7 +1941,7 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 			$scope.new.data_id = JSON.parse(response)["id"];
 		}
 
-		saveOfflineData($scope, offlineDataFactory);
+		saveData($scope, offlineDataFactory);
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -1986,7 +1970,7 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 			$scope.error['data_id'] = "Raw data field is mandatory!";
 
 		} else if (uploadData === undefined && action !== "save") {
-			saveOfflineData($scope, offlineDataFactory);
+			saveData($scope, offlineDataFactory);
 
 		} else {
 			uploadData.submit();
@@ -2168,7 +2152,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $loc
 			$scope.new.data_id = JSON.parse(response)["id"];
 		}
 
-		saveOfflineData($scope, offlineDataFactory);
+		saveData($scope, offlineDataFactory);
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -2197,7 +2181,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $loc
 			$scope.error['data_id'] = "Raw data field is mandatory!";
 
 		} else if (uploadData === undefined && action !== "save") {
-			saveOfflineData($scope, offlineDataFactory);
+			saveData($scope, offlineDataFactory);
 
 		} else {
 			uploadData.submit();
@@ -2379,7 +2363,7 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 			$scope.new.url = JSON.parse(response)["path"];
 		}
 
-		saveOfflineData($scope, onlineDataFactory);
+		saveData($scope, onlineDataFactory);
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -2402,8 +2386,11 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 			result = onlineDataFactory.checkItem($scope.element);
 
 		} else if($scope.action == "save") {
+			l($scope.new);
 			result = onlineDataFactory.checkItem($scope.new);
 		}
+
+		l(result);
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
@@ -2414,7 +2401,7 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 				$scope.error['url'] = "Data file field is mandatory!";
 
 			} else if (uploadData === undefined && action !== "save") {
-				saveOfflineData($scope, onlineDataFactory);
+				saveData($scope, onlineDataFactory);
 
 			} else {
 				l(uploadData);

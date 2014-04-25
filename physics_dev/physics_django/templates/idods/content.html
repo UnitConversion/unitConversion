@@ -8,24 +8,6 @@
 
 			<a class="brand" href="index.html">IDODS <span class="version">{{version}}</span></a>
 
-			{% endverbatim %}
-				{% if user.is_authenticated %}
-					<ul class="nav">
-						<li class="divider-vertical"></li>
-					</ul>
-
-					<div class="btn-group">
-						<button ng-click="uploadLattice()" class="btn btn-primary">Upload Lattice</button>
-						<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-							<span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu">
-							<li><a ng-click="uploadModel()">Upload Model</a></li>
-						</ul>
-					</div>
-				{% endif %}
-			{% verbatim %}
-
 			<div id="top_container" class="pull-right btn-group">
 
 				{% endverbatim %}
@@ -69,9 +51,9 @@
 </div>
 
 <div>
-	<!-- Left navigation -->
+	<!-- Left search pane -->
 	<div class="container-left">
-		<div id="load_filters" class="well container-scroll">
+		<div class="well container-scroll">
 			<div app-view-segment="1"></div>
 		</div>
 	</div>
@@ -80,10 +62,10 @@
 		<div id="container-resize" resize-left=""></div>
 	</div>
 
-	<!-- List of Logs -->
+	<!-- List of Items -->
 	<a name="#top"></a>
 	<div class="container-middle">
-		<div id="load_devices" class="well {{style.middle_class}}">
+		<div class="well {{style.middle_class}}">
 			<div app-view-segment="2"></div>
 		</div>
 	</div>
@@ -95,7 +77,7 @@
 	<!-- Details view -->
 	<a name="#view"></a>
 	<div class="container-right">
-		<div id="load_details" class="well well-light {{style.right_class}}">
+		<div class="well well-light {{style.right_class}}">
 			<div app-view-segment="3"></div>
 		</div>
 	</div>

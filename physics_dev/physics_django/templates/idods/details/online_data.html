@@ -9,9 +9,11 @@
 		
 		{% endverbatim %}
 			{% if user.is_authenticated %}
+			{% verbatim %}
+			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
+			{% endverbatim %}
 			{% endif %}
 		{% verbatim %}
-			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
 
 
 		<table class="table table-bordered">
@@ -164,7 +166,7 @@
 		</form>
 
 		<br/>
-		<button ng-click="saveItem(element, 'update')" class="btn btn-success">{{info.update_button}}</button>
+		<button ng-click="saveItem('update')" class="btn btn-success">{{info.update_button}}</button>
 	</div>
 </div>
 {% endverbatim %}

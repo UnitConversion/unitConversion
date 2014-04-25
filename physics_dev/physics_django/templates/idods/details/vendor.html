@@ -9,9 +9,9 @@
 		
 		{% endverbatim %}
 			{% if user.is_authenticated %}
+			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> Update Vendor</button>
 			{% endif %}
 		{% verbatim %}
-		<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> Update Vendor</button>
 
 
 		<table class="table table-bordered">

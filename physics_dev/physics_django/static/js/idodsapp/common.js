@@ -218,18 +218,20 @@ function download(filename, text) {
     pom.click();
 }
 
-function saveOfflineData($scope, offlineDataFactory) {
+function saveData($scope, dataFactory) {
+	l($scope);
+	l(dataFactory);
 
 	$scope.alert.show = false;
 	var result;
-	l(result);
 
 	if($scope.action === "update") {
-		result = offlineDataFactory.checkItem($scope.element);
+		result = dataFactory.checkItem($scope.element);
 
 	} else if($scope.action == "save") {
-		result = offlineDataFactory.checkItem($scope.new);
+		result = dataFactory.checkItem($scope.new);
 	}
+	l(result);
 
 	if(result !== true) {
 		$scope.error = result.errorDict;
@@ -241,10 +243,10 @@ function saveOfflineData($scope, offlineDataFactory) {
 		var promise;
 		
 		if($scope.action === "update") {
-			promise = offlineDataFactory.updateItem($scope.element);
+			promise = dataFactory.updateItem($scope.element);
 
 		} else if($scope.action == "save") {
-			promise = offlineDataFactory.saveItem($scope.new);
+			promise = dataFactory.saveItem($scope.new);
 		}
 		
 		promise.then(function(data) {

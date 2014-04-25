@@ -1063,13 +1063,16 @@ app.value('OnlineDataInfo', {
  		this.status = obj.status;
  		this.url = obj.url;
 
- 		if(this.url !== undefined) {
+ 		if(this.url !== undefined && this.url !== "") {
 
 	 		var urlParts = obj.url.split(/[\/\\]/);
 
 	 		if (urlParts.length >= 1) {
 	 			this.file_name = urlParts[urlParts.length-1];
 	 		}
+ 		
+ 		} else {
+ 			this.file_name = obj.file_name;
  		}
  	}
 

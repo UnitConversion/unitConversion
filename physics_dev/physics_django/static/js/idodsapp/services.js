@@ -908,11 +908,12 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 
 	// Check online data before sending it to the server
 	factory.checkItem = function(item) {
+		l(item);
 
 		if(item !== undefined) {
 			this.setItem(item);
 		}
-
+		l(this.entity);
 		return checkItem(this.entity, this.error);
 	}
 

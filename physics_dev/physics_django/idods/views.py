@@ -5,6 +5,7 @@ import traceback
 import sys
 from django.db import connection, transaction
 from django.db.transaction import TransactionManagementError
+from django.template import RequestContext
 
 try:
     from django.utils import simplejson as json
@@ -134,6 +135,7 @@ def retrieveVendorWS(request):
 Save new vendor
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveVendorWS(request):
     return _saveData(request, idodsi.saveVendor, ['name', 'description'])
 
@@ -141,8 +143,8 @@ def saveVendorWS(request):
 Update vendor
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateVendorWS(request):
-    print request.POST
     return _updateData(request, idodsi.updateVendor, ['old_name', 'name', 'description'], {'vendor_id': None})
 
 '''
@@ -156,6 +158,7 @@ def retrieveCompntTypeWS(request):
 Save component type
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveCompntTypeWS(request):
     return _saveData(request, idodsi.saveComponentType, ['name', 'description', 'props'])
 
@@ -163,6 +166,7 @@ def saveCompntTypeWS(request):
 Update component type
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateCmpntTypeWS(request):
     return _updateData(request, idodsi.updateComponentType, ['old_name', 'name', 'description', 'props'], {'component_type_id': None})
 
@@ -177,6 +181,7 @@ def retrieveCompntTypePropTypeWS(request):
 Save component type property type
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveCompntTypePropTypeWS(request):
     return _saveData(request, idodsi.saveComponentTypePropertyType, ['name', 'description'])
 
@@ -184,6 +189,7 @@ def saveCompntTypePropTypeWS(request):
 Update component type property type
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateCmpntTypePropTypeWS(request):
     return _updateData(request, idodsi.updateComponentTypePropertyType, ['old_name', 'name', 'description'], {'property_type_id': None})
 
@@ -198,6 +204,7 @@ def retrieveInventoryWS(request):
 Save inventory
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveInventoryWS(request):
     return _saveData(request, idodsi.saveInventory, ['cmpnt_type', 'name', 'alias', 'serialno', 'vendor', 'props'])
 
@@ -205,6 +212,7 @@ def saveInventoryWS(request):
 Update inventory
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateInventoryWS(request):
     return _updateData(request, idodsi.updateInventory, ['old_name', 'cmpnt_type', 'name', 'alias', 'serialno', 'vendor', 'props'], {'inventory_id': None})
 
@@ -219,6 +227,7 @@ def retrieveInventoryPropTmpltWS(request):
 Save inventory property template
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveInventoryPropTmpltWS(request):
     return _saveData(request, idodsi.saveInventoryPropertyTemplate, ['cmpnt_type', 'name', 'description', 'default', 'unit'])
 
@@ -226,6 +235,7 @@ def saveInventoryPropTmpltWS(request):
 Update inventory property template
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateInventoryPropTmpltWS(request):
     return _updateData(request, idodsi.updateInventoryPropertyTemplate, ['tmplt_id', 'cmpnt_type', 'name', 'description', 'default', 'unit'])
 
@@ -240,6 +250,7 @@ def retrieveInstallWS(request):
 Save install
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveInstallWS(request):
     return _saveData(request, idodsi.saveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
 
@@ -247,6 +258,7 @@ def saveInstallWS(request):
 Update install
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateInstallWS(request):
     return _updateData(request, idodsi.updateInstall, ['old_name', 'name', 'description', 'cmpnt_type', 'coordinatecenter'], {'install_id': None})
 
@@ -261,6 +273,7 @@ def retrieveInstallRelWS(request):
 Save install rel
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveInstallRelWS(request):
     return _saveData(request, idodsi.saveInstallRel, ['parent_install', 'child_install', 'description', 'order', 'props'])
 
@@ -268,6 +281,7 @@ def saveInstallRelWS(request):
 Update install rel
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateInstallRelWS(request):
     return _updateData(request, idodsi.updateInstallRel, ['parent_install', 'child_install', 'description', 'order', 'props'])
 
@@ -282,6 +296,7 @@ def retrieveInstallRelPropTypeWS(request):
 Save install rel property type
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveInstallRelPropTypeWS(request):
     return _saveData(request, idodsi.saveInstallRelPropertyType, ['name', 'description', 'unit'])
 
@@ -289,6 +304,7 @@ def saveInstallRelPropTypeWS(request):
 Update install rel property type
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateInstallRelPropTypeWS(request):
     return _updateData(request, idodsi.updateInstallRelPropertyType, ['old_name', 'name', 'description', 'unit'], {'type_id': None})
 
@@ -303,6 +319,7 @@ def retrieveInventoryToInstallWS(request):
 Save inventory to install
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveInventoryToInstallWS(request):
     return _saveData(request, idodsi.saveInventoryToInstall, ['install_name', 'inv_name'])
 
@@ -310,6 +327,7 @@ def saveInventoryToInstallWS(request):
 Update inventory to install
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateInventoryToInstallWS(request):
     return _updateData(request, idodsi.updateInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inv_name'])
 
@@ -324,6 +342,7 @@ def retrieveDataMethodWS(request):
 Save data method
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveDataMethodWS(request):
     return _saveData(request, idodsi.saveDataMethod, ['name', 'description'])
 
@@ -331,6 +350,7 @@ def saveDataMethodWS(request):
 Update data method
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateDataMethodWS(request):
     return _updateData(request, idodsi.updateDataMethod, ['old_name', 'name', 'description'], {'datamethod_id': None})
 
@@ -345,6 +365,7 @@ def retrieveRawDataWS(request):
 Save raw data
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveRawDataWS(request):
     print request.FILES
     rawFile = request.FILES.getlist('file')[0]
@@ -397,20 +418,27 @@ def retrieveOfflineDataInstallWS(request):
 Save offline data
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveOfflineDataWS(request):
+    request.POST = request.POST.copy()
+    request.POST['username'] = request.user.username
     return _saveData(request, idodsi.saveOfflineData, ['inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
 Update offline data
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateOfflineDataWS(request):
+    request.POST = request.POST.copy()
+    request.POST['username'] = request.user.username
     return _updateData(request, idodsi.updateOfflineData, ['offline_data_id', 'inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
 Upload a file
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def uploadFileWS(request):
     rawFile = request.FILES.getlist('file')[0]
     params = _retrievecmddict(request.POST.copy())
@@ -450,20 +478,27 @@ def retrieveOnlineDataWS(request):
 Save online data
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def saveOnlineDataWS(request):
+    request.POST = request.POST.copy()
+    request.POST['username'] = request.user.username
     return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'url', 'status'])
 
 '''
 Update online data
 '''
 @require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
 def updateOnlineDataWS(request):
+    request.POST = request.POST.copy()
+    request.POST['username'] = request.user.username
     return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status'])
 
 '''
 Install idods
 '''
 @require_http_methods(["GET"])
+@has_perm_or_basicauth('id.can_modify_id')
 def idodsInstallWS(request):
     return _updateData(request, idodsi.idodsInstall, [])
 
@@ -486,10 +521,10 @@ def testAuth(request):
 Load index html file
 '''
 def idodsIndexHtml(request):
-    return render_to_response("idods/index.html")
+    return render_to_response("idods/index.html", context_instance = RequestContext(request))
 
 '''
 Load html files
 '''
 def idodsHtmls(request, url):
-    return render_to_response("idods/" + url)
+    return render_to_response("idods/" + url, context_instance = RequestContext(request))
