@@ -434,6 +434,10 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 		});
 	});
 
+	$scope.setShape = function(device) {
+		device.shape = $scope.logicShapeDict[device.logic];
+	}
+
 	$scope.checkArrays = function(field, reverse) {
 
 		if($scope.idArr2.length !== 0) {
@@ -444,9 +448,6 @@ app.controller('idCtrl', function($scope, $routeParams, idFactory, logicFactory,
 
 			$scope.idArr2 = [];
 		}
-
-		l(field);
-		l(reverse);
 
 		$scope.idArr = sort($scope.idArr, field, reverse);
 	}

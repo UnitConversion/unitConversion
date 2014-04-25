@@ -218,11 +218,15 @@
 			</td>
 		</tr>
 		
+		<!-- New device -->
 		<tr ng-if="newInsD">
 			<td ng-repeat="prop in newInsD.save_display" ng-class="{'danger': newInsD.approvable[prop] == true}">
 				<span class="form-group" ng-class="{'has-error': error[prop]}">
-					<input ng-if="prop != 'logic' && prop != 'in_use'" type="text" ng-model="newInsD[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
-					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newInsD[prop]" class="form-control input-sm select"></select>
+					
+					<input ng-if="prop != 'logic' && prop != 'in_use'" type="text" ng-model="newInsD[prop]" ng-disabled="prop == 'shape'" class="form-control input-sm" />
+					
+					<select ng-if="prop == 'logic'" ng-change="setShape(newInsD)" ng-options="name for name in logicArr" type="text" ng-model="newInsD[prop]" class="form-control input-sm select"></select>
+					
 					<select ng-if="prop == 'in_use'" ng-options="use for use in inUse" type="text" ng-model="newInsD[prop]" class="form-control input-sm select"></select>
 				</span>
 			</td>
