@@ -379,6 +379,7 @@ app.value('InstallRelInfo', {
 	'save_button': 'Save Install relationship',
 	'retrieve_title': 'Install relationship',
 	'retrieve_update_button': 'Update Install relationship',
+	'retrieve_delete_button': 'Delete Install relationship',
 	'update_title': 'Update Install relationship',
 	'update_button': 'Update Install relationship',
 	'search_button': 'Add Install relationship',
@@ -391,7 +392,7 @@ app.value('InstallRelInfo', {
  app.value('InstallRel', function(obj){
  	
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["description"];
+ 	this.m = ["description", "parent_install", "child_install"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["description"];
@@ -403,13 +404,13 @@ app.value('InstallRelInfo', {
  	this.list = ["parent_install", "child_install", "description", "order"];
 
  	// Parameters used for save URL
- 	this.save = ["parent_install", "child_install", "description", "order"];
+ 	this.save = ["parent_install", "child_install", "description", "order", "props"];
  	
  	// Parameters that are displayed when saving new item
  	this.save_show = ["parent_install", "child_install", "description", "order"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["parent_install", "child_install", "description", "order"];
+ 	this.update = ["parent_install", "child_install", "description", "order", "props"];
 
  	this.display = {
  		"id": "Id",
@@ -433,6 +434,9 @@ app.value('InstallRelInfo', {
  	this.parent_install = "";
  	this.child_install = "";
 
+ 	this.props = {};
+ 	this.prop_keys = [];
+
  	this.set = function(obj) {
 
  		if(obj === undefined) {
@@ -444,10 +448,29 @@ app.value('InstallRelInfo', {
  			this.old_name = obj.old_name;
  		}
 
+ 		if('props' in obj) {
+ 			this.props = obj.props;
+ 		}
+
+ 		if('prop_keys' in obj) {
+ 			//this.prop_keys = obj.prop_keys;
+
+ 			for(var i = 0; i<obj.prop_keys.length; i++) {
+ 				var key = obj.prop_keys[i];
+
+ 				this.prop_keys.push({'name':key, 'value':obj[key]});
+ 			}
+ 		}
+
  		this.install_name = obj.install_name;
  		this.description = obj.description;
  		this.date = obj.date;
  		this.order = obj.order;
+
+ 		if (this.order == null) {
+ 			this.order = undefined;
+ 		}
+
  		this.childname = obj.childname;
  		this.parentname = obj.parentname;
  		this.parent_install = obj.parent_install;

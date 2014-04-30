@@ -11,6 +11,7 @@
 			{% if user.is_authenticated %}
 			{% verbatim %}
 			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
+			<button ng-click="deleteItem(element.parent_install, element.child_install)" class="item_delete btn btn-danger"><i class="icon-edit icon-white"></i> {{info.retrieve_delete_button}}</button>
 			{% endverbatim %}
 			{% endif %}
 		{% verbatim %}
@@ -63,7 +64,28 @@
 					</span>
 				</td>
 			</tr>
+			<tr ng-repeat="prop in new.prop_keys">
+				<td>
+					<span class="control-group">
+						<span class="controls">
+							<select ng-change="changePropertyName()" ng-model="prop.name" ng-options="prop for prop in props"></select>
+						</span>
+					</span>
+				</td>
+				<td>
+					<span class="control-group" ng-class="{'error': error[property]}">
+						<span class="controls">
+							<input type="text" ng-model="prop.value" />
+							<span class="help-inline">{{error[property]}}</span>
+						</span>
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2"><button ng-click="appendProperty()" class="btn"><i class="icon-plus"></i> Add property</button></td>
+			</tr>
 		</table>
+
 		<br/>
 		<button ng-click="saveItem(new, 'save')" class="btn btn-success">{{info.save_button}}</button>
 	</div>
@@ -99,6 +121,26 @@
 						</span>
 					</span>
 				</td>
+			</tr>
+			<tr ng-repeat="prop in element.prop_keys">
+				<td>
+					<span class="control-group">
+						<span class="controls">
+							<select ng-change="changePropertyName()" ng-model="prop.name" ng-options="prop for prop in props"></select>
+						</span>
+					</span>
+				</td>
+				<td>
+					<span class="control-group" ng-class="{'error': error[property]}">
+						<span class="controls">
+							<input type="text" ng-model="prop.value" />
+							<span class="help-inline">{{error[property]}}</span>
+						</span>
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2"><button ng-click="appendProperty()" class="btn"><i class="icon-plus"></i> Add property</button></td>
 			</tr>
 		</table>
 		<br/>

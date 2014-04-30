@@ -753,6 +753,7 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 				});
 
 				$scope.new.props = JSON.stringify(propsObject);
+				
 				promise = inventoryFactory.saveItem($scope.new);
 			}
 			
@@ -1407,17 +1408,21 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 /*
  * Show details in the right pane
  */
-app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $window, InstallRelInfo, InstallRel, installRelFactory, EntityError, installFactory){
+app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $http, $window, InstallRelInfo, InstallRel, installRelFactory, installRelTypeFactory, EntityError, installFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
 	$scope.new = new InstallRel();
+	$scope.new.prop_keys = [];
 	$scope.error = {};
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = InstallRelInfo;
 	$scope.installs = [];
 	$scope.parentDisabled = false;
+
+	$scope.types = [];
+	$scope.props = [];
 
 	// Get install
 	installFactory.retrieveItems({'name': '*', 'all_install': 'True'}).then(function(result) {
@@ -1428,6 +1433,29 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 
 		l($scope.isntalls);
 	});
+
+	installRelTypeFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item) {
+			$scope.props.push(item.name);
+		});
+	});
+
+	// Append new property
+	$scope.appendProperty = function() {
+
+		if($routeParams.action === "save"){
+			$scope.new.prop_keys.push({'name': '', 'value': ''});
+		
+		} else {
+			$scope.element.prop_keys.push({'name': '', 'value': ''});
+		}
+	}
+
+	// Property name dropdown has changed
+	$scope.changePropertyName = function() {
+		l($scope.props);
+	}
 
 	// Get install rel type from the factory if updating
 	if($routeParams.action != "save") {
@@ -1454,6 +1482,21 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
+
+	$scope.deleteItem = function(localParent, localChild) {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_install_rel.html',
+			controller: 'deleteInstallRelCtrl',
+			resolve: {
+				parent: function() {
+					return localParent;
+				},
+				child: function() {
+					return localChild;
+				}
+			}
+		});
+	}
 	
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
@@ -1471,9 +1514,23 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 			var promise;
 			
 			if(action === "update") {
+
+				$.each($scope.element.prop_keys, function(i, prop) {
+					propsObject[prop.name] = prop.value;
+				});
+
+				$scope.element.props = JSON.stringify(propsObject);
+
 				promise = installRelFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
+
+				$.each($scope.new.prop_keys, function(i, prop) {
+					propsObject[prop.name] = prop.value;
+				});
+
+				$scope.new.props = JSON.stringify(propsObject);
+
 				promise = installRelFactory.saveItem($scope.new);
 			}
 			
@@ -1491,6 +1548,52 @@ app.controller('showInstallRelCtrl', function($scope, $routeParams, $http, $wind
 			});
 		}
 	}
+});
+
+/*
+ * Delete install rel
+ */
+app.controller('deleteInstallRelCtrl', function($scope, $routeParams, $modalInstance, installRelFactory, $window, parent, child) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.message = "This relationship and all its children will be deleted. Are you sure you want to continue?";
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		installRelFactory.deleteItem({'parent_install': parent, 'child_install': child}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Install rel successfully deleted!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		var newLocation = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/list";
+		$window.location = newLocation;
+		$modalInstance.dismiss('cancel');
+	};
 });
 
 /*

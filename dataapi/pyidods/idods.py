@@ -3681,6 +3681,42 @@ class idods(object):
             self.logger.info('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def deleteInstallRelProperty(self, install_rel_id):
+        '''
+        Delete install rel property
+        
+        :param install_rel_id: Id in the install rel table
+        :type install_rel_id: int
+            
+        :returns: True if everything was ok
+            
+        :raises:
+            ValueError, MySQLError
+        '''
+
+        # Generate SQL
+        sql = "DELETE FROM install_rel_prop WHERE install_rel_id = %s"
+        vals = [install_rel_id]
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when deleting install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
         '''
         Save install relationship in the database.
@@ -3850,10 +3886,102 @@ class idods(object):
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
                 
+                installRel = self.retrieveInstallRel(None, parent_install, child_install)
+                
+                if len(installRel) != 1:
+                    raise ValueError("There should be one install rel with parent name (%s) and child name (%s) in the database!" % (parent_install, child_install))
+                
+                installRelKeys = installRel.keys()
+                relObj = installRel[installRelKeys[0]]
+                
                 # Save each property
                 for key in props:
                     value = props[key]
-                    self.updateInstallRelProperty(parent_install, child_install, key, value=value)
+                    
+                    if key in relObj['prop_keys']:
+                        
+                        # Update property
+                        self.updateInstallRelProperty(parent_install, child_install, key, value=value)
+                        
+                    else:
+                        # Save new property
+                        self.saveInstallRelProperty(relObj['id'], key, value)
+                
+            return True
+           
+        except Exception as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def deleteInstallRel(self, parent_install, child_install):
+        '''
+        Delete install relationships down the tree. Also delete all the properties of the relationships being deleted.
+        
+        :param parent_install: name of the parent install
+        :type parent_install: string
+        
+        :param child_install: name of the child install
+        :type child_install: string
+        '''
+        
+        # Check for existing install rel
+        existingInstallRel = self.retrieveInstallRel(None, parent_install, child_install)
+        
+        if len(existingInstallRel) == 0:
+            raise ValueError("Install rel with parent id (%s) and child id (%s) does not exist in the database!" % (parent_install, child_install))
+        
+        relKeys = existingInstallRel.keys()
+        relObject = existingInstallRel[relKeys[0]]
+
+        # Find children
+        childrenRel = self.retrieveInstallRel(None, child_install, None)
+        
+        for rel in childrenRel:
+            child = childrenRel[rel]
+            print child
+            self.deleteInstallRel(child['parentname'], child['childname'])
+        
+        # Delete properties
+        self.deleteInstallRelProperty(relObject['id'])
+        
+        # Delete install rel
+        self.deleteInstallRelRaw(relObject['id'])
+
+
+    def deleteInstallRelRaw(self, install_rel_id):
+        '''
+        Delete install relationship.
+        
+        :param parent_install: name of the parent install
+        :type parent_install: string
+        
+        :param child_install: name of the child install
+        :type child_install: string
+        
+        :returns:
+            True if everything is ok
+            
+        :raises:
+            ValueError, MySQLError
+        '''
+    
+        # Generate SQL
+        sql = "DELETE FROM install_rel WHERE install_rel_id = %s"
+        vals = [install_rel_id]
+       
+        try:
+            # Insert entity
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
                 
             return True
            
@@ -3863,8 +3991,8 @@ class idods(object):
             if self.transaction == None:
                 self.conn.rollback()
             
-            self.logger.info('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when deleting install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInstallRel(self, install_rel_id = None, parent_install = None, child_install = None, description = None, order = None, date = None, expected_property = None):
         '''
@@ -3895,7 +4023,8 @@ class idods(object):
                     'date':         #string,
                     'prop1key':     #string,
                     ...
-                    'propNkey':     #string
+                    'propNkey':     #string,
+                    'prop_keys':    ['prop1key', 'propNkey']
                 }
             }
             
@@ -4007,7 +4136,8 @@ class idods(object):
                     'childname': r[7],
                     'description': r[3],
                     'order': r[4],
-                    'date': r[5].strftime("%Y-%m-%d %H:%M:%S")
+                    'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
+                    'prop_keys': []
                 }
                 
                 # Get the rest of the properties
@@ -4017,6 +4147,7 @@ class idods(object):
                 for prop in properties:
                     obj = properties[prop]
                     resdict[r[0]][obj['typename']] = obj['value']
+                    resdict[r[0]]['prop_keys'].append(obj['typename'])
                     
             return resdict
         

@@ -286,6 +286,14 @@ def updateInstallRelWS(request):
     return _updateData(request, idodsi.updateInstallRel, ['parent_install', 'child_install', 'description', 'order', 'props'])
 
 '''
+Delete install rel
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteInstallRelWS(request):
+    return _updateData(request, idodsi.deleteInstallRel, ['parent_install', 'child_install'])
+
+'''
 Retrieve install rel property type
 '''
 @require_http_methods(["GET"])

@@ -416,6 +416,12 @@ html, body {
 	top: 15px;
 }
 
+.item_delete {
+	position: absolute;
+	right: 204px;
+	top: 15px;
+}
+
 ul.auto-complete-list {
 	z-index: 1500;
 }

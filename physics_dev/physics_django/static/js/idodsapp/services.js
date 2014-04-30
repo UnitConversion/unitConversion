@@ -649,6 +649,30 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		return updateItem($q, $http, "updateinstallrel", this.entity);
 	}
 
+	// Delete install rel
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deleteinstallrel/";
+		l(this.entity);
+		var params = prepareUrlParameters(["parent_install", "child_install"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
 	return factory;
 });
 

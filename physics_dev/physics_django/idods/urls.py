@@ -6,7 +6,7 @@ from physics_django.idods.views import (retrieveCompntTypeWS, saveCompntTypeWS, 
 from physics_django.idods.views import (retrieveInventoryWS, saveInventoryWS, updateInventoryWS)
 from physics_django.idods.views import (retrieveInventoryPropTmpltWS, saveInventoryPropTmpltWS, updateInventoryPropTmpltWS)
 from physics_django.idods.views import (retrieveInstallWS, saveInstallWS, updateInstallWS)
-from physics_django.idods.views import (retrieveInstallRelWS, saveInstallRelWS, updateInstallRelWS)
+from physics_django.idods.views import (retrieveInstallRelWS, saveInstallRelWS, updateInstallRelWS, deleteInstallRelWS)
 from physics_django.idods.views import (retrieveInstallRelPropTypeWS, saveInstallRelPropTypeWS, updateInstallRelPropTypeWS)
 from physics_django.idods.views import (retrieveInventoryToInstallWS, saveInventoryToInstallWS, updateInventoryToInstallWS)
 from physics_django.idods.views import (retrieveDataMethodWS, saveDataMethodWS, updateDataMethodWS)
@@ -52,10 +52,11 @@ urlpatterns = patterns(
     url(r'^id/device/saveinstall/$', saveInstallWS),
     url(r'^id/device/updateinstall/$', updateInstallWS),
 
-    # Retrieve, save and update install rel
+    # Retrieve, save, update and delete install rel
     url(r'^id/device/installrel/$', retrieveInstallRelWS),
     url(r'^id/device/saveinstallrel/$', saveInstallRelWS),
     url(r'^id/device/updateinstallrel/$', updateInstallRelWS),
+    url(r'^id/device/deleteinstallrel/$', deleteInstallRelWS),
 
     # Retrieve, save and update install rel property type
     url(r'^id/device/installrelproptype/$', retrieveInstallRelPropTypeWS),
