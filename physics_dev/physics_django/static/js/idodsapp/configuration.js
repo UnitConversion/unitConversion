@@ -36,3 +36,9 @@ var dataTypes = [
 	{name:"beamline", value:"Beamline"},
 	{name:"installation", value:"Installation"}
 ];
+
+// Define active/obsolete
+var statusArr = [
+	{name:1, value:"Active"},
+	{name:0, value:"Obsolete"}
+];

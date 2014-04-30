@@ -2062,6 +2062,7 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	$scope.info = OfflineDataInfo;
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
+	$scope.statusArr = statusArr;
 	
 	$scope.inventories = [];
 	$scope.methods = [];
@@ -2156,7 +2157,6 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		});
 	}
 });
-
 
 /*
  * Controller for the left/search pane
@@ -2265,6 +2265,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $loc
 	$scope.info = OfflineDataInstallInfo;
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
+	$scope.statusArr = statusArr;
 	
 	$scope.inventories = [];
 	$scope.methods = [];
@@ -2476,6 +2477,7 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 	$scope.installs = [];
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
+	$scope.statusArr = statusArr;
 
 	var pathParts = $location.path().split('/');
 	var type = pathParts[1];

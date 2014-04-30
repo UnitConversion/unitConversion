@@ -26,7 +26,9 @@
 
 				<td ng-if="property == 'url'"><button ng-click="download(element[property])" class="btn btn-info">Download file</button></td>
 				
-				<td ng-if="property != 'url'">{{element[property]}}</td>
+				<td ng-if="property != 'url' && property != 'status'">{{element[property]}}</td>
+
+				<td><select ng-disabled="true" ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></td>
 			</tr>
 		</table>
 	</div>
@@ -56,7 +58,9 @@
 								
 								<select ng-if="property == 'install_name'" ng-model="new[property]" ng-options="inst for inst in installs"></select>
 
-								<input ng-if="property != 'install_name'" type="text" ng-model="new[property]" />
+								<input ng-if="property != 'install_name' && property != 'status'" type="text" ng-model="new[property]" />
+
+								<select ng-if="property == 'status'" ng-model="new[property]" ng-options="s.name as s.value for s in statusArr"></select>
 								
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
@@ -126,7 +130,9 @@
 
 								<select ng-if="property == 'install_name'" ng-model="element[property]" ng-options="inst for inst in installs"></select>
 								
-								<input ng-if="property != 'install_name'" type="text" ng-model="element[property]" />
+								<input ng-if="property != 'status' && property != 'install_name'" type="text" ng-model="element[property]" />
+
+								<select ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select>
 
 								<span class="help-inline">{{error[property]}}</span>
 							</span>

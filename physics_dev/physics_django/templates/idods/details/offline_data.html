@@ -24,11 +24,13 @@
 			<tr ng-repeat="property in element.retrieve">
 				<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
 
-				<td ng-if="property != 'script_name' && property != 'data_file_name'">{{element[property]}}</td>
+				<td ng-if="property != 'script_name' && property != 'data_file_name' && property != 'status'">{{element[property]}}</td>
 				
 				<td ng-if="property == 'script_name'"><span ng-if="!element.script">Script was not saved!</span><button ng-if="element.script" class="btn btn-info" ng-click="downloadScript(element)">Download script file</button></td>
 
 				<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(element)" class="btn btn-info">Download raw file</button></td>
+
+				<td><select ng-disabled="true" ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></td>
 			</tr>
 		</table>
 	</div>
@@ -62,7 +64,9 @@
 
 								<textarea rows="8" ng-if="property == 'script'" ng-model="new[property]"></textarea>
 
-								<input ng-if="property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="new[property]" />
+								<input ng-if="property != 'status' && property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="new[property]" />
+
+								<select ng-if="property == 'status'" ng-model="new[property]" ng-options="s.name as s.value for s in statusArr"></select>
 								
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
@@ -123,7 +127,9 @@
 
 								<textarea rows="8" ng-if="property == 'script'" ng-model="element[property]"></textarea>
 
-								<input ng-if="property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="element[property]" />
+								<input ng-if="property != 'status' && property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="element[property]" />
+
+								<select ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select>
 
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
