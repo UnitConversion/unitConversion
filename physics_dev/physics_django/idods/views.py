@@ -340,6 +340,14 @@ def updateInventoryToInstallWS(request):
     return _updateData(request, idodsi.updateInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inv_name'])
 
 '''
+Delete inventory to install
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteInventoryToInstallWS(request):
+    return _updateData(request, idodsi.deleteInventoryToInstall, ['inventory_to_install_id'])
+
+'''
 Retrieve data method
 '''
 @require_http_methods(["GET"])

@@ -565,6 +565,30 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 		return updateItem($q, $http, "updateinventorytoinstall", this.entity);
 	}
 
+	// Delete inventory to install
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deleteinventorytoinstall/";
+		l(this.entity);
+		var params = prepareUrlParameters(["inventory_to_install_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
 	return factory;
 });
 

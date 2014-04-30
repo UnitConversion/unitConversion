@@ -649,6 +649,7 @@ app.value('InventoryToInstallInfo', {
 	'save_button': 'Save Inventory to Install',
 	'retrieve_title': 'Inventory to Install',
 	'retrieve_update_button': 'Update Inventory to Install',
+	'retrieve_delete_button': 'Delete Inventory to Install',
 	'update_title': 'Update Inventory to Install',
 	'update_button': 'Update Inventory to Install',
 	'search_button': 'Add Inventory to Install',

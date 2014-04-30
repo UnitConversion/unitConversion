@@ -2532,6 +2532,41 @@ class idods(object):
             self.logger.info('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def deleteInventoryToInstall(self, inventory_to_install_id):
+        '''
+        Delete inventory to install map
+
+        :param inventory_to_install_id: id of the map
+        :type inventory_to_install_id: int
+
+        :return: True if everything was ok
+
+        :Raises: ValueError, MySQLError
+        '''
+        
+        # Generate SQL
+        sql = "DELETE FROM inventory__install WHERE inventory__install_id = %s"
+        vals = [inventory_to_install_id]
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+            
+            return True
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when deleting inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+
     def retrieveComponentTypePropertyType(self, name):
         '''
         Retrieve component type property type by its name

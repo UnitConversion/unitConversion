@@ -8,7 +8,7 @@ from physics_django.idods.views import (retrieveInventoryPropTmpltWS, saveInvent
 from physics_django.idods.views import (retrieveInstallWS, saveInstallWS, updateInstallWS)
 from physics_django.idods.views import (retrieveInstallRelWS, saveInstallRelWS, updateInstallRelWS, deleteInstallRelWS)
 from physics_django.idods.views import (retrieveInstallRelPropTypeWS, saveInstallRelPropTypeWS, updateInstallRelPropTypeWS)
-from physics_django.idods.views import (retrieveInventoryToInstallWS, saveInventoryToInstallWS, updateInventoryToInstallWS)
+from physics_django.idods.views import (retrieveInventoryToInstallWS, saveInventoryToInstallWS, updateInventoryToInstallWS, deleteInventoryToInstallWS)
 from physics_django.idods.views import (retrieveDataMethodWS, saveDataMethodWS, updateDataMethodWS)
 from physics_django.idods.views import (retrieveRawDataWS, saveRawDataWS)
 from physics_django.idods.views import (retrieveOfflineDataWS, retrieveOfflineDataInstallWS, saveOfflineDataWS, updateOfflineDataWS)
@@ -67,6 +67,7 @@ urlpatterns = patterns(
     url(r'^id/device/inventorytoinstall/$', retrieveInventoryToInstallWS),
     url(r'^id/device/saveinventorytoinstall/$', saveInventoryToInstallWS),
     url(r'^id/device/updateinventorytoinstall/$', updateInventoryToInstallWS),
+    url(r'^id/device/deleteinventorytoinstall/$', deleteInventoryToInstallWS),
     
     # Retrieve, save and update data method
     url(r'^id/device/datamethod/$', retrieveDataMethodWS),

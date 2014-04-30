@@ -416,10 +416,8 @@ html, body {
 	top: 15px;
 }
 
-.item_delete {
-	position: absolute;
-	right: 204px;
-	top: 15px;
+.item_spacer {
+	margin-left: 5px;
 }
 
 ul.auto-complete-list {

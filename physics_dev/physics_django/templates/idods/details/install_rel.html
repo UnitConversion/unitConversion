@@ -10,8 +10,10 @@
 		{% endverbatim %}
 			{% if user.is_authenticated %}
 			{% verbatim %}
-			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
-			<button ng-click="deleteItem(element.parent_install, element.child_install)" class="item_delete btn btn-danger"><i class="icon-edit icon-white"></i> {{info.retrieve_delete_button}}</button>
+			<button ng-click="updateItem()" class="item_spacer pull-right btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
+			<button ng-click="deleteItem(element.parent_install, element.child_install)" class="pull-right btn btn-danger"><i class="icon-remove icon-white"></i> {{info.retrieve_delete_button}}</button>
+			<br/>
+			<br/>
 			{% endverbatim %}
 			{% endif %}
 		{% verbatim %}

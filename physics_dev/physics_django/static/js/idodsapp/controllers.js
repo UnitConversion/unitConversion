@@ -1190,7 +1190,7 @@ app.controller('listInventoryToInstallCtrl', function($scope, $routeParams, $htt
 /*
  * Show details in the right pane
  */
-app.controller('showInventoryToInstallCtrl', function($scope, $routeParams, $http, $window, InventoryToInstallInfo, InventoryToInstall, inventoryToInstallFactory, installFactory, inventoryFactory, EntityError){
+app.controller('showInventoryToInstallCtrl', function($scope, $modal, $routeParams, $http, $window, InventoryToInstallInfo, InventoryToInstall, inventoryToInstallFactory, installFactory, inventoryFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1233,6 +1233,18 @@ app.controller('showInventoryToInstallCtrl', function($scope, $routeParams, $htt
 		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
+
+	$scope.deleteItem = function(localI2iId) {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_inventory_to_install.html',
+			controller: 'deleteInventoryToInstallCtrl',
+			resolve: {
+				i2iId: function() {
+					return localI2iId;
+				}
+			}
+		});
+	}
 	
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
@@ -1271,6 +1283,55 @@ app.controller('showInventoryToInstallCtrl', function($scope, $routeParams, $htt
 			});
 		}
 	}
+});
+
+/*
+ * Delete inventory to install rel
+ */
+app.controller('deleteInventoryToInstallCtrl', function($scope, $routeParams, $modalInstance, inventoryToInstallFactory, $window, i2iId) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.message = "Device will be uninstalled. Are you sure you want to continue?";
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		inventoryToInstallFactory.deleteItem({'inventory_to_install_id': i2iId}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Device successfully uninstalled!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$routeParams.search = new Date().getTime();
+		$routeParams.inv_name = "*";
+		$routeParams.install_name = "*";
+		var newLocation = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/list";
+		$window.location = newLocation;
+		$modalInstance.dismiss('cancel');
+	};
 });
 
 /*
@@ -1590,6 +1651,9 @@ app.controller('deleteInstallRelCtrl', function($scope, $routeParams, $modalInst
 	};
 
 	$scope.finish = function() {
+		$routeParams.search = new Date().getTime();
+		$routeParams.description = "*";
+		$routeParams.parent_install = "";
 		var newLocation = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/list";
 		$window.location = newLocation;
 		$modalInstance.dismiss('cancel');
