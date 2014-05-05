@@ -451,6 +451,14 @@ def updateOfflineDataWS(request):
     return _updateData(request, idodsi.updateOfflineData, ['offline_data_id', 'inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
+Delete offline data
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteOfflineDataWS(request):
+    return _updateData(request, idodsi.deleteOfflineData, ['offline_data_id'])
+
+'''
 Upload a file
 '''
 @require_http_methods(["POST"])
@@ -509,6 +517,14 @@ def updateOnlineDataWS(request):
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
     return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status'])
+
+'''
+Delete online data
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteOnlineDataWS(request):
+    return _updateData(request, idodsi.deleteOnlineData, ['online_data_id'])
 
 '''
 Install idods

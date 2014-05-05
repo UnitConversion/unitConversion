@@ -1374,6 +1374,41 @@ class idods(object):
             self.logger.info('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating raw data:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def deleteRawData(self, raw_data_id):
+        '''
+        Delete raw data
+
+        :param raw_data_id: raw data id
+        :type raw_data_id: int
+
+        :return: True if everything was ok
+
+        :Raises: ValueError, MySQLError
+        '''
+        
+        # Generate SQL
+        sql = "DELETE FROM id_raw_data WHERE id_raw_data_id = %s"
+        vals = [raw_data_id]
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+            
+            return True
+            
+        except Exception as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when deleting raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+
     def saveOfflineData(self, **kws):
         '''
         save insertion device offline data using any of the acceptable key words:
@@ -2073,6 +2108,53 @@ class idods(object):
             self.logger.info('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
+    def deleteOfflineData(self, offline_data_id):
+        '''
+        Delete offline data
+
+        :param offline_data_id: offline data id
+        :type offline_data_id: int
+
+        :return: True if everything was ok
+
+        :Raises: ValueError, MySQLError
+        '''
+        
+        # Retrieve offline data
+        offlineData = self.retrieveOfflineData(offlineid = offline_data_id)
+        
+        if len(offlineData) == 0:
+            raise ValueError("Offline data doesn't exist in the database!")
+        
+        offlineDataKey = offlineData.keys()[0]
+        offlineDataObj = offlineData[offlineDataKey]
+        
+        # Generate SQL
+        sql = "DELETE FROM id_offline_data WHERE id_offline_data_id = %s"
+        vals = [offline_data_id]
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+            
+            # Delete raw data
+            self.deleteRawData(offlineDataObj['data_id'])
+            
+            return True
+            
+        except Exception as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when deleting offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting offline data:\n%s (%d)' %(e.args[1], e.args[0]))
+
     def saveDataMethod(self, name, description=None):
         '''Save a method with its description which is used when producing data set for an insertion device.
 
@@ -2543,6 +2625,20 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
+        
+        # Retrieve inventory to install
+        i2i = self.retrieveInventoryToInstall(inventory_to_install_id, None, None)
+        i2iKeys = i2i.keys()
+        i2iObj = i2i[i2iKeys[0]]
+        
+        # Retrieve online data
+        onlineData = self.retrieveOnlineData(install_name=i2iObj['installname'])
+        
+        for key in onlineData:
+            onlineDataObj = onlineData[key]
+            
+            # Delete online data
+            self.deleteOnlineData(onlineDataObj['id'])
         
         # Generate SQL
         sql = "DELETE FROM inventory__install WHERE inventory__install_id = %s"
@@ -4901,6 +4997,63 @@ class idods(object):
 
             self.logger.info('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating online data:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def deleteOnlineData(self, online_data_id):
+        '''
+        Delete online data
+
+        :param online_data_id: online data id
+        :type online_data_id: int
+
+        :return: True if everything was ok
+
+        :Raises: ValueError, MySQLError
+        '''
+        
+        # Retrieve offline data
+        onlineData = self.retrieveOnlineData(onlineid = online_data_id)
+        
+        if len(onlineData) == 0:
+            raise ValueError("Online data doesn't exist in the database!")
+        
+        onlineDataKey = onlineData.keys()[0]
+        onlineDataObj = onlineData[onlineDataKey]
+        
+        if onlineDataObj['url'] == '':
+            raise ValueError("Online data url is broken!")
+        
+        # Generate path and remove file
+        ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+        savePath = os.path.split(ROOT_PATH)
+        savePath = os.path.split(savePath[0])
+        savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
+        
+        filePath = os.path.join(savePath, onlineDataObj['url'])
+        print filePath, onlineDataObj
+        os.remove(filePath)
+        
+        # Generate SQL
+        sql = "DELETE FROM id_online_data WHERE id_online_data_id = %s"
+        vals = [online_data_id]
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+            
+            return True
+            
+        except Exception as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when deleting online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveInstallOfflineData(self, install_name, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:

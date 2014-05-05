@@ -897,6 +897,30 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 		return updateItem($q, $http, "updateofflinedata", this.entity);
 	}
 
+	// Delete offline data
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deleteofflinedata/";
+		l(this.entity);
+		var params = prepareUrlParameters(["offline_data_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	}
+
 	return factory;
 });
 
@@ -998,6 +1022,30 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 		}
 
 		return updateItem($q, $http, "updateonlinedata", this.entity);
+	}
+
+	// Delete online data
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deleteonlinedata/";
+		l(this.entity);
+		var params = prepareUrlParameters(["online_data_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+		
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
 	}
 
 	return factory;

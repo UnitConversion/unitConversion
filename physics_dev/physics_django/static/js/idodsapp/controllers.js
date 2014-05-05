@@ -126,6 +126,7 @@ app.controller('listVendorCtrl', function($scope, $routeParams, $http, $window, 
 
 			$scope.vendors.push(newItem);
 		});
+		$scope.vendors.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -276,6 +277,7 @@ app.controller('listCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 
 			$scope.types.push(newItem);
 		});
+		$scope.types.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -469,6 +471,7 @@ app.controller('listCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 
 			$scope.types.push(newItem);
 		});
+		$scope.types.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -619,6 +622,7 @@ app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $windo
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -829,6 +833,7 @@ app.controller('listInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -1294,7 +1299,7 @@ app.controller('deleteInventoryToInstallCtrl', function($scope, $routeParams, $m
 	$scope.showCancelButton = true;
 	$scope.showFinishButton = false;
 	var types = [];
-	$scope.message = "Device will be uninstalled. Are you sure you want to continue?";
+	$scope.message = "Device will be uninstalled and all its Online data will be deleted. Are you sure you want to continue?";
 
 	$scope.closeAlert = function() {
 		$scope.alert.show = false;
@@ -1716,6 +1721,7 @@ app.controller('listInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -1867,6 +1873,7 @@ app.controller('listDataMethodCtrl', function($scope, $routeParams, $http, $wind
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -2019,6 +2026,7 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -2051,7 +2059,7 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 /*
  * Show details in the right pane
  */
-app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
+app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2131,6 +2139,22 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
+
+	// Delete offline data
+	$scope.deleteItem = function(localOfflineId) {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_data.html',
+			controller: 'deleteOfflineDataCtrl',
+			resolve: {
+				offlineId: function() {
+					return localOfflineId;
+				},
+				url: function() {
+					return "offline_data";
+				}
+			}
+		});
+	}
 	
 	$scope.saveItem = function(action) {
 
@@ -2156,6 +2180,56 @@ app.controller('showOfflineDataCtrl', function($scope, $routeParams, $http, $win
 			download(element.data_file_name, result[element.data_id]['data']);
 		});
 	}
+});
+
+/*
+ * Delete offline data
+ */
+app.controller('deleteOfflineDataCtrl', function($scope, $routeParams, $modalInstance, offlineDataFactory, $window, offlineId, url) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.title = "Delete offline data";
+	$scope.message = "Offline data will be deleted. Are you sure you want to continue?";
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		offlineDataFactory.deleteItem({'offline_data_id': offlineId}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Offline data successfully deleted!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$routeParams.search = new Date().getTime();
+		$routeParams.description = "*";
+		$routeParams.parent_install = "";
+		var newLocation = createRouteUrl($routeParams, url, ["inventory_name", "description"]) + "/list";
+		$window.location = newLocation;
+		$modalInstance.dismiss('cancel');
+	};
 });
 
 /*
@@ -2222,6 +2296,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -2254,7 +2329,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 /*
  * Show details in the right pane
  */
-app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $location, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
+app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routeParams, $location, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2342,6 +2417,22 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $loc
 		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
+
+	// Delete offline data
+	$scope.deleteItem = function(localOfflineId) {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_data.html',
+			controller: 'deleteOfflineDataInstallCtrl',
+			resolve: {
+				offlineId: function() {
+					return localOfflineId;
+				},
+				url: function() {
+					return type;
+				}
+			}
+		});
+	}
 	
 	$scope.saveItem = function(action) {
 
@@ -2367,6 +2458,56 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $routeParams, $loc
 			download(element.data_file_name, result[element.data_id]['data']);
 		});
 	}
+});
+
+/*
+ * Delete offline data
+ */
+app.controller('deleteOfflineDataInstallCtrl', function($scope, $routeParams, $modalInstance, offlineDataFactory, $window, offlineId, url) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.title = "Delete offline data";
+	$scope.message = "Offline data will be deleted. Are you sure you want to continue?";
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		offlineDataFactory.deleteItem({'offline_data_id': offlineId}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Offline data successfully deleted!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$routeParams.search = new Date().getTime();
+		$routeParams.description = "*";
+		$routeParams.parent_install = "";
+		var newLocation = createRouteUrl($routeParams, url, ["install_name", "description"]) + "/list";
+		$window.location = newLocation;
+		$modalInstance.dismiss('cancel');
+	};
 });
 
 /*
@@ -2433,6 +2574,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 
 			$scope.items.push(newItem);
 		});
+		$scope.items.reverse();
 	});
 	
 	// Show add form in the right pane
@@ -2465,7 +2607,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 /*
  * Show details in the right pane
  */
-app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $window, $location, OnlineDataInfo, OnlineData, onlineDataFactory, EntityError, installFactory){
+app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $http, $window, $location, OnlineDataInfo, OnlineData, onlineDataFactory, EntityError, installFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2548,6 +2690,21 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
+
+	$scope.deleteItem = function(localOnlineId) {
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_data.html',
+			controller: 'deleteOnlineDataCtrl',
+			resolve: {
+				onlineId: function() {
+					return localOnlineId;
+				},
+				url: function() {
+					return type;
+				}
+			}
+		});
+	}
 	
 	$scope.saveItem = function(action) {
 
@@ -2578,6 +2735,56 @@ app.controller('showOnlineDataCtrl', function($scope, $routeParams, $http, $wind
 			}
 		}
 	}
+});
+
+/*
+ * Delete online data
+ */
+app.controller('deleteOnlineDataCtrl', function($scope, $routeParams, $modalInstance, onlineDataFactory, $window, onlineId, url) {
+	$scope.alert = {};
+	$scope.showYesButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	var types = [];
+	$scope.title = "Delete online data";
+	$scope.message = "Online data will be deleted. Are you sure you want to continue?";
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		onlineDataFactory.deleteItem({'online_data_id': onlineId}).then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Online data successfully deleted!";
+			$scope.showYesButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		$routeParams.search = new Date().getTime();
+		$routeParams.description = "*";
+		$routeParams.parent_install = "";
+		var newLocation = createRouteUrl($routeParams, url, ["install_name", "description"]) + "/list";
+		$window.location = newLocation;
+		$modalInstance.dismiss('cancel');
+	};
 });
 
 /*
