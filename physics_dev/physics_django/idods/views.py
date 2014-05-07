@@ -421,14 +421,14 @@ Retrieve offline data
 '''
 @require_http_methods(["GET"])
 def retrieveOfflineDataWS(request):
-    return _retrieveData(request, idodsi.retrieveOfflineData, ['offlineid', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'method_name', 'inventory_name'])
+    return _retrieveData(request, idodsi.retrieveOfflineData, ['offlineid', 'description', 'date', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'method_name', 'inventory_name'])
 
 '''
 Retrieve offline data (via install)
 '''
 @require_http_methods(["GET"])
 def retrieveOfflineDataInstallWS(request):
-    return _retrieveData(request, idodsi.retrieveInstallOfflineData, ['install_name', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status'])
+    return _retrieveData(request, idodsi.retrieveInstallOfflineData, ['install_name', 'description', 'date', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'method_name'])
 
 '''
 Save offline data

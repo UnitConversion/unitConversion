@@ -13,15 +13,81 @@
 	<div class="">
 		Inventory name:
 		<br />
-		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.inventory_name" name="inventory_name" />
-		<br />
+		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.inventory_name" />
 		<br />
 	</div>
 	<div class="">
 		Description:
 		<br />
-		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.description" name="description" />
+		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.description" />
 		<br />
+	</div>
+	<div class="">
+		Date (from, to) YYYY-MM-DD:
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.date_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.date_to" />
+		<br />
+	</div>
+	<div class="">
+		Gap (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.gap_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.gap_to" />
+		<br />
+	</div>
+	<div class="">
+		Phase 1 (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase1_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase1_to" />
+		<br />
+	</div>
+	<div class="">
+		Phase 2 (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase2_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase2_to" />
+		<br />
+	</div>
+	<div class="">
+		Phase 3 (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase3_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase3_to" />
+		<br />
+	</div>
+	<div class="">
+		Phase 4 (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase4_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phase4_to" />
+		<br />
+	</div>
+	<div class="">
+		Phase mode (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phasemode_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.phasemode_to" />
+		<br />
+	</div>
+	<div class="">
+		Polar mode (from, to):
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.polarmode_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.polarmode_to" />
+		<br />
+	</div>
+	<div class="">
+		Data status:
+		<br />
+		<select ng-model="search.status" ng-options="s.name as s.value for s in statusArr2"></select>
+		<br />
+	</div>
+	<div class="">
+		Method name:
+		<br />
+		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.method_name" />
 		<br />
 	</div>
 	<div class="">

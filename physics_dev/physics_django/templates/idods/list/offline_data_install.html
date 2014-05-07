@@ -21,6 +21,10 @@
 			<td><b>Inv name: </b></td>
 			<td class="item_list"><span class="text-info">{{item.inventory_name}}</span></td>
 		</tr>
+		<tr ng-if="item.install_name">
+			<td><b>Inst name: </b></td>
+			<td class="item_list"><span class="text-info">{{item.install_name}}</span></td>
+		</tr>
 		<tr ng-if="item.description">
 			<td><b>Desc: </b></td>
 			<td class="item_list"><span class="text-info">{{item.description}}</span></td>

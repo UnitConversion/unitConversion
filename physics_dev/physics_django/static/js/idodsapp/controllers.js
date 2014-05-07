@@ -1031,7 +1031,7 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Show details in the right pane
  */
-app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, installFactory, cmpntTypeFactory, EntityError){
+app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, cmpntTypeFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1059,7 +1059,31 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 			l($scope.element);
+
+			if ($routeParams.action == "retrieve") {
+				$scope.map = {};
+
+				inventoryToInstallFactory.retrieveItems({'install_name': $scope.element['name'], 'inv_name': '*'}).then(function(result) {
+					var keys = Object.keys(result);
+
+					if(keys.length > 0) {
+						$scope.map = result[keys[0]];
+					}
+					l($scope.map);
+				});
+			}
 		});
+	}
+
+	$scope.goToMap = function(inv, install, id) {
+		var newLocation = createRouteUrl({'inv_name': inv, 'install_name': install, 'search': new Date().getTime()}, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + id + "/action/retrieve";
+		$window.location = newLocation;
+	}
+
+	$scope.goToInventory = function(id) {
+
+		var location = createRouteUrl({'name': '*', 'search': new Date().getTime()}, "inventory", ["name"]) + "/id/" + id + "/action/retrieve";
+		$window.location = location;
 	}
 	
 	// Show update form in the right pane
@@ -1977,6 +2001,8 @@ app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[10];
+	$scope.statusArr2 = statusArr;
+	$scope.statusArr2.push({name:"", value:"-"});
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1988,7 +2014,17 @@ app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	// Item search button click
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
-		var newLocation = createRouteUrl(search, "offline_data", ["inventory_name", "description"]) + "/list";
+		
+		if(search.date_from && search.date_to) {search.date='["' + search.date_from + '","' + search.date_to + '"]';} else {search.date = undefined;}
+		if(search.gap_from && search.gap_to) {search.gap="[" + search.gap_from + "," + search.gap_to + "]";} else {search.gap = undefined;}
+		if(search.phase1_from && search.phase1_to) {search.phase1="[" + search.phase1_from + "," + search.phase1_to + "]";} else {search.phase1 = undefined;}
+		if(search.phase2_from && search.phase2_to) {search.phase2="[" + search.phase2_from + "," + search.phase2_to + "]";} else {search.phase2 = undefined;}
+		if(search.phase3_from && search.phase3_to) {search.phase3="[" + search.phase3_from + "," + search.phase3_to + "]";} else {search.phase3 = undefined;}
+		if(search.phase4_from && search.phase4_to) {search.phase4="[" + search.phase4_from + "," + search.phase4_to + "]";} else {search.phase4 = undefined;}
+		if(search.phasemode_from && search.phasemode_to) {search.phasemode="[" + search.phasemode_from + "," + search.phasemode_to + "]";} else {search.phasemode = undefined;}
+		if(search.polarmode_from && search.polarmode_to) {search.polarmode="[" + search.polarmode_from + "," + search.polarmode_to + "]";} else {search.polarmode = undefined;}
+		
+		var newLocation = createRouteUrl(search, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -2031,7 +2067,7 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -2051,7 +2087,7 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		$routeParams.inventory_name = item.inventory_name;
 		$routeParams.description = item.description;
 
-		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -2059,7 +2095,7 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 /*
  * Show details in the right pane
  */
-app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $http, $window, OfflineDataInfo, OfflineData, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
+app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $http, $window, OfflineDataInfo, OfflineData, Inventory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2071,8 +2107,10 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
-	
+	$scope.inventory = {};
+
 	$scope.inventories = [];
+	$scope.inventoriesMap = {};
 	$scope.methods = [];
 
 	// Retrieve all Inventories
@@ -2080,6 +2118,7 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 
 		$.each(result, function(i, item){
 			$scope.inventories.push(item.name);
+			$scope.inventoriesMap[item.name] = new Inventory(item);
 		});
 	});
 
@@ -2131,12 +2170,16 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
+
+			if($routeParams.action == "retrieve") {
+				$scope.inventory = $scope.inventoriesMap[$scope.element['inventory_name']];
+			}
 		});
 	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 
@@ -2239,6 +2282,8 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[11];
+	$scope.statusArr2 = statusArr;
+	$scope.statusArr2.push({name:"", value:"-"});
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2250,7 +2295,17 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 	// Item search button click
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
-		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "description"]) + "/list";
+
+		if(search.date_from && search.date_to) {search.date='["' + search.date_from + '","' + search.date_to + '"]';} else {search.date = undefined;}
+		if(search.gap_from && search.gap_to) {search.gap="[" + search.gap_from + "," + search.gap_to + "]";} else {search.gap = undefined;}
+		if(search.phase1_from && search.phase1_to) {search.phase1="[" + search.phase1_from + "," + search.phase1_to + "]";} else {search.phase1 = undefined;}
+		if(search.phase2_from && search.phase2_to) {search.phase2="[" + search.phase2_from + "," + search.phase2_to + "]";} else {search.phase2 = undefined;}
+		if(search.phase3_from && search.phase3_to) {search.phase3="[" + search.phase3_from + "," + search.phase3_to + "]";} else {search.phase3 = undefined;}
+		if(search.phase4_from && search.phase4_to) {search.phase4="[" + search.phase4_from + "," + search.phase4_to + "]";} else {search.phase4 = undefined;}
+		if(search.phasemode_from && search.phasemode_to) {search.phasemode="[" + search.phasemode_from + "," + search.phasemode_to + "]";} else {search.phasemode = undefined;}
+		if(search.polarmode_from && search.polarmode_to) {search.polarmode="[" + search.polarmode_from + "," + search.polarmode_to + "]";} else {search.polarmode = undefined;}
+
+		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -2301,7 +2356,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -2321,7 +2376,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 		$routeParams.install_name = item.install_name;
 		$routeParams.description = item.description;
 
-		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -2329,7 +2384,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 /*
  * Show details in the right pane
  */
-app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routeParams, $location, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
+app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routeParams, $location, $http, $window, OfflineDataInstallInfo, OfflineDataInstall, offlineDataInstallFactory, Inventory, offlineDataFactory, inventoryFactory, dataMethodFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2341,8 +2396,10 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
+	$scope.inventory = {};
 	
 	$scope.inventories = [];
+	$scope.inventoriesMap = {};
 	$scope.methods = [];
 
 	var pathParts = $location.path().split('/');
@@ -2358,6 +2415,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 
 		$.each(result, function(i, item){
 			$scope.inventories.push(item.name);
+			$scope.inventoriesMap[item.name] = new Inventory(item);
 		});
 	});
 
@@ -2409,12 +2467,16 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
+
+			if($routeParams.action == "retrieve") {
+				$scope.inventory = $scope.inventoriesMap[$scope.element['inventory_name']];
+			}
 		});
 	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 
@@ -2517,6 +2579,8 @@ app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[12];
+	$scope.statusArr2 = statusArr;
+	$scope.statusArr2.push({name:"", value:"-"});
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2528,7 +2592,9 @@ app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	// Item search button click
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
-		var newLocation = createRouteUrl(search, "online_data", ["install_name", "description"]) + "/list";
+		if(search.date_from && search.date_to) {search.date='["' + search.date_from + '","' + search.date_to + '"]';} else {search.date = undefined;}
+
+		var newLocation = createRouteUrl(search, "online_data", ["install_name", "description", "date", "status"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -2579,7 +2645,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "status"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -2599,7 +2665,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 		$routeParams.install_name = item.install_name;
 		$routeParams.description = item.description;
 
-		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "status"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -2607,7 +2673,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 /*
  * Show details in the right pane
  */
-app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $http, $window, $location, OnlineDataInfo, OnlineData, onlineDataFactory, EntityError, installFactory){
+app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $http, $window, $location, OnlineDataInfo, Install, OnlineData, onlineDataFactory, EntityError, installFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -2616,10 +2682,13 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = OnlineDataInfo;
-	$scope.installs = [];
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
+	
+	$scope.install = {};
+	$scope.installs = [];
+	$scope.installMap = {};
 
 	var pathParts = $location.path().split('/');
 	var type = pathParts[1];
@@ -2629,6 +2698,15 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 		type += "/" + pathParts[2];
 	}
 
+	// Retrieve all Installs
+	installFactory.retrieveItems({}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.installs.push(item.name);
+			$scope.installMap[item.name] = new Install(item);
+		});
+	});
+
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
 		
@@ -2636,16 +2714,14 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 			$scope.element = result;
 			$scope.element.online_data_id = result.id;
 			l($scope.element);
+
+			if ($routeParams.action == "retrieve") {
+				$scope.install = $scope.installMap[$scope.element['install_name']];
+			}
+
+			l($scope.installMap);
 		});
 	}
-
-	// Retrieve all Installs
-	installFactory.retrieveItems({}).then(function(result) {
-
-		$.each(result, function(i, item){
-			$scope.installs.push(item.name);
-		});
-	});
 
 	$scope.options = {
 		url: serviceurl + "/file/",
@@ -2687,7 +2763,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "status"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 
@@ -2824,7 +2900,17 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
 		search.description = "*";
-		var newLocation = createRouteUrl(search, "beamline/" + $scope.display, ["install_name", "description"]) + "/list";
+
+		var params = [];
+
+		if ($scope.display === "offline_data") {
+			params = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
+		
+		} else if ($scope.display === "online_data") {
+			params = ["install_name", "description", "date", "status"];
+		}
+
+		var newLocation = createRouteUrl(search, "beamline/" + $scope.display, params) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -2867,7 +2953,17 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
 		search.description = "*";
-		var newLocation = createRouteUrl(search, "installation/" + $scope.display, ["install_name", "description"]) + "/list";
+
+		var params = [];
+
+		if ($scope.display === "offline_data") {
+			params = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
+		
+		} else if ($scope.display === "online_data") {
+			params = ["install_name", "description", "date", "status"];
+		}
+
+		var newLocation = createRouteUrl(search, "installation/" + $scope.display, params) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};

@@ -31,7 +31,24 @@
 				
 				<td ng-if="property != 'url' && property != 'status'">{{element[property]}}</td>
 
-				<td><select ng-disabled="true" ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></td>
+				<td ng-if="property == 'status'"><select ng-disabled="true" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></td>
+			</tr>
+		</table>
+
+		<h3>Install device data</h3>
+
+		<table class="table table-bordered">
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+			<tr ng-repeat="property in install.retrieve">
+				<td>{{install.display[property]}}</td>
+				<td>{{install[property]}}</td>
+			</tr>
+			<tr ng-repeat="property in install.prop_keys">
+				<td>{{property.name}}</td>
+				<td>{{property.value}}</td>
 			</tr>
 		</table>
 	</div>

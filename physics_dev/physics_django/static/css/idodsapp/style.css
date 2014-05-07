@@ -340,6 +340,10 @@ html, body {
 	width: 93%;
 }
 
+.search_field_half {
+	width: 30%;
+}
+
 .float_left {
 	float: left;
 }

@@ -70,6 +70,8 @@ class idods(object):
             sqlString += " " + prependedOperator + " "
         
         # Check if value equals tuple
+        parameterValue = json.loads(parameterValue)
+        
         if isinstance(parameterValue, (list, tuple)):
                 
             # Check tuple length. It should be 2.
@@ -1884,6 +1886,7 @@ class idods(object):
 
         - offlineid
         - description
+        - date
         - gap
         - phase1
         - phase2
@@ -1900,6 +1903,9 @@ class idods(object):
 
         :param description: a brief description for this data entry
         :type description: str
+
+        :param date: offline data date
+        :type date: str
 
         :param gap: gap when this data set is produced
         :type gap: float
@@ -2007,6 +2013,12 @@ class idods(object):
             sql = sqlVal[0]
             vals = sqlVal[1]
         
+        # Append date parameter
+        if 'date' in kws and kws['date'] != None:
+            sqlVal = self._checkRangeAndAppend('iod.date', kws['date'], sql, vals, 'AND')
+            sql = sqlVal[0]
+            vals = sqlVal[1]
+        
         # Append gap parameter
         if 'gap' in kws and kws['gap'] != None:
             sqlVal = self._checkRangeAndAppend('iod.gap', kws['gap'], sql, vals, 'AND')
@@ -2051,7 +2063,7 @@ class idods(object):
             
         # Append status parameter
         if 'status' in kws and kws['status'] != None:
-            sql += ' AND iod.status = %s '
+            sql += ' AND iod.data_status = %s '
             vals.append(kws['status'])
             
         # Append method name parameter
@@ -2576,7 +2588,7 @@ class idods(object):
         
         # Check if inventory already installed
         existing = self.retrieveInventoryToInstall(None, None, inv_name)
-        print i2i['inventoryname'] == inv_name
+
         if i2i['inventoryname'] == inv_name and len(existing) > 1:
             raise ValueError("Inventory already installed!")
         
@@ -4074,7 +4086,7 @@ class idods(object):
         
         for rel in childrenRel:
             child = childrenRel[rel]
-            print child
+
             self.deleteInstallRel(child['parentname'], child['childname'])
         
         # Delete properties
@@ -4603,7 +4615,7 @@ class idods(object):
 
         # Append coordination center parameter
         if 'coordinatecenter' in kws and kws['coordinatecenter'] != None:
-            sqlVals = self._checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND', 'float')
+            sqlVals = self._checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND')
 
         # Exclude all system component types
         if ('all_install' in kws) == False or ('all_install' in kws and kws['all_install'] == False):
@@ -5029,7 +5041,7 @@ class idods(object):
         savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
         
         filePath = os.path.join(savePath, onlineDataObj['url'])
-        print filePath, onlineDataObj
+
         os.remove(filePath)
         
         # Generate SQL
@@ -5060,6 +5072,7 @@ class idods(object):
 
         - install_name
         - description
+        - date
         - gap
         - phase1
         - phase2
@@ -5068,12 +5081,16 @@ class idods(object):
         - phasemode
         - polarmode
         - status
+        - method_name
 
         :param install_name: name of installed device on field
         :type install_name: str
 
         :param description: a brief description for this data entry
         :type description: str
+        
+        :param date: offline data date
+        :type date: str
 
         :param gap: gap when this data set is produced
         :type gap: float
@@ -5098,12 +5115,16 @@ class idods(object):
 
         :param status: status of this data set
         :type status: int
+        
+        :param method_name: name of method used to produce the data
+        :type method_name: str
 
         :return: a map with structure like:
 
             .. code-block:: python
 
                 {'data_id': {
+                        'install_name': ,      # string
                         'username': ,      # string
                         'description': ,   # string
                         'date': ,          # timestamp
@@ -5136,7 +5157,8 @@ class idods(object):
         SELECT
             inst.install_id,
             ii.inventory_id,
-            inv.name
+            inv.name,
+            inst.field_name
         FROM install inst
         LEFT JOIN inventory__install ii ON(inst.install_id = ii.install_id)
         LEFT JOIN inventory inv ON(ii.inventory_id = inv.inventory_id)
@@ -5154,6 +5176,12 @@ class idods(object):
         
         if 'gap' in kws and kws['gap'] != None:
             gap = kws['gap']
+        
+        # Check date
+        dateP = None
+        
+        if 'date' in kws and kws['date'] != None:
+            dateP = kws['date']
         
         # Check phase1
         phase1 = None
@@ -5197,6 +5225,12 @@ class idods(object):
         if 'status' in kws and kws['status'] != None:
             status = kws['status']
         
+        # Check method_name
+        method_name = None
+        
+        if 'method_name' in kws and kws['method_name'] != None:
+            method_name = kws['method_name']
+        
         vals = []
         
         # Append name parameter
@@ -5214,14 +5248,19 @@ class idods(object):
             # Construct return dict
             for r in res:
                 inventoryname = r[2]
-                print inventoryname
-                offlineData = self.retrieveOfflineData(inventory_name=inventoryname, description=description, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status)
+                installname = r[3]
+                
+                # Skip if there is no map
+                if inventoryname == None:
+                    continue
+
+                offlineData = self.retrieveOfflineData(inventory_name=inventoryname, description=description, date=dateP, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status, method_name=method_name)
                 
                 # Go though the results and map them in result dictionary
                 for key in offlineData:
                     offlineDatum = offlineData[key]
                     resdict[key] = offlineDatum
-                    resdict[key]['install_name'] = install_name
+                    resdict[key]['install_name'] = installname
                 
             return resdict
             

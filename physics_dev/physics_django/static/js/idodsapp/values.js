@@ -824,7 +824,7 @@ app.value('OfflineDataInfo', {
  	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["inventory_name", "description"];
+ 	this.list = ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 
  	// Parameters used for save URL
  	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
@@ -929,10 +929,10 @@ app.value('OfflineDataInstallInfo', {
  	this.search_m = ["install_name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
+ 	this.retrieve = ["id", "inventory_name", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["install_name", "description"];
+ 	this.list = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 
  	// Parameters used for save URL
  	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
@@ -1040,7 +1040,7 @@ app.value('OnlineDataInfo', {
  	this.retrieve = ["id", "install_name", "description", "username", "status", "url", "date"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["install_name", "description"];
+ 	this.list = ["install_name", "description", "date", "status"];
 
  	// Parameters used for save URL
  	this.save = ["install_name", "description", "status", "url"];

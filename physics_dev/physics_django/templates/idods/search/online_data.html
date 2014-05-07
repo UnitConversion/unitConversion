@@ -15,13 +15,24 @@
 		<br />
 		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.install_name" name="install_name" />
 		<br />
-		<br />
 	</div>
 	<div class="">
 		Description:
 		<br />
 		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.description" name="description" />
 		<br />
+	</div>
+	<div class="">
+		Date (from, to) YYYY-MM-DD:
+		<br />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.date_from" />
+		<input class="search_field_half" ng-enter="searchForItem(search)" type="text" ng-model="search.date_to" />
+		<br />
+	</div>
+	<div class="">
+		Data status:
+		<br />
+		<select ng-model="search.status" ng-options="s.name as s.value for s in statusArr2"></select>
 		<br />
 	</div>
 	<div class="">

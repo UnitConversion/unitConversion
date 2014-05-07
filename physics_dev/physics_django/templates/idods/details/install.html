@@ -30,6 +30,29 @@
 				<td>{{property.value}}</td>
 			</tr>
 		</table>
+
+		<h3>Device installed to</h3>
+
+		<table ng-if="map.inventoryname" class="table table-bordered">
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+			<tr>
+				<td>Inventory name</td>
+				<td>{{map.inventoryname}}</td>
+			</tr>
+			<tr>
+				<td>Inventory to install map</td>
+				<td><button ng-click="goToMap(map.inventoryname, map.installname, map.id)" class="btn btn-info">Show</button></td>
+			</tr>
+			<tr>
+				<td>Inventory device data</td>
+				<td><button ng-click="goToInventory(map.inventoryid)" class="btn btn-info">Show</button></td>
+			</tr>
+		</table>
+
+		<span ng-if="!map.inventoryname">Device is not installed!</span>
 	</div>
 </div>
 
