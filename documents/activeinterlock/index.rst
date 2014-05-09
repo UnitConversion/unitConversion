@@ -16,6 +16,7 @@ Active interlock data service is implementation using Django framework, and its 
     client
     dataapi
     webclient
+    howto
 
 Indices and tables
 ==================

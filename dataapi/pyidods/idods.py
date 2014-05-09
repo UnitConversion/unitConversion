@@ -298,7 +298,8 @@ class idods(object):
         '''
         Retrieve inventory property template by its name
 
-        - name: Inventory property name
+        :param name: Inventory property name
+        :type name: str
 
         :return: a map with structure like:
 
@@ -365,11 +366,20 @@ class idods(object):
         '''
         Insert new inventory property template into database
 
-        - cmpnt_type: component type name M
-        - name: property template name M
-        - description: property template description O
-        - default: property template default value O
-        - unit: property template unit O
+        :param cmpnt_type: component type name M
+        :type cmpnt_type: str
+        
+        :param name: property template name M
+        :type name: str
+        
+        :param description: property template description O
+        :type description: str
+        
+        :param default: property template default value O
+        :type default: str
+        
+        :param unit: property template unit O
+        :type unit: str
 
         :return: a map with structure like:
 
@@ -575,20 +585,28 @@ class idods(object):
         '''
         Retrieve id and value from inventory property table
         
-        parameters:
-            - inventoryName: name of the inventory entry
-            - inventoryPropertyTemplateName: name of the inventory property template
-            - value: value of the property template
+        :param inventoryName: name of the inventory entry
+        :type inventoryName: str
+        
+        :param inventoryPropertyTemplateName: name of the inventory property template
+        :type inventoryPropertyTemplateName: str
+        
+        :param value: value of the property template
+        :type value: str
             
-        returns:
-            { 'id': {
-                    'id': #int,
-                    'value': #string,
-                    'inventoryname': #string,
-                    'templatename': #string
+        :return: a map with structure like:
+        
+            .. code-block:: python
+            
+                { 'id': {
+                        'id': #int,
+                        'value': #string,
+                        'inventoryname': #string,
+                        'templatename': #string
+                    }
                 }
-            }
-            
+        
+        :Raises: ValueError
         '''
         
         # Check inventory
@@ -1289,14 +1307,15 @@ class idods(object):
         '''
         Concat large data in the database
         
-        params:
-            - data: part of the data we want to save in a blob
-            - raw_data_id: id of the raw data we need to update
+        :param data: part of the data we want to save in a blob
+        :type data: blob
         
-        raises:
-            MySQLError
+        :param raw_data_id: id of the raw data we need to update
+        :type raw_data_id: int
+        
+        :raises: MySQLError
             
-        returns:
+        :returns:
             True if everything is ok
         
         '''
@@ -2307,6 +2326,7 @@ class idods(object):
         :return: a map with structure like:
 
             .. code-block:: python
+            
                 {'id':
                     {'id': data method id,
                      'name': method name,
@@ -2930,19 +2950,28 @@ class idods(object):
         '''
         Retrieve component type property from the database by name
         
-        parameters:
-            - componentTypeName: name of the component type
-            - componentTypePropertyTypeName: name of the component type property type
-            - value: value of the component type property type
+        :param componentTypeName: name of the component type
+        :type componentTypeName: str
+        
+        :param componentTypePropertyTypeName: name of the component type property type
+        :type componentTypePropertyTypeName: str
+        
+        :param value: value of the component type property type
+        :type value: str
             
-        returns:
-            { 'id': {
-                    'id': #int,
-                    'value': #string,
-                    'cmpnt_typename': #string,
-                    'typename': #string
+        :returns: a map with structure like:
+        
+            .. code-block:: python
+            
+                { 'id': {
+                        'id': #int,
+                        'value': #string,
+                        'cmpnt_typename': #string,
+                        'typename': #string
+                    }
                 }
-            }
+
+        :raises: ValueError, MySQLError
         '''
         
         # Check component type
@@ -3389,7 +3418,8 @@ class idods(object):
         '''
         Retrieve install relationship property type by its name
 
-        - name: property type name
+        :param name: property type name
+        :type name: str
 
         :return: a map with structure like:
 
@@ -3645,21 +3675,27 @@ class idods(object):
         '''
         Retrieve component type property from the database by name
         
-        parameters:
-            - installRelId: id of the install rel
-            - installRelPropertyTypeName: name of the install rel property type
-            - value: value of the property type
+        :param installRelId: id of the install rel
+        :type installRelId: int
+        
+        :param installRelPropertyTypeName: name of the install rel property type
+        :type installRelPropertyTypeName: str
+        
+        :param value: value of the property type
+        :type value: str
             
-        returns:
-            { 'id': {
-                    'id': #int,
-                    'value': #string,
-                    'typename': #string
+        :return: a map with structure like:
+        
+            .. code-block:: python
+            
+                { 'id': {
+                        'id': #int,
+                        'value': #string,
+                        'typename': #string
+                    }
                 }
-            }
             
-        raises:
-            ValueError
+        :raises: ValueError
         '''
         
         # Check component type
@@ -3691,16 +3727,22 @@ class idods(object):
         '''
         Save install rel property into database
         
-        params:
-            - installRelId: id of the install rel
-            - installRelPropertyTypeName: name of the install rel property type
-            - value: value of the install rel property
+        :param installRelId: id of the install rel
+        :type installRelId: int
+        
+        :param installRelPropertyTypeName: name of the install rel property type
+        :type installRelPropertyTypeName: str
+        
+        :param value: value of the install rel property
+        :type value: str
             
-        returns:
-            {'id': new install rel property id}
+        :return: a map with structure like:
+        
+            .. code-block:: python
             
-        raises:
-            ValueError, MySQLError
+                {'id': new install rel property id}
+            
+        :raises: ValueError, MySQLError
         '''
         
         # Check for previous install rel property
@@ -3761,16 +3803,21 @@ class idods(object):
         '''
         Update install rel property
         
-        params:
-            - install_rel_parent: name of the parent in the install rel
-            - install_rel_child: id of the child in the install rel
-            - installRelPropertyTypeName: name of the install rel property type
-            - value: value of the install rel property
+        :param install_rel_parent: name of the parent in the install rel
+        :type install_rel_parent: str
+        
+        :param install_rel_child: name of the child in the install rel
+        :type install_rel_child: str
+        
+        :param installRelPropertyTypeName: name of the install rel property type
+        :type installRelPropertyTypeName: str
+        
+        :param value: value of the install rel property
+        :type value: str
             
-        returns: True if everything was ok
+        :return: True if everything was ok
             
-        raises:
-            ValueError, MySQLError
+        :raises: ValueError, MySQLError
         '''
         
         # Define query dictionary
@@ -3831,7 +3878,7 @@ class idods(object):
         :param install_rel_id: Id in the install rel table
         :type install_rel_id: int
             
-        :returns: True if everything was ok
+        :return: True if everything was ok
             
         :raises:
             ValueError, MySQLError
@@ -3864,22 +3911,37 @@ class idods(object):
         '''
         Save install relationship in the database.
         
-        params:
-            - parent_install: id of the parent element
-            - child_install: id of the child element
-            - description: description of the relationship
-            - order: order of the child in the relationship
-            - props :
+        :param parent_install: id of the parent element
+        :type parent_install: int
+        
+        :param child_install: id of the child element
+        :type child_install: int
+        
+        :param description: description of the relationship
+        :type description: str
+        
+        :param order: order of the child in the relationship
+        :type order: int
+        
+        :param props: properties are passed as a map
+        
+            .. code-block:: python
+            
                 {
                     'key1': 'value1',
                     ...
                     'keyN': 'valueN'
                 }
-        returns:
-            {'id': id of the saved install rel}
+
+        :type props: dict
+                
+        :return:  a map with structure like:
+        
+            .. code-block:: python
             
-        raises:
-            ValueError, MySQLError
+                {'id': id of the saved install rel}
+            
+        :raises: ValueError, MySQLError
         '''
         
         # Check if the same relationship already exists in the database
@@ -3956,23 +4018,31 @@ class idods(object):
         '''
         Update install relationship.
         
-        params:
-            - parent_install: name of the parent element we want ot update by
-            - child_install: name of the child element we want ot update by
-            - description: description of the relationship
-            - order: order of the child in the relationship
-            - props :
+        :param parent_install: name of the parent element we want ot update by
+        :type parent_install: str
+        
+        :param child_install: name of the child element we want ot update by
+        :type child_install: str
+        
+        :param description: description of the relationship
+        :type description: str
+        
+        :param order: order of the child in the relationship
+        :type order: int
+        
+        :param props:
+        
+            .. code-block:: python
+            
                 {
                     'key1': 'value1',
                     ...
                     'keyN': 'valueN'
                 }
         
-        returns:
-            True if everything is ok
+        :returns: True if everything is ok
             
-        raises:
-            ValueError, MySQLError
+        :raises: ValueError, MySQLError
         '''
         
         # Define query dictionary
@@ -4106,11 +4176,9 @@ class idods(object):
         :param child_install: name of the child install
         :type child_install: string
         
-        :returns:
-            True if everything is ok
+        :returns: True if everything is ok
             
-        :raises:
-            ValueError, MySQLError
+        :raises: ValueError, MySQLError
         '''
     
         # Generate SQL
@@ -4142,37 +4210,51 @@ class idods(object):
         Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
         all the parents of specific child.
         
-        params:
-            - install_rel_id: id of the install_rel table
-            - parent_install: name of the parent install element
-            - child_install: name of the child install element
-            - description: description of a relationship
-            - order: order number of child element in the parent element; accepts a range in a tuple
-            - date: date of the device installation; accepts a range in a tuple
-            - prop: if we want to search for relationships with specific property set to a specific value, we
+        :param install_rel_id: id of the install_rel table
+        :type install_rel_id: int
+        
+        :param parent_install: name of the parent install element
+        :type parent_install: str
+        
+        :param child_install: name of the child install element
+        :type child_install: str
+        
+        :param description: description of a relationship
+        :type description: str
+        
+        :param order: order number of child element in the parent element; accepts a range in a tuple
+        :type order: int
+        
+        :param date: date of the device installation; accepts a range in a tuple
+        :type date: str
+        
+        :param prop: if we want to search for relationships with specific property set to a specific value, we
               can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
               beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
+        :type prop: dict
             
-        returns:
-            {
-                'id': {
-                    'id':           #int,
-                    'parentid':     #int,
-                    'parentname':   #string,
-                    'childid':      #int,
-                    'childname':    #string,
-                    'description':  #string,
-                    'order':        #int,
-                    'date':         #string,
-                    'prop1key':     #string,
-                    ...
-                    'propNkey':     #string,
-                    'prop_keys':    ['prop1key', 'propNkey']
+        :return: a map with structure like:
+        
+            .. code-block:: python
+            
+                {
+                    'id': {
+                        'id':           #int,
+                        'parentid':     #int,
+                        'parentname':   #string,
+                        'childid':      #int,
+                        'childname':    #string,
+                        'description':  #string,
+                        'order':        #int,
+                        'date':         #string,
+                        'prop1key':     #string,
+                        ...
+                        'propNkey':     #string,
+                        'prop_keys':    ['prop1key', 'propNkey']
+                    }
                 }
-            }
             
-        raises:
-            ValueError, MySQLError
+        :raises: ValueError, MySQLError
         '''
         
         # Create vals list
@@ -4312,8 +4394,7 @@ class idods(object):
         :param tree: current tree structure
         :type tree: str
         
-        :return:
-            install relations in a tree
+        :return: install relations in a tree
         '''
         
         if tree == None:
@@ -4357,16 +4438,25 @@ class idods(object):
     def saveInstall(self, name, **kws):
         '''Save insertion device installation using any of the acceptable key words:
 
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type of the device
-        - coordinatecenter: coordinate center number
+        :param name: installation name, which is its label on field
+        :type name: str
         
-        raises:
-            ValueError, Exception
+        :param description: installation description
+        :type description: str
+        
+        :param cmpnt_type: component type of the device
+        :type cmpnt_type: str
+        
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: float
             
-        returns:
-            {'id': new install id}
+        :return: a map with structure like:
+        
+            .. code-block:: python
+            
+                {'id': new install id}
+        
+        :raises: ValueError, Exception
         '''
         
         # Check name parameter
@@ -4427,16 +4517,21 @@ class idods(object):
     def updateInstall(self, install_id, old_name, name, **kws):
         '''Update insertion device installation using any of the acceptable key words:
 
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type of the device
-        - coordinatecenter: coordinate center number
+        :param name: installation name, which is its label on field
+        :type name: str
         
-        raises:
-            ValueError, MySQLError
+        :param description: installation description
+        :type description: str
+        
+        :param cmpnt_type: component type of the device
+        :type cmpnt_type: str
+        
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: float
+        
+        :raises: ValueError, MySQLError
             
-        returns:
-            True if everything is ok
+        :return: True if everything is ok
         '''
         
         # Define query dictionary
@@ -4507,21 +4602,23 @@ class idods(object):
         '''
         Retrieve install its id.
         
-        params:
-            - installid: id of the install entity
+        :param installid: id of the install entity
+        :type installid: int
             
-        raises:
-            ValueError, MySQLError
+        :return: a map with structure like:
+        
+            .. code-block:: python
             
-        returns:
-            {'id': {
-                    'id':                  #int,
-                    'cmpnt_type':           #string,
-                    'name':                #string,
-                    'description':         #string,
-                    'coordinationcenter':  #float
+                {'id': {
+                        'id':                  #int,
+                        'cmpnt_type':           #string,
+                        'name':                #string,
+                        'description':         #string,
+                        'coordinationcenter':  #float
+                    }
                 }
-            }
+            
+        :raises: ValueError, MySQLError
         '''
         
         # Check install id
@@ -4556,25 +4653,36 @@ class idods(object):
     def retrieveInstall(self, name, **kws):
         '''Retrieve insertion device installation using any of the acceptable key words:
 
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type name of the device
-        - coordinatecenter: coordinate center number
-        - all_install: retrieve also system installs
+        :param name: installation name, which is its label on field
+        :type name: str
         
-        raises:
-            ValueError, MySQLError
+        :param description: installation description
+        :type description: str
+        
+        :param cmpnt_type: component type name of the device
+        :type cmpnt_type: str
+        
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: str
+        
+        :param all_install: retrieve also system installs
+        :type all_install: str
             
-        returns:
-            {'id': {
-                    'id':                     #int,
-                    'name':                   #string,
-                    'description':            #string,
-                    'cmpnt_type':             #string,
-                    'cmpnt_type_description': #string,
-                    'coordinatecenter':       #float
+        :return: a map with structure like:
+        
+            .. code-block:: python
+            
+                {'id': {
+                        'id':                     #int,
+                        'name':                   #string,
+                        'description':            #string,
+                        'cmpnt_type':             #string,
+                        'cmpnt_type_description': #string,
+                        'coordinatecenter':       #float
+                    }
                 }
-            }
+                
+        :Raises: ValueError, MySQLError
         '''
         
         # Check name
@@ -4657,15 +4765,19 @@ class idods(object):
         '''
         Save file that was uploaded and return file path
         
-        params:
-            - file_name name of the file we want to save
-            - data data we want to dave
-            
-        raises:
-            IOError
+        :param file_name: name of the file we want to save
+        :type file_name: str
         
-        returns:
-            {'path': path to a file}
+        :param data: data we want to save
+        :type data: blob
+        
+        :return: a map with structure like:
+            
+            .. code-block:: python
+            
+                {'path': path to a file}
+            
+        :raises: IOError
         '''
         path, absolutePath = _generateFilePath()
         filePath = os.path.join(absolutePath, file_name)
@@ -4682,13 +4794,7 @@ class idods(object):
             
 
     def saveOnlineData(self, install_name, **kws):
-        '''Save insertion device online data using any of the acceptable key words:
-
-        - install_name
-        - username
-        - description
-        - url
-        - status
+        '''Save insertion device online data.
 
         The data itself is stored on server's harddisk because its size might blow up to GB level.
         Ths file url is stored in the database.
@@ -4790,14 +4896,7 @@ class idods(object):
             raise MySQLError('Error when saving new online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveOnlineData(self, **kws):
-        '''Retrieve insertion device online data using any of the acceptable key words:
-
-        - onlineid
-        - install_name
-        - username
-        - description
-        - url
-        - status
+        '''Retrieve insertion device online data.
 
         :param onlineid: id of the online data we want to update by
         :type onlineid: int
@@ -4919,13 +5018,7 @@ class idods(object):
 
     def updateOnlineData(self, online_data_id, **kws):
         '''
-        Update insertion device online data using any of the acceptable key words:
-
-        - install_name
-        - username
-        - description
-        - url
-        - status
+        Update insertion device online data.
 
         The data itself is stored on server's harddisk because its size might blow up to GB level.
         Ths file url is stored in the database.
@@ -5069,19 +5162,6 @@ class idods(object):
 
     def retrieveInstallOfflineData(self, install_name, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
-
-        - install_name
-        - description
-        - date
-        - gap
-        - phase1
-        - phase2
-        - phase3
-        - phase4
-        - phasemode
-        - polarmode
-        - status
-        - method_name
 
         :param install_name: name of installed device on field
         :type install_name: str
