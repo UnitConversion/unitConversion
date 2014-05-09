@@ -81,6 +81,14 @@ app.controller('searchVendorCtrl', function($scope, $window, $routeParams){
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[0];
 
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "vendor", ["name", "description"]) + "/list";
+		$window.location = newLocation;
+	}
+
 	// Change entity
 	$scope.changeEntity = function() {
 		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
@@ -228,6 +236,14 @@ app.controller('searchCmpntTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[1];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "cmpnt_type", ["name", "description"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -423,6 +439,14 @@ app.controller('searchCmpntTypeTypeCtrl', function($scope, $window, $routeParams
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[2];
 
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "cmpnt_type_type", ["name", "description"]) + "/list";
+		$window.location = newLocation;
+	}
+
 	// Change entity
 	$scope.changeEntity = function() {
 		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
@@ -573,6 +597,14 @@ app.controller('searchInventoryCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[3];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "inventory", ["name"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -785,6 +817,14 @@ app.controller('searchInventoryTypeCtrl', function($scope, $window, $routeParams
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[4];
 
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "inventory_type", ["name"]) + "/list";
+		$window.location = newLocation;
+	}
+
 	// Change entity
 	$scope.changeEntity = function() {
 		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
@@ -946,6 +986,14 @@ app.controller('searchInstallCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[5];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1137,6 +1185,14 @@ app.controller('searchInventoryToInstallCtrl', function($scope, $window, $routeP
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[6];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "inventory_to_install", ["inv_name", "install_name"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1370,6 +1426,14 @@ app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[7];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "install_rel", ["description", "parent_install"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -1697,6 +1761,14 @@ app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParam
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[8];
 
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "install_rel_type", ["name"]) + "/list";
+		$window.location = newLocation;
+	}
+
 	// Change entity
 	$scope.changeEntity = function() {
 		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
@@ -1848,6 +1920,14 @@ app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[9];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "data_method", ["name", "description"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2003,6 +2083,14 @@ app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search.type = dataTypes[10];
 	$scope.statusArr2 = statusArr;
 	$scope.statusArr2.push({name:"", value:"-"});
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2284,6 +2372,14 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 	$scope.search.type = dataTypes[11];
 	$scope.statusArr2 = statusArr;
 	$scope.statusArr2.push({name:"", value:"-"});
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
+		$window.location = newLocation;
+	}
 
 	// Change entity
 	$scope.changeEntity = function() {
@@ -2582,6 +2678,14 @@ app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.statusArr2 = statusArr;
 	$scope.statusArr2.push({name:"", value:"-"});
 
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "online_data", ["install_name", "description", "date", "status"]) + "/list";
+		$window.location = newLocation;
+	}
+
 	// Change entity
 	$scope.changeEntity = function() {
 		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
@@ -2867,6 +2971,8 @@ app.controller('deleteOnlineDataCtrl', function($scope, $routeParams, $modalInst
  * Controller for the left/search pane
  */
 app.controller('searchBeamlineCtrl', function($scope, $location, $window, $routeParams, installRelFactory){
+	$scope.style.middle_class = "container-scroll-middle";
+
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[13];
@@ -2920,6 +3026,8 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
  * Controller for the left/search pane
  */
 app.controller('searchInstallationCtrl', function($scope, $location, $window, $routeParams, installRelFactory){
+	$scope.style.middle_class = "container-scroll-middle";
+
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.search.type = dataTypes[14];

@@ -1,30 +1,10 @@
 Data API
 =============================
 
-The exceptions each API throwing out should be revised according the requirement raising during development.
+Dataapi is a layer between RESTful Interface at the top and RDB database at the bottom. It directly communicates to RDB database and returns its data. It is implemented in Python. 
 
 .. automodule:: pyidods.idods
     :members: 
 
 .. autoclass:: idods
-    :members: __init__, 
-              saveinventory,
-              retrieveinventory,
-              updateinventory,
-              saveofflinedata,
-              updateofflinedata,
-              retrieveofflinedata,
-              savedatamethod,
-              retrievedatamethod,
-              saveinventorytoinstall,
-              updateinstalledinventory,
-              savecomponenttype,
-              retrievecomponenttype,
-              updatecomponenttype,
-              saveinstall,
-              updateinstall,
-              retrieveinstall,
-              saveonlinedata,
-              updateonlinedata,
-              retrieveonlinedata,
-              retrievinstalleofflinedata    
+    :members:   

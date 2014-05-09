@@ -13,6 +13,8 @@ Contents:
 
    introduction
    dataapi
+   clientapi
+   webclient
 
 Indices and tables
 ==================
