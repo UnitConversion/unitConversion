@@ -275,6 +275,41 @@ def cleanInstallRelProp(typeNameList):
         
     conn.close()
     
+def cleanDB():
+    '''
+    Clean complete DB
+    '''
+    conn=connect()
+    cur = conn.cursor()
+
+    sql = '''
+    SET FOREIGN_KEY_CHECKS=0;
+
+    truncate id_offline_data;
+    truncate id_online_data;
+    truncate id_raw_data;
+    truncate id_data_method;
+    truncate inventory__install;
+    truncate inventory;
+    truncate inventory_prop;
+    truncate inventory_prop_tmplt;
+    truncate install;
+    truncate install_rel;
+    truncate install_rel_prop;
+    truncate install_rel_prop_type;
+    truncate cmpnt_type;
+    truncate cmpnt_type_prop;
+    truncate cmpnt_type_prop_type;
+    truncate vendor;
+    
+    SET FOREIGN_KEY_CHECKS=1;
+    '''
+    cur.execute(sql)
+
+    conn.commit()
+        
+    conn.close()
+    
 def cleanInventoryToInstall(installName, ivnentoryName):
     '''
     Clean inventory - install entry

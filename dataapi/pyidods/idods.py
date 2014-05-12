@@ -2999,20 +2999,79 @@ class idods(object):
 
         return self._retrieveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
 
+    def saveComponentTypePropertyById(self, componentTypeId, componentTypePropertyTypeName, value):
+        '''
+        Save inventory property into database
+        
+        :param componentTypeId: id of the component type
+        :type componentTypeId: int
+        
+        :param componentTypePropertyTypeName: name of the component type property type
+        :type componentTypePropertyTypeName: str
+        
+        :param value: value of the component type property
+        :type value: str
+            
+        :return: {'id': new component type property id}
+            
+        :raise: ValueError, MySQLError
+        '''
+
+        # Check component type property type
+        retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
+        
+        if len(retrieveComponentTypePropertyType) == 0:
+            raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName);
+
+        retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
+        componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO cmpnt_type_prop
+            (cmpnt_type_id, cmpnt_type_prop_type_id, cmpnt_type_prop_value)
+        VALUES
+            (%s, %s, %s)
+        '''
+        
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (componentTypeId, componentTypePropertyTypeId, value))
+            
+            # Get last row id
+            propid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction == None:
+                self.conn.commit()
+                
+            return {'id': propid}
+            
+        except MySQLdb.Error as e:
+            
+            # Rollback changes
+            if self.transaction == None:
+                self.conn.rollback()
+            
+            self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+    
     def saveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName, value):
         '''
         Save inventory property into database
         
-        params:
-            - componentTypeName: name of the component type
-            - componentTypePropertyTypeName: name of the component type property type
-            - value: value of the component type property
+        :param componentTypeName: name of the component type
+        :type componentTypeName: str
+        
+        :param componentTypePropertyTypeName: name of the component type property type
+        :type componentTypePropertyTypeName: str
+        
+        :param value: value of the component type property
+        :type value: str
             
-        returns:
-            {'id': new component type property id}
+        :return: {'id': new component type property id}
             
-        raises:
-            ValueError, MySQLError
+        :raise: ValueError, MySQLError
         '''
         
         # Check for previous component type property
@@ -3197,7 +3256,7 @@ class idods(object):
 
         # Exclude all system component types
         if all_cmpnt_types == None or all_cmpnt_types == False:
-            sql += ' AND description != %s '
+            sql += ' AND (description != %s OR description IS NULL) '
             vals.append('__system__')
 
         # Execute SQL
@@ -3277,7 +3336,11 @@ class idods(object):
             # Commit transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+            
+            # Add mandatory properties
+            if props == None:
+                props = {'insertion_device': 'true'}
+            
             # Component type is saved, now we can save properties into database
             if props != None:
                 
@@ -3285,12 +3348,15 @@ class idods(object):
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
                 
+                # Add mandatory properties
+                props['insertion_device'] = 'true'
+                
                 # Save all the properties
                 for key in props:
                     value = props[key]
                     
                     # Save it into database
-                    self.saveComponentTypeProperty(name, key, value)
+                    self.saveComponentTypePropertyById(componenttypeid, key, value)
                 
             return {'id': componenttypeid}
 
@@ -4011,8 +4077,12 @@ class idods(object):
             if self.transaction == None:
                 self.conn.rollback()
             
-            self.logger.info('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+            if isinstance(e, ValueError):
+                raise e
+            
+            else:
+                self.logger.info('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
+                raise MySQLError('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def updateInstallRel(self, parent_install, child_install, **kws):
         '''
@@ -4414,7 +4484,57 @@ class idods(object):
         
         return tree
 
-    def saveInsertionDevice(self, installName, **kws):
+    def idStatusHelper(self, inputStr):
+        '''
+        Clean ID status string and return correct int values
+        
+        :param inputStr: Input string
+        :type inputStr: str
+        
+        :return: cleaned status
+        
+        '''
+        
+        if inputStr == "Y":
+            return 0
+        
+        else:
+            return 1
+
+    def idNoneHelper(self, inputStr, returnType = None):
+        '''
+        Clean ID input parameter
+        
+        :param inputStr: Input string
+        :type inputStr: str
+        
+        :param returnType: Type of the returned data
+        :type returnType: str
+        
+        :return: cleaned input
+        
+        '''
+        
+        # Strip input string of spaces
+        inputStr = inputStr.strip()
+        
+        if inputStr == "None":
+            return None
+        
+        else:
+            
+            if returnType != None:
+            
+                if returnType == "float":
+                    return float(inputStr)
+                
+                else:
+                    return inputStr
+                
+            else:
+                return inputStr
+
+    def saveInsertionDevice(self):
         '''Save insertion device installation using any of the acceptable key words:
 
         - installName: installation name, which is its label on field
@@ -4434,6 +4554,234 @@ class idods(object):
         6. straight section charge particle optics description;
         7. install place (up, center, or down);
         '''
+        
+        # Map columns
+        install_name = 0
+        coordinate_center = 1
+        project = 2
+        beamline = 3
+        beamline_desc = 4
+        install_desc = 5
+        inventory_name = 6
+        down_corrector = 7
+        up_corrector = 8
+        length = 9
+        gap_max = 10
+        gap_min = 11
+        gap_tolerance = 12
+        phase1_max = 13
+        phase1_min = 14
+        phase2_max = 15
+        phase2_min = 16
+        phase3_max = 17
+        phase3_min = 18
+        phase4_max = 19
+        phase4_min = 20
+        phase_tolerance = 21
+        k_max_circular = 22
+        k_max_linear = 23
+        phase_mode_a1 = 24
+        phase_mode_a2 = 25
+        phase_mode_p = 26
+        type_name = 27
+        type_desc = 28
+        method = 29
+        method_desc = 30
+        data_desc = 31
+        data_file_name = 32
+        data_file_obsolete = 33
+        gap = 34
+        phase1 = 35
+        phase2 = 36
+        phase3 = 37
+        phase4 = 38
+        phase_mode = 39
+        polar_mode = 40
+        
+        # Setup DB
+        self.idodsInstall()
+        
+        with open('/var/tmp/idods_data.csv') as f:
+            index = 0
+            
+            for line in f:
+                index += 1
+                
+                # Skip the first line
+                if index == 1:
+                    continue
+                
+                data = line.split(',')
+                
+                # Save project
+                if len(self.retrieveInstall(data[project], all_install = True).keys()) == 0:
+                    self.saveInstall(data[project], description = '__system__', cmpnt_type = 'project')
+                
+                # Save beamline
+                if len(self.retrieveInstall(data[beamline], all_install = True).keys()) == 0:
+                    self.saveInstall(data[beamline], description = '__system__', cmpnt_type = 'project')
+                    
+                # Save beamline  - project rel
+                if len(self.retrieveInstallRel(None, 'Beamline', data[project]).keys()) == 0:
+                    self.saveInstallRel('Beamline', data[project])
+                    
+                # Save project  - beamline rel
+                if len(self.retrieveInstallRel(None, data[project], data[beamline]).keys()) == 0:
+                    self.saveInstallRel(data[project], data[beamline], description = data[beamline_desc])
+                    
+                # Save component type
+                if len(self.retrieveComponentType(data[type_name]).keys()) == 0:
+                    self.saveComponentType(data[type_name], data[type_desc])
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'down_corrector')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'up_corrector')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'length')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'gap_maximum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'gap_minimum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'gap_tolerance')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase1_maximum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase1_minimum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase2_maximum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase2_minimum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase3_maximum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase3_minimum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase4_maximum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase4_minimum')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_tolerance')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'k_max_circular')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'k_max_linear')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a1')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a2')
+                
+                # Save inventory property template
+                if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
+                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_p')
+                
+                # Save inventory
+                if len(self.retrieveInventory(data[inventory_name]).keys()) == 0:
+                    
+                    self.saveInventory(data[inventory_name], cmpnt_type = data[type_name], props = {
+                        'down_corrector': self.idNoneHelper(data[down_corrector]),
+                        'up_corrector': self.idNoneHelper(data[up_corrector]),
+                        'length': self.idNoneHelper(data[length]),
+                        'gap_maximum': self.idNoneHelper(data[gap_max]),
+                        'gap_minimum': self.idNoneHelper(data[gap_min]),
+                        'gap_tolerance': self.idNoneHelper(data[gap_tolerance]),
+                        'phase1_maximum': self.idNoneHelper(data[phase1_max]),
+                        'phase1_minimum': self.idNoneHelper(data[phase1_min]),
+                        'phase2_maximum': self.idNoneHelper(data[phase2_max]),
+                        'phase2_minimum': self.idNoneHelper(data[phase2_min]),
+                        'phase3_maximum': self.idNoneHelper(data[phase3_max]),
+                        'phase3_minimum': self.idNoneHelper(data[phase3_min]),
+                        'phase4_maximum': self.idNoneHelper(data[phase4_max]),
+                        'phase4_minimum': self.idNoneHelper(data[phase4_min]),
+                        'phase_tolerance': self.idNoneHelper(data[phase_tolerance]),
+                        'k_max_circular': self.idNoneHelper(data[k_max_circular]),
+                        'k_max_linear': self.idNoneHelper(data[k_max_linear]),
+                        'phase_mode_a1': self.idNoneHelper(data[phase_mode_a1]),
+                        'phase_mode_a2': self.idNoneHelper(data[phase_mode_a2]),
+                        'phase_mode_p': self.idNoneHelper(data[phase_mode_p])
+                    })
+                
+                # Save install
+                if len(self.retrieveInstall(data[install_name]).keys()) == 0:
+                    self.saveInstall(
+                        data[install_name],
+                        coordinatecenter = data[coordinate_center],
+                        description = data[install_desc],
+                        cmpnt_type = data[type_name]
+                    )
+                
+                # Save beamline  - install rel
+                if len(self.retrieveInstallRel(None, data[beamline], data[install_name]).keys()) == 0:
+                    self.saveInstallRel(data[beamline], data[install_name])
+                
+                # Save inventory to install
+                #if len(self.retrieveInventoryToInstall(None, data[install_name], data[inventory_name]).keys()) == 0:
+                #    self.saveInventoryToInstall(data[install_name], data[inventory_name])
+                    
+                
+                # Save data method
+                if len(self.retrieveDataMethod(data[method]).keys()) == 0:
+                    self.saveDataMethod(data[method], self.idNoneHelper(data[method_desc]))
+                    
+                # Save raw data
+                rawData = self.saveRawData("lorem ipsum")
+                
+                # Save offline data
+                self.saveOfflineData(
+                    inventory_name = data[inventory_name],
+                    description = self.idNoneHelper(data[data_desc]),
+                    gap = self.idNoneHelper(data[gap], "float"),
+                    phase1 = self.idNoneHelper(data[phase1], "float"),
+                    phase2 = self.idNoneHelper(data[phase2], "float"),
+                    phase3 = self.idNoneHelper(data[phase3], "float"),
+                    phase4 = self.idNoneHelper(data[phase4], "float"),
+                    phasemode = self.idNoneHelper(data[phase_mode]),
+                    polarmode = self.idNoneHelper(data[polar_mode]),
+                    status = self.idStatusHelper(data[data_file_obsolete]),
+                    data_file_name = data[data_file_name],
+                    data_id = rawData['id'],
+                    method_name = data[method]
+                )
+        
+        return {'result': 'OK'}
 
     def saveInstall(self, name, **kws):
         '''Save insertion device installation using any of the acceptable key words:
@@ -4730,7 +5078,7 @@ class idods(object):
             sql = sqlVals[0]
             vals = sqlVals[1]
             
-            sql += ' AND ct.description != %s '
+            sql += ' AND (ct.description != %s OR ct.description IS NULL ) '
             vals.append('__system__')
             
             sqlVals = (sql, vals)
@@ -5353,6 +5701,10 @@ class idods(object):
         Create necessary database entries
         '''
         
+        # Create component type property type for identifying ID devices
+        if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
+            self.saveComponentTypePropertyType('insertion_device')
+        
         # Create component types
         if len(self.retrieveComponentType('root', all_cmpnt_types = True).keys()) == 0:
             self.saveComponentType('root', '__system__')
@@ -5377,26 +5729,27 @@ class idods(object):
             self.saveInstall('Beamline', cmpnt_type='branch')
         
         # Create install relationship
-        if len(self.retrieveInstallRel(None, 'Trees', 'Installation')) == 0:
+        if len(self.retrieveInstallRel(None, 'Trees', 'Installation').keys()) == 0:
             self.saveInstallRel('Trees', 'Installation')
         
-        if len(self.retrieveInstallRel(None, 'Trees', 'Beamline')) == 0:
+        # Create test relationship
+        if len(self.retrieveInstallRel(None, 'Trees', 'Beamline').keys()) == 0:
             self.saveInstallRel('Trees', 'Beamline')
         
         # Create test project
-        if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
-            self.saveInstall('Project1', cmpnt_type='project')
+        #if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
+        #    self.saveInstall('Project1', cmpnt_type='project')
         
         # Create test project relationship
-        if len(self.retrieveInstallRel(None, 'Installation', 'Project1')) == 0:
-            self.saveInstallRel('Installation', 'Project1')
+        #if len(self.retrieveInstallRel(None, 'Installation', 'Project1').keys()) == 0:
+        #     self.saveInstallRel('Installation', 'Project1')
         
         # Create test beamline
-        if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
-            self.saveInstall('Beamline1', cmpnt_type='beamline')
+        #if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
+        #    self.saveInstall('Beamline1', cmpnt_type='beamline')
         
         # Create test beamline relationship
-        if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1')) == 0:
-            self.saveInstallRel('Project1', 'Beamline1')
+        #if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1').keys()) == 0:
+        #    self.saveInstallRel('Project1', 'Beamline1')
         
         return {'result': 'ok'}

@@ -490,7 +490,7 @@ class Test(unittest.TestCase):
         retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
         
         # Test username
-        self.assertEqual('username2', retrievedOnlineDataObject['username'])
+        self.assertEqual('user', retrievedOnlineDataObject['username'])
         
         # Test URL
         self.assertTrue('datafile' in retrievedOnlineDataObject['url'])

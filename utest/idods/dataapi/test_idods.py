@@ -9,6 +9,11 @@ import os, sys
 
 from idods.rdbutils.preparerdb import *
 
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
+
 libPath = os.path.abspath("../../../dataapi/")
 sys.path.append(libPath)
 
@@ -569,7 +574,7 @@ class TestIdods(unittest.TestCase):
         savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
         
         # Retrieve offline data by gap range
-        offlineData = self.api.retrieveOfflineData(gap=(3, 4))
+        offlineData = self.api.retrieveOfflineData(gap=json.dumps((3, 4)))
         offlineDataKeys = offlineData.keys()
         offlineDataObject = offlineData[offlineDataKeys[0]]
         

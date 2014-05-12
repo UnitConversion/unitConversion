@@ -12,7 +12,6 @@ import MySQLdb
 from utils import (_checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 
 from _mysql_exceptions import MySQLError
-from ctypes.test.test_array_in_pointer import Value
 
 try:
     from django.utils import simplejson as json

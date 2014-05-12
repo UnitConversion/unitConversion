@@ -550,6 +550,14 @@ def testAuth(request):
     return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
 
 '''
+Test authentication
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveIdWs(request):
+    return _updateData(request, idodsi.saveInsertionDevice, [])
+
+'''
 Load index html file
 '''
 def idodsIndexHtml(request):

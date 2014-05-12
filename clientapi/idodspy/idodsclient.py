@@ -28,7 +28,6 @@ from requests import HTTPError
 
 from copy import copy
 
-import base64
 import urllib
 
 try: 
@@ -64,7 +63,7 @@ class IDODSClient(object):
         username = 
         password = 
         '''
-        self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}    
+        self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}
         self.__resource = 'test/'
         
         try:
@@ -79,15 +78,17 @@ class IDODSClient(object):
             else:
                 self.__auth = None
 
+
             self.__session = requests.Session()
+            
             # specify ssl version. Use SSL v3 for secure connection, https.
             self.__session.mount('https://', SSLAdapter(ssl_version=ssl.PROTOCOL_SSLv3))
             
-            #requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
-            requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
+            requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
+            #requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
         
         except:
-            raise Exception, 'Failed to create client to ' + self.__baseURL + self.__resource
+            raise Exception('Failed to create client.')
         
     def __getdefaultconfig(self, arg, value):
         if value == None and _conf.has_option('DEFAULT', arg):
@@ -170,7 +171,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -207,7 +208,7 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -301,7 +302,7 @@ class IDODSClient(object):
         if props:
             params['props'] = json.dumps(props)
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -351,7 +352,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -418,7 +419,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -450,7 +451,7 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -613,7 +614,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -714,7 +715,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -796,7 +797,7 @@ class IDODSClient(object):
         if unit:
             params['unit'] = unit
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -839,7 +840,7 @@ class IDODSClient(object):
         if 'unit' in kws:
             params['unit'] = kws['unit']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -926,7 +927,7 @@ class IDODSClient(object):
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -973,7 +974,7 @@ class IDODSClient(object):
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1076,7 +1077,7 @@ class IDODSClient(object):
         if props:
             params['props'] = json.dumps(props)
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1125,7 +1126,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1198,7 +1199,7 @@ class IDODSClient(object):
         if unit:
             params['unit'] = unit
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1234,7 +1235,7 @@ class IDODSClient(object):
         if 'unit' in kws:
             params['unit'] = kws['unit']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1317,7 +1318,7 @@ class IDODSClient(object):
             'inv_name': inv_name
         }
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1350,7 +1351,7 @@ class IDODSClient(object):
             'inv_name': inv_name
         }
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1424,7 +1425,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1463,7 +1464,7 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1791,7 +1792,7 @@ class IDODSClient(object):
             fileName = kws['data']
             
             with open(fileName, 'rb') as f:
-                ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f})
+                ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
                 self.__raise_for_status(ur.status_code, ur.text)
             
             params['data_id'] = ur.json()['id']
@@ -1813,7 +1814,7 @@ class IDODSClient(object):
             
             params['method_name'] = kws['method_name']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1966,7 +1967,7 @@ class IDODSClient(object):
             fileName = kws['data']
             
             with open(fileName, 'rb') as f:
-                ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f})
+                ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
                 self.__raise_for_status(ur.status_code, ur.text)
             
             params['data_id'] = ur.json()['id']
@@ -1988,7 +1989,7 @@ class IDODSClient(object):
             
             params['method_name'] = kws['method_name']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -2188,7 +2189,7 @@ class IDODSClient(object):
         if 'status' in kws:
             params['status'] = kws['status']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -2266,7 +2267,7 @@ class IDODSClient(object):
         if 'status' in kws:
             params['status'] = kws['status']
         
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False)
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -2287,7 +2288,7 @@ class IDODSClient(object):
                 'file_name': file_name
             }
             
-            r = self.__session.post(self.__baseURL+'file/', files={'file': f}, data=params)
+            r = self.__session.post(self.__baseURL+'file/', files={'file': f}, data=params, auth=self.__auth)
             self.__raise_for_status(r.status_code, r.text)
             
         return r.json()
