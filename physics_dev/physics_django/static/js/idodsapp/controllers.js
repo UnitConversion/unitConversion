@@ -2195,7 +2195,6 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
-	$scope.inventory = {};
 
 	$scope.inventories = [];
 	$scope.inventoriesMap = {};
@@ -2208,6 +2207,10 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 			$scope.inventories.push(item.name);
 			$scope.inventoriesMap[item.name] = new Inventory(item);
 		});
+
+		if($routeParams.action == "retrieve") {
+			$scope.inventory = $scope.inventoriesMap[$routeParams.inventory_name];
+		}
 	});
 
 	// Retrieve all Component types
@@ -2258,10 +2261,6 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
-
-			if($routeParams.action == "retrieve") {
-				$scope.inventory = $scope.inventoriesMap[$scope.element['inventory_name']];
-			}
 		});
 	}
 	
@@ -2357,7 +2356,7 @@ app.controller('deleteOfflineDataCtrl', function($scope, $routeParams, $modalIns
 		$routeParams.search = new Date().getTime();
 		$routeParams.description = "*";
 		$routeParams.parent_install = "";
-		var newLocation = createRouteUrl($routeParams, url, ["inventory_name", "description"]) + "/list";
+		var newLocation = createRouteUrl($routeParams, url, ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		$window.location = newLocation;
 		$modalInstance.dismiss('cancel');
 	};
@@ -2377,7 +2376,7 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 	if(!$routeParams.search) {
 		var search = {};
 		search.search = new Date().getTime();
-		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
+		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		$window.location = newLocation;
 	}
 
@@ -2401,7 +2400,7 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 		if(search.phasemode_from && search.phasemode_to) {search.phasemode="[" + search.phasemode_from + "," + search.phasemode_to + "]";} else {search.phasemode = undefined;}
 		if(search.polarmode_from && search.polarmode_to) {search.polarmode="[" + search.polarmode_from + "," + search.polarmode_to + "]";} else {search.polarmode = undefined;}
 
-		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
+		var newLocation = createRouteUrl(search, "offline_data_install", ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
 	};
@@ -2452,7 +2451,7 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 	
 	// Show add form in the right pane
 	$scope.addItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/new/action/save";
+		var location = createRouteUrl($routeParams, type, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/new/action/save";
 		$window.location = location;
 	}
 
@@ -2470,9 +2469,10 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 		item.search = $routeParams.search;
 		$routeParams.click = "item_click";
 		$routeParams.install_name = item.install_name;
+		$routeParams.inventory_name = item.inventory_name;
 		$routeParams.description = item.description;
 
-		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + item.id + "/action/retrieve";
+		var location = createRouteUrl($routeParams, type, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
 	};
 });
@@ -2513,6 +2513,10 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 			$scope.inventories.push(item.name);
 			$scope.inventoriesMap[item.name] = new Inventory(item);
 		});
+
+		if($routeParams.action == "retrieve") {
+			$scope.inventory = $scope.inventoriesMap[$routeParams.inventory_name];
+		}
 	});
 
 	// Retrieve all Component types
@@ -2563,16 +2567,12 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
-
-			if($routeParams.action == "retrieve") {
-				$scope.inventory = $scope.inventoriesMap[$scope.element['inventory_name']];
-			}
 		});
 	}
 	
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams["id"] + "/action/update";
 		$window.location = location;
 	}
 
@@ -2662,7 +2662,7 @@ app.controller('deleteOfflineDataInstallCtrl', function($scope, $routeParams, $m
 		$routeParams.search = new Date().getTime();
 		$routeParams.description = "*";
 		$routeParams.parent_install = "";
-		var newLocation = createRouteUrl($routeParams, url, ["install_name", "description"]) + "/list";
+		var newLocation = createRouteUrl($routeParams, url, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		$window.location = newLocation;
 		$modalInstance.dismiss('cancel');
 	};
@@ -2790,7 +2790,6 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
 	
-	$scope.install = {};
 	$scope.installs = [];
 	$scope.installMap = {};
 
@@ -2809,6 +2808,10 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 			$scope.installs.push(item.name);
 			$scope.installMap[item.name] = new Install(item);
 		});
+
+		if ($routeParams.action == "retrieve") {
+			$scope.install = $scope.installMap[$routeParams.install_name];
+		}
 	});
 
 	// Get inventory from the factory if updating
@@ -2818,12 +2821,6 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 			$scope.element = result;
 			$scope.element.online_data_id = result.id;
 			l($scope.element);
-
-			if ($routeParams.action == "retrieve") {
-				$scope.install = $scope.installMap[$scope.element['install_name']];
-			}
-
-			l($scope.installMap);
 		});
 	}
 
@@ -2961,7 +2958,7 @@ app.controller('deleteOnlineDataCtrl', function($scope, $routeParams, $modalInst
 		$routeParams.search = new Date().getTime();
 		$routeParams.description = "*";
 		$routeParams.parent_install = "";
-		var newLocation = createRouteUrl($routeParams, url, ["install_name", "description"]) + "/list";
+		var newLocation = createRouteUrl($routeParams, url, ["install_name", "description", "date", "status"]) + "/list";
 		$window.location = newLocation;
 		$modalInstance.dismiss('cancel');
 	};
@@ -3010,7 +3007,7 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 		var params = [];
 
 		if ($scope.display === "offline_data") {
-			params = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
+			params = ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 		
 		} else if ($scope.display === "online_data") {
 			params = ["install_name", "description", "date", "status"];
@@ -3065,7 +3062,7 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 		var params = [];
 
 		if ($scope.display === "offline_data") {
-			params = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
+			params = ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 		
 		} else if ($scope.display === "online_data") {
 			params = ["install_name", "description", "date", "status"];

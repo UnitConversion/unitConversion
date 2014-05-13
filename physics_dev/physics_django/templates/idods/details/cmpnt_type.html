@@ -48,7 +48,7 @@
 				<th>Value</th>
 			</tr>
 			<tr ng-repeat="property in new.save_show">
-				<td>{{new.display[property]}}</td>
+				<td>{{new.display[property]}} <span ng-if="new.search_m.indexOf(property) > -1">*</span></td>
 				<td>
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
@@ -81,6 +81,9 @@
 		</table>
 		<br/>
 		<button ng-click="saveItem(new, 'save')" class="btn btn-success">{{info.save_button}}</button>
+		<br/>
+		<br/>
+		<div>* mandatory field</div>
 	</div>
 </div>
 
@@ -100,7 +103,7 @@
 			</tr>
 			<tr ng-repeat="property in element.save_show">
 				<td>
-					{{element.display[property]}}
+					{{element.display[property]}} <span ng-if="element.search_m.indexOf(property) > -1">*</span>
 				</td>
 				<td>
 					<span class="control-group" ng-class="{'error': error[property]}">
@@ -134,6 +137,9 @@
 		</table>
 		<br/>
 		<button ng-click="saveItem(element, 'update')" class="btn btn-success">{{info.update_button}}</button>
+		<br/>
+		<br/>
+		<div>* mandatory field</div>
 	</div>
 </div>
 {% endverbatim %}

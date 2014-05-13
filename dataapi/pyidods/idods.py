@@ -2992,7 +2992,7 @@ class idods(object):
             retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
             
             if len(retrieveComponentTypePropertyType) == 0:
-                raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName);
+                raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName)
     
             retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
             componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
@@ -3021,7 +3021,8 @@ class idods(object):
         retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
         
         if len(retrieveComponentTypePropertyType) == 0:
-            raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName);
+            self.saveComponentTypePropertyType(componentTypePropertyTypeName)
+            retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
 
         retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
         componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
@@ -4753,13 +4754,22 @@ class idods(object):
                     self.saveInstallRel(data[beamline], data[install_name])
                 
                 # Save inventory to install
-                #if len(self.retrieveInventoryToInstall(None, data[install_name], data[inventory_name]).keys()) == 0:
-                #    self.saveInventoryToInstall(data[install_name], data[inventory_name])
+                if len(self.retrieveInventoryToInstall(None, data[install_name], data[inventory_name]).keys()) == 0:
+                    
+                    try:
+                        self.saveInventoryToInstall(data[install_name], data[inventory_name])
+                    
+                    except ValueError:
+                        print "Inventory already installed!"
                     
                 
                 # Save data method
-                if len(self.retrieveDataMethod(data[method]).keys()) == 0:
-                    self.saveDataMethod(data[method], self.idNoneHelper(data[method_desc]))
+                data_method = self.idNoneHelper(data[method])
+                
+                if data_method != None:
+                    
+                    if len(self.retrieveDataMethod(data_method).keys()) == 0:
+                        self.saveDataMethod(data_method, self.idNoneHelper(data[method_desc]))
                     
                 # Save raw data
                 rawData = self.saveRawData("lorem ipsum")
@@ -4778,7 +4788,7 @@ class idods(object):
                     status = self.idStatusHelper(data[data_file_obsolete]),
                     data_file_name = data[data_file_name],
                     data_id = rawData['id'],
-                    method_name = data[method]
+                    method_name = self.idNoneHelper(data[method])
                 )
         
         return {'result': 'OK'}

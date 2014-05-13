@@ -59,8 +59,8 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action','index.offline_data.list.details').
 				
 		when('/offline_data_install',																									'index.offline_data_install').
-		when('/offline_data_install/search/:search/install_name/:install_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',							'index.offline_data_install.list').
-		when('/offline_data_install/search/:search/install_name/:install_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',		'index.offline_data_install.list.details').
+		when('/offline_data_install/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',							'index.offline_data_install.list').
+		when('/offline_data_install/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',		'index.offline_data_install.list.details').
 		
 		when('/online_data',																											'index.online_data').
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/status/:status?/list',									'index.online_data.list').
@@ -71,16 +71,16 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/beamline/online_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/status/:status?/id/:id/action/:action',		'index.beamline.list.details').
 
 		when('/beamline',																												'index.beamline2').
-		when('/beamline/offline_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',						'index.beamline2.list').
-		when('/beamline/offline_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',		'index.beamline2.list.details').
+		when('/beamline/offline_data/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',						'index.beamline2.list').
+		when('/beamline/offline_data/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',		'index.beamline2.list.details').
 
 		when('/installation',																											'index.installation').
 		when('/installation/online_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/status/:status?/list',						'index.installation.list').
 		when('/installation/online_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/status/:status?/id/:id/action/:action',	'index.installation.list.details').
 
 		when('/installation',																											'index.installation2').
-		when('/installation/offline_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',					'index.installation2.list').
-		when('/installation/offline_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',	'index.installation2.list.details').
+		when('/installation/offline_data/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',					'index.installation2.list').
+		when('/installation/offline_data/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',	'index.installation2.list.details').
 
 		segment('index', {
 			templateUrl: 'content.html',

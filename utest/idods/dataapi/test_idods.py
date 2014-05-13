@@ -62,8 +62,13 @@ class TestIdods(unittest.TestCase):
         # Clean component type property
         cleanComponentTypeProperty('test cmpnt3', 'length')
         cleanComponentTypeProperty('Magnet', 'length')
+        cleanComponentTypeProperty('Magnet', 'insertion_device')
+        cleanComponentTypeProperty('test cmpnt3', 'insertion_device')
+        cleanComponentTypeProperty('test cmpnt', 'insertion_device')
+        cleanComponentTypeProperty('test cmpnt2', 'insertion_device')
+        cleanComponentTypeProperty('test cmpnt4', 'insertion_device')
         # Clean component type property type
-        cleanComponentTypePropertyType(['length', 'width'])
+        cleanComponentTypePropertyType(['length', 'width', 'insertion_device'])
         # Clean if there is something left from previous runs
         cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
 
