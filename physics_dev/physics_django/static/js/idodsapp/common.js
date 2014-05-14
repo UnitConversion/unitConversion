@@ -207,13 +207,23 @@ function checkDiff(keys) {
 }
 
 /*
- * Download text as a file
+ * Download data as a file
  * @param filename name of the file that will be downloaded
- * @param text text that will be present in the downloaded file
+ * @param data data that will be present in the downloaded file
  */
-function download(filename, text) {
+function download(filename, data, is_ascii) {
+
+	var mime = 'application/octet-stream';
+
+	if (is_ascii) {
+		data = decode64(data);
+	
+	} else {
+		mime = 'application/octet-stream;base64';
+	}
+
     var pom = document.createElement('a');
-    pom.setAttribute('href', 'data:application/octet-stream,' + encodeURIComponent(text));
+    pom.setAttribute('href', 'data:' + mime + ',' + encodeURIComponent(data));
     pom.setAttribute('download', filename);
     pom.click();
 }
@@ -262,6 +272,43 @@ function saveData($scope, dataFactory) {
 			$scope.alert.body = error;
 		});
 	}
+}
+
+/**
+ * Function converts base64 encoded string to ASCII format
+ * @param {type} input base64 input string
+ * @returns {decode64.output}
+ */
+function decode64(input) {
+	var base64_keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	var output = "";
+	var chr1, chr2, chr3;
+	var enc1, enc2, enc3, enc4;
+	var i = 0;
+
+	// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
+	input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+
+	while (i < input.length) {
+		enc1 = base64_keyStr.indexOf(input.charAt(i++));
+		enc2 = base64_keyStr.indexOf(input.charAt(i++));
+		enc3 = base64_keyStr.indexOf(input.charAt(i++));
+		enc4 = base64_keyStr.indexOf(input.charAt(i++));
+
+		chr1 = (enc1 << 2) | (enc2 >> 4);
+		chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+		chr3 = ((enc3 & 3) << 6) | enc4;
+
+		output = output + String.fromCharCode(chr1);
+
+		if (enc3 !== 64) {
+			output = output + String.fromCharCode(chr2);
+		}
+		if (enc4 !== 64) {
+			output = output + String.fromCharCode(chr3);
+		}
+	}
+	return output;
 }
 
 /*

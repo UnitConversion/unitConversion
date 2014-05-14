@@ -7,6 +7,7 @@ Created on Feb 10, 2014
 import logging
 import MySQLdb
 import os
+import base64
 
 from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 from _mysql_exceptions import MySQLError
@@ -1249,9 +1250,19 @@ class idods(object):
 
             # Generate return dictionary
             for r in res:
+                is_ascii = True
+
+                try:
+                    r[1].decode('ascii')
+
+                except:
+                    is_ascii = False
+
+
                 resdict[r[0]] = {
                     'id': r[0],
-                    'data': r[1]
+                    'data': base64.b64encode(r[1]),
+                    'is_ascii': is_ascii
                 }
 
             return resdict
@@ -4535,7 +4546,7 @@ class idods(object):
             else:
                 return inputStr
 
-    def saveInsertionDevice(self):
+    def saveInsertionDevice(self, line):
         '''Save insertion device installation using any of the acceptable key words:
 
         - installName: installation name, which is its label on field
@@ -4599,199 +4610,194 @@ class idods(object):
         phase_mode = 39
         polar_mode = 40
         
-        # Setup DB
-        self.idodsInstall()
+        # Count errors
+        errors = 0
         
-        with open('/var/tmp/idods_data.csv') as f:
-            index = 0
+        data = line.split(',')
+        
+        # Save project
+        if len(self.retrieveInstall(data[project], all_install = True).keys()) == 0:
+            self.saveInstall(data[project], description = '__system__', cmpnt_type = 'project')
+        
+        # Save beamline
+        if len(self.retrieveInstall(data[beamline], all_install = True).keys()) == 0:
+            self.saveInstall(data[beamline], description = '__system__', cmpnt_type = 'project')
             
-            for line in f:
-                index += 1
-                
-                # Skip the first line
-                if index == 1:
-                    continue
-                
-                data = line.split(',')
-                
-                # Save project
-                if len(self.retrieveInstall(data[project], all_install = True).keys()) == 0:
-                    self.saveInstall(data[project], description = '__system__', cmpnt_type = 'project')
-                
-                # Save beamline
-                if len(self.retrieveInstall(data[beamline], all_install = True).keys()) == 0:
-                    self.saveInstall(data[beamline], description = '__system__', cmpnt_type = 'project')
-                    
-                # Save beamline  - project rel
-                if len(self.retrieveInstallRel(None, 'Beamline', data[project]).keys()) == 0:
-                    self.saveInstallRel('Beamline', data[project])
-                    
-                # Save project  - beamline rel
-                if len(self.retrieveInstallRel(None, data[project], data[beamline]).keys()) == 0:
-                    self.saveInstallRel(data[project], data[beamline], description = data[beamline_desc])
-                    
-                # Save component type
-                if len(self.retrieveComponentType(data[type_name]).keys()) == 0:
-                    self.saveComponentType(data[type_name], data[type_desc])
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'down_corrector')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'up_corrector')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'length')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'gap_maximum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'gap_minimum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'gap_tolerance')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase1_maximum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase1_minimum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase2_maximum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase2_minimum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase3_maximum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase3_minimum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase4_maximum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase4_minimum')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_tolerance')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'k_max_circular')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'k_max_linear')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a1')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a2')
-                
-                # Save inventory property template
-                if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
-                    self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_p')
-                
-                # Save inventory
-                if len(self.retrieveInventory(data[inventory_name]).keys()) == 0:
-                    
-                    self.saveInventory(data[inventory_name], cmpnt_type = data[type_name], props = {
-                        'down_corrector': self.idNoneHelper(data[down_corrector]),
-                        'up_corrector': self.idNoneHelper(data[up_corrector]),
-                        'length': self.idNoneHelper(data[length]),
-                        'gap_maximum': self.idNoneHelper(data[gap_max]),
-                        'gap_minimum': self.idNoneHelper(data[gap_min]),
-                        'gap_tolerance': self.idNoneHelper(data[gap_tolerance]),
-                        'phase1_maximum': self.idNoneHelper(data[phase1_max]),
-                        'phase1_minimum': self.idNoneHelper(data[phase1_min]),
-                        'phase2_maximum': self.idNoneHelper(data[phase2_max]),
-                        'phase2_minimum': self.idNoneHelper(data[phase2_min]),
-                        'phase3_maximum': self.idNoneHelper(data[phase3_max]),
-                        'phase3_minimum': self.idNoneHelper(data[phase3_min]),
-                        'phase4_maximum': self.idNoneHelper(data[phase4_max]),
-                        'phase4_minimum': self.idNoneHelper(data[phase4_min]),
-                        'phase_tolerance': self.idNoneHelper(data[phase_tolerance]),
-                        'k_max_circular': self.idNoneHelper(data[k_max_circular]),
-                        'k_max_linear': self.idNoneHelper(data[k_max_linear]),
-                        'phase_mode_a1': self.idNoneHelper(data[phase_mode_a1]),
-                        'phase_mode_a2': self.idNoneHelper(data[phase_mode_a2]),
-                        'phase_mode_p': self.idNoneHelper(data[phase_mode_p])
-                    })
-                
-                # Save install
-                if len(self.retrieveInstall(data[install_name]).keys()) == 0:
-                    self.saveInstall(
-                        data[install_name],
-                        coordinatecenter = data[coordinate_center],
-                        description = data[install_desc],
-                        cmpnt_type = data[type_name]
-                    )
-                
-                # Save beamline  - install rel
-                if len(self.retrieveInstallRel(None, data[beamline], data[install_name]).keys()) == 0:
-                    self.saveInstallRel(data[beamline], data[install_name])
-                
-                # Save inventory to install
-                if len(self.retrieveInventoryToInstall(None, data[install_name], data[inventory_name]).keys()) == 0:
-                    
-                    try:
-                        self.saveInventoryToInstall(data[install_name], data[inventory_name])
-                    
-                    except ValueError:
-                        print "Inventory already installed!"
-                    
-                
-                # Save data method
-                data_method = self.idNoneHelper(data[method])
-                
-                if data_method != None:
-                    
-                    if len(self.retrieveDataMethod(data_method).keys()) == 0:
-                        self.saveDataMethod(data_method, self.idNoneHelper(data[method_desc]))
-                    
-                # Save raw data
-                rawData = self.saveRawData("lorem ipsum")
-                
-                # Save offline data
-                self.saveOfflineData(
-                    inventory_name = data[inventory_name],
-                    description = self.idNoneHelper(data[data_desc]),
-                    gap = self.idNoneHelper(data[gap], "float"),
-                    phase1 = self.idNoneHelper(data[phase1], "float"),
-                    phase2 = self.idNoneHelper(data[phase2], "float"),
-                    phase3 = self.idNoneHelper(data[phase3], "float"),
-                    phase4 = self.idNoneHelper(data[phase4], "float"),
-                    phasemode = self.idNoneHelper(data[phase_mode]),
-                    polarmode = self.idNoneHelper(data[polar_mode]),
-                    status = self.idStatusHelper(data[data_file_obsolete]),
-                    data_file_name = data[data_file_name],
-                    data_id = rawData['id'],
-                    method_name = self.idNoneHelper(data[method])
-                )
+        # Save beamline  - project rel
+        if len(self.retrieveInstallRel(None, 'Beamline', data[project]).keys()) == 0:
+            self.saveInstallRel('Beamline', data[project])
+            
+        # Save project  - beamline rel
+        if len(self.retrieveInstallRel(None, data[project], data[beamline]).keys()) == 0:
+            self.saveInstallRel(data[project], data[beamline], description = data[beamline_desc])
+            
+        # Save component type
+        if len(self.retrieveComponentType(data[type_name]).keys()) == 0:
+            self.saveComponentType(data[type_name], data[type_desc])
         
-        return {'result': 'OK'}
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'down_corrector')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'up_corrector')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'length')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'gap_maximum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'gap_minimum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'gap_tolerance')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase1_maximum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase1_minimum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase2_maximum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase2_minimum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase3_maximum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase3_minimum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase4_maximum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase4_minimum')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase_tolerance')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'k_max_circular')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'k_max_linear')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a1')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a2')
+        
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
+            self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_p')
+        
+        # Save inventory
+        if len(self.retrieveInventory(data[inventory_name]).keys()) == 0:
+            
+            self.saveInventory(data[inventory_name], cmpnt_type = data[type_name], props = {
+                'down_corrector': self.idNoneHelper(data[down_corrector]),
+                'up_corrector': self.idNoneHelper(data[up_corrector]),
+                'length': self.idNoneHelper(data[length]),
+                'gap_maximum': self.idNoneHelper(data[gap_max]),
+                'gap_minimum': self.idNoneHelper(data[gap_min]),
+                'gap_tolerance': self.idNoneHelper(data[gap_tolerance]),
+                'phase1_maximum': self.idNoneHelper(data[phase1_max]),
+                'phase1_minimum': self.idNoneHelper(data[phase1_min]),
+                'phase2_maximum': self.idNoneHelper(data[phase2_max]),
+                'phase2_minimum': self.idNoneHelper(data[phase2_min]),
+                'phase3_maximum': self.idNoneHelper(data[phase3_max]),
+                'phase3_minimum': self.idNoneHelper(data[phase3_min]),
+                'phase4_maximum': self.idNoneHelper(data[phase4_max]),
+                'phase4_minimum': self.idNoneHelper(data[phase4_min]),
+                'phase_tolerance': self.idNoneHelper(data[phase_tolerance]),
+                'k_max_circular': self.idNoneHelper(data[k_max_circular]),
+                'k_max_linear': self.idNoneHelper(data[k_max_linear]),
+                'phase_mode_a1': self.idNoneHelper(data[phase_mode_a1]),
+                'phase_mode_a2': self.idNoneHelper(data[phase_mode_a2]),
+                'phase_mode_p': self.idNoneHelper(data[phase_mode_p])
+            })
+        
+        # Save install
+        if len(self.retrieveInstall(data[install_name]).keys()) == 0:
+            self.saveInstall(
+                data[install_name],
+                coordinatecenter = data[coordinate_center],
+                description = data[install_desc],
+                cmpnt_type = data[type_name]
+            )
+        
+        # Save beamline  - install rel
+        if len(self.retrieveInstallRel(None, data[beamline], data[install_name]).keys()) == 0:
+            self.saveInstallRel(data[beamline], data[install_name])
+        
+        # Save inventory to install
+        if len(self.retrieveInventoryToInstall(None, data[install_name], data[inventory_name]).keys()) == 0:
+            
+            try:
+                self.saveInventoryToInstall(data[install_name], data[inventory_name])
+            
+            except ValueError:
+                errors +=1
+                print "Inventory already installed!"
+            
+        
+        # Save data method
+        data_method = self.idNoneHelper(data[method])
+        
+        if data_method != None:
+            
+            if len(self.retrieveDataMethod(data_method).keys()) == 0:
+                self.saveDataMethod(data_method, self.idNoneHelper(data[method_desc]))
+            
+        # Save raw data
+        rawData = self.saveRawData("lorem ipsum")
+        
+        # Save offline data
+        self.saveOfflineData(
+            inventory_name = data[inventory_name],
+            description = self.idNoneHelper(data[data_desc]),
+            gap = self.idNoneHelper(data[gap], "float"),
+            phase1 = self.idNoneHelper(data[phase1], "float"),
+            phase2 = self.idNoneHelper(data[phase2], "float"),
+            phase3 = self.idNoneHelper(data[phase3], "float"),
+            phase4 = self.idNoneHelper(data[phase4], "float"),
+            phasemode = self.idNoneHelper(data[phase_mode]),
+            polarmode = self.idNoneHelper(data[polar_mode]),
+            status = self.idStatusHelper(data[data_file_obsolete]),
+            data_file_name = data[data_file_name],
+            data_id = rawData['id'],
+            method_name = self.idNoneHelper(data[method])
+        )
+        
+        if errors == 0:
+            return True
+        
+        else:
+            return False
 
     def saveInstall(self, name, **kws):
         '''Save insertion device installation using any of the acceptable key words:
@@ -5762,4 +5768,4 @@ class idods(object):
         #if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1').keys()) == 0:
         #    self.saveInstallRel('Project1', 'Beamline1')
         
-        return {'result': 'ok'}
+        return True

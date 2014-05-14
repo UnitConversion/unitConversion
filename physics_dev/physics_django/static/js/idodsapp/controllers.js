@@ -2300,14 +2300,14 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 	}
 
 	$scope.downloadScript = function(element) {
-		download(element.script_name, element.script);
+		download(element.script_name, element.script, true);
 	}
 
 	$scope.downloadRawData = function(element) {
 		// Retrieve raw file
 		offlineDataFactory.retrieveRawFile(element.data_id).then(function(result) {
 			l(result);
-			download(element.data_file_name, result[element.data_id]['data']);
+			download(element.data_file_name, result[element.data_id]['data'], result[element.data_id]['is_ascii']);
 		});
 	}
 });
@@ -2606,14 +2606,14 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 	}
 
 	$scope.downloadScript = function(element) {
-		download(element.script_name, element.script);
+		download(element.script_name, element.script, true);
 	}
 
 	$scope.downloadRawData = function(element) {
 		// Retrieve raw file
 		offlineDataFactory.retrieveRawFile(element.data_id).then(function(result) {
 			l(result);
-			download(element.data_file_name, result[element.data_id]['data']);
+			download(element.data_file_name, result[element.data_id]['data'], result[element.data_id]['is_ascii']);
 		});
 	}
 });

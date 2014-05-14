@@ -383,7 +383,6 @@ Save raw data
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def saveRawDataWS(request):
-    print request.FILES
     rawFile = request.FILES.getlist('file')[0]
     
     res = {}
@@ -529,7 +528,7 @@ def deleteOnlineDataWS(request):
 '''
 Install idods
 '''
-@require_http_methods(["GET"])
+@require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def idodsInstallWS(request):
     return _updateData(request, idodsi.idodsInstall, [])
@@ -555,7 +554,7 @@ Test authentication
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def saveIdWs(request):
-    return _updateData(request, idodsi.saveInsertionDevice, [])
+    return _updateData(request, idodsi.saveInsertionDevice, ['line'])
 
 '''
 Load index html file

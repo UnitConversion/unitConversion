@@ -87,7 +87,7 @@ class IDODSClient(object):
             requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
             #requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
         
-        except:
+        except Exception as e:
             raise Exception('Failed to create client.')
         
     def __getdefaultconfig(self, arg, value):
@@ -848,23 +848,36 @@ class IDODSClient(object):
     def retrieveInstall(self, name, **kws):
         '''Retrieve insertion device installation using any of the acceptable key words:
 
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type name of the device
-        - coordinatecenter: coordinate center number
+        :param name: installation name, which is its label on field
+        :type name: str
         
-        raises:
-            HTTPError
+        :param description: installation description
+        :type description: str
+        
+        :param cmpnt_type: component type name of the device
+        :type cmpnt_type: str
+        
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: str
+        
+        :param all_install: retrieve also system installs
+        :type all_install: str
             
-        returns:
-            {'id': {
-                    'id':                #int,
-                    'name':              #string,
-                    'description':       #string,
-                    'cmpnt_type':         #string,
-                    'coordinatecenter':  #float
+        :return: a map with structure like:
+        
+            .. code-block:: python
+            
+                {'id': {
+                        'id':                     #int,
+                        'name':                   #string,
+                        'description':            #string,
+                        'cmpnt_type':             #string,
+                        'cmpnt_type_description': #string,
+                        'coordinatecenter':       #float
+                    }
                 }
-            }
+                
+        :Raises: ValueError, MySQLError
         '''
         
         # Set URL
@@ -886,8 +899,40 @@ class IDODSClient(object):
         # Add coordinate center
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
+
+        # Add all install
+        if 'all_install' in kws:
+            params['all_install'] = kws['all_install']
         
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+        
+        return r.json()
+
+    def saveInsertionDevice(self, line):
+        '''Save insertion device installation using any of the acceptable key words:
+
+        - name: installation name, which is its label on field
+        - description: installation description
+        - cmpnt_type: component type of the device
+        - coordinatecenter: coordinate center number
+        
+        raises:
+            HTTPError
+            
+        returns:
+            {'id': new install id}
+        '''
+        
+        # Set URL
+        url = 'saveid/'
+        
+        # Set parameters
+        params={
+            'line': line
+        }
+        
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()
@@ -1549,7 +1594,7 @@ class IDODSClient(object):
                         'method_name':,    # string
                         'methoddesc':,     # string
                         'inventory_name':, # string
-                        'data':            # string
+                        'data':            # string, base64 encoded file content
                     }
                 }
 
@@ -1807,11 +1852,6 @@ class IDODSClient(object):
         
         # Add method name
         if 'method_name' in kws:
-            
-            # Check method name
-            if kws['method_name'] == None:
-                self.__raise_for_status(400, 'If method name is passed it should not be None!')
-            
             params['method_name'] = kws['method_name']
         
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
@@ -2291,6 +2331,23 @@ class IDODSClient(object):
             r = self.__session.post(self.__baseURL+'file/', files={'file': f}, data=params, auth=self.__auth)
             self.__raise_for_status(r.status_code, r.text)
             
+        return r.json()
+
+    def idodsInstall(self):
+        '''
+        Save common data into the database
+
+        :return: True if everything is ok
+
+        :Raises: HTTPError
+        '''
+        
+        # Try to retrieve data method
+        url = 'idods_install/'
+        
+        r=self.__session.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+        
         return r.json()
 
     @classmethod

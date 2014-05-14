@@ -12,6 +12,7 @@ Client is implemented in Python and is accessing active interlock service throug
       'definition':           , #str, definition of the device
       'logic':                , #str, name of the logic
       'shape':                , #str, shape of the logic
+      'logic_code':           , #int, logic code
       'bm_cell':              , #str, cell
       'bm_sequence':          , #str, sequence
       'bm_type':              , #str, type
@@ -42,6 +43,7 @@ Client is implemented in Python and is accessing active interlock service throug
       'definition':           , #str, definition of the device
       'logic':                , #str, name of the logic
       'shape':                , #str, shape of the logic
+      'logic_code':           , #int, logic code
       'cell':                 , #str, cell
       'type':                 , #str, type
       'set':                  , #str, set
