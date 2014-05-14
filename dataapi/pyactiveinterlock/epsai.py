@@ -768,7 +768,7 @@ class epsai(object):
             self.logger.info('Error when fetching active interlock device:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching active interlock device:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveDevice(self, ai_status, name, definition, logic, props):
+    def saveDevice(self, ai_status, name, definition, logic, props, ai_id = None):
         '''
         Save new device into database
         
@@ -799,7 +799,7 @@ class epsai(object):
             ValueError, MySQLError
         '''
         
-        ai_id = None
+        #ai_id = None
         
         # Check that status or id is set
         if ai_status == None and ai_id == None:

@@ -16,24 +16,35 @@ if sys.version_info[0] != 2 or sys.version_info[1] < 6:
     print("This library requires at least Python version 2.6")
     sys.exit(1)
 
+from copy import copy
+
+import ssl
 import requests
-_requests_version=[int(x) for x in requests.__version__.split('.')]
-if _requests_version[0] < 1 or sys.version_info[1] < 1:
-    print("This library requires at least Python-requests version 1.1.x")
-    sys.exit(1)
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
 from requests import auth
 from requests import HTTPError
 
-from copy import copy
-
-import base64
 try: 
     import json
 except ImportError: 
     import simplejson as json
 
 from _conf import _conf
+
+class SSLAdapter(HTTPAdapter):
+    '''An HTTPS Transport Adapter that uses an arbitrary SSL version.'''
+    def __init__(self, ssl_version=None, **kwargs):
+        self.ssl_version = ssl_version
+
+        super(SSLAdapter, self).__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       ssl_version=self.ssl_version)
 
 class ActiveInterlockClient(object):
     '''
@@ -48,7 +59,7 @@ class ActiveInterlockClient(object):
         password = 
         '''
         self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}    
-        self.__resource = ''
+        self.__resource = '/ai/'
         
         try:
             self.__baseURL = self.__getdefaultconfig('BaseURL', BaseURL)
@@ -60,8 +71,15 @@ class ActiveInterlockClient(object):
             else:
                 self.__auth = None
             
+            #self.client = requests.session()
             #requests.get(self.__baseURL + self.__resource, verify=False, headers=copy(self.__jsonheader)).raise_for_status()
-            self.client = requests.session()
+            self.__session = requests.Session()
+            # specify ssl version. Use SSL v3 for secure connection, https.
+            self.__session.mount('https://', SSLAdapter(ssl_version=ssl.PROTOCOL_SSLv3))
+            
+            #self.__session.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
+            self.__session.get(self.__baseURL + self.__resource+'web', headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
+
         except:
             raise Exception, 'Failed to create client to ' + self.__baseURL + self.__resource
         
@@ -117,7 +135,7 @@ class ActiveInterlockClient(object):
             'modified_by': self.__userName
         }
         
-        r=self.client.post(self.__baseURL+url, data=params, verify=False, headers=self.__jsonheader, auth=self.__auth)
+        r=self.__session.post(self.__baseURL+self.__resource+url, data=params, verify=False, headers=self.__jsonheader, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
         
         return r.json()

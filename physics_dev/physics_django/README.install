@@ -170,7 +170,13 @@ WSGIPassAuthorization On
 		python manage.py collectstatic
 		
 		When warned about overriding existing files, type 'yes'.
-			    
+		
+		* Prepare auth if not in place
+		cd /var/www/physics/physics_dev/physics_django/
+		python manage.py syncdb
+		
+		When warned about create new one, type 'yes'.
+
 		
 		* modify physics_dev/physics_django/sitestatic/js/configuration.js
 		change serviceurl to something like 
