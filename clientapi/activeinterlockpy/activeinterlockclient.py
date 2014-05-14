@@ -59,7 +59,7 @@ class ActiveInterlockClient(object):
         password = 
         '''
         self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}    
-        self.__resource = '/ai/'
+        self.__resource = ''
         
         try:
             self.__baseURL = self.__getdefaultconfig('BaseURL', BaseURL)
@@ -107,6 +107,7 @@ class ActiveInterlockClient(object):
                       'name':                 , #str, name of the device
                       'definition':           , #str, definition of the device
                       'logic':                , #str, name of the logic
+                      'logic_code':           , #int, logic code
                       'shape':                , #str, shape of the logic
                       'bm_cell':              , #str, cell
                       'bm_sequence':          , #str, sequence
@@ -138,6 +139,7 @@ class ActiveInterlockClient(object):
                       'definition':           , #str, definition of the device
                       'logic':                , #str, name of the logic
                       'shape':                , #str, shape of the logic
+                      'logic_code':           , #int, logic code
                       'cell':                 , #str, cell
                       'type':                 , #str, type
                       'set':                  , #str, set
