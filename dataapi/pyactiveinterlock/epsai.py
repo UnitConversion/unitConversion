@@ -313,8 +313,9 @@ class epsai(object):
         :param prop_type_name: active interlock property  type name
         :type prop_type_name: str
         
-        :returns:
-            Returned dictionary::
+        :returns: Returned dictionary
+            
+            .. code-block:: python
             
                 {'id':
                     'id':            , #int, property id
@@ -640,6 +641,7 @@ class epsai(object):
                      'definition':      , #str, definition of the device
                      'logic':           , #str, name of the logic
                      'shape':           , #str, shape of the logic
+                     'logic_code':      , #int, logic code
                      'prop1key':        , #str, first property
                      ...
                      'propNkey':        , #str, Nth property
@@ -702,6 +704,7 @@ class epsai(object):
             aid.definition,
             ail.name,
             ail.shape,
+            ail.logic_code,
             aid.active_interlock_id
         FROM active_interlock_device aid
         LEFT JOIN active_interlock_logic ail ON(aid.active_interlock_logic_id = ail.active_interlock_logic_id)
@@ -742,6 +745,7 @@ class epsai(object):
                     'definition': r[2],
                     'logic': r[3],
                     'shape': r[4],
+                    'logic_code': r[5],
                     'prop_statuses': {}
                 }
                 
@@ -787,7 +791,58 @@ class epsai(object):
         :param logic: name of the logic that has t be saved in the database
         :type logic: str
         
-        :param props: device properties' values in a Python dictionary format
+        :param props: device properties' values in a Python dictionary format.
+            
+            Property dict for bending magnet should have the following structure::
+            
+                {
+                    'bm_cell': '',
+                    'bm_sequence': '',
+                    'bm_type': '',
+                    'bm_s': '',
+                    'bm_aiolh': '',
+                    'bm_aiorh': '',
+                    'bm_aiolv': '',
+                    'bm_aiorv': '',
+                    'bm_safe_current': '',
+                    'bm_in_use': ''
+                }
+            
+            and property dict for insertion device should have the following structure::
+                
+                {
+                    'cell': '',
+                    'type': '',
+                    'set': '',
+                    'str_sect': '',
+                    'defined_by': '',
+                    's1_name': '',
+                    's1_pos': '',
+                    's1_pos_from': '',
+                    's2_name': '',
+                    's2_pos': '',
+                    's2_pos_from': '',
+                    's3_pos': '',
+                    's3_pos_from': '',
+                    'max_offset': '',
+                    'max_angle': '',
+                    'extra_offset': '',
+                    'x_offset_s1': '',
+                    'x_offset_origin_s1': '',
+                    'x_offset_s2': '',
+                    'x_offset_origin_s2': '',
+                    'x_offset_s3': '',
+                    'x_angle': '',
+                    'y_offset_s1': '',
+                    'y_offset_origin_s1': '',
+                    'y_offset_s2': '',
+                    'y_offset_origin_s2': '',
+                    'y_offset_s3': '',
+                    'y_angle': '',
+                    'safe_current': '',
+                    'in_use': ''
+                }
+            
         :type props: dict
         
         :return:
@@ -798,8 +853,6 @@ class epsai(object):
         :raises:
             ValueError, MySQLError
         '''
-        
-        #ai_id = None
         
         # Check that status or id is set
         if ai_status == None and ai_id == None:
@@ -1435,12 +1488,14 @@ class epsai(object):
             
             A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below::
             
-                {'id: {'label':     , # str, columns's name
-                     'id':          , # int, internal id of property type
-                     'name':        , # str, active interlock property type name 
-                     'unit':        , # str, active interlock property type unit
-                     'description': , # str, property type description
-                     'date':        , # datetime, when this entry was created
+                {'id: 
+                    {
+                        'label':     , # str, columns's name
+                        'id':          , # int, internal id of property type
+                        'name':        , # str, active interlock property type name 
+                        'unit':        , # str, active interlock property type unit
+                        'description': , # str, property type description
+                        'date':        , # datetime, when this entry was created
                     }
                 }
         
