@@ -20,8 +20,15 @@ from copy import copy
 
 import ssl
 import requests
+if requests.__version__ < '2.0.0':
+    print("This library requires at least request version 2.0.0")
+    sys.exit(1)
+
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
+try:
+    from urllib3.poolmanager import PoolManager
+except ImportError:
+    from requests.packages.urllib3.poolmanager import PoolManager
 
 from requests import auth
 from requests import HTTPError
@@ -59,7 +66,7 @@ class ActiveInterlockClient(object):
         password = 
         '''
         self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}    
-        self.__resource = ''
+        self.__resource = '/ai/'
         
         try:
             self.__baseURL = self.__getdefaultconfig('BaseURL', BaseURL)
