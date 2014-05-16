@@ -5,7 +5,8 @@ Created on Jan 10, 2014
 '''
 
 import unittest
-import os, sys
+import os
+import sys
 
 from idods.rdbutils.preparerdb import *
 
@@ -14,43 +15,41 @@ try:
 except ImportError:
     import json
 
-libPath = os.path.abspath("../../../dataapi/")
-sys.path.append(libPath)
-
 from pyidods.idods import idods
 
+
 class TestIdods(unittest.TestCase):
-    
+
     def cleanTables(self):
         # Clean offline data
         cleanOfflineData(['spec1234desc'])
-        
+
         # Clean install rel prop
         cleanInstallRelProp(['testprop'])
-        
+
         # Clean install rel prop type
         cleanInstallRelPropType(['testprop', 'prop2'])
-        
+
         # Clean install rel
         cleanInstallRel('test child', 'test parent')
         cleanInstallRel('test parent', 'test child')
-        
+
         # Clean online data
         cleanOnlineData(['desc1234'])
-        
+
         # Clean inventory install map
         cleanInventoryToInstall('test parent', 'name')
         cleanInventoryToInstall('test parent', 'name2')
-        
+
         # Clean install table
         cleanInstall(['test parent', 'test child'])
-        
+
         # Clean vendor table
         cleanVendor(['test vendor', 'test vendor2'])
-        
+
         # Clean data method
         cleanDataMethod(['method', 'method2', 'test'])
-        
+
         # Clean inventory property
         cleanInventoryProperty('name', 'alpha')
         cleanInventoryProperty('name2', 'alpha')
@@ -58,7 +57,7 @@ class TestIdods(unittest.TestCase):
         cleanInventory(['name', 'name2'])
         # Clean inventory property template table
         cleanInventoryPropertyTemplate(['alpha', 'beta'])
-        
+
         # Clean component type property
         cleanComponentTypeProperty('test cmpnt3', 'length')
         cleanComponentTypeProperty('Magnet', 'length')
@@ -70,7 +69,7 @@ class TestIdods(unittest.TestCase):
         # Clean component type property type
         cleanComponentTypePropertyType(['length', 'width', 'insertion_device'])
         # Clean if there is something left from previous runs
-        cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
+        cleanComponentType(['test cmpnt', 'test cmpnt2', 'test cmpnt3', 'test cmpnt4', 'Magnet'])
 
         # Clean raw data
         cleanRawData()
@@ -95,48 +94,48 @@ class TestIdods(unittest.TestCase):
         # Test retrieving vendor by name
         result = self.api.retrieveVendor('test vendor')
         resultKeys = result.keys()
-        
+
         self.assertEqual(result[resultKeys[0]]['name'], 'test vendor', 'Verdor retrieved')
 
         # Test retrieving vendor without a name
         self.assertRaises(ValueError, self.api.retrieveVendor, None)
-        
+
     '''
     Test vendor update functionality
     '''
     def testUpdateVendor(self):
-        
+
         # Save new vendor
         idObject = self.api.saveVendor('test vendor', 'desc')
-        
+
         # Update vendor name and description
         self.assertTrue(self.api.updateVendor(idObject['id'], None, 'test vendor2', description = 'desc2'))
-        
+
         # Try to update without vendor id
         self.assertRaises(ValueError, self.api.updateVendor, None, None, 'test vendor2', description = 'desc2')
-        
+
         # Retrieve updated vendor
         vendor = self.api.retrieveVendor('test vendor2')
         vendorKeys = vendor.keys()
         vendorObject = vendor[vendorKeys[0]]
-        
+
         # Check if id is still the same
         self.assertEqual(idObject['id'], vendorObject['id'], "Ids should be the same")
-        
+
         # Check new name
         self.assertEqual(vendorObject['name'], 'test vendor2')
-        
+
         # Check new description
         self.assertEqual(vendorObject['description'], 'desc2')
-        
+
         # Test updating by name
         self.assertTrue(self.api.updateVendor(None, 'test vendor2', 'test vendor', description=None))
-        
+
         # Retrieve updated vendor
         vendor = self.api.retrieveVendor('test vendor')
         vendorKeys = vendor.keys()
         vendorObject = vendor[vendorKeys[0]]
-        
+
         # Check new description
         self.assertEqual(vendorObject['description'], None, "New description should be set to None")
 
@@ -180,17 +179,17 @@ class TestIdods(unittest.TestCase):
     Test different options of saving component type
     '''
     def testSaveComponentType(self):
-        
+
         # Save component type property type
         self.api.saveComponentTypePropertyType('length', 'test description')
 
         # Save new component type
         cmpntid = self.api.saveComponentType('test cmpnt3', 'test description', props = {'length': 4.354})
         result = self.api.retrieveComponentType('test cmpnt3')
-        
+
         # Check if returned name is the same as saved one
         self.assertEqual(result[cmpntid['id']]['name'], 'test cmpnt3', 'We got back the right component type')
-        
+
         # Check if property was successfully saved in the database
         self.assertTrue('length' in result[cmpntid['id']] and result[cmpntid['id']]['length'] == '4.354', "Component type property in the database")
 
@@ -209,24 +208,24 @@ class TestIdods(unittest.TestCase):
     Test updating component type
     '''
     def testUpdateComponentType(self):
-        
+
         # Save component type property type
         self.api.saveComponentTypePropertyType('length', 'test description')
 
         # Save new component type
         self.api.saveComponentType('test cmpnt3', 'test description', props = {'length': 4.354})
-        
+
         # Try updating
         self.assertTrue(self.api.updateComponentType(None, 'test cmpnt3', 'Magnet', description = 'desc', props = {'length': 3}))
-        
+
         # Get updated component type
         cmpnt = self.api.retrieveComponentType('Magnet')
         cmpntKeys = cmpnt.keys()
         cmpntObject = cmpnt[cmpntKeys[0]]
-        
+
         # Check new description
         self.assertEqual(cmpntObject['description'], 'desc')
-        
+
         # Check new length property value
         self.assertEqual(cmpntObject['length'], '3')
 
@@ -234,29 +233,29 @@ class TestIdods(unittest.TestCase):
     Test saving, retrieving and updating component type property type
     '''
     def testComponentTypePropertyType(self):
-        
+
         # Save component type property type
         propertyType = self.api.saveComponentTypePropertyType('length', 'test description')
-        
+
         # Retrieve component type property type
         retrievedPropertyType = self.api.retrieveComponentTypePropertyType('length')
         retrievedPropertyTypeKeys = retrievedPropertyType.keys()
         retrievedPropertyTypeObject = retrievedPropertyType[retrievedPropertyTypeKeys[0]]
-        
+
         # Check if name was saved
         self.assertEqual(retrievedPropertyTypeObject['name'], 'length')
-        
+
         # Check if description was saved
         self.assertEqual(retrievedPropertyTypeObject['description'], 'test description')
-        
+
         # Try to update with a new name by old name
         self.assertTrue(self.api.updateComponentTypePropertyType(None, 'length', 'width'))
-        
+
         # Retrieve it again
         retrievedPropertyType = self.api.retrieveComponentTypePropertyType('width')
         retrievedPropertyTypeKeys = retrievedPropertyType.keys()
         retrievedPropertyTypeObject = retrievedPropertyType[retrievedPropertyTypeKeys[0]]
-        
+
         # Check if ids are the same
         self.assertEqual(propertyType['id'], retrievedPropertyTypeObject['id'])
 
@@ -264,24 +263,24 @@ class TestIdods(unittest.TestCase):
     Test saving, retrieving and updating component type property
     '''
     def testComponentTypeProperty(self):
-        
+
         # Save component type property type
         propertyType = self.api.saveComponentTypePropertyType('length', 'test description')
-        
+
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
-        
+
         # Save component type property
         property = self.api.saveComponentTypeProperty('Magnet', 'length', 3)
-        
+
         # Try to update
         self.assertTrue(self.api.updateComponentTypeProperty('Magnet', 'length', 4))
-        
+
         # Get updated component type property
         updatedProperty = self.api.retrieveComponentTypeProperty('Magnet', 'length')
         updatedPropertyKeys = updatedProperty.keys()
         updatedPropertyObject = updatedProperty[updatedPropertyKeys[0]]
-        
+
         # Check value
         self.assertEqual(updatedPropertyObject['value'], '4')
 
@@ -295,31 +294,31 @@ class TestIdods(unittest.TestCase):
 
         # Try to save new inventory property template
         self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
-        
+
         # Retrieve save inventory property template
         resultRetrieve = self.api.retrieveInventoryPropertyTemplate('alpha')
         resultRetrieveKeys = resultRetrieve.keys()
-        
+
         # Check if names match
         self.assertEqual('alpha', resultRetrieve[resultRetrieveKeys[0]]['name'], 'Correct inventory property template retrieved')
-        
+
         # Try to save inventory property template without a name
         self.assertRaises(ValueError, self.api.saveInventoryPropertyTemplate, 'Magnet', None)
-        
+
         # Try to save inventory property template without a component type
         self.assertRaises(ValueError, self.api.saveInventoryPropertyTemplate, None, 'beta')
-        
+
         # Try to save inventory property template with a non existing component type
         self.assertRaises(ValueError, self.api.saveInventoryPropertyTemplate, 'bla', 'beta')
-        
+
         # Try to save inventory property template with all the parameters filled in
         resultId = self.api.saveInventoryPropertyTemplate('Magnet', 'beta', 'description', 'default', 'm')
         result = self.api.retrieveInventoryPropertyTemplate('bet*')
         resultKeys = result.keys()
-        
+
         # Check ids
         self.assertEqual(resultId['id'], result[resultKeys[0]]['id'], "We got the object that we saved.")
-        
+
         # Check all the other properties
         self.assertTrue(
             result[resultKeys[0]]['name'] == 'beta' and
@@ -328,7 +327,7 @@ class TestIdods(unittest.TestCase):
             result[resultKeys[0]]['unit'] == 'm' and
             result[resultKeys[0]]['cmpnt_type'] == 'Magnet'
         , "Check all the properties in the returned object")
-    
+
     '''
     Test updating inventory property template
     '''
@@ -338,43 +337,43 @@ class TestIdods(unittest.TestCase):
 
         # Try to save new inventory property template
         idObject = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha', 'desc', 'default', 'units')
-        
+
         # Update template
         self.assertTrue(self.api.updateInventoryPropertyTemplate(idObject['id'], 'Magnet', 'beta'))
-        
+
         # Retrieve updated template
         template = self.api.retrieveInventoryPropertyTemplate('beta')
         templateKeys = template.keys()
         templateObject = template[templateKeys[0]]
-        
+
         # Check if ids are the same
         self.assertEqual(idObject['id'], templateObject['id'], "Ids should be the same")
-        
+
         # Check if description stayed the same
         self.assertEqual(templateObject['description'], 'desc')
-    
+
     '''
     Try a couple of scenarios of saving inventory property into database
     '''
     def testSaveInventoryProperty(self):
-        
+
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
         # Try to save new inventory property template
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
-        
+
         # Create inventory
         inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
-        
+
         # Create property
         prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
-        
+
         # Retrieve property
         retrieveProperty = self.api.retrieveInventoryProperty('name', 'alpha', 'value')
         retrievePropertyKeys = retrieveProperty.keys()
-        
+
         self.assertEqual('value', retrieveProperty[retrievePropertyKeys[0]]['value'], "Property save and property retrieved have the same value.")
-    
+
     '''
     Test updating inventory property
     '''
@@ -383,154 +382,154 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
         # Try to save new inventory property template
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
-        
+
         # Create inventory
         inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
-        
+
         # Create property
         prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
-        
+
         # Try to update
         self.assertTrue(self.api.updateInventoryProperty('name', 'alpha', 'newvalue'), "Set new value to alpha property")
-        
+
         # Retrieve property
         retrieveProperty = self.api.retrieveInventoryProperty('name', 'alpha')
         retrievePropertyKeys = retrieveProperty.keys()
         propertyObject = retrieveProperty[retrievePropertyKeys[0]]
-        
+
         # Check if id stayed the same
         self.assertEqual(prop['id'], propertyObject['id'], "Id should be the same after updating!")
-        
+
         # Check new value
         self.assertEqual(propertyObject['value'], 'newvalue')
-    
+
     '''
     Try  to save new inventory into database
     '''
     def testSaveInventory(self):
-        
+
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
-        
+
         # Try to save new inventory property template
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
-        
+
         # Create inventory
         idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
-        
+
         inventory = self.api.retrieveInventory('name')
         inventoryKeys = inventory.keys()
-        
+
         # Check names
         self.assertEqual(inventory[inventoryKeys[0]]['name'], 'name', "Names are correct")
-        
+
         # Check properties
         self.assertTrue('alpha' in inventory[inventoryKeys[0]], "Key in returned object")
-        
+
         # Exception should be raised if component type doesn't exist
         self.assertRaises(ValueError, self.api.saveInventory, 'name')
-        
+
         # Exception should be raised if inventory property template doesn't exist
         self.assertRaises(ValueError, self.api.saveInventory, 'name', compnttype='Magnet', props={'beta': 43})
-        
+
     '''
     Try to update inventory
     '''
     def testUpdateInventory(self):
-        
+
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
-        
+
         # Try to save new inventory property template
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
-        
+
         # Create inventory
         idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
-        
+
         # Update inventory
         self.assertTrue(self.api.updateInventory(None, 'name', 'name2', cmpnt_type='Magnet', alias='name3', props={'alpha': 43}))
-        
+
         # Get updated inventory
         inventory = self.api.retrieveInventory('name2')
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
-        
+
         # Check if ids are the same
         self.assertEqual(inventoryObject['id'], idObject['id'], "Ids should stay the same!")
-        
+
         # Check if alpha property value has changed
         self.assertEqual(inventoryObject['alpha'], '43', "Check if property has changed")
-        
+
     '''
     Try to save offline data method
     '''
     def testSaveDataMethod(self):
-        
+
         # Save data method with name and description
         saveDataMethod = self.api.saveDataMethod('method', 'description')
         retrieveDataMethod = self.api.retrieveDataMethod('method')
         retrieveDataMethodKeys = retrieveDataMethod.keys()
-        
+
         # Try to save another data method with the same name
         self.assertRaises(ValueError, self.api.saveDataMethod, 'method')
-        
+
         # Test id
         self.assertTrue(retrieveDataMethod[retrieveDataMethodKeys[0]]['id'] == saveDataMethod['id'], "Saved and retrieved data method id are the same")
-        
+
         # Test name and description
         self.assertTrue(retrieveDataMethod[retrieveDataMethodKeys[0]]['name'] == 'method' and retrieveDataMethod[retrieveDataMethodKeys[0]]['description'] == 'description', "Saved name and description are the same")
-    
+
         # Test saving data method without name
         self.assertRaises(ValueError, self.api.saveDataMethod, None)
-    
+
     '''
     Test updating data method
     '''
     def testUpdateDataMethod(self):
         # Save data method with name and description
         saveDataMethod = self.api.saveDataMethod('method', 'description')
-        
+
         # Try updating by old name
         self.assertTrue(self.api.updateDataMethod(None, 'method', 'method2', description='new desc'))
-        
+
         # Get updated data method
         updatedDataMethod = self.api.retrieveDataMethod('method2')
         updatedDataMethodKeys = updatedDataMethod.keys()
         updatedDataMethodObject = updatedDataMethod[updatedDataMethodKeys[0]]
-        
+
         # Check ids
         self.assertEqual(saveDataMethod['id'], updatedDataMethodObject['id'])
-        
+
         # Check new description
         self.assertEqual(updatedDataMethodObject['description'], 'new desc',)
-        
+
         # Update by an id
         self.assertTrue(self.api.updateDataMethod(updatedDataMethodObject['id'], None, 'method', description='new desc2'))
-        
+
         # Update should fail if there is no id or old name present
         self.assertRaises(ValueError, self.api.updateDataMethod, None, None, 'method2')
-    
+
     '''
     Try to retrieve offline data method
     '''
     def testRetrieveDataMethod(self):
-        
+
         # Prepare table
         saveDataMethod = self.api.saveDataMethod('method', 'description')
         self.api.saveDataMethod('method2', 'description')
-        
+
         # Try to save data method with the same name
         self.assertRaises(ValueError, self.api.saveDataMethod, 'method')
-        
+
         # Try to get data method with the same parameters
         dataMethod = self.api.retrieveDataMethod('method', 'description')
         dataMethodKeys = dataMethod.keys()
-        
+
         # Test both parameters
         self.assertTrue(dataMethod[dataMethodKeys[0]]['id'] == saveDataMethod['id'] and dataMethod[dataMethodKeys[0]]['name'] == 'method' and dataMethod[dataMethodKeys[0]]['description'] == 'description', "We got back the right data method")
 
         dataMethod2 = self.api.retrieveDataMethod('meth*')
-        
+
         # Try to get both methods back from the database
         self.assertTrue(len(dataMethod2) == 2, "We got back two methods")
 
@@ -538,69 +537,69 @@ class TestIdods(unittest.TestCase):
     Test saving, tetrieving and updating raw data
     '''
     def testRawData(self):
-        
+
         # Prepare raw data
         with open('download_4', 'rb') as f:
             savedData = self.api.saveRawData(f.read())
-        
+
         with open('download_128', 'rb') as f:
             # Check if data was successfully updated
             self.assertTrue(self.api.updateRawData(savedData['id'], f.read()))
-            
+
         # Retrieve data
         result = self.api.retrieveRawData(savedData['id'])
         resultKeys = result.keys()
         resultObject = result[resultKeys[0]]
-        
+
         self.assertNotEqual(resultObject['data'], '')
 
     '''
     Save offline data
     '''
     def testSaveOfflineData(self):
-        
+
         # Prepare data method
         savedDataMethod = self.api.saveDataMethod('method', 'description')
-        
+
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare inventory
         savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
-        
+
         # Prepare method
         savedMethod = self.api.saveDataMethod('test')
-        
+
         # Prepare raw data
         with open('download_4', 'rb') as f:
             savedData = self.api.saveRawData(f.read())
-        
+
         # Create save offline data
         savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
-        
+
         # Retrieve offline data by gap range
         offlineData = self.api.retrieveOfflineData(gap=json.dumps((3, 4)))
         offlineDataKeys = offlineData.keys()
         offlineDataObject = offlineData[offlineDataKeys[0]]
-        
+
         # Check if we get back one or more offline data
         self.assertTrue(len(offlineData) > 0, "One or more offline data should be returned")
-        
+
         # Test inventory name
         self.assertEqual(offlineDataObject['inventory_name'], 'name')
-        
+
         # Test method name
         self.assertEqual(offlineDataObject['method_name'], 'test')
-        
+
         # Test status
         self.assertEqual(offlineDataObject['status'], 1)
-        
+
         # Test data file name
         self.assertEqual(offlineDataObject['data_file_name'], 'datafile')
-        
+
         # Test gap
         self.assertEqual(offlineDataObject['gap'], 3.4)
-        
+
         # Test description
         self.assertEqual(offlineDataObject['description'], 'spec1234desc')
 
@@ -608,37 +607,37 @@ class TestIdods(unittest.TestCase):
     Try to update offline data
     '''
     def testUpdateOfflineData(self):
-        
+
         # Prepare data method
         savedDataMethod = self.api.saveDataMethod('method', 'description')
-        
+
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare inventory
         savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
-        
+
         # Prepare raw data
         with open('download_4', 'rb') as f:
             savedData = self.api.saveRawData(f.read())
-        
+
         # Create offline data
         savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
-        
+
         # Update offline data
         self.assertTrue(self.api.updateOfflineData(savedOfflineData['id'], status=2, phase1=2.4, phasemode='p', data_file_ts='2014-02-03'))
-        
+
         # Retrieve updated offline data by id
         updatedData = self.api.retrieveOfflineData(offlineid=savedOfflineData['id'])
         updatedDataKeys = updatedData.keys()
         updatedDataObject = updatedData[updatedDataKeys[0]]
-        
+
         # Check status
         self.assertEqual(updatedDataObject['status'], 2)
-        
+
         # Check gap
         self.assertEqual(updatedDataObject['gap'], 3.4)
-        
+
         # Check phase mode
         self.assertEqual(updatedDataObject['phasemode'], 'p')
 
@@ -648,27 +647,27 @@ class TestIdods(unittest.TestCase):
     def testInstall(self):
         # Prepare component type
         self.api.saveComponentType('Magnet')
-        
+
         # Prepare install
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Try to update
         self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description = 'desc2'))
-        
+
         # Try to update by setting component type to None
         self.assertRaises(ValueError, self.api.updateInstall, None, 'test child', 'test child', cmpnt_type=None)
-        
+
         # Retrieve successfully updated component type
         componentType = self.api.retrieveInstall('test child')
         componentTypeKeys = componentType.keys()
         componentTypeObject = componentType[componentTypeKeys[0]]
-        
+
         # Check ids
         self.assertEqual(savedInstall['id'], componentTypeObject['id'])
-        
+
         # Check description
         self.assertEqual(componentTypeObject['description'], 'desc2')
-        
+
         # Check coordinate center
         self.assertEqual(componentTypeObject['coordinatecenter'], 2.2)
 
@@ -676,24 +675,24 @@ class TestIdods(unittest.TestCase):
     Test saving, retrieving and updating install rel property type
     '''
     def testInstallRelPropertyType(self):
-        
+
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
-        
+
         # Try to update
         self.assertTrue(self.api.updateInstallRelPropertyType(None, 'testprop', 'prop2', description='desc', unit='units'))
-        
+
         # Retrieve updated property type
         updatedPropType = self.api.retrieveInstallRelPropertyType('prop2')
         updatedPropTypeKeys = updatedPropType.keys()
         updatedPropTypeObject = updatedPropType[updatedPropTypeKeys[0]]
-        
+
         # Check ids
         self.assertEqual(propType['id'], updatedPropTypeObject['id'])
-        
+
         # Check if units are still the same
         self.assertEqual(updatedPropTypeObject['unit'], 'units')
-        
+
         # Check if description is still the same
         self.assertEqual(updatedPropTypeObject['description'], 'desc')
 
@@ -701,33 +700,33 @@ class TestIdods(unittest.TestCase):
     Try to save, retrieve and update install rel property
     '''
     def testInstallrelProperty(self):
-        
+
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
-        
+
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
-        
+
         # Prepare install parent
         savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
 
         # Save rel
         rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1)
-        
+
         # Save install rel property
         prop = self.api.saveInstallRelProperty(rel['id'], 'testprop', 4)
-        
+
         # Try to update install rel property
         self.assertTrue(self.api.updateInstallRelProperty('test parent', 'test child', 'testprop', value=5))
-        
+
         # Retrieve updated install rel property
         updatedProp = self.api.retrieveInstallRelProperty(rel['id'], 'testprop')
         updatedPropKeys = updatedProp.keys()
         updatedPropObject = updatedProp[updatedPropKeys[0]]
-        
+
         # Test value
         self.assertEqual(updatedPropObject['value'], '5')
 
@@ -735,39 +734,39 @@ class TestIdods(unittest.TestCase):
     Test saving install relationship
     '''
     def testSaveInstallRel(self):
-        
+
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
-        
+
         # Prepare install parent
         savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
-        
+
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
-        
+
         # Save rel
         rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1, {'testprop': 'testvalue'})
-        
+
         # Retrieve rel
         retrievedRel = self.api.retrieveInstallRel(rel['id'])
         retrievedRelKeys = retrievedRel.keys()
         retrievedRelObject = retrievedRel[retrievedRelKeys[0]]
-        
+
         # Check description
         self.assertEqual(retrievedRelObject['description'], 'desc')
-        
+
         # Check order
         self.assertEqual(retrievedRelObject['order'], 1)
-        
+
         # Check test property
         self.assertEqual(retrievedRelObject['testprop'], 'testvalue')
-        
+
         # Test saving another rel with same parent and child
         self.assertRaises(ValueError, self.api.saveInstallRel, 'test parent', 'test child', None, None)
-        
+
         # Test saving install rel with property that is not defined
         self.assertRaises(ValueError, self.api.saveInstallRel, 'test child', 'test parent', None, None, {'testprop2': 'testvalue'})
 
@@ -775,41 +774,41 @@ class TestIdods(unittest.TestCase):
     Test updating install relationship
     '''
     def testUpdateInstallRel(self):
-        
+
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
-        
+
         # Prepare install parent
         savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
-        
+
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
-        
+
         # Save rel
         rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1, {'testprop': 'testvalue'})
-        
+
         self.assertTrue(self.api.updateInstallRel('test parent', 'test child', description='descupd', order=2, props={'testprop': 'value'}))
-        
+
         # Retrieve rel
         retrievedRel = self.api.retrieveInstallRel(rel['id'])
         retrievedRelKeys = retrievedRel.keys()
         retrievedRelObject = retrievedRel[retrievedRelKeys[0]]
-        
+
         # Check description
         self.assertEqual(retrievedRelObject['description'], 'descupd')
-        
+
         # Check order
         self.assertEqual(retrievedRelObject['order'], 2)
-        
+
         # Check test property
         self.assertEqual(retrievedRelObject['testprop'], 'value')
-        
+
         # Test saving another rel with same parent and child
         self.assertRaises(ValueError, self.api.saveInstallRel, 'test parent', 'test child', None, None)
-        
+
         # Test saving install rel with property that is not defined
         self.assertRaises(ValueError, self.api.saveInstallRel, 'test child', 'test parent', None, None, {'testprop2': 'testvalue'})
 
@@ -817,31 +816,31 @@ class TestIdods(unittest.TestCase):
     Test saving, retrieving and updating inventory to install map
     '''
     def testInventoryToInstall(self):
-        
+
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
-        
+
         # Try to save new inventory property template
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
-        
+
         # Create inventory
         idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
         idObject2 = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
-        
+
         # Prepare install parent
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Map install to inventory
         map = self.api.saveInventoryToInstall('test parent', 'name')
-        
+
         # Retrieve saved map
         retrieveMap = self.api.retrieveInventoryToInstall(None, 'test parent', 'name')
         retrieveMapKeys = retrieveMap.keys()
         retrieveMapObject = retrieveMap[retrieveMapKeys[0]]
-        
+
         # Check if saved and retrieved maps are equal
         self.assertEqual(map['id'], retrieveMapObject['id'])
-        
+
         # Set install to a new inventory
         self.assertTrue(self.api.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
 
@@ -849,33 +848,33 @@ class TestIdods(unittest.TestCase):
     Test saving online data
     '''
     def testSaveOnlineData(self):
-        
+
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
-        
+
         # Prepare install parent
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
-        
+
         # Retrieve online data
         retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
         retrievedOnlineDataKeys = retrievedOnlineData.keys()
         retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
-        
+
         # Test install name
         self.assertEqual('test parent', retrievedOnlineDataObject['install_name'])
-        
+
         # Test description
         self.assertEqual('desc1234', retrievedOnlineDataObject['description'])
-        
+
         # Test username
         self.assertEqual('username', retrievedOnlineDataObject['username'])
-        
+
         # Test URL
         self.assertEqual('url', retrievedOnlineDataObject['url'])
-        
+
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
 
@@ -883,30 +882,30 @@ class TestIdods(unittest.TestCase):
     Test update online data
     '''
     def testUpdateOnlineData(self):
-        
+
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
-        
+
         # Prepare install parent
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
-        
+
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
-        
+
         # Update online data
         self.assertTrue(self.api.updateOnlineData(onlineid['id'], username='username2'))
-        
+
         # Retrieve online data
         retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
         retrievedOnlineDataKeys = retrievedOnlineData.keys()
         retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
-        
+
         # Test username
         self.assertEqual('username2', retrievedOnlineDataObject['username'])
-        
+
         # Test URL
         self.assertEqual('url', retrievedOnlineDataObject['url'])
-        
+
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
 

@@ -8,6 +8,7 @@ import logging
 import MySQLdb
 import os
 import base64
+from utils.timer import Timer
 
 from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
 from _mysql_exceptions import MySQLError
@@ -50,46 +51,46 @@ class idods(object):
     def _checkRangeAndAppend(self, parameterKey, parameterValue, sqlString, valsList, prependedOperator = None, valueType = None):
         '''
         Check for ranges in a parameter value and append appropriate sql
-        
+
         parameters:
             - parameterKey: name of the parameter in the DB table
             - parameterValue: value of this parameter, it can be a tuple
             - sqlString: existing sql string that was generated outside of this function
             - valsList: list of formated values that should be inserted into sql statement
             - prepandedOperator: sql operator that will be prepended before the new condition
-            
+
         return:
             tuple of new sql string and new list of values
         '''
-        
+
         # If value type is set, cast a value
         if valueType == "float":
             parameterValue = float(parameterValue)
-        
+
         # Prepend operator if it exists
         if prependedOperator != None:
             sqlString += " " + prependedOperator + " "
-        
+
         # Check if value equals tuple
         parameterValue = json.loads(parameterValue)
-        
+
         if isinstance(parameterValue, (list, tuple)):
-                
+
             # Check tuple length. It should be 2.
             if len(parameterValue) != 2:
                 raise ValueError("Range tuple for attribute %s should contain two values!" % parameterKey)
-            
+
             # If everything is ok, append conditions to sql statement
             else:
                 sqlString += ' ' + parameterKey + ' IS NOT NULL AND ' + parameterKey + ' >= %s AND ' + parameterKey + ' <= %s '
                 valsList.append(parameterValue[0])
                 valsList.append(parameterValue[1])
-        
+
         # There is not tuple so just append equals
         else:
             sqlString += " " + parameterKey + " = %s"
             valsList.append(parameterValue)
-            
+
         return (sqlString, valsList)
 
     def retrieveVendor(self, name, description=None):
@@ -99,10 +100,10 @@ class idods(object):
 
         :param name: vendor name
         :type name: str
-        
+
         :param description: description for a vendor
         :type description: str
-        
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -110,7 +111,7 @@ class idods(object):
                 {'id': {
                     'id': ,
                     'name': ,
-                    'description': 
+                    'description':
                     }
                  ...
                 }
@@ -162,7 +163,7 @@ class idods(object):
 
         :param name: vendor name
         :type name: str
-        
+
         :param dtype: device type
 
         :param description: a brief description which could have up to 255 characters
@@ -176,7 +177,7 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Check for vendor name parameter
         _checkParameter('name', name)
 
@@ -192,7 +193,7 @@ class idods(object):
             INSERT INTO vendor (vendor_name, vendor_description) VALUES (%s, %s)
             '''
             vals=[name, description]
-        
+
         else:
             sql = '''
             INSERT INTO vendor (vendor_name) VALUES (%s)
@@ -241,33 +242,33 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Set properties
         queryDict = {}
         whereKey = None
         whereValue = None
-        
+
         # Check id
         if vendor_id:
             _checkParameter('id', vendor_id, 'prim')
             whereKey = 'vendor_id'
             whereValue = vendor_id
-            
+
         # Check old name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'vendor_name'
             whereValue = old_name
-            
+
         # Check where condition
         if whereKey == None:
             raise ValueError("Vendor id or old vendor name should be present to execute an update!")
-        
+
         # Check for vendor name parameter
         _checkParameter('name', name)
         queryDict['vendor_name'] = name
 
-        
+
         # Append description
         if 'description' in kws:
             queryDict['vendor_description'] = kws['description']
@@ -279,7 +280,7 @@ class idods(object):
             # Execute sql
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
@@ -334,7 +335,7 @@ class idods(object):
         WHERE
         '''
         vals = []
-        
+
         # Append name
         sqlAndVals = _checkWildcardAndAppend("inventory_prop_tmplt_name", name, sql, vals)
 
@@ -356,7 +357,7 @@ class idods(object):
                     'default': r[4],
                     'unit': r[5]
                 }
-            
+
             return resdict
 
         except MySQLdb.Error as e:
@@ -369,16 +370,16 @@ class idods(object):
 
         :param cmpnt_type: component type name M
         :type cmpnt_type: str
-        
+
         :param name: property template name M
         :type name: str
-        
+
         :param description: property template description O
         :type description: str
-        
+
         :param default: property template default value O
         :type default: str
-        
+
         :param unit: property template unit O
         :type unit: str
 
@@ -393,12 +394,12 @@ class idods(object):
 
         # Raise an error if inventory property template exists
         existingInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(name)
-        
+
         if len(existingInventoryPropertyTemplate):
             raise ValueError("Inventory property template (%s) already exists in the database!" % name)
 
         # Check component type
-        result = self.retrieveComponentType(cmpnt_type);
+        result = self.retrieveComponentType(cmpnt_type, all_cmpnt_types = True);
 
         if len(result) == 0:
             raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
@@ -426,7 +427,7 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': templateid}
 
         except MySQLdb.Error as e:
@@ -497,7 +498,7 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
 
         except MySQLdb.Error as e:
@@ -512,12 +513,12 @@ class idods(object):
     def _retrieveInventoryProperty(self, inventoryId, inventoryPropertyTemplateId = None, value = None):
         '''
         Retrieve id and value from inventory property table
-        
+
         parameters:
             - inventoryId: id of the inventory entry
             - inventoryPropertyTemplateId: id of the inventory property template
             - value: value of the property template
-            
+
         returns:
             { 'id': {
                     'id': #int,
@@ -526,14 +527,14 @@ class idods(object):
                     'templatename': #string
                 }
             }
-            
+
         raises:
             ValueError, MySQLError
         '''
-        
+
         # Generate SQL
         sql = '''
-        SELECT 
+        SELECT
             ip.inventory_prop_id,
             ip.inventory_prop_value,
             ip.inventory_prop_tmplt_id,
@@ -545,7 +546,7 @@ class idods(object):
         LEFT JOIN inventory inv ON (ip.inventory_id = inv.inventory_id)
         WHERE
         '''
-        
+
         # Add inventory_id parameter
         sql += ' ip.inventory_id = %s '
         vals = [inventoryId]
@@ -554,7 +555,7 @@ class idods(object):
         if inventoryPropertyTemplateId:
             sql += ' AND ip.inventory_prop_tmplt_id = %s '
             vals.append(inventoryPropertyTemplateId)
-        
+
         sqlVals = (sql, vals)
 
         # Add value parameter if exists
@@ -567,7 +568,7 @@ class idods(object):
             cur.execute(sqlVals[0], sqlVals[1])
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -575,9 +576,9 @@ class idods(object):
                     'inventoryname': r[5],
                     'templatename': r[4]
                 }
-                
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
@@ -585,20 +586,20 @@ class idods(object):
     def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName = None, value = None):
         '''
         Retrieve id and value from inventory property table
-        
+
         :param inventoryName: name of the inventory entry
         :type inventoryName: str
-        
+
         :param inventoryPropertyTemplateName: name of the inventory property template
         :type inventoryPropertyTemplateName: str
-        
+
         :param value: value of the property template
         :type value: str
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 { 'id': {
                         'id': #int,
                         'value': #string,
@@ -606,13 +607,13 @@ class idods(object):
                         'templatename': #string
                     }
                 }
-        
+
         :Raises: ValueError
         '''
-        
+
         # Check inventory
         retrieveInventory = self.retrieveInventory(inventoryName)
-        
+
         if len(retrieveInventory) == 0:
             raise ValueError("Inventory (%s) doesn't exist in the database!" % inventoryName)
 
@@ -621,15 +622,15 @@ class idods(object):
 
         # Check inventory property template
         # of a specific inventory
-        
+
         inventoryPropertyTemplateId = None
-        
+
         if inventoryPropertyTemplateName:
             retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName)
-            
+
             if len(retrieveInventoryPropertyTemplate) == 0:
                 raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName);
-    
+
             retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
             inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
 
@@ -638,28 +639,28 @@ class idods(object):
     def saveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName, value):
         '''
         Save inventory property into database
-        
+
         params:
             - inventoryName: name of the inventory we are saving property for
             - inventoryPropertyTemplateName: name of the property template/inventory property key name
             - value: value of the property template/property key name
-            
+
         returns:
             {'id': new inventory property id}
-            
+
         raises:
             ValueError, MySQLError
         '''
-        
+
         # Check for previous inventory property
         retrieveInventoryProperty = self.retrieveInventoryProperty(inventoryName, inventoryPropertyTemplateName)
-        
+
         if len(retrieveInventoryProperty) != 0:
             raise ValueError("Inventory property for inventory (%s) and template (%s) already exists in the database!" % (inventoryName, inventoryPropertyTemplateName));
-        
+
         # Check inventory
         retrieveInventory = self.retrieveInventory(inventoryName)
-        
+
         if len(retrieveInventory) == 0:
             raise ValueError("Inventory (%s) doesn't exist in the database!" % inventoryName)
 
@@ -668,7 +669,7 @@ class idods(object):
 
         # Check inventory property template
         retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName)
-        
+
         if len(retrieveInventoryPropertyTemplate) == 0:
             raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName);
 
@@ -682,52 +683,52 @@ class idods(object):
         VALUES
         (%s, %s, %s)
         '''
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, (inventoryId, inventoryPropertyTemplateId, value))
-            
+
             # Get last row id
             propid = cur.lastrowid
 
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': propid}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def updateInventoryProperty(self, oldInventoryName, oldInventoryPropertyTemplateName, value):
         '''
         Update inventory property in a database
-        
+
         params:
             - oldInventoryName: name of the inventory we are saving property for
             - oldInventoryPropertyTemplateName: name of the property template/inventory property key name
             - value: value of the property template/property key name
-            
+
         returns:
             True if everything is ok
-            
+
         raises:
             ValueError, MySQLError
         '''
-        
+
         # Define query dict
         queryDict = {}
         whereDict = {}
-        
+
         # Check inventory
         retrieveInventory = self.retrieveInventory(oldInventoryName)
-        
+
         if len(retrieveInventory) == 0:
             raise ValueError("Inventory (%s) doesn't exist in the database!" % oldInventoryName)
 
@@ -737,7 +738,7 @@ class idods(object):
 
         # Check inventory property template
         retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(oldInventoryPropertyTemplateName)
-        
+
         if len(retrieveInventoryPropertyTemplate) == 0:
             raise ValueError("Inventory property template (%s) doesn't exist in the database!" % oldInventoryPropertyTemplateName);
 
@@ -750,7 +751,7 @@ class idods(object):
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
@@ -758,15 +759,15 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
 
@@ -837,7 +838,7 @@ class idods(object):
 
         # Check name parameter
         res = self.retrieveInventory(name)
-        
+
         if len(res) != 0:
             raise ValueError("Inventory (%s) already exists in inventory." % (name))
 
@@ -845,16 +846,16 @@ class idods(object):
         compnttypeid=None
 
         if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
-            
+
             # Check component type parameter
             _checkParameter("component type", kws['cmpnt_type'])
-            
+
             res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
 
             if len(res) != 1:
                 raise ValueError("Insertion device type (%s) does not exist."%(kws['dtype']))
-            
+
             else:
                 compnttypeid = res[reskeys[0]]['id']
 
@@ -874,55 +875,55 @@ class idods(object):
         vendor = None
 
         if kws.has_key('vendor') and kws['vendor'] != None:
-            
+
             # Check parameter
             _checkParameter("vendor name", kws['vendor'])
-            
+
             res = self.retrieveVendor(kws['vendor'])
 
             if len(res) == 0:
                 raise ValueError("Vendor with name (%s) doesn't exist." % kws['vendor'])
-            
+
             resKeys = res.keys()
             vendor = res[resKeys[0]]['id']
-            
+
         # Generate SQL
         sql = '''
         INSERT INTO inventory (cmpnt_type_id, vendor_id, name, alias, serial_no) VALUES
         (%s, %s, %s, %s, %s)
         '''
-        
+
         try:
             # Insert inventory into database
             cur = self.conn.cursor()
             cur.execute(sql, (compnttypeid, vendor, name, alias, serialno))
-            
+
             # Get last row id
             invid = cur.lastrowid
 
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             # Inventory is saved, now we can save properties into database
             if kws.has_key('props') and kws['props'] != None:
                 props = kws['props']
-                
+
                 # Convert to json
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
-                
+
                 # Save all the properties
                 for key in props:
                     value = props[key]
-                    
+
                     # Save it into database
                     self.saveInventoryProperty(name, key, value)
-                
+
             return {'id': invid}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -997,19 +998,19 @@ class idods(object):
         queryDict = {}
         whereKey = None
         whereValue = None
-        
+
         # Check id
         if inventory_id:
             _checkParameter('id', inventory_id, 'prim')
             whereKey = 'inventory_id'
             whereValue = inventory_id
-            
+
         # Check old name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'name'
             whereValue = old_name
-        
+
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
 
@@ -1019,16 +1020,16 @@ class idods(object):
 
         # Check device type parameter
         if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
-            
+
             # Check component type parameter
             _checkParameter("component type", kws['cmpnt_type'])
-            
+
             res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
 
             if len(res) != 1:
                 raise ValueError("Insertion device type (%s) does not exist."%(kws['dtype']))
-            
+
             else:
                 compnttypeid = res[reskeys[0]]['id']
 
@@ -1044,21 +1045,21 @@ class idods(object):
 
         # Check vendor parameter
         if kws.has_key('vendor') and kws['vendor'] != None:
-            
+
             # Check parameter
             _checkParameter("vendor name", kws['vendor'])
-            
+
             res = self.retrieveVendor(kws['vendor'])
 
             if len(res) == 0:
                 raise ValueError("Vendor with name (%s) doesn't exist." % kws['vendor'])
-            
+
             resKeys = res.keys()
             vendor = res[resKeys[0]]['id']
             queryDict['vendor_id'] = vendor
-            
+
         sqlVals = _generateUpdateQuery('inventory', queryDict, whereKey, whereValue)
-        
+
         try:
             # Insert inventory into database
             cur = self.conn.cursor()
@@ -1067,39 +1068,39 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             # Inventory is updated, now we can update properties
             if kws.has_key('props') and kws['props'] != None:
                 props = kws['props']
-                
+
                 # Convert to json
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
-                
+
                 currentTemplates = self.retrieveInventoryProperty(name)
                 currentTemplatesDict = {}
-                
+
                 # Map current properties
                 for key in currentTemplates.keys():
                     currentTemplatesDict[currentTemplates[key]['templatename']] = currentTemplates[key]['value']
-                
+
                 # Update all properties
                 for key in props:
                     value = props[key]
-                    
+
                     if key in currentTemplatesDict:
-                        
+
                         # Update property
                         self.updateInventoryProperty(name, key, value)
-                        
+
                     else:
                         # Save property
                         self.saveInventoryProperty(name, key, value)
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -1158,7 +1159,7 @@ class idods(object):
 
         # Check name parameter
         _checkParameter('name', name)
-        
+
         # Generate SQL
         sql = '''
         SELECT inv.inventory_id, inv.name, inv.alias, inv.serial_no,
@@ -1169,20 +1170,20 @@ class idods(object):
         LEFT JOIN cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
         WHERE
         '''
-        
+
         vals = []
-        
+
         # Append inv.name parameter
         sqlVals = _checkWildcardAndAppend('inv.name', name, sql, vals)
 
         try:
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Get any one since it should be unique
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -1193,16 +1194,16 @@ class idods(object):
                     'vendor': r[6],
                     'prop_keys': []
                 }
-                
+
                 # Get the rest of the properties
                 properties = self._retrieveInventoryProperty(r[0])
-                
+
                 # Append properties to existing object
                 for prop in properties:
                     obj = properties[prop]
                     resdict[r[0]][obj['templatename']] = obj['value']
                     resdict[r[0]]['prop_keys'].append(obj['templatename'])
-            
+
             return resdict
 
         except MySQLdb.Error as e:
@@ -1215,7 +1216,7 @@ class idods(object):
 
         :param raw_data_id: raw data id
         :type raw_data_id: int
-        
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -1274,37 +1275,37 @@ class idods(object):
     def saveRawData(self, data):
         '''
         Save raw data into database
-        
+
         params:
             - data: data we want to save in a blob
-        
+
         raises:
             MySQLError
-            
+
         returns:
             {'id': new raw data id}
-        
+
         '''
-        
+
         # Generate SQL
         sql = '''
         INSERT INTO id_raw_data (data) VALUES (%s)
         '''
-        
+
         try:
             # Insert data into database
             cur = self.conn.cursor()
             cur.execute(sql, data)
-            
+
             # Get last id
             dataid = cur.lastrowid
-            
+
             # Handle transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': dataid}
-            
+
         except Exception as e:
 
             # Rollback changes
@@ -1317,36 +1318,36 @@ class idods(object):
     def concatRawData(self, data, raw_data_id):
         '''
         Concat large data in the database
-        
+
         :param data: part of the data we want to save in a blob
         :type data: blob
-        
+
         :param raw_data_id: id of the raw data we need to update
         :type raw_data_id: int
-        
+
         :raises: MySQLError
-            
+
         :returns:
             True if everything is ok
-        
+
         '''
-        
+
         # Generate SQL
         sql = '''
         UPDATE id_raw_data SET data=CONCAT(data, %s) WHERE id_raw_data_id = %s
         '''
-        
+
         try:
             # Insert data into database
             cur = self.conn.cursor()
             cur.execute(sql, (data, raw_data_id))
-            
+
             # Handle transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
 
             # Rollback changes
@@ -1359,44 +1360,44 @@ class idods(object):
     def updateRawData(self, rawDataId, data):
         '''
         Update raw data
-        
+
         params:
             - rawDataId: id of the raw data we want to update by
             - data: data we want to save in a blob
-        
+
         raises:
             ValueError, MySQLError
-            
+
         returns:
             True
-        
+
         '''
-        
+
         # Define properties
         queryDict = {}
-        
+
         # Check id
         _checkParameter('id', rawDataId, 'prim')
         whereKey = 'id_raw_data_id'
         whereValue = rawDataId
-        
+
         # Set data parameter
         queryDict['data'] = data
-        
+
         # Generate SQL
         sqlVals = _generateUpdateQuery('id_raw_data', queryDict, whereKey, whereValue)
-        
+
         try:
             # Insert data into database
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Handle transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
 
             # Rollback changes
@@ -1417,29 +1418,107 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Generate SQL
         sql = "DELETE FROM id_raw_data WHERE id_raw_data_id = %s"
         vals = [raw_data_id]
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return True
-            
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when deleting raw data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when deleting raw data:\n%s (%d)' %(e.args[1], e.args[0]))
+
+    def saveMethodAndOfflineData(self, inventory_name=None, username=None, method=None, method_desc=None, data_desc=None, data_file_name=None, data_id=None, status=None, gap=None, phase1=None, phase2=None, phase3=None, phase4=None, phase_mode=None, polar_mode=None):
+        '''
+        Save data method and offline data into the database
+
+        :param inventory_name: inventory name
+        :type inventory_name: str
+
+        :param username: username of the user who saved the offline data
+        :type username: str
+
+        :param method: data method name
+        :type method: str
+
+        :param method_desc: data method description
+        :type method_desc: str
+
+        :param data_desc: offline data description
+        :type data_desc: str
+
+        :param data_file_name: data file name
+        :type data_file_name: str
+
+        :param data_id: id of the saved raw data
+        :type data_id: int
+
+        :param status: is offline data Active = 1 or Obsolete - 0
+        :type status: int
+
+        :param gap: gap
+        :type gap: float
+
+        :param phase1: phase1
+        :type phase1: float
+
+        :param phase2: phase2
+        :type phase2: float
+
+        :param phase3: phase3
+        :type phase3: float
+
+        :param phase4: phase4
+        :type phase4: float
+
+        :param phase_mode: phase mode
+        :type phase_mode: str
+
+        :param polar_mode: polar mode
+        :type polar_mode: str
+
+        :rasies: ValueError, MySQLError
+
+        :return: {'id': id of the new offline data}
+        '''
+
+        if method != None:
+
+            if len(self.retrieveDataMethod(method).keys()) == 0:
+                self.saveDataMethod(method, method_desc)
+
+        result = self.saveOfflineData(
+            inventory_name=inventory_name,
+            data_file_name=data_file_name,
+            username=username,
+            description=data_desc,
+            gap=gap,
+            phase1=phase1,
+            phase2=phase2,
+            phase3=phase3,
+            phase4=phase4,
+            phasemode=phase_mode,
+            polarmode=polar_mode,
+            data_id=data_id,
+            status=status
+        )
+
+        return result;
+
 
     def saveOfflineData(self, **kws):
         '''
@@ -1522,122 +1601,122 @@ class idods(object):
 
         :Raises: ValueError, exception
         '''
-        
+
         # Check inventoryname
         inventoryname = None
         inventoryid = None
-        
+
         if 'inventory_name' in kws and kws['inventory_name'] != None:
             inventoryname = kws['inventory_name']
-            
+
             returnedInventory = self.retrieveInventory(inventoryname)
-            
+
             if len(returnedInventory) == 0:
                 raise ValueError("Invnetory (%s) does not exist in the database!" % inventoryname)
-            
+
             returnedInventoryKeys = returnedInventory.keys()
             inventoryid = returnedInventory[returnedInventoryKeys[0]]['id']
-        
+
         # Check username parameter
         username = None
-        
+
         if 'username' in kws and kws['username'] != None:
             username = kws['username']
             _checkParameter('username', username)
-            
+
         # Check description
         description = None
-        
+
         if 'description' in kws and kws['description'] != None:
             description = kws['description']
-            
+
         # Check gap
         gap = None
-        
+
         if 'gap' in kws and kws['gap'] != None:
             gap = kws['gap']
-            
+
         # Check phase1
         phase1 = None
-        
+
         if 'phase1' in kws and kws['phase1'] != None:
             phase1 = kws['phase1']
-            
+
         # Check phase2
         phase2 = None
-        
+
         if 'phase2' in kws and kws['phase2'] != None:
             phase2 = kws['phase2']
-            
+
         # Check phase3
         phase3 = None
-        
+
         if 'phase3' in kws and kws['phase3'] != None:
             phase3 = kws['phase3']
-            
+
         # Check phase4
         phase4 = None
-        
+
         if 'phase4' in kws and kws['phase4'] != None:
             phase4 = kws['phase4']
-            
+
         # Check phasemode
         phasemode = None
-        
+
         if 'phasemode' in kws and kws['phasemode'] != None:
             phasemode = kws['phasemode']
-            
+
         # Check polarmode
         polarmode = None
-        
+
         if 'polarmode' in kws and kws['polarmode'] != None:
             polarmode = kws['polarmode']
-            
+
         # Check status
         status = None
-        
+
         if 'status' in kws and kws['status'] != None:
             status = kws['status']
-            
+
         # Check data_file_name
         datafilename = None
-        
+
         if 'data_file_name' in kws and kws['data_file_name'] != None:
             datafilename = kws['data_file_name']
-            
+
         # Check data_file_ts
         datafilets = None
-        
+
         if 'data_file_ts' in kws and kws['data_file_ts'] != None:
             datafilets = kws['data_file_ts']
-            
+
         # Check data
         data = None
-        
+
         if 'data_id' in kws and kws['data_id'] != None:
             data = kws['data_id']
-            
+
         # Check script_name
         scriptname = None
-        
+
         if 'script_name' in kws and kws['script_name'] != None:
             scriptname = kws['script_name']
-            
+
         # Check script
         script = None
-        
+
         if 'script' in kws and kws['script'] != None:
             script = kws['script']
-            
+
         # Check method_name
         methodname = None
         methodid = None
-        
+
         if 'method_name' in kws and kws['method_name'] != None:
             methodname = kws['method_name']
-            
+
             retrievedMethod = self.retrieveDataMethod(methodname)
-            
+
             if len(retrievedMethod) == 0:
                 raise ValueError("Data method (%s) doesn't exist in the database!" % methodname)
 
@@ -1669,7 +1748,7 @@ class idods(object):
             %s,%s,%s,%s,%s,NOW(),%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
         )
         '''
-        
+
         try:
             vals = [
                 inventoryid,
@@ -1690,22 +1769,22 @@ class idods(object):
                 scriptname,
                 script
             ]
-            
+
             # Insert offline data into database
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Get last row id
             offlinedataid = cur.lastrowid
-            
+
             # Create transactions
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': offlinedataid}
-        
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -1791,95 +1870,95 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Define query dict
         queryDict = {}
-        
+
         # Check id
         _checkParameter('id', offline_data_id, 'prim')
         whereKey = 'id_offline_data_id'
         whereValue = offline_data_id
-        
+
         # Check inventoryname
         if 'inventory_name' in kws and kws['inventory_name'] != None:
             inventoryname = kws['inventory_name']
-            
+
             returnedInventory = self.retrieveInventory(inventoryname)
-            
+
             if len(returnedInventory) == 0:
                 raise ValueError("Invnetory (%s) does not exist in the database!" % inventoryname)
-            
+
             returnedInventoryKeys = returnedInventory.keys()
             inventoryid = returnedInventory[returnedInventoryKeys[0]]['id']
             queryDict['inventory_id'] = inventoryid
-        
+
         # Check username parameter
         if 'username' in kws:
             queryDict['login_name'] = kws['username']
-            
+
         # Check description
         if 'description' in kws:
             queryDict['description'] = kws['description']
-            
+
         # Check gap
         if 'gap' in kws:
             queryDict['gap'] = kws['gap']
-            
+
         # Check phase1
         if 'phase1' in kws:
             queryDict['phase1'] = kws['phase1']
-            
+
         # Check phase2
         if 'phase2' in kws:
             queryDict['phase2'] = kws['phase2']
-            
+
         # Check phase3
         if 'phase3' in kws:
             queryDict['phase3'] = kws['phase3']
-            
+
         # Check phase4
         if 'phase4' in kws:
             queryDict['phase4'] = kws['phase4']
-            
+
         # Check phasemode
         if 'phasemode' in kws:
             queryDict['phase_mode'] = kws['phasemode']
-            
+
         # Check polarmode
         if 'polarmode' in kws:
             queryDict['polar_mode'] = kws['polarmode']
-            
+
         # Check status
         if 'status' in kws:
             queryDict['data_status'] = kws['status']
-            
+
         # Check data_file_name
         if 'data_file_name' in kws:
             queryDict['result_file_name'] = kws['data_file_name']
-            
+
         # Check data_file_ts
         if 'data_file_ts' in kws and kws['data_file_ts'] != None:
             queryDict['result_file_time'] = kws['data_file_ts']
-            
+
         # Check data id
         if 'data_id' in kws and kws['data_id'] != None:
             data = kws['data_id']
             queryDict['id_raw_data_id'] = data
-            
+
         # Check script_name
         if 'script_name' in kws:
             queryDict['script_file_name'] = kws['script_name']
-            
+
         # Check script
         if 'script' in kws:
             queryDict['script_file_content'] = kws['script']
-            
+
         # Check method_name
         if 'method_name' in kws and kws['method_name'] != None:
             methodname = kws['method_name']
-            
+
             retrievedMethod = self.retrieveDataMethod(methodname)
-            
+
             if len(retrievedMethod) == 0:
                 raise ValueError("Data method (%s) doesn't exist in the database!" % methodname)
 
@@ -1889,21 +1968,21 @@ class idods(object):
 
         # Genreate SQL
         sqlVals = _generateUpdateQuery('id_offline_data', queryDict, whereKey, whereValue)
-        
+
         try:
-            
+
             # Insert offline data into database
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transactions
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-        
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -1997,7 +2076,7 @@ class idods(object):
         :Raises: KeyError, AttributeError
 
         '''
-        
+
         # Generate SQL
         sql = '''
         SELECT
@@ -2028,94 +2107,94 @@ class idods(object):
         LEFT JOIN inventory inv ON (iod.inventory_id = inv.inventory_id)
         WHERE 1=1
         '''
-        
+
         vals = []
-        
+
         # Append offline id
         if 'offlineid' in kws and kws['offlineid'] != None:
             _checkParameter('id', kws['offlineid'], 'prim')
             sql += ' AND id_offline_data_id = %s '
             vals.append(kws['offlineid'])
-        
+
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
             sqlVal = _checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append date parameter
         if 'date' in kws and kws['date'] != None:
             sqlVal = self._checkRangeAndAppend('iod.date', kws['date'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append gap parameter
         if 'gap' in kws and kws['gap'] != None:
             sqlVal = self._checkRangeAndAppend('iod.gap', kws['gap'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append phase1 parameter
         if 'phase1' in kws and kws['phase1'] != None:
             sqlVal = self._checkRangeAndAppend('iod.phase1', kws['phase1'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append phase2 parameter
         if 'phase2' in kws and kws['phase2'] != None:
             sqlVal = self._checkRangeAndAppend('iod.phase2', kws['phase2'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append phase3 parameter
         if 'phase3' in kws and kws['phase3'] != None:
             sqlVal = self._checkRangeAndAppend('iod.phase3', kws['phase3'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append phase4 parameter
         if 'phase4' in kws and kws['phase4'] != None:
             sqlVal = self._checkRangeAndAppend('iod.phase4', kws['phase4'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-            
+
         # Append phasemode parameter
         if 'phasemode' in kws and kws['phasemode'] != None:
             sqlVal = _checkWildcardAndAppend('iod.phase_mode', kws['phasemode'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-            
+
         # Append polarmode parameter
         if 'polarmode' in kws and kws['polarmode'] != None:
             sqlVal = _checkWildcardAndAppend('iod.polar_mode', kws['polarmode'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-            
+
         # Append status parameter
         if 'status' in kws and kws['status'] != None:
             sql += ' AND iod.data_status = %s '
             vals.append(kws['status'])
-            
+
         # Append method name parameter
         if 'method_name' in kws and kws['method_name'] != None:
             sqlVal = _checkWildcardAndAppend('idm.method_name', kws['method_name'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
-        
+
         # Append inventory name
         if 'inventory_name' in kws and kws['inventory_name'] != None:
             sqlVal = _checkWildcardAndAppend('inv.name', kws['inventory_name'], sql, vals, 'AND')
             sql = sqlVal[0]
-        
+
         try:
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Get all records
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -2139,13 +2218,13 @@ class idods(object):
                     'methoddesc': r[20],
                     'inventory_name': r[21]
                 }
-                
+
                 # Format time if it is not null
                 if r[16] != None:
                     resdict[r[0]]['data_file_ts'] = r[16].strftime("%Y-%m-%d %H:%M:%S")
 
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching offline data:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -2161,39 +2240,39 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Retrieve offline data
         offlineData = self.retrieveOfflineData(offlineid = offline_data_id)
-        
+
         if len(offlineData) == 0:
             raise ValueError("Offline data doesn't exist in the database!")
-        
+
         offlineDataKey = offlineData.keys()[0]
         offlineDataObj = offlineData[offlineDataKey]
-        
+
         # Generate SQL
         sql = "DELETE FROM id_offline_data WHERE id_offline_data_id = %s"
         vals = [offline_data_id]
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             # Delete raw data
             self.deleteRawData(offlineDataObj['data_id'])
-            
+
             return True
-            
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when deleting offline data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when deleting offline data:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -2214,16 +2293,16 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Raise and error if data method with the same name already exists in the database
         existingDataMethod = self.retrieveDataMethod(name, description)
-        
+
         if len(existingDataMethod):
             raise ValueError("Data method (%s) already exists in the database!" % name)
 
         # Check name parameter
         _checkParameter('name', name)
-        
+
         # Generate SQL
         sql = '''
         INSERT INTO id_data_method
@@ -2231,26 +2310,26 @@ class idods(object):
         VALUES
             (%s, %s)
         '''
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, (name, description))
-            
+
             # Get last id
             dataMethodId = cur.lastrowid
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return {'id': dataMethodId}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving new data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -2273,24 +2352,24 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Define query dictionary
         queryDict = {}
         whereKey = None
         whereValue = None
-        
+
         # Check if
         if datamethod_id:
             _checkParameter('id', datamethod_id, 'prim')
             whereKey = 'id_data_method_id'
             whereValue = datamethod_id
-            
+
         # Check name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'method_name'
             whereValue = old_name
-            
+
         # Check if id or name is present
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
@@ -2298,30 +2377,30 @@ class idods(object):
         # Check name parameter
         _checkParameter('name', name)
         queryDict['method_name'] = name
-        
+
         # Check description parameter
         if 'description' in kws:
             queryDict['description'] = kws['description']
-        
+
         # Generate SQL
         sqlVals = _generateUpdateQuery('id_data_method', queryDict, whereKey, whereValue)
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when updating data method:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating data method:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -2337,7 +2416,7 @@ class idods(object):
         :return: a map with structure like:
 
             .. code-block:: python
-            
+
                 {'id':
                     {'id': data method id,
                      'name': method name,
@@ -2347,10 +2426,10 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Check name
         _checkParameter('name', name)
-        
+
         # Contruct SQL
         sql = '''
         SELECT
@@ -2360,12 +2439,12 @@ class idods(object):
         FROM id_data_method
         WHERE
         '''
-        
+
         vals = []
-        
+
         # Append name
         sqlAndVals = _checkWildcardAndAppend('method_name', name, sql, vals)
-        
+
         # Check if description exists
         if description:
             sqlAndVals = _checkWildcardAndAppend('description', description, sqlAndVals[0], sqlAndVals[1], 'AND')
@@ -2374,10 +2453,10 @@ class idods(object):
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sqlAndVals[0], sqlAndVals[1])
-            
+
             res = cur.fetchall()
             resdict = {}
-            
+
             # Construct return dict
             for r in res:
                 resdict[r[0]] = {
@@ -2385,9 +2464,9 @@ class idods(object):
                     'name': r[1],
                     'description': r[2]
                 }
-                
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching data method:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -2395,7 +2474,7 @@ class idods(object):
     def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''
         Return installed devices or psecific map
-        
+
         params:
             - inventory_to_install_id
             - install_name
@@ -2425,7 +2504,7 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Generate SQL
         sql = '''
         SELECT
@@ -2439,32 +2518,32 @@ class idods(object):
         LEFT JOIN inventory inv ON(ii.inventory_id = inv.inventory_id)
         WHERE 1=1
         '''
-        
+
         vals = []
-        
+
         # Check primary key
         if inventory_to_install_id:
             sql += ' AND ii.inventory__install_id = %s '
             vals.append(inventory_to_install_id)
-            
+
         # Check inventory name
         if inv_name:
             sqlVals = _checkWildcardAndAppend('inv.name', inv_name, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Check install name
         if install_name:
             sqlVals = _checkWildcardAndAppend('inst.field_name', install_name, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -2473,9 +2552,9 @@ class idods(object):
                     'inventoryid': r[2],
                     'inventoryname': r[4]
                 }
-                
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching installed devices:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -2499,62 +2578,62 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Check install name
         install = self.retrieveInstall(install_name)
-        
+
         if len(install) < 1:
             raise ValueError("Install with name (%s) doesn't exist in the database!" % install_name)
-        
+
         installKeys = install.keys()
         installObject = install[installKeys[0]]
-        
+
         # Check inventory name
         inventory = self.retrieveInventory(inv_name)
-        
+
         if len(inventory) < 1:
             raise ValueError("Inventory with name (%s) doesn't exist in the database!" % inv_name)
-        
+
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
-        
+
         # Check if inventory already installed
         existing = self.retrieveInventoryToInstall(None, None, inv_name)
-        
+
         if len(existing):
             raise ValueError("Inventory already installed!")
-        
+
         # Check if install already exists
         existing = self.retrieveInventoryToInstall(None, install_name, None)
-        
+
         if len(existing):
             raise ValueError("Install position already taken!")
-        
+
         # Generate SQL
         sql = '''
         INSERT INTO inventory__install (install_id, inventory_id)
         VALUES (%s, %s)
         '''
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, (installObject['id'], inventoryObject['id']))
-            
+
             # Get last id
             lastid = cur.lastrowid
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return {'id': lastid}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -2575,85 +2654,85 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Get current map
         i2iMap = self.retrieveInventoryToInstall(inventory_to_install_id, None, None)
-        
+
         if len(i2iMap) < 1:
             raise ValueError("Inventory to install map with id (%s) doesn't exist in the database!" % inventory_to_install_id)
-        
+
         i2iKeys = i2iMap.keys()
         i2i = i2iMap[i2iKeys[0]]
-        
+
         # Check if nothing has changed
         if i2i['installname'] == install_name and i2i['inventoryname'] == inv_name:
             return True
-        
+
         # Define query dict
         queryDict = {}
-        
+
         # Check id
         _checkParameter('id', inventory_to_install_id, 'prim')
         whereKey = 'inventory__install_id'
         whereValue = inventory_to_install_id
-        
+
         # Check install name
         install = self.retrieveInstall(install_name)
-        
+
         if len(install) < 1:
             raise ValueError("Install with name (%s) doesn't exist in the database!" % install_name)
-        
+
         installKeys = install.keys()
         installObject = install[installKeys[0]]
         queryDict['install_id'] = installObject['id']
-        
+
         # Check inventory name
         inventory = self.retrieveInventory(inv_name)
-        
+
         if len(inventory) < 1:
             raise ValueError("Inventory with name (%s) doesn't exist in the database!" % inv_name)
-        
+
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
         queryDict['inventory_id'] = inventoryObject['id']
-        
+
         # Check if inventory already installed
         existing = self.retrieveInventoryToInstall(None, None, inv_name)
 
         if i2i['inventoryname'] == inv_name and len(existing) > 1:
             raise ValueError("Inventory already installed!")
-        
+
         elif i2i['inventoryname'] != inv_name and len(existing):
             raise ValueError("Inventory already installed!")
-        
+
         # Check if install already exists
         existing = self.retrieveInventoryToInstall(None, install_name, None)
-        
+
         if i2i['installname'] == install_name and len(existing) > 1:
             raise ValueError("Install position already taken!")
-        
+
         elif i2i['installname'] != install_name and len(existing):
             raise ValueError("Install position already taken!")
-        
+
         # Generate SQL
         sqlVals = _generateUpdateQuery('inventory__install', queryDict, whereKey, whereValue)
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -2668,41 +2747,41 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Retrieve inventory to install
         i2i = self.retrieveInventoryToInstall(inventory_to_install_id, None, None)
         i2iKeys = i2i.keys()
         i2iObj = i2i[i2iKeys[0]]
-        
+
         # Retrieve online data
         onlineData = self.retrieveOnlineData(install_name=i2iObj['installname'])
-        
+
         for key in onlineData:
             onlineDataObj = onlineData[key]
-            
+
             # Delete online data
             self.deleteOnlineData(onlineDataObj['id'])
-        
+
         # Generate SQL
         sql = "DELETE FROM inventory__install WHERE inventory__install_id = %s"
         vals = [inventory_to_install_id]
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when deleting inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when deleting inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -2739,7 +2818,7 @@ class idods(object):
         WHERE
         '''
         vals = []
-        
+
         # Append name
         sqlAndVals = _checkWildcardAndAppend("cmpnt_type_prop_type_name", name, sql, vals)
 
@@ -2758,7 +2837,7 @@ class idods(object):
                     'name': r[1],
                     'description': r[2]
                 }
-            
+
             return resdict
 
         except MySQLdb.Error as e:
@@ -2783,7 +2862,7 @@ class idods(object):
 
         # Raise an error if component type property type exists
         existingComponentTypePropertyType = self.retrieveComponentTypePropertyType(name)
-        
+
         if len(existingComponentTypePropertyType):
             raise ValueError("Component type property type (%s) already exists in the database!" % name)
 
@@ -2808,7 +2887,7 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': typeid}
 
         except MySQLdb.Error as e:
@@ -2844,20 +2923,20 @@ class idods(object):
             _checkParameter('id', property_type_id, 'prim')
             whereKey = 'cmpnt_type_prop_type_id'
             whereValue = property_type_id
-            
+
         # Check old name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'cmpnt_type_prop_type_name'
             whereValue = old_name
-        
+
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
 
         # Check name
         _checkParameter("name", name)
         queryDict['cmpnt_type_prop_type_name'] = name
-        
+
         # Append description
         if 'description' in kws:
             queryDict['cmpnt_type_prop_type_desc'] = kws['description']
@@ -2872,7 +2951,7 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
 
         except MySQLdb.Error as e:
@@ -2887,12 +2966,12 @@ class idods(object):
     def _retrieveComponentTypeProperty(self, componentTypeId, componentTypePropertyTypeId = None, value = None):
         '''
         Retrieve component type property from the database
-        
+
         parameters:
             - componentTypeId: id of the component type entry
             - componentTypePropertyTypeId: id of the property type
             - value: value of the property
-            
+
         returns:
             { 'id': {
                     'id': #int,
@@ -2901,14 +2980,14 @@ class idods(object):
                     'typename': #string
                 }
             }
-            
+
         raises:
             ValueError, MySQLError
         '''
-        
+
         # Generate SQL
         sql = '''
-        SELECT 
+        SELECT
             cp.cmpnt_type_prop_id,
             cp.cmpnt_type_id,
             cp.cmpnt_type_prop_type_id,
@@ -2920,7 +2999,7 @@ class idods(object):
         LEFT JOIN cmpnt_type ct ON (cp.cmpnt_type_id = ct.cmpnt_type_id)
         WHERE
         '''
-        
+
         # Add component type id parameter
         sql += ' cp.cmpnt_type_id = %s '
         vals = [componentTypeId]
@@ -2929,7 +3008,7 @@ class idods(object):
         if componentTypePropertyTypeId:
             sql += ' AND cp.cmpnt_type_prop_type_id = %s '
             vals.append(componentTypePropertyTypeId)
-        
+
         sqlVals = (sql, vals)
 
         # Add value parameter if exists
@@ -2942,7 +3021,7 @@ class idods(object):
             cur.execute(sqlVals[0], sqlVals[1])
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -2950,9 +3029,9 @@ class idods(object):
                     'cmpnt_typename': r[5],
                     'typename': r[4]
                 }
-                
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when retrieving component type property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
@@ -2960,20 +3039,20 @@ class idods(object):
     def retrieveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName = None, value = None):
         '''
         Retrieve component type property from the database by name
-        
+
         :param componentTypeName: name of the component type
         :type componentTypeName: str
-        
+
         :param componentTypePropertyTypeName: name of the component type property type
         :type componentTypePropertyTypeName: str
-        
+
         :param value: value of the component type property type
         :type value: str
-            
+
         :returns: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 { 'id': {
                         'id': #int,
                         'value': #string,
@@ -2984,10 +3063,10 @@ class idods(object):
 
         :raises: ValueError, MySQLError
         '''
-        
+
         # Check component type
         retrieveComponentType = self.retrieveComponentType(componentTypeName)
-        
+
         if len(retrieveComponentType) == 0:
             raise ValueError("Component type (%s) doesn't exist in the database!" % componentTypeName)
 
@@ -2996,15 +3075,15 @@ class idods(object):
 
         # Check component type property type
         # of a specific component tpye
-        
+
         componentTypePropertyTypeId = None
-        
+
         if componentTypePropertyTypeName:
             retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
-            
+
             if len(retrieveComponentTypePropertyType) == 0:
                 raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName)
-    
+
             retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
             componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
 
@@ -3013,24 +3092,24 @@ class idods(object):
     def saveComponentTypePropertyById(self, componentTypeId, componentTypePropertyTypeName, value):
         '''
         Save inventory property into database
-        
+
         :param componentTypeId: id of the component type
         :type componentTypeId: int
-        
+
         :param componentTypePropertyTypeName: name of the component type property type
         :type componentTypePropertyTypeName: str
-        
+
         :param value: value of the component type property
         :type value: str
-            
+
         :return: {'id': new component type property id}
-            
+
         :raise: ValueError, MySQLError
         '''
 
         # Check component type property type
         retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
-        
+
         if len(retrieveComponentTypePropertyType) == 0:
             self.saveComponentTypePropertyType(componentTypePropertyTypeName)
             retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
@@ -3045,56 +3124,56 @@ class idods(object):
         VALUES
             (%s, %s, %s)
         '''
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, (componentTypeId, componentTypePropertyTypeId, value))
-            
+
             # Get last row id
             propid = cur.lastrowid
 
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': propid}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-    
+
     def saveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName, value):
         '''
         Save inventory property into database
-        
+
         :param componentTypeName: name of the component type
         :type componentTypeName: str
-        
+
         :param componentTypePropertyTypeName: name of the component type property type
         :type componentTypePropertyTypeName: str
-        
+
         :param value: value of the component type property
         :type value: str
-            
+
         :return: {'id': new component type property id}
-            
+
         :raise: ValueError, MySQLError
         '''
-        
+
         # Check for previous component type property
         retrieveComponentTypeProperty = self.retrieveComponentTypeProperty(componentTypeName, componentTypePropertyTypeName)
-        
+
         if len(retrieveComponentTypeProperty) != 0:
             raise ValueError("Component type property for component type (%s) and property type (%s) already exists in the database!" % (componentTypeName, componentTypePropertyTypeName));
-        
+
         # Check component type
         retrieveComponentType = self.retrieveComponentType(componentTypeName)
-        
+
         if len(retrieveComponentType) == 0:
             raise ValueError("Component type (%s) doesn't exist in the database!" % componentTypeName)
 
@@ -3103,7 +3182,7 @@ class idods(object):
 
         # Check component type property type
         retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
-        
+
         if len(retrieveComponentTypePropertyType) == 0:
             raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName);
 
@@ -3117,52 +3196,52 @@ class idods(object):
         VALUES
             (%s, %s, %s)
         '''
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, (componentTypeId, componentTypePropertyTypeId, value))
-            
+
             # Get last row id
             propid = cur.lastrowid
 
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': propid}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-    
+
     def updateComponentTypeProperty(self, oldComponentTypeName, oldComponentTypePropertyTypeName, value):
         '''
         Save inventory property into database
-        
+
         params:
             - oldComponentTypeName: name of the component type
             - oldComponentTypePropertyTypeName: name of the component type property type
             - value: value of the component type property
-            
+
         returns:
             True if everything is ok
-            
+
         raises:
             ValueError, MySQLError
         '''
-        
+
         # Define query dict
         queryDict = {}
         whereDict = {}
-        
+
         # Check component type
         retrieveComponentType = self.retrieveComponentType(oldComponentTypeName)
-        
+
         if len(retrieveComponentType) == 0:
             raise ValueError("Component type (%s) doesn't exist in the database!" % oldComponentTypeName)
 
@@ -3172,7 +3251,7 @@ class idods(object):
 
         # Check component type property type
         retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(oldComponentTypePropertyTypeName)
-        
+
         if len(retrieveComponentTypePropertyType) == 0:
             raise ValueError("Component type property type (%s) doesn't exist in the database!" % oldComponentTypePropertyTypeName);
 
@@ -3185,7 +3264,7 @@ class idods(object):
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('cmpnt_type_prop', queryDict, None, None, whereDict)
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
@@ -3193,15 +3272,15 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
 
@@ -3256,11 +3335,11 @@ class idods(object):
 
         # Append desciprtion if exists
         if description != None:
-            
+
             # Append __system__ component types if descriptions is set to retrieve them
             if description == '__system__':
                 all_cmpnt_types = True
-                
+
             else:
                 sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
                 sql = sqlAndVals[0]
@@ -3286,10 +3365,10 @@ class idods(object):
                 resdict[r[0]]['name'] = r[1]
                 resdict[r[0]]['description'] = r[2]
                 resdict[r[0]]['prop_keys'] = []
-                
+
                 # Get the rest of the properties
                 properties = self._retrieveComponentTypeProperty(r[0])
-                
+
                 # Append properties to existing object
                 for prop in properties:
                     obj = properties[prop]
@@ -3314,7 +3393,7 @@ class idods(object):
 
         :param description: description for this device
         :type desctiprion: str
-        
+
         :param props: component type properties
         :type props: python dict
 
@@ -3333,7 +3412,7 @@ class idods(object):
 
         # Check if component type already exists
         componenttype = self.retrieveComponentType(name);
-        
+
         if len(componenttype):
             raise ValueError("Component type (%s) already exists in the database!" % name);
 
@@ -3348,28 +3427,28 @@ class idods(object):
             # Commit transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             # Add mandatory properties
             if props == None:
                 props = {'insertion_device': 'true'}
-            
+
             # Component type is saved, now we can save properties into database
             if props != None:
-                
+
                 # Convert to json
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
-                
+
                 # Add mandatory properties
                 props['insertion_device'] = 'true'
-                
+
                 # Save all the properties
                 for key in props:
                     value = props[key]
-                    
+
                     # Save it into database
                     self.saveComponentTypePropertyById(componenttypeid, key, value)
-                
+
             return {'id': componenttypeid}
 
         except MySQLError as e:
@@ -3377,7 +3456,7 @@ class idods(object):
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-                
+
             self.logger.info('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when saving component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -3402,7 +3481,7 @@ class idods(object):
 
         :param description: description for this device
         :type desctiprion: str
-        
+
         :param props: component type properties
         :type props: python dict
 
@@ -3410,32 +3489,32 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Set query dictionary
         queryDict = {}
         whereKey = None
         whereValue = None
-        
+
         # Check id
         if component_type_id:
             _checkParameter('id', component_type_id, 'prim')
             whereKey = 'cmpnt_type_id'
             whereValue = component_type_id
-            
+
         # Check old name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'cmpnt_type_name'
             whereValue = old_name
-            
+
         # Check where condition
         if whereKey == None:
             raise ValueError("Component type id or old component type name should be present to execute an update!")
-        
+
         # Check device type
         _checkParameter("component type", name)
         queryDict['cmpnt_type_name']= name
-        
+
         # Add description
         if 'description' in kws:
             queryDict['description'] = kws['description']
@@ -3450,37 +3529,37 @@ class idods(object):
             # Commit transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             # Component type is saved, now we can update properties
             if 'props' in kws and kws['props'] != None:
                 props = kws['props']
-                
+
                 # Convert to json
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
-                
+
                 # Get current properties
                 currentProps = self.retrieveComponentTypeProperty(name)
                 currentPropsDict = {}
-                
+
                 # Map current properties
                 for key in currentProps.keys():
                     currentPropsDict[currentProps[key]['typename']] = currentProps[key]['value']
-                
+
                 # Update all the properties
                 for key in props:
                     value = props[key]
-                    
+
                     if key in currentPropsDict:
-                    
+
                         # Update property
                         self.updateComponentTypeProperty(name, key, value)
-                        
+
                     else:
-                        
+
                         # Save new property
                         self.saveComponentTypeProperty(name, key, value)
-                
+
             return True
 
         except MySQLError as e:
@@ -3488,7 +3567,7 @@ class idods(object):
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-                
+
             self.logger.info('Error when updating component type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating component type:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -3527,7 +3606,7 @@ class idods(object):
         WHERE
         '''
         vals = []
-        
+
         # Append name
         sqlAndVals = _checkWildcardAndAppend("install_rel_prop_type_name", name, sql, vals)
 
@@ -3547,7 +3626,7 @@ class idods(object):
                     'description': r[2],
                     'unit': r[3]
                 }
-            
+
             return resdict
 
         except MySQLdb.Error as e:
@@ -3573,7 +3652,7 @@ class idods(object):
 
         # Raise an error if install relationship property type exists
         existingInstallRelPropertyType = self.retrieveInstallRelPropertyType(name)
-        
+
         if len(existingInstallRelPropertyType):
             raise ValueError("Install rel property type (%s) already exists in the database!" % name)
 
@@ -3598,7 +3677,7 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': typeid}
 
         except MySQLdb.Error as e:
@@ -3624,24 +3703,24 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Define query dictionary
         queryDict = {}
         whereKey = None
         whereValue = None
-        
+
         # Check if
         if type_id:
             _checkParameter('id', type_id, 'prim')
             whereKey = 'install_rel_prop_type_id'
             whereValue = type_id
-            
+
         # Check name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'install_rel_prop_type_name'
             whereValue = old_name
-            
+
         # Check if where key is set
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
@@ -3649,11 +3728,11 @@ class idods(object):
         # Check name
         _checkParameter("name", name)
         queryDict['install_rel_prop_type_name'] = name
-        
+
         # Check description
         if 'description' in kws:
             queryDict['install_rel_prop_type_desc'] = kws['description']
-            
+
         # Check units
         if 'unit' in kws:
             queryDict['install_rel_prop_type_units'] = kws['unit']
@@ -3668,7 +3747,7 @@ class idods(object):
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
 
         except MySQLdb.Error as e:
@@ -3683,12 +3762,12 @@ class idods(object):
     def _retrieveInstallRelProperty(self, installRelId, installRelPropertyTypeId = None, value = None):
         '''
         Retrieve install rel property from the database
-        
+
         parameters:
             - installRelId: id of the install rel entry
             - installRelPropertyTypeId: id of the property type
             - value: value of the property
-            
+
         returns:
             { 'id': {
                     'id': #int,
@@ -3696,11 +3775,11 @@ class idods(object):
                     'typename': #string
                 }
             }
-            
+
         raises:
             ValueError, MySQLError
         '''
-        
+
         # Generate SQL
         sql = '''
         SELECT
@@ -3713,7 +3792,7 @@ class idods(object):
         LEFT JOIN install_rel_prop_type ipt ON (ip.install_rel_prop_type_id = ipt.install_rel_prop_type_id)
         WHERE
         '''
-        
+
         # Add install rel id parameter
         sql += ' ip.install_rel_id = %s '
         vals = [installRelId]
@@ -3722,7 +3801,7 @@ class idods(object):
         if installRelPropertyTypeId:
             sql += ' AND ip.install_rel_prop_type_id = %s '
             vals.append(installRelPropertyTypeId)
-        
+
         sqlVals = (sql, vals)
 
         # Add value parameter if exists
@@ -3735,16 +3814,16 @@ class idods(object):
             cur.execute(sqlVals[0], sqlVals[1])
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
                     'value': r[3],
                     'typename': r[4]
                 }
-                
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when retrieving install rel property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when retrieving install rel property from the table:\n%s (%s)' %(e.args[1], e.args[0]))
@@ -3752,33 +3831,33 @@ class idods(object):
     def retrieveInstallRelProperty(self, installRelId, installRelPropertyTypeName = None, value = None):
         '''
         Retrieve component type property from the database by name
-        
+
         :param installRelId: id of the install rel
         :type installRelId: int
-        
+
         :param installRelPropertyTypeName: name of the install rel property type
         :type installRelPropertyTypeName: str
-        
+
         :param value: value of the property type
         :type value: str
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 { 'id': {
                         'id': #int,
                         'value': #string,
                         'typename': #string
                     }
                 }
-            
+
         :raises: ValueError
         '''
-        
+
         # Check component type
         #retrieveInstallRel = self.retrieveInstallRel(installRelId)
-        
+
         #if len(retrieveInstallRel) == 0:
         #    raise ValueError("Install rel (%s) doesn't exist in the database!" % installRelId)
 
@@ -3787,15 +3866,15 @@ class idods(object):
 
         # Check install rel property type
         # of a specific component type
-        
+
         installRelPropertyTypeId = None
-        
+
         if installRelPropertyTypeName:
             retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
-            
+
             if len(retrieveInstallRelPropertyType) == 0:
                 raise ValueError("Install rel property type (%s) doesn't exist in the database!" % installRelPropertyTypeName);
-    
+
             retrieveInstallRelPropertyTypeKeys = retrieveInstallRelPropertyType.keys()
             installRelPropertyTypeId = retrieveInstallRelPropertyType[retrieveInstallRelPropertyTypeKeys[0]]['id']
 
@@ -3804,34 +3883,34 @@ class idods(object):
     def saveInstallRelProperty(self, installRelId, installRelPropertyTypeName, value):
         '''
         Save install rel property into database
-        
+
         :param installRelId: id of the install rel
         :type installRelId: int
-        
+
         :param installRelPropertyTypeName: name of the install rel property type
         :type installRelPropertyTypeName: str
-        
+
         :param value: value of the install rel property
         :type value: str
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {'id': new install rel property id}
-            
+
         :raises: ValueError, MySQLError
         '''
-        
+
         # Check for previous install rel property
         retrieveInstallRelProperty = self.retrieveInstallRelProperty(installRelId, installRelPropertyTypeName)
-        
+
         if len(retrieveInstallRelProperty) != 0:
             raise ValueError("Install rel property for component type (%s) and property type (%s) already exists in the database!" % (installRelId, installRelPropertyTypeName));
-        
+
         # Check install rel
         retrieveInstallRel = self.retrieveInstallRel(installRelId)
-        
+
         if len(retrieveInstallRel) == 0:
             raise ValueError("Install rel (%s) doesn't exist in the database!" % installRelId)
 
@@ -3840,7 +3919,7 @@ class idods(object):
 
         # Check install rel property type
         retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
-        
+
         if len(retrieveInstallRelPropertyType) == 0:
             raise ValueError("Install rel property type (%s) doesn't exist in the database!" % installRelPropertyTypeName);
 
@@ -3854,57 +3933,57 @@ class idods(object):
         VALUES
             (%s, %s, %s)
         '''
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, (installRelId, installRelPropertyTypeId, value))
-            
+
             # Get last row id
             propid = cur.lastrowid
 
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': propid}
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def updateInstallRelProperty(self, install_rel_parent, install_rel_child, installRelPropertyTypeName, **kws):
         '''
         Update install rel property
-        
+
         :param install_rel_parent: name of the parent in the install rel
         :type install_rel_parent: str
-        
+
         :param install_rel_child: name of the child in the install rel
         :type install_rel_child: str
-        
+
         :param installRelPropertyTypeName: name of the install rel property type
         :type installRelPropertyTypeName: str
-        
+
         :param value: value of the install rel property
         :type value: str
-            
+
         :return: True if everything was ok
-            
+
         :raises: ValueError, MySQLError
         '''
-        
+
         # Define query dictionary
         queryDict = {}
         whereDict = {}
-        
+
         # Check install rel
         retrieveInstallRel = self.retrieveInstallRel(None, install_rel_parent, install_rel_child)
-        
+
         if len(retrieveInstallRel) == 0:
             raise ValueError("Install rel doesn't exist in the database!")
 
@@ -3912,10 +3991,10 @@ class idods(object):
         retrieveInstallRelObject = retrieveInstallRel[retrieveInstallRelKeys[0]]
 
         whereDict['install_rel_id'] = retrieveInstallRelObject['id']
-        
+
         # Check install rel property type
         retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
-        
+
         if len(retrieveInstallRelPropertyType) == 0:
             raise ValueError("Install rel property type (%s) doesn't exist in the database!" % installRelPropertyTypeName);
 
@@ -3929,35 +4008,35 @@ class idods(object):
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('install_rel_prop', queryDict, None, None, whereDict)
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def deleteInstallRelProperty(self, install_rel_id):
         '''
         Delete install rel property
-        
+
         :param install_rel_id: Id in the install rel table
         :type install_rel_id: int
-            
+
         :return: True if everything was ok
-            
+
         :raises:
             ValueError, MySQLError
         '''
@@ -3965,46 +4044,46 @@ class idods(object):
         # Generate SQL
         sql = "DELETE FROM install_rel_prop WHERE install_rel_id = %s"
         vals = [install_rel_id]
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-            
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when deleting install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when deleting install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
         '''
         Save install relationship in the database.
-        
+
         :param parent_install: id of the parent element
         :type parent_install: int
-        
+
         :param child_install: id of the child element
         :type child_install: int
-        
+
         :param description: description of the relationship
         :type description: str
-        
+
         :param order: order of the child in the relationship
         :type order: int
-        
+
         :param props: properties are passed as a map
-        
+
             .. code-block:: python
-            
+
                 {
                     'key1': 'value1',
                     ...
@@ -4012,40 +4091,40 @@ class idods(object):
                 }
 
         :type props: dict
-                
+
         :return:  a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {'id': id of the saved install rel}
-            
+
         :raises: ValueError, MySQLError
         '''
-        
+
         # Check if the same relationship already exists in the database
         existingRel = self.retrieveInstallRel(None, parent_install, child_install)
-        
+
         if len(existingRel):
             raise ValueError("Same relationship already exists in the database!")
-        
+
         # Check if parent exists in install
         existingParent = self.retrieveInstall(parent_install, all_install=True)
-        
+
         if len(existingParent) == 0:
             raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
-        
+
         parentKeys = existingParent.keys()
         parentObject = existingParent[parentKeys[0]]
-        
+
         # Check if child exists in install
         existingChild = self.retrieveInstall(child_install, all_install=True)
-        
+
         if len(existingChild) == 0:
             raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
-        
+
         childKeys = existingChild.keys()
         childObject = existingChild[childKeys[0]]
-    
+
         # Generate SQL
         sql = '''
         INSERT INTO install_rel (
@@ -4056,42 +4135,42 @@ class idods(object):
             install_date
         ) VALUES (%s, %s, %s, %s, NOW())
         '''
-       
+
         try:
             # Insert entity
             cur = self.conn.cursor()
             cur.execute(sql, (parentObject['id'], childObject['id'], description, order))
-            
+
             # Get last row id
             idrel = cur.lastrowid
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             # Install rel is saved, now we can save properties
             if props:
-                
+
                 # Convert to json
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
-                
+
                 # Save each property
                 for key in props:
                     value = props[key]
                     self.saveInstallRelProperty(idrel, key, value)
-                
+
             return {'id': idrel}
-           
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             if isinstance(e, ValueError):
                 raise e
-            
+
             else:
                 self.logger.info('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
                 raise MySQLError('Error when saving new install rel:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -4099,151 +4178,151 @@ class idods(object):
     def updateInstallRel(self, parent_install, child_install, **kws):
         '''
         Update install relationship.
-        
+
         :param parent_install: name of the parent element we want ot update by
         :type parent_install: str
-        
+
         :param child_install: name of the child element we want ot update by
         :type child_install: str
-        
+
         :param description: description of the relationship
         :type description: str
-        
+
         :param order: order of the child in the relationship
         :type order: int
-        
+
         :param props:
-        
+
             .. code-block:: python
-            
+
                 {
                     'key1': 'value1',
                     ...
                     'keyN': 'valueN'
                 }
-        
+
         :returns: True if everything is ok
-            
+
         :raises: ValueError, MySQLError
         '''
-        
+
         # Define query dictionary
         queryDict = {}
         whereDict = {}
-        
+
         # Check if parent exists in install
         existingParent = self.retrieveInstall(parent_install, all_install=True)
-        
+
         if len(existingParent) == 0:
             raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
-        
+
         parentKeys = existingParent.keys()
         parentObject = existingParent[parentKeys[0]]
-        
+
         whereDict['parent_install_id'] = parentObject['id']
-        
+
         # Check if child exists in install
         existingChild = self.retrieveInstall(child_install, all_install=True)
-        
+
         if len(existingChild) == 0:
             raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
-        
+
         childKeys = existingChild.keys()
         childObject = existingChild[childKeys[0]]
-        
+
         whereDict['child_install_id'] = childObject['id']
-        
+
         # Add description
         if 'description' in kws:
             queryDict['logical_desc'] = kws['description']
-        
+
         # Add order
         if 'order' in kws:
             queryDict['logical_order'] = kws['order']
-    
+
         # Generate SQL
         sqlVals = _generateUpdateQuery('install_rel', queryDict, None, None, whereDict)
-       
+
         try:
             # Insert entity
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             # Install rel is saved, now we can save properties
             if 'props' in kws and kws['props'] != None:
                 props = kws['props']
-                
+
                 # Convert to json
                 if isinstance(props, (dict)) == False:
                     props = json.loads(props)
-                
+
                 installRel = self.retrieveInstallRel(None, parent_install, child_install)
-                
+
                 if len(installRel) != 1:
                     raise ValueError("There should be one install rel with parent name (%s) and child name (%s) in the database!" % (parent_install, child_install))
-                
+
                 installRelKeys = installRel.keys()
                 relObj = installRel[installRelKeys[0]]
-                
+
                 # Save each property
                 for key in props:
                     value = props[key]
-                    
+
                     if key in relObj['prop_keys']:
-                        
+
                         # Update property
                         self.updateInstallRelProperty(parent_install, child_install, key, value=value)
-                        
+
                     else:
                         # Save new property
                         self.saveInstallRelProperty(relObj['id'], key, value)
-                
+
             return True
-           
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def deleteInstallRel(self, parent_install, child_install):
         '''
         Delete install relationships down the tree. Also delete all the properties of the relationships being deleted.
-        
+
         :param parent_install: name of the parent install
         :type parent_install: string
-        
+
         :param child_install: name of the child install
         :type child_install: string
         '''
-        
+
         # Check for existing install rel
         existingInstallRel = self.retrieveInstallRel(None, parent_install, child_install)
-        
+
         if len(existingInstallRel) == 0:
             raise ValueError("Install rel with parent id (%s) and child id (%s) does not exist in the database!" % (parent_install, child_install))
-        
+
         relKeys = existingInstallRel.keys()
         relObject = existingInstallRel[relKeys[0]]
 
         # Find children
         childrenRel = self.retrieveInstallRel(None, child_install, None)
-        
+
         for rel in childrenRel:
             child = childrenRel[rel]
 
             self.deleteInstallRel(child['parentname'], child['childname'])
-        
+
         # Delete properties
         self.deleteInstallRelProperty(relObject['id'])
-        
+
         # Delete install rel
         self.deleteInstallRelRaw(relObject['id'])
 
@@ -4251,39 +4330,39 @@ class idods(object):
     def deleteInstallRelRaw(self, install_rel_id):
         '''
         Delete install relationship.
-        
+
         :param parent_install: name of the parent install
         :type parent_install: string
-        
+
         :param child_install: name of the child install
         :type child_install: string
-        
+
         :returns: True if everything is ok
-            
+
         :raises: ValueError, MySQLError
         '''
-    
+
         # Generate SQL
         sql = "DELETE FROM install_rel WHERE install_rel_id = %s"
         vals = [install_rel_id]
-       
+
         try:
             # Insert entity
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-           
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when deleting install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when deleting install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -4291,34 +4370,34 @@ class idods(object):
         '''
         Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
         all the parents of specific child.
-        
+
         :param install_rel_id: id of the install_rel table
         :type install_rel_id: int
-        
+
         :param parent_install: name of the parent install element
         :type parent_install: str
-        
+
         :param child_install: name of the child install element
         :type child_install: str
-        
+
         :param description: description of a relationship
         :type description: str
-        
+
         :param order: order number of child element in the parent element; accepts a range in a tuple
         :type order: int
-        
+
         :param date: date of the device installation; accepts a range in a tuple
         :type date: str
-        
+
         :param prop: if we want to search for relationships with specific property set to a specific value, we
               can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
               beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
         :type prop: dict
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {
                     'id': {
                         'id':           #int,
@@ -4335,13 +4414,13 @@ class idods(object):
                         'prop_keys':    ['prop1key', 'propNkey']
                     }
                 }
-            
+
         :raises: ValueError, MySQLError
         '''
-        
+
         # Create vals list
         vals = []
-        
+
         # Generate SQL
         if expected_property == None:
             sql = '''
@@ -4360,13 +4439,13 @@ class idods(object):
             WHERE 1=1
             '''
         else:
-            
+
             # Check expected property parameter
             if len(expected_property) > 1:
                 raise ValueError("Expected property dictionary can contain only one key. Current dictionary contains (%s) keys." % len(expected_property))
-            
+
             expectedPropertyKeys = expected_property.keys()
-            
+
             sql = '''
             SELECT
                 ir.install_rel_id,
@@ -4384,41 +4463,41 @@ class idods(object):
             LEFT JOIN install insc ON(ir.child_install_id = insc.install_id)
             WHERE irpt.install_rel_prop_type_name = %s
             '''
-            
+
             vals.append(expectedPropertyKeys[0])
-            
+
             # Check if expected property value is not None and append it
             if expected_property[expectedPropertyKeys[0]] != None:
                 sql = ' AND irp.install_rel_prop_value = %s '
                 vals.append(expected_property[expectedPropertyKeys[0]])
-            
+
         # Check install_rel_id parameter
         if install_rel_id:
             sql += ' AND ir.install_rel_id = %s '
             vals.append(install_rel_id)
-            
+
         # Check parent_install
         if parent_install:
             sql += ' AND insp.field_name = %s '
             vals.append(parent_install)
-            
+
         # Check child_install
         if child_install:
             sql += ' AND insc.field_name = %s '
             vals.append(child_install)
-            
+
         # Check description parameter
         if description:
             sqlVals = _checkWildcardAndAppend('ir.logical_desc', description, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Check order parameter
         if order:
             sqlVals = self._checkRangeAndAppend('ir.logical_order', order, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Check date parameter
         if date:
             sqlVals = self._checkRangeAndAppend('ir.install_date', date, sql, vals, 'AND')
@@ -4429,11 +4508,11 @@ class idods(object):
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Get values from the database
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -4446,127 +4525,280 @@ class idods(object):
                     'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
                     'prop_keys': []
                 }
-                
+
                 # Get the rest of the properties
                 properties = self._retrieveInstallRelProperty(r[0])
-                
+
                 # Append properties to existing object
                 for prop in properties:
                     obj = properties[prop]
                     resdict[r[0]][obj['typename']] = obj['value']
                     resdict[r[0]]['prop_keys'].append(obj['typename'])
-                    
+
             return resdict
-        
+
         except MySQLdb.Error as e:
-            
+
             self.logger.info('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install rel:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def retrieveTrees(self, install_name, rel_id = None, tree = None):
         '''
         Retrieve installation relation as a tree
-        
+
         :param install_name: name of the install
         :type install_name: str
-        
+
         :param rel_id: relation id
         :type rel_id: int
-        
+
         :param tree: current tree structure
         :type tree: str
-        
+
         :return: install relations in a tree
         '''
-        
+
         if tree == None:
             tree = {}
-        
+
         tree[install_name] = {}
         tree[install_name]['children'] = {}
         tree[install_name]['name'] = install_name
         tree[install_name]['id'] = rel_id
         newTree = tree[install_name]['children']
-        
+
         children = self.retrieveInstallRel(None, install_name)
-        
+
         for childKey in children.keys():
             child = children[childKey]
             self.retrieveTrees(child['childname'], child['id'], newTree)
-        
+
         return tree
 
     def idStatusHelper(self, inputStr):
         '''
         Clean ID status string and return correct int values
-        
+
         :param inputStr: Input string
         :type inputStr: str
-        
+
         :return: cleaned status
-        
+
         '''
-        
+
         if inputStr == "Y":
             return 0
-        
+
         else:
             return 1
 
     def idNoneHelper(self, inputStr, returnType = None):
         '''
         Clean ID input parameter
-        
+
         :param inputStr: Input string
         :type inputStr: str
-        
+
         :param returnType: Type of the returned data
         :type returnType: str
-        
+
         :return: cleaned input
-        
+
         '''
-        
+
         # Strip input string of spaces
         inputStr = inputStr.strip()
-        
+
         if inputStr == "None":
             return None
-        
+
         else:
-            
+
             if returnType != None:
-            
+
                 if returnType == "float":
                     return float(inputStr)
-                
+
                 else:
                     return inputStr
-                
+
             else:
                 return inputStr
 
-    def saveInsertionDevice(self, line):
-        '''Save insertion device installation using any of the acceptable key words:
-
-        - installName: installation name, which is its label on field
-        - beamline: name of beamline
-        - beamlinedesc: description of beamline
-        - beamlineproject: project name what this beamline belongs to
-        - center: coordinate center
-        - straight: straight section name
-        - straightdesc: straight section description
-        - straightoptics: beam optics for this straight section, for example high beta, low beta, dispersion
-        
-        1. insertion device name;
-        2. girder;
-        3. cell;
-        4. straight section name;
-        5. straight section description (long straight section, short straight section, or bending magnet);
-        6. straight section charge particle optics description;
-        7. install place (up, center, or down);
+    def saveInsertionDevice(self, install_name=None, coordinate_center=None, project=None, beamline=None, beamline_desc=None, install_desc=None, inventory_name=None, down_corrector=None, up_corrector=None, length=None, gap_max=None, gap_min=None, gap_tolerance=None, phase1_max=None, phase1_min=None, phase2_max=None, phase2_min=None, phase3_max=None, phase3_min=None, phase4_max=None, phase4_min=None, phase_tolerance=None, k_max_circular=None, k_max_linear=None, phase_mode_a1=None, phase_mode_a2=None, phase_mode_p=None, type_name=None, type_desc=None):
         '''
-        
+        Save insertion device
+
+        :param install_name: installation name
+        :type install_name: str
+
+        :param coordinate_center: coordinate center
+        :type coordinate_center: float
+
+        :param project: project name
+        :type project: str
+
+        :param beamline: beamline name
+        :type beamline: str
+
+        :param beamline_desc: beamline description
+        :type beamline_desc: str
+
+        :param install_desc: install description
+        :type install_desc: str
+
+        :param inventory_name: inventory name
+        :type inventory_name: str
+
+        :param down_corrector: inventory property down corrector
+        :type down_corrector: str
+
+        :param up_corrector: inventory property up corrector
+        :type up_corrector: str
+
+        :param length: inventory property length
+        :type length: str
+
+        :param gap_max: invnetory property gap maximum
+        :type gap_max: str
+
+        :param gap_min: inventory property gap minimum
+        :type gap_min: str
+
+        :param gap_tolerance: inventory property gap tolerance
+        :type gap_tolerance: str
+
+        :param phase1_max: inventory property phase1 maximum
+        :type phase1_max: str
+
+        :param phase1_min: inventory property phase1 minimum
+        :type phase1_min: str
+
+        :param phase2_max: inventory prperty phase2 maximum
+        :type phase2_max: str
+
+        :param phase2_min: inventory property phase2 minimum
+        :type phase2_min: str
+
+        :param phase3_max: inventory property phase3 maximum
+        :type phase3_max: str
+
+        :param phase3_min: inventory property phase3 minimum
+        :type phase3_min: str
+
+        :param phase4_max: inventory property phase4 maximum
+        :type phase4_max: str
+
+        :param phase4_min: inventory property phase4 minimum
+        :type phase4_min: str
+
+        :param phase_tolerance: inventory property phase tolerance
+        :type phase_tolerance: str
+
+        :param k_max_circular: inventory property k maximum circular
+        :type k_max_circular: str
+
+        :param k_max_linear: inventory property k maximum linear
+        :type k_max_linear: str
+
+        :param phase_mode_a1: inventory property phase mode a1
+        :type phase_mode_a1: str
+
+        :param phase_mode_a2: inventory property phase mode a2
+        :type phase_mode_a2: str
+
+        :param phase_mode_p: inventory property phase mode p
+        :type phase_mode_p: str
+
+        :param type_name: component type name
+        :type type_name: str
+
+        :param type_desc: component type description
+        :type type_desc: str
+
+        :return: True if everything went ok
+
+        :raise: ValueError, MySQLError
+        '''
+
+        # Save project
+        if len(self.retrieveInstall(project, all_install = True).keys()) == 0:
+            self.saveInstall(project, description = '__system__', cmpnt_type = 'project')
+
+        # Save beamline
+        if len(self.retrieveInstall(beamline, all_install = True).keys()) == 0:
+            self.saveInstall(beamline, description = '__system__', cmpnt_type = 'project')
+
+        # Save beamline  - project rel
+        if len(self.retrieveInstallRel(None, 'Beamline', project).keys()) == 0:
+            self.saveInstallRel('Beamline', project)
+
+        # Save project  - beamline rel
+        if len(self.retrieveInstallRel(None, project, beamline).keys()) == 0:
+            self.saveInstallRel(project, beamline, description = beamline_desc)
+
+        # Save component type
+        if len(self.retrieveComponentType(type_name).keys()) == 0:
+            self.saveComponentType(type_name, type_desc)
+
+        # Save inventory
+        if len(self.retrieveInventory(inventory_name).keys()) == 0:
+
+            self.saveInventory(inventory_name, cmpnt_type = type_name, props = {
+                'down_corrector': down_corrector,
+                'up_corrector': up_corrector,
+                'length': length,
+                'gap_maximum': gap_max,
+                'gap_minimum': gap_min,
+                'gap_tolerance': gap_tolerance,
+                'phase1_maximum': phase1_max,
+                'phase1_minimum': phase1_min,
+                'phase2_maximum': phase2_max,
+                'phase2_minimum': phase2_min,
+                'phase3_maximum': phase3_max,
+                'phase3_minimum': phase3_min,
+                'phase4_maximum': phase4_max,
+                'phase4_minimum': phase4_min,
+                'phase_tolerance': phase_tolerance,
+                'k_max_circular': k_max_circular,
+                'k_max_linear': k_max_linear,
+                'phase_mode_a1': phase_mode_a1,
+                'phase_mode_a2': phase_mode_a2,
+                'phase_mode_p': phase_mode_p
+            })
+
+        # Save install
+        if len(self.retrieveInstall(install_name).keys()) == 0:
+            self.saveInstall(
+                install_name,
+                coordinatecenter = coordinate_center,
+                description = install_desc,
+                cmpnt_type = type_name
+            )
+
+        # Save beamline  - install rel
+        if len(self.retrieveInstallRel(None, beamline, install_name).keys()) == 0:
+            self.saveInstallRel(beamline, install_name)
+
+        # Save inventory to install
+        if len(self.retrieveInventoryToInstall(None, install_name, inventory_name).keys()) == 0:
+            self.saveInventoryToInstall(install_name, inventory_name)
+
+        return True
+
+    def importDevice(self, line):
+        '''
+        Import insertion device into DB
+
+        :param line: row from the data file
+        :type line: str
+
+        :raises:
+            HTTPError
+
+        :returns: True/False
+        '''
+
         # Map columns
         install_name = 0
         coordinate_center = 1
@@ -4609,115 +4841,115 @@ class idods(object):
         phase4 = 38
         phase_mode = 39
         polar_mode = 40
-        
+
         # Count errors
         errors = 0
-        
+
         data = line.split(',')
-        
+
         # Save project
         if len(self.retrieveInstall(data[project], all_install = True).keys()) == 0:
             self.saveInstall(data[project], description = '__system__', cmpnt_type = 'project')
-        
+
         # Save beamline
         if len(self.retrieveInstall(data[beamline], all_install = True).keys()) == 0:
             self.saveInstall(data[beamline], description = '__system__', cmpnt_type = 'project')
-            
+
         # Save beamline  - project rel
         if len(self.retrieveInstallRel(None, 'Beamline', data[project]).keys()) == 0:
             self.saveInstallRel('Beamline', data[project])
-            
+
         # Save project  - beamline rel
         if len(self.retrieveInstallRel(None, data[project], data[beamline]).keys()) == 0:
             self.saveInstallRel(data[project], data[beamline], description = data[beamline_desc])
-            
+
         # Save component type
         if len(self.retrieveComponentType(data[type_name]).keys()) == 0:
             self.saveComponentType(data[type_name], data[type_desc])
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'down_corrector')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'up_corrector')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'length')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'gap_maximum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'gap_minimum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'gap_tolerance')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase1_maximum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase1_minimum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase2_maximum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase2_minimum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase3_maximum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase3_minimum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase4_maximum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase4_minimum')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase_tolerance')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'k_max_circular')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'k_max_linear')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a1')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a2')
-        
+
         # Save inventory property template
         if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
             self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_p')
-        
+
         # Save inventory
         if len(self.retrieveInventory(data[inventory_name]).keys()) == 0:
-            
+
             self.saveInventory(data[inventory_name], cmpnt_type = data[type_name], props = {
                 'down_corrector': self.idNoneHelper(data[down_corrector]),
                 'up_corrector': self.idNoneHelper(data[up_corrector]),
@@ -4740,7 +4972,7 @@ class idods(object):
                 'phase_mode_a2': self.idNoneHelper(data[phase_mode_a2]),
                 'phase_mode_p': self.idNoneHelper(data[phase_mode_p])
             })
-        
+
         # Save install
         if len(self.retrieveInstall(data[install_name]).keys()) == 0:
             self.saveInstall(
@@ -4749,33 +4981,33 @@ class idods(object):
                 description = data[install_desc],
                 cmpnt_type = data[type_name]
             )
-        
+
         # Save beamline  - install rel
         if len(self.retrieveInstallRel(None, data[beamline], data[install_name]).keys()) == 0:
             self.saveInstallRel(data[beamline], data[install_name])
-        
+
         # Save inventory to install
         if len(self.retrieveInventoryToInstall(None, data[install_name], data[inventory_name]).keys()) == 0:
-            
+
             try:
                 self.saveInventoryToInstall(data[install_name], data[inventory_name])
-            
+
             except ValueError:
                 errors +=1
                 print "Inventory already installed!"
-            
-        
+
+
         # Save data method
         data_method = self.idNoneHelper(data[method])
-        
+
         if data_method != None:
-            
+
             if len(self.retrieveDataMethod(data_method).keys()) == 0:
                 self.saveDataMethod(data_method, self.idNoneHelper(data[method_desc]))
-            
+
         # Save raw data
         rawData = self.saveRawData("lorem ipsum")
-        
+
         # Save offline data
         self.saveOfflineData(
             inventory_name = data[inventory_name],
@@ -4792,10 +5024,10 @@ class idods(object):
             data_id = rawData['id'],
             method_name = self.idNoneHelper(data[method])
         )
-        
+
         if errors == 0:
             return True
-        
+
         else:
             return False
 
@@ -4804,48 +5036,48 @@ class idods(object):
 
         :param name: installation name, which is its label on field
         :type name: str
-        
+
         :param description: installation description
         :type description: str
-        
+
         :param cmpnt_type: component type of the device
         :type cmpnt_type: str
-        
+
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: float
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {'id': new install id}
-        
+
         :raises: ValueError, Exception
         '''
-        
+
         # Check name parameter
         _checkParameter('name', name)
-        
+
         # Check component type
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
             componentType = self.retrieveComponentType(kws['cmpnt_type'], all_cmpnt_types = True)
             componentTypeKeys = componentType.keys()
-        
+
         else:
             raise ValueError("Cmpnttype attribute should be present when inserting new installation!")
-        
+
         # Check install description
         description = None
-        
+
         if 'description' in kws and kws['description'] != None:
             description = kws['description']
-            
+
         # Check coordinate center
         coordinate = None
-        
+
         if 'coordinatecenter' in kws and kws['coordinatecenter'] != None:
             coordinate = kws['coordinatecenter']
-            
+
         # Generate SQL
         sql = '''
         INSERT INTO install
@@ -4853,24 +5085,24 @@ class idods(object):
         VALUES
             (%s, %s, %s, %s)
         '''
-        
+
         try:
             # Insert record into database
             cur = self.conn.cursor()
             key = componentType[componentTypeKeys[0]]['id']
             cur.execute(sql, (key, name, description, coordinate))
-        
+
             # Get last row id
             invid = cur.lastrowid
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return {'id': invid}
-        
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -4883,78 +5115,78 @@ class idods(object):
 
         :param name: installation name, which is its label on field
         :type name: str
-        
+
         :param description: installation description
         :type description: str
-        
+
         :param cmpnt_type: component type of the device
         :type cmpnt_type: str
-        
+
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: float
-        
+
         :raises: ValueError, MySQLError
-            
+
         :return: True if everything is ok
         '''
-        
+
         # Define query dictionary
         queryDict = {}
         whereKey = None
         whereValue = None
-        
+
         # Check id
         if install_id:
             _checkParameter('id', install_id, 'prim')
             whereKey = 'install_id'
             whereValue = install_id
-        
+
         # Check name
         if old_name:
             _checkParameter('name', old_name)
             whereKey = 'field_name'
             whereValue = old_name
-            
+
         # Check if where key is set
         if whereKey == None:
             raise ValueError("Id or old name should be present to execute an update!")
-        
+
         # Check name parameter
         _checkParameter('name', name)
         queryDict['field_name'] = name
-        
+
         # Check component type
         if 'cmpnt_type' in kws:
             componentType = self.retrieveComponentType(kws['cmpnt_type'])
             componentTypeKeys = componentType.keys()
             queryDict['cmpnt_type_id'] = componentType[componentTypeKeys[0]]['id']
-        
+
         # Check install description
         if 'description' in kws:
             description = kws['description']
             queryDict['location'] = description
-            
+
         # Check coordinate center
         if 'coordinatecenter' in kws:
             coordinate = kws['coordinatecenter']
             queryDict['coordinate_center'] = coordinate
-            
+
         # Generate SQL
         sqlVals = _generateUpdateQuery('install', queryDict, whereKey, whereValue)
-        
+
         try:
             # Insert record into database
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-        
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-        
+
         except MySQLdb.Error as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -4965,14 +5197,14 @@ class idods(object):
     def _retrieveInstallById(self, installid):
         '''
         Retrieve install its id.
-        
+
         :param installid: id of the install entity
         :type installid: int
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {'id': {
                         'id':                  #int,
                         'cmpnt_type':           #string,
@@ -4981,35 +5213,35 @@ class idods(object):
                         'coordinationcenter':  #float
                     }
                 }
-            
+
         :raises: ValueError, MySQLError
         '''
-        
+
         # Check install id
         if installid == None:
             raise ValueError("Install id should be present!")
-        
+
         # Get install name from the database
         sql = '''
         SELECT field_name FROM install WHERE install_id = %s
         '''
-        
+
         # Define install name
         installname = None
-        
+
         try:
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sql, installid)
             res = cur.fetchall()
-            
+
             if len(res) != 1:
                 raise ValueError("Install with id (%s) doesn't exist in the database!" % installid)
-            
+
             # Get install name
             installname = res[0][0]
             return self.retrieveInstall(installname)
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install from the database:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -5019,23 +5251,23 @@ class idods(object):
 
         :param name: installation name, which is its label on field
         :type name: str
-        
+
         :param description: installation description
         :type description: str
-        
+
         :param cmpnt_type: component type name of the device
         :type cmpnt_type: str
-        
+
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: str
-        
+
         :param all_install: retrieve also system installs
         :type all_install: str
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {'id': {
                         'id':                     #int,
                         'name':                   #string,
@@ -5045,13 +5277,13 @@ class idods(object):
                         'coordinatecenter':       #float
                     }
                 }
-                
+
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Check name
         _checkParameter('name', name)
-        
+
         # Generate SQL
         sql = '''
         SELECT
@@ -5066,21 +5298,21 @@ class idods(object):
         LEFT JOIN cmpnt_type ct ON(inst.cmpnt_type_id = ct.cmpnt_type_id)
         WHERE 1=1
         '''
-        
+
         vals = []
-        
+
         # Append name parameter
         sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals, "AND")
-        
+
         # Append description parameter
         if 'description' in kws and kws['description'] != None:
             # Append __system__ installs if description is set to __system__
             if kws['description'] == '__system__':
                 kws['all_install'] = True
-            
+
             else:
                 sqlVals = _checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
-            
+
         # Append component type parameter
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
             sqlVals = _checkWildcardAndAppend('ct.cmpnt_type_name', kws['cmpnt_type'], sqlVals[0], sqlVals[1], 'AND')
@@ -5093,21 +5325,21 @@ class idods(object):
         if ('all_install' in kws) == False or ('all_install' in kws and kws['all_install'] == False):
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
             sql += ' AND (ct.description != %s OR ct.description IS NULL ) '
             vals.append('__system__')
-            
+
             sqlVals = (sql, vals)
 
         try:
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Get last id
             res = cur.fetchall()
             resdict = {}
-            
+
             # Construct return dict
             for r in res:
                 resdict[r[0]] = {
@@ -5118,9 +5350,9 @@ class idods(object):
                     'coordinatecenter': r[4],
                     'cmpnt_type_description': r[6]
                 }
-                
+
             return resdict
-        
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching installation:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -5128,34 +5360,34 @@ class idods(object):
     def saveFile(self, file_name, data):
         '''
         Save file that was uploaded and return file path
-        
+
         :param file_name: name of the file we want to save
         :type file_name: str
-        
+
         :param data: data we want to save
         :type data: blob
-        
+
         :return: a map with structure like:
-            
+
             .. code-block:: python
-            
+
                 {'path': path to a file}
-            
+
         :raises: IOError
         '''
         path, absolutePath = _generateFilePath()
         filePath = os.path.join(absolutePath, file_name)
-        
+
         try:
             with open(filePath, 'w') as f:
                 f.write(data)
-        
+
             return {'path': os.path.join(path, file_name)}
-            
+
         except IOError as e:
             self.logger.info('Error when writing to a file:\n%s (%d)' %(e.args[1], e.args[0]))
             raise IOError('Error when writing to a file:\n%s (%d)' %(e.args[1], e.args[0]))
-            
+
 
     def saveOnlineData(self, install_name, **kws):
         '''Save insertion device online data.
@@ -5186,42 +5418,42 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Check install name
         _checkParameter('name', install_name)
-            
+
         returnedInstall = self.retrieveInstall(install_name)
-        
+
         if len(returnedInstall) == 0:
             raise ValueError("Install (%s) does not exist in the database!" % install_name)
-        
+
         returnedInstallKeys = returnedInstall.keys()
         installid = returnedInstall[returnedInstallKeys[0]]['id']
-            
+
         # Check username
         username = None
-        
+
         if 'username' in kws and kws['username'] != None:
             username = kws['username']
-            
+
         # Check description
         description = None
-        
+
         if 'description' in kws and kws['description'] != None:
             description = kws['description']
-            
+
         # Check url
         url = None
-        
+
         if 'url' in kws and kws['url'] != None:
             url = kws['url']
-            
+
         # Check status
         status = None
-        
+
         if 'status' in kws and kws['status'] != None:
             status = kws['status']
-            
+
         # Generate SQL
         sql = '''
         INSERT INTO id_online_data (
@@ -5235,23 +5467,23 @@ class idods(object):
             %s, %s, %s, %s, NOW(), %s
         )
         '''
-        
+
         try:
             # Insert data into database
             cur = self.conn.cursor()
             cur.execute(sql, (installid, username, description, url, status))
-            
+
             # Get last row id
             onlinedataid = cur.lastrowid
-            
+
             # Create transactions
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return {'id': onlinedataid}
-            
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -5298,7 +5530,7 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Generate SQL
         sql = '''
         SELECT
@@ -5314,54 +5546,54 @@ class idods(object):
         LEFT JOIN install inst ON(iod.install_id = inst.install_id)
         WHERE 1=1
         '''
-        
+
         vals = []
-        
+
         # Append online id
         if 'onlineid' in kws and kws['onlineid'] != None:
             _checkParameter('id', kws['onlineid'], 'prim')
             sql += ' AND id_online_data_id = %s '
             vals.append(kws['onlineid'])
-            
+
         # Append username
         if 'username' in kws and kws['username'] != None:
             sqlVals = _checkWildcardAndAppend('iod.login_name', kws['username'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Append description
         if 'description' in kws and kws['description'] != None:
             sqlVals = _checkWildcardAndAppend('iod.description', kws['description'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Append url
         if 'url' in kws and kws['url'] != None:
             sqlVals = _checkWildcardAndAppend('iod.data_url', kws['url'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Append status
         if 'status' in kws and kws['status'] != None:
             sqlVals = self._checkRangeAndAppend('iod.status', kws['status'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         # Append install name
         if 'install_name' in kws and kws['install_name'] != None:
             sqlVals = _checkWildcardAndAppend('inst.field_name', kws['install_name'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
-            
+
         try:
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Get all records
             res = cur.fetchall()
             resdict = {}
-            
+
             for r in res:
                 resdict[r[0]] = {
                     'id': r[0],
@@ -5373,9 +5605,9 @@ class idods(object):
                     'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
                     'status': r[6]
                 }
-            
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching online data:\n%s (%d)' %(e.args[1], e.args[0]))
@@ -5406,60 +5638,60 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Define query dict
         queryDict = {}
-        
+
         # Check id
         _checkParameter('id', online_data_id, 'prim')
         whereKey = 'id_online_data_id'
         whereValue = online_data_id
-        
+
         # Check install name
         if 'install_name' in kws and kws['install_name'] != None:
             installname = kws['install_name']
-            
+
             returnedInstall = self.retrieveInstall(installname)
-            
+
             if len(returnedInstall) == 0:
                 raise ValueError("Install (%s) does not exist in the database!" % installname)
-            
+
             returnedInstallKeys = returnedInstall.keys()
             installid = returnedInstall[returnedInstallKeys[0]]['id']
             queryDict['install_id'] = installid
-            
+
         # Check username
         if 'username' in kws:
             queryDict['login_name'] = kws['username']
-            
+
         # Check description
         if 'description' in kws:
             queryDict['description'] = kws['description']
-            
+
         # Check url
         if 'url' in kws:
             queryDict['data_url'] = kws['url']
-            
+
         # Check status
         if 'status' in kws:
             queryDict['status'] = kws['status']
-            
+
         # Generate SQL
         sqlVals = _generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)
-        
+
         try:
             # Insert offline data into database
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Create transactions
             if self.transaction == None:
                 self.conn.commit()
-                
+
             return True
-        
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
@@ -5478,49 +5710,49 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Retrieve offline data
         onlineData = self.retrieveOnlineData(onlineid = online_data_id)
-        
+
         if len(onlineData) == 0:
             raise ValueError("Online data doesn't exist in the database!")
-        
+
         onlineDataKey = onlineData.keys()[0]
         onlineDataObj = onlineData[onlineDataKey]
-        
+
         if onlineDataObj['url'] == '':
             raise ValueError("Online data url is broken!")
-        
+
         # Generate path and remove file
         ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
         savePath = os.path.split(ROOT_PATH)
         savePath = os.path.split(savePath[0])
         savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
-        
+
         filePath = os.path.join(savePath, onlineDataObj['url'])
 
         os.remove(filePath)
-        
+
         # Generate SQL
         sql = "DELETE FROM id_online_data WHERE id_online_data_id = %s"
         vals = [online_data_id]
-        
+
         try:
             cur = self.conn.cursor()
             cur.execute(sql, vals)
-            
+
             # Create transaction
             if self.transaction == None:
                 self.conn.commit()
-            
+
             return True
-            
+
         except Exception as e:
-            
+
             # Rollback changes
             if self.transaction == None:
                 self.conn.rollback()
-            
+
             self.logger.info('Error when deleting online data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when deleting online data:\n%s (%d)' %(e.args[1], e.args[0]))
 
@@ -5532,7 +5764,7 @@ class idods(object):
 
         :param description: a brief description for this data entry
         :type description: str
-        
+
         :param date: offline data date
         :type date: str
 
@@ -5559,7 +5791,7 @@ class idods(object):
 
         :param status: status of this data set
         :type status: int
-        
+
         :param method_name: name of method used to produce the data
         :type method_name: str
 
@@ -5592,10 +5824,10 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Check name
         _checkParameter('name', install_name)
-        
+
         # Generate select SQL
         sql = '''
         SELECT
@@ -5608,164 +5840,243 @@ class idods(object):
         LEFT JOIN inventory inv ON(ii.inventory_id = inv.inventory_id)
         WHERE
         '''
-        
+
         # Check description
         description = None
-        
+
         if 'description' in kws and kws['description'] != None:
             description = kws['description']
-        
+
         # Check gap
         gap = None
-        
+
         if 'gap' in kws and kws['gap'] != None:
             gap = kws['gap']
-        
+
         # Check date
         dateP = None
-        
+
         if 'date' in kws and kws['date'] != None:
             dateP = kws['date']
-        
+
         # Check phase1
         phase1 = None
-        
+
         if 'phase1' in kws and kws['phase1'] != None:
             phase1 = kws['phase1']
-        
+
         # Check phase2
         phase2 = None
-        
+
         if 'phase2' in kws and kws['phase2'] != None:
             phase2 = kws['phase2']
-        
+
         # Check phase3
         phase3 = None
-        
+
         if 'phase3' in kws and kws['phase3'] != None:
             phase3 = kws['phase3']
-        
+
         # Check phase4
         phase4 = None
-        
+
         if 'phase4' in kws and kws['phase4'] != None:
             phase4 = kws['phase4']
-        
+
         # Check phasemode
         phasemode = None
-        
+
         if 'phasemode' in kws and kws['phasemode'] != None:
             phasemode = kws['phasemode']
-        
+
         # Check polarmode
         polarmode = None
-        
+
         if 'polarmode' in kws and kws['polarmode'] != None:
             polarmode = kws['polarmode']
-        
+
         # Check status
         status = None
-        
+
         if 'status' in kws and kws['status'] != None:
             status = kws['status']
-        
+
         # Check method_name
         method_name = None
-        
+
         if 'method_name' in kws and kws['method_name'] != None:
             method_name = kws['method_name']
-        
+
         vals = []
-        
+
         # Append name parameter
         sqlVals = _checkWildcardAndAppend('inst.field_name', install_name, sql, vals)
-        
+
         try:
             # Execute SQL
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
-            
+
             # Get last id
             res = cur.fetchall()
             resdict = {}
-            
+
             # Construct return dict
             for r in res:
                 inventoryname = r[2]
                 installname = r[3]
-                
+
                 # Skip if there is no map
                 if inventoryname == None:
                     continue
 
                 offlineData = self.retrieveOfflineData(inventory_name=inventoryname, description=description, date=dateP, gap=gap, phase1=phase1, phase2=phase2, phase3=phase3, phase4=phase4, phasemode=phasemode, polarmode=polarmode, status=status, method_name=method_name)
-                
+
                 # Go though the results and map them in result dictionary
                 for key in offlineData:
                     offlineDatum = offlineData[key]
                     resdict[key] = offlineDatum
                     resdict[key]['install_name'] = installname
-                
+
             return resdict
-            
+
         except MySQLdb.Error as e:
             self.logger.info('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
-        
+
     def idodsInstall(self):
         '''
         Create necessary database entries
         '''
-        
+
         # Create component type property type for identifying ID devices
         if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
             self.saveComponentTypePropertyType('insertion_device')
-        
+
         # Create component types
         if len(self.retrieveComponentType('root', all_cmpnt_types = True).keys()) == 0:
             self.saveComponentType('root', '__system__')
-        
+
         if len(self.retrieveComponentType('branch', all_cmpnt_types = True).keys()) == 0:
             self.saveComponentType('branch', '__system__')
-        
+
         if len(self.retrieveComponentType('beamline', all_cmpnt_types = True).keys()) == 0:
             self.saveComponentType('beamline', '__system__')
-        
+
         if len(self.retrieveComponentType('project', all_cmpnt_types = True).keys()) == 0:
             self.saveComponentType('project', '__system__')
-        
+
         # Create install elements
         if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install = True).keys()) == 0:
             self.saveInstall('Trees', cmpnt_type='root')
-        
+
         if len(self.retrieveInstall('Installation', cmpnt_type='branch', all_install = True).keys()) == 0:
             self.saveInstall('Installation', cmpnt_type='branch')
-        
+
         if len(self.retrieveInstall('Beamline', cmpnt_type='branch', all_install = True).keys()) == 0:
             self.saveInstall('Beamline', cmpnt_type='branch')
-        
+
         # Create install relationship
         if len(self.retrieveInstallRel(None, 'Trees', 'Installation').keys()) == 0:
             self.saveInstallRel('Trees', 'Installation')
-        
+
         # Create test relationship
         if len(self.retrieveInstallRel(None, 'Trees', 'Beamline').keys()) == 0:
             self.saveInstallRel('Trees', 'Beamline')
-        
+
+                # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'down_corrector')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'up_corrector')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'length')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'gap_maximum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'gap_minimum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'gap_tolerance')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase1_maximum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase1_minimum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase2_maximum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase2_minimum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase3_maximum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase3_minimum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase4_maximum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase4_minimum')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase_tolerance')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'k_max_circular')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'k_max_linear')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase_mode_a1')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase_mode_a2')
+
+        # Save inventory property template
+        if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
+            self.saveInventoryPropertyTemplate('root', 'phase_mode_p')
         # Create test project
         #if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
         #    self.saveInstall('Project1', cmpnt_type='project')
-        
+
         # Create test project relationship
         #if len(self.retrieveInstallRel(None, 'Installation', 'Project1').keys()) == 0:
         #     self.saveInstallRel('Installation', 'Project1')
-        
+
         # Create test beamline
         #if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
         #    self.saveInstall('Beamline1', cmpnt_type='beamline')
-        
+
         # Create test beamline relationship
         #if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1').keys()) == 0:
         #    self.saveInstallRel('Project1', 'Beamline1')
-        
+
         return True

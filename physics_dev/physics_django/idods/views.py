@@ -6,6 +6,7 @@ import sys
 from django.db import connection, transaction
 from django.db.transaction import TransactionManagementError
 from django.template import RequestContext
+from utils.timer import Timer
 
 try:
     from django.utils import simplejson as json
@@ -440,6 +441,21 @@ def saveOfflineDataWS(request):
     return _saveData(request, idodsi.saveOfflineData, ['inventory_name', 'username', 'description', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'data_file_name', 'data_file_ts', 'data_id', 'script_name', 'script', 'method_name'])
 
 '''
+Save data method and offline data
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveDataMethodOfflineDataWS(request):
+    
+    with Timer() as t:
+        request.POST = request.POST.copy()
+        request.POST['username'] = request.user.username
+        result = _saveData(request, idodsi.saveMethodAndOfflineData, ['inventory_name', 'username', 'method', 'method_desc', 'data_desc', 'data_file_name', 'data_id', 'status', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phase_mode', 'polar_mode'])
+    print "=> elasped _saveData, idodsi.saveMethodAndOfflineData: %s s" % t.secs
+
+    return result
+
+'''
 Update offline data
 '''
 @require_http_methods(["POST"])
@@ -549,12 +565,25 @@ def testAuth(request):
     return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
 
 '''
-Test authentication
+Import devices
 '''
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
-def saveIdWs(request):
-    return _updateData(request, idodsi.saveInsertionDevice, ['line'])
+def importDeviceWS(request):
+    return _updateData(request, idodsi.importDevice, ['line'])
+
+'''
+Save insertion device
+'''
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveInsertionDeviceWS(request):
+    
+    with Timer() as t:
+        result = _saveData(request, idodsi.saveInsertionDevice, ['install_name', 'coordinate_center', 'project', 'beamline', 'beamline_desc', 'install_desc', 'inventory_name', 'down_corrector', 'up_corrector', 'length', 'gap_max', 'gap_min', 'gap_tolerance', 'phase1_max', 'phase1_min', 'phase2_max', 'phase2_min', 'phase3_max', 'phase3_min', 'phase4_max', 'phase4_min', 'phase_tolerance', 'k_max_circular', 'k_max_linear', 'phase_mode_a1', 'phase_mode_a2', 'phase_mode_p', 'type_name', 'type_desc'])
+    print "=> elasped _saveData, idodsi.saveInsertionDevice: %s s" % t.secs
+
+    return result
 
 '''
 Load index html file

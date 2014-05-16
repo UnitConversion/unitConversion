@@ -30,9 +30,9 @@ from copy import copy
 
 import urllib
 
-try: 
+try:
     import json
-except ImportError: 
+except ImportError:
     import simplejson as json
 
 from _conf import _conf
@@ -53,43 +53,43 @@ class SSLAdapter(HTTPAdapter):
 
 class IDODSClient(object):
     '''
-    IDODSClient provides a client connection object to perform 
+    IDODSClient provides a client connection object to perform
     save, retrieve, and update operations for NSLS II insertion device online data service.
     '''
- 
+
     def __init__(self, BaseURL=None, username=None, password=None):
         '''
         BaseURL = the url of the insertion device online data service
-        username = 
-        password = 
+        username =
+        password =
         '''
         self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}
         self.__resource = 'test/'
-        
+
         try:
             self.__baseURL = self.__getdefaultconfig('BaseURL', BaseURL)
             self.__userName = self.__getdefaultconfig('username', username)
             self.__password = self.__getdefaultconfig('password', password)
-            
+
             if self.__userName and self.__password:
                 #self.__auth = (self.__userName, self.__password)
                 self.__auth = auth.HTTPBasicAuth(self.__userName, self.__password)
-            
+
             else:
                 self.__auth = None
 
 
             self.__session = requests.Session()
-            
+
             # specify ssl version. Use SSL v3 for secure connection, https.
             self.__session.mount('https://', SSLAdapter(ssl_version=ssl.PROTOCOL_SSLv3))
-            
+
             requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
             #requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
-        
+
         except Exception as e:
             raise Exception('Failed to create client.')
-        
+
     def __getdefaultconfig(self, arg, value):
         if value == None and _conf.has_option('DEFAULT', arg):
             return _conf.get('DEFAULT', arg)
@@ -103,10 +103,10 @@ class IDODSClient(object):
 
         :param name: vendor name
         :type name: str
-        
+
         :param description: description for a vendor
         :type description: str
-        
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -114,29 +114,29 @@ class IDODSClient(object):
                 {'id': {
                     'id': ,
                     'name': ,
-                    'description': 
+                    'description':
                     }
                  ...
                 }
 
         :Raises: HTTPError
         '''
-        
+
         # Try to retrieve vendor
         url = 'vendor/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveVendor(self, name, description = None):
@@ -144,7 +144,7 @@ class IDODSClient(object):
 
         :param name: vendor name
         :type name: str
-        
+
         :param dtype: device type
 
         :param description: a brief description which could have up to 255 characters
@@ -158,22 +158,22 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'savevendor/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateVendor(self, old_name, name, **kws):
@@ -193,24 +193,24 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updatevendor/'
-        
+
         # Set parameters
         params={
             'vendor_id': None,
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveComponentType(self, name, description = None):
@@ -242,22 +242,22 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'cmpnttype/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveComponentType(self, name, description=None, props=None):
@@ -272,7 +272,7 @@ class IDODSClient(object):
 
         :param description: description for this device
         :type desctiprion: str
-        
+
         :param props: component type properties
         :type props: python dict
 
@@ -285,26 +285,26 @@ class IDODSClient(object):
         :Raises: HTTPError
 
         '''
-        
+
         # Set URL
         url = 'savecmpnttype/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         # Add props
         if props:
             params['props'] = json.dumps(props)
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateComponentType(self, old_name, name, **kws):
@@ -325,7 +325,7 @@ class IDODSClient(object):
 
         :param description: description for this device
         :type desctiprion: str
-        
+
         :param props: component type properties
         :type props: python dict
 
@@ -333,28 +333,28 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updatecmpnttype/'
-        
+
         # Set parameters
         params={
             'component_type_id': None,
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add props
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveComponentTypePropertyType(self, name):
@@ -377,18 +377,18 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'cmpnttypeproptype/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveComponentTypePropertyType(self, name, description = None):
@@ -406,22 +406,22 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'savecmpnttypeproptype/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateComponentTypePropertyType(self, old_name, name, **kws):
@@ -436,24 +436,24 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updatecmpnttypeproptype/'
-        
+
         # Set parameters
         params={
             'property_type_id': None,
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveInventory(self, name):
@@ -503,18 +503,18 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'inventory/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveInventory(self, name, **kws):
@@ -580,43 +580,43 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'saveinventory/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add component type
         if 'cmpnt_type' in kws:
             params['cmpnt_type'] = kws['cmpnt_type']
-        
+
         # Add alias
         if 'alias' in kws:
             params['alias'] = kws['alias']
-        
+
         # Add serialno
         if 'serialno' in kws:
             params['serialno'] = kws['serialno']
-        
+
         # Add vendor
         if 'vendor' in kws:
-            
+
             # Check vendor value
             if kws['vendor'] == None:
                 self.__raise_for_status(400, 'If vendor is passed it should not be None!')
-            
+
             params['vendor'] = kws['vendor']
-        
+
         # Add props
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateInventory(self, old_name, name, **kws):
@@ -679,45 +679,45 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updateinventory/'
-        
+
         # Set parameters
         params={
             'inventory_id': None,
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add component type
         if 'cmpnt_type' in kws:
             params['cmpnt_type'] = kws['cmpnt_type']
-        
+
         # Add alias
         if 'alias' in kws:
             params['alias'] = kws['alias']
-        
+
         # Add serialno
         if 'serialno' in kws:
             params['serialno'] = kws['serialno']
-        
+
         # Add vendor
         if 'vendor' in kws:
-            
+
             # Check vendor value
             if kws['vendor'] == None:
                 self.__raise_for_status(400, 'If vendor is passed it should not be None!')
-            
+
             params['vendor'] = kws['vendor']
-        
+
         # Add props
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveInventoryPropertyTemplate(self, name):
@@ -743,18 +743,18 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'inventoryproptmplt/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveInventoryPropertyTemplate(self, cmpnt_type, name, description = None, default = None, unit = None):
@@ -775,31 +775,31 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'saveinventoryproptmplt/'
-        
+
         # Set parameters
         params={
             'cmpnt_type': cmpnt_type,
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         # Add default
         if default:
             params['default'] = default
-        
+
         # Add unit
         if unit:
             params['unit'] = unit
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type, name, **kws):
@@ -817,32 +817,32 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updateinventoryproptmplt/'
-        
+
         # Set parameters
         params={
             'tmplt_id': tmplt_id,
             'cmpnt_type': cmpnt_type,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add default
         if 'default' in kws:
             params['default'] = kws['default']
-        
+
         # Add unit
         if 'unit' in kws:
             params['unit'] = kws['unit']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveInstall(self, name, **kws):
@@ -850,23 +850,23 @@ class IDODSClient(object):
 
         :param name: installation name, which is its label on field
         :type name: str
-        
+
         :param description: installation description
         :type description: str
-        
+
         :param cmpnt_type: component type name of the device
         :type cmpnt_type: str
-        
+
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: str
-        
+
         :param all_install: retrieve also system installs
         :type all_install: str
-            
+
         :return: a map with structure like:
-        
+
             .. code-block:: python
-            
+
                 {'id': {
                         'id':                     #int,
                         'name':                   #string,
@@ -876,26 +876,26 @@ class IDODSClient(object):
                         'coordinatecenter':       #float
                     }
                 }
-                
+
         :Raises: ValueError, MySQLError
         '''
-        
+
         # Set URL
         url = 'install/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add component type
         if 'cmpnt_type' in kws:
             params['cmpnt_type'] = kws['cmpnt_type']
-        
+
         # Add coordinate center
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
@@ -903,38 +903,173 @@ class IDODSClient(object):
         # Add all install
         if 'all_install' in kws:
             params['all_install'] = kws['all_install']
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
-    def saveInsertionDevice(self, line):
-        '''Save insertion device installation using any of the acceptable key words:
-
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type of the device
-        - coordinatecenter: coordinate center number
-        
-        raises:
-            HTTPError
-            
-        returns:
-            {'id': new install id}
+    def saveInsertionDevice(self, install_name, coordinate_center, project, beamline, beamline_desc, install_desc, inventory_name, down_corrector, up_corrector, length, gap_max, gap_min, gap_tolerance, phase1_max, phase1_min, phase2_max, phase2_min, phase3_max, phase3_min, phase4_max, phase4_min, phase_tolerance, k_max_circular, k_max_linear, phase_mode_a1, phase_mode_a2, phase_mode_p, type_name, type_desc):
         '''
-        
+        Save insertion device
+
+        :param install_name: installation name
+        :type install_name: str
+
+        :param coordinate_center: coordinate center
+        :type coordinate_center: float
+
+        :param project: project name
+        :type project: str
+
+        :param beamline: beamline name
+        :type beamline: str
+
+        :param beamline_desc: beamline description
+        :type beamline_desc: str
+
+        :param install_desc: install description
+        :type install_desc: str
+
+        :param inventory_name: inventory name
+        :type inventory_name: str
+
+        :param down_corrector: inventory property down corrector
+        :type down_corrector: str
+
+        :param up_corrector: inventory property up corrector
+        :type up_corrector: str
+
+        :param length: inventory property length
+        :type length: str
+
+        :param gap_max: invnetory property gap maximum
+        :type gap_max: str
+
+        :param gap_min: inventory property gap minimum
+        :type gap_min: str
+
+        :param gap_tolerance: inventory property gap tolerance
+        :type gap_tolerance: str
+
+        :param phase1_max: inventory property phase1 maximum
+        :type phase1_max: str
+
+        :param phase1_min: inventory property phase1 minimum
+        :type phase1_min: str
+
+        :param phase2_max: inventory prperty phase2 maximum
+        :type phase2_max: str
+
+        :param phase2_min: inventory property phase2 minimum
+        :type phase2_min: str
+
+        :param phase3_max: inventory property phase3 maximum
+        :type phase3_max: str
+
+        :param phase3_min: inventory property phase3 minimum
+        :type phase3_min: str
+
+        :param phase4_max: inventory property phase4 maximum
+        :type phase4_max: str
+
+        :param phase4_min: inventory property phase4 minimum
+        :type phase4_min: str
+
+        :param phase_tolerance: inventory property phase tolerance
+        :type phase_tolerance: str
+
+        :param k_max_circular: inventory property k maximum circular
+        :type k_max_circular: str
+
+        :param k_max_linear: inventory property k maximum linear
+        :type k_max_linear: str
+
+        :param phase_mode_a1: inventory property phase mode a1
+        :type phase_mode_a1: str
+
+        :param phase_mode_a2: inventory property phase mode a2
+        :type phase_mode_a2: str
+
+        :param phase_mode_p: inventory property phase mode p
+        :type phase_mode_p: str
+
+        :param type_name: component type name
+        :type type_name: str
+
+        :param type_desc: component type description
+        :type type_desc: str
+
+        :return: True if everything went ok
+
+        :raise: HTTPError
+        '''
+
         # Set URL
-        url = 'saveid/'
-        
+        url = 'saveinsertiondevice/'
+
+        # Set parameters
+        params={
+            'install_name': install_name,
+            'coordinate_center': coordinate_center,
+            'project': project,
+            'beamline': beamline,
+            'beamline_desc': beamline_desc,
+            'install_desc': install_desc,
+            'inventory_name': inventory_name,
+            'down_corrector': down_corrector,
+            'up_corrector': up_corrector,
+            'length': length,
+            'gap_max': gap_max,
+            'gap_min': gap_min,
+            'gap_tolerance': gap_tolerance,
+            'phase1_max': phase1_max,
+            'phase1_min': phase1_min,
+            'phase2_max': phase2_max,
+            'phase2_min': phase2_min,
+            'phase3_max': phase3_max,
+            'phase3_min': phase3_min,
+            'phase4_max': phase4_max,
+            'phase4_min': phase4_min,
+            'phase_tolerance': phase_tolerance,
+            'k_max_circular': k_max_circular,
+            'k_max_linear': k_max_linear,
+            'phase_mode_a1': phase_mode_a1,
+            'phase_mode_a2': phase_mode_a2,
+            'phase_mode_p': phase_mode_p,
+            'type_name': type_name,
+            'type_desc': type_desc
+        }
+
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def importDevice(self, line):
+        '''
+        Import insertion device into DB
+
+        :param line: row from the data file
+        :type line: str
+
+        :raises:
+            HTTPError
+
+        :returns: True/False
+        '''
+
+        # Set URL
+        url = 'importdevice/'
+
         # Set parameters
         params={
             'line': line
         }
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveInstall(self, name, **kws):
@@ -944,37 +1079,37 @@ class IDODSClient(object):
         - description: installation description
         - cmpnt_type: component type of the device
         - coordinatecenter: coordinate center number
-        
+
         raises:
             HTTPError
-            
+
         returns:
             {'id': new install id}
         '''
-        
+
         # Set URL
         url = 'saveinstall/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add component type
         if 'cmpnt_type' in kws:
             params['cmpnt_type'] = kws['cmpnt_type']
-        
+
         # Add coordinate center
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateInstall(self, old_name, name, **kws):
@@ -985,50 +1120,50 @@ class IDODSClient(object):
         - description: installation description
         - cmpnt_type: component type of the device
         - coordinatecenter: coordinate center number
-        
+
         raises:
             HTTPError
-            
+
         returns:
             True if everything is ok
         '''
-        
+
         # Set URL
         url = 'updateinstall/'
-        
+
         # Set parameters
         params={
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add component type
         if 'cmpnt_type' in kws:
-            
+
             # Check for none
             if kws['cmpnt_type'] == None:
                 self.__raise_for_status(400, 'If component type parameter is present it should not be set to None!')
-            
+
             params['cmpnt_type'] = kws['cmpnt_type']
-        
+
         # Add coordinate center
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveInstallRel(self, install_rel_id = None, parent_install = None, child_install = None, description = None, order = None, date = None, expected_property = None):
         '''
         Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
         all the parents of specific child.
-        
+
         params:
             - install_rel_id: id of the install_rel table
             - parent_install: name of the parent install element
@@ -1039,7 +1174,7 @@ class IDODSClient(object):
             - expected_property: if we want to search for relationships with specific property set to a specific value, we
               can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
               beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
-            
+
         returns:
             {
                 'id': {
@@ -1056,14 +1191,14 @@ class IDODSClient(object):
                     'propNkey':     #string
                 }
             }
-            
+
         raises:
             HTTPError
         '''
-        
+
         # Set URL
         url = 'installrel/'
-        
+
         # Set parameters
         params={
             'install_rel_id': install_rel_id,
@@ -1073,16 +1208,16 @@ class IDODSClient(object):
             'order': order,
             'date': date
         }
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
         '''
         Save install relationship in the database.
-        
+
         params:
             - parent_install: id of the parent element
             - child_install: id of the child element
@@ -1096,41 +1231,41 @@ class IDODSClient(object):
                 }
         returns:
             {'id': id of the saved install rel}
-            
+
         raises:
             HTTPError
         '''
-        
+
         # Set URL
         url = 'saveinstallrel/'
-        
+
         # Set parameters
         params={
             'parent_install': parent_install,
             'child_install': child_install
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         # Add order
         if order:
             params['order'] = order
-            
+
         # Add props
         if props:
             params['props'] = json.dumps(props)
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateInstallRel(self, parent_install, child_install, **kws):
         '''
         Update install relationship.
-        
+
         params:
             - parent_install: name of the parent element we want ot update by
             - child_install: name of the child element we want ot update by
@@ -1142,38 +1277,38 @@ class IDODSClient(object):
                     ...
                     'keyN': 'valueN'
                 }
-        
+
         returns:
             True if everything is ok
-            
+
         raises:
             HTTPError
         '''
-        
+
         # Set URL
         url = 'updateinstallrel/'
-        
+
         # Set parameters
         params={
             'parent_install': parent_install,
             'child_install': child_install
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add order
         if 'order' in kws:
             params['order'] = kws['order']
-            
+
         # Add props
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveInstallRelPropertyType(self, name):
@@ -1197,18 +1332,18 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'installrelproptype/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveInstallRelPropertyType(self, name, description = None, unit = None):
@@ -1227,26 +1362,26 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'saveinstallrelproptype/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         # Add unit
         if unit:
             params['unit'] = unit
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateInstallRelPropertyType(self, old_name, name, **kws):
@@ -1262,33 +1397,33 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updateinstallrelproptype/'
-        
+
         # Set parameters
         params={
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add unit
         if 'unit' in kws:
             params['unit'] = kws['unit']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''
         Return installed devices or psecific map
-        
+
         params:
             - inventory_to_install_id
             - install_name
@@ -1318,20 +1453,20 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'inventorytoinstall/'
-        
+
         # Set parameters
         params={
             'inventory_to_install_id': inventory_to_install_id,
             'install_name': install_name,
             'inv_name': inv_name
         }
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveInventoryToInstall(self, install_name, inv_name):
@@ -1353,19 +1488,19 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'saveinventorytoinstall/'
-        
+
         # Set parameters
         params={
             'install_name': install_name,
             'inv_name': inv_name
         }
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
@@ -1385,20 +1520,20 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updateinventorytoinstall/'
-        
+
         # Set parameters
         params={
             'inventory_to_install_id': inventory_to_install_id,
             'install_name': install_name,
             'inv_name': inv_name
         }
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveDataMethod(self, name, description = None):
@@ -1422,22 +1557,22 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Try to retrieve data method
         url = 'datamethod/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def saveDataMethod(self, name, description=None):
@@ -1457,22 +1592,22 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'savedatamethod/'
-        
+
         # Set parameters
         params={
             'name': name
         }
-        
+
         # Add description
         if description:
             params['description'] = description
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateDataMethod(self, old_name, name, **kws):
@@ -1494,24 +1629,24 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'updatedatamethod/'
-        
+
         # Set parameters
         params={
             'datamethod_id': None,
             'old_name': old_name,
             'name': name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveOfflineData(self, **kws):
@@ -1600,92 +1735,184 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'offlinedata/'
-        
+
         # Set parameters
         params={}
-        
+
         # Add offline id
         if 'offlineid' in kws:
             params['offlineid'] = kws['offlineid']
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add gap
         if 'gap' in kws:
             params['gap'] = kws['gap']
-        
+
         # Add phase1
         if 'phase1' in kws:
             params['phase1'] = kws['phase1']
-        
+
         # Add phase2
         if 'phase2' in kws:
             params['phase2'] = kws['phase2']
-        
+
         # Add phase3
         if 'phase3' in kws:
             params['phase3'] = kws['phase3']
-        
+
         # Add phase4
         if 'phase4' in kws:
             params['phase4'] = kws['phase4']
-        
+
         # Add phasemode
         if 'phasemode' in kws:
             params['phasemode'] = kws['phasemode']
-        
+
         # Add polarmode
         if 'polarmode' in kws:
             params['polarmode'] = kws['polarmode']
-        
+
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
-        
+
         # Add method name
         if 'method_name' in kws:
             params['method_name'] = kws['method_name']
-        
+
         # Add inventory name
         if 'inventory_name' in kws:
             params['inventory_name'] = kws['inventory_name']
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         returnData = r.json()
-        
+
         # Append data if with_data is set
         if 'with_data' in kws and kws['with_data'] == True:
-            
+
             # Set URL
             url = 'rawdata/'
-            
+
             # Go through all returned offline data and append data
             offlineDataKeys = returnData.keys()
-            
+
             for key in offlineDataKeys:
                 offlineData = returnData[key]
-                
+
                 # Set parameters
                 params={
                     'raw_data_id': offlineData['data_id']
                 }
-                
+
                 result = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
                 self.__raise_for_status(r.status_code, r.text)
                 resultData = result.json()
-                
+
                 resultKeys = resultData.keys()
                 resultObject = resultData[resultKeys[0]]
                 returnData[key]['data'] = resultObject['data']
-        
+
         return returnData
+
+    def saveMethodAndOfflineData(self, inventory_name, method, method_desc, data_desc, data_file_name, data_file_path, status, gap, phase1, phase2, phase3, phase4, phase_mode, polar_mode):
+        '''
+        Save data method and offline data into the database
+
+        :param inventory_name: inventory name
+        :type inventory_name: str
+
+        :param username: username of the user who saved the offline data
+        :type username: str
+
+        :param method: data method name
+        :type method: str
+
+        :param method_desc: data method description
+        :type method_desc: str
+
+        :param data_desc: offline data description
+        :type data_desc: str
+
+        :param data_file_name: data file name
+        :type data_file_name: str
+
+        :param data_id: id of the saved raw data
+        :type data_id: int
+
+        :param status: is offline data Active = 1 or Obsolete - 0
+        :type status: int
+
+        :param gap: gap
+        :type gap: float
+
+        :param phase1: phase1
+        :type phase1: float
+
+        :param phase2: phase2
+        :type phase2: float
+
+        :param phase3: phase3
+        :type phase3: float
+
+        :param phase4: phase4
+        :type phase4: float
+
+        :param phase_mode: phase mode
+        :type phase_mode: str
+
+        :param polar_mode: polar mode
+        :type polar_mode: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': offline_data_id}
+
+        :raise: HTTPError
+        '''
+
+        # Set URL
+        url = 'savemethodofflinedata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name,
+            'method': method,
+            'method_desc': method_desc,
+            'data_desc': data_desc,
+            'data_file_name': data_file_name,
+            'status': status,
+            'gap': gap,
+            'phase1': phase1,
+            'phase2': phase2,
+            'phase3': phase3,
+            'phase4': phase4,
+            'phase_mode': phase_mode,
+            'polar_mode': polar_mode
+        }
+
+        fileName = data_file_path
+
+        with open(fileName, 'rb') as f:
+            ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
+            self.__raise_for_status(ur.status_code, ur.text)
+
+        params['data_id'] = ur.json()['id']
+
+
+        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
 
     def saveOfflineData(self, **kws):
         '''
@@ -1768,95 +1995,95 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'saveofflinedata/'
-        
+
         # Set parameters
         params={}
-        
+
         # Add inventory name
         if 'inventory_name' in kws:
-            
+
             # Check inventory name
             if kws['inventory_name'] == None:
                 self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
-            
+
             params['inventory_name'] = kws['inventory_name']
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add username
         if 'username' in kws:
             params['username'] = kws['username']
-        
+
         # Add gap
         if 'gap' in kws:
             params['gap'] = kws['gap']
-        
+
         # Add phase1
         if 'phase1' in kws:
             params['phase1'] = kws['phase1']
-        
+
         # Add phase2
         if 'phase2' in kws:
             params['phase2'] = kws['phase2']
-        
+
         # Add phase3
         if 'phase3' in kws:
             params['phase3'] = kws['phase3']
-        
+
         # Add phase4
         if 'phase4' in kws:
             params['phase4'] = kws['phase4']
-        
+
         # Add phasemode
         if 'phasemode' in kws:
             params['phasemode'] = kws['phasemode']
-        
+
         # Add polarmode
         if 'polarmode' in kws:
             params['polarmode'] = kws['polarmode']
-        
+
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
-        
+
         # Add data file name
         if 'data_file_name' in kws:
             params['data_file_name'] = kws['data_file_name']
-        
+
         # Add data file timestamp
         if 'data_file_ts' in kws:
             params['data_file_ts'] = kws['data_file_ts']
-        
+
         # Add data
         if 'data' in kws:
             fileName = kws['data']
-            
+
             with open(fileName, 'rb') as f:
                 ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
                 self.__raise_for_status(ur.status_code, ur.text)
-            
+
             params['data_id'] = ur.json()['id']
-        
+
         # Add script_name
         if 'script_name' in kws:
             params['script_name'] = kws['script_name']
-        
+
         # Add script
         if 'script' in kws:
             params['script'] = kws['script']
-        
+
         # Add method name
         if 'method_name' in kws:
             params['method_name'] = kws['method_name']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateOfflineData(self, offline_data_id, **kws):
@@ -1939,99 +2166,99 @@ class IDODSClient(object):
         '''
         # Set URL
         url = 'updateofflinedata/'
-        
+
         # Set parameters
         params={
             'offline_data_id': offline_data_id
         }
-        
+
         # Add inventory name
         if 'inventory_name' in kws:
-            
+
             # Check inventory name
             if kws['inventory_name'] == None:
                 self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
-            
+
             params['inventory_name'] = kws['inventory_name']
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add username
         if 'username' in kws:
             params['username'] = kws['username']
-        
+
         # Add gap
         if 'gap' in kws:
             params['gap'] = kws['gap']
-        
+
         # Add phase1
         if 'phase1' in kws:
             params['phase1'] = kws['phase1']
-        
+
         # Add phase2
         if 'phase2' in kws:
             params['phase2'] = kws['phase2']
-        
+
         # Add phase3
         if 'phase3' in kws:
             params['phase3'] = kws['phase3']
-        
+
         # Add phase4
         if 'phase4' in kws:
             params['phase4'] = kws['phase4']
-        
+
         # Add phasemode
         if 'phasemode' in kws:
             params['phasemode'] = kws['phasemode']
-        
+
         # Add polarmode
         if 'polarmode' in kws:
             params['polarmode'] = kws['polarmode']
-        
+
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
-        
+
         # Add data file name
         if 'data_file_name' in kws:
             params['data_file_name'] = kws['data_file_name']
-        
+
         # Add data file timestamp
         if 'data_file_ts' in kws:
             params['data_file_ts'] = kws['data_file_ts']
-        
+
         # Add data
         if 'data' in kws:
             fileName = kws['data']
-            
+
             with open(fileName, 'rb') as f:
                 ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
                 self.__raise_for_status(ur.status_code, ur.text)
-            
+
             params['data_id'] = ur.json()['id']
-        
+
         # Add script_name
         if 'script_name' in kws:
             params['script_name'] = kws['script_name']
-        
+
         # Add script
         if 'script' in kws:
             params['script'] = kws['script']
-        
+
         # Add method name
         if 'method_name' in kws:
-            
+
             # Check method name
             if kws['method_name'] == None:
                 self.__raise_for_status(400, 'If method name is passed it should not be None!')
-            
+
             params['method_name'] = kws['method_name']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def retrieveOnlineData(self, **kws):
@@ -2072,12 +2299,12 @@ class IDODSClient(object):
         :type data_path: string
 
         :param callback: reference to a local method that will receive info about a file that is being downloaded. This parameter, if present, is a hook function that will be called once on establishment of the network connection and once after each block read thereafter. The hook will be passed three arguments; a count of blocks transferred so far, a block size in bytes, and the total size of the file. The third argument may be -1 in some cases.
-        
+
             Example of the callback method
-            
+
             def callback(block_number, block_size, total_size):
                 print block_number, block_size, total_size
-        
+
         :type callback: function
 
         :return: a map with structure like:
@@ -2098,67 +2325,67 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'onlinedata/'
-        
+
         # Set parameters
         params={}
-        
+
         # Add online id
         if 'onlineid' in kws:
             params['onlineid'] = kws['onlineid']
-        
+
         # Add install name
         if 'install_name' in kws:
             params['install_name'] = kws['install_name']
-        
+
         # Add username
         if 'username' in kws:
             params['username'] = kws['username']
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add url
         if 'url' in kws:
             params['url'] = kws['url']
-        
+
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
-        
+
         r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         returnData = r.json()
-    
+
         # Set data path
         data_path = None
-        
+
         if 'data_path' in kws:
             data_path = kws['data_path']
-            
+
         # Set callback
         callback = None
-        
+
         if 'callback' in kws:
             callback = kws['callback']
-    
+
         # Append data if with_data is set
         if 'with_data' in kws and kws['with_data'] == True:
-            
+
             # Go through all returned online data and append data
             onlineDataKeys = returnData.keys()
-            
+
             for key in onlineDataKeys:
                 onlineData = returnData[key]
                 urlParts = self.__baseURL.split('/')
                 downloadUrl = urlParts[:-3]
-                
+
                 urllib.urlretrieve('/'.join(downloadUrl) + '/' + onlineData['url'], filename=data_path, reporthook=callback)
-        
+
         return returnData
 
     def saveOnlineData(self, install_name, **kws):
@@ -2200,38 +2427,38 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Set URL
         url = 'saveonlinedata/'
-        
+
         # Set parameters
         params={
             'install_name': install_name
         }
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add username
         if 'username' in kws:
             params['username'] = kws['username']
-        
+
         # Add url
         if 'data' in kws and 'data_file_name' in kws:
-            
+
             # Upload a file
             uploadedFile = self.uploadFile(kws['data'], kws['data_file_name'])
-            
+
             params['url'] = uploadedFile['path']
-        
+
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def updateOnlineData(self, online_data_id, **kws):
@@ -2272,65 +2499,65 @@ class IDODSClient(object):
         '''
         # Set URL
         url = 'updateonlinedata/'
-        
+
         # Set parameters
         params={
             'online_data_id': online_data_id
         }
-        
+
         # Add install name
         if 'install_name' in kws:
-            
+
             # Check install name
             if kws['install_name'] == None:
                 self.__raise_for_status(400, 'If install name is passed it should not be None!')
-            
+
             params['install_name'] = kws['install_name']
-        
+
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
-        
+
         # Add username
         if 'username' in kws:
             params['username'] = kws['username']
-        
+
         # Add url
         if 'data' in kws and 'data_file_name' in kws:
-            
+
             # Upload a file
             uploadedFile = self.uploadFile(kws['data'], kws['data_file_name'])
-            
+
             params['url'] = uploadedFile['path']
-        
+
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
-        
+
         r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     def uploadFile(self, data, file_name):
         '''
         Upload a file
-        
+
         params:
             - data path to the file
             - file_name name of the file
         '''
-        
+
         with open(data, 'rb') as f:
-            
+
             # Set parameters
             params={
                 'file_name': file_name
             }
-            
+
             r = self.__session.post(self.__baseURL+'file/', files={'file': f}, data=params, auth=self.__auth)
             self.__raise_for_status(r.status_code, r.text)
-            
+
         return r.json()
 
     def idodsInstall(self):
@@ -2341,13 +2568,13 @@ class IDODSClient(object):
 
         :Raises: HTTPError
         '''
-        
+
         # Try to retrieve data method
         url = 'idods_install/'
-        
+
         r=self.__session.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
-        
+
         return r.json()
 
     @classmethod
@@ -2364,4 +2591,4 @@ class IDODSClient(object):
             http_error = HTTPError(http_error_msg)
             http_error.response = self
             raise http_error
-    
+
