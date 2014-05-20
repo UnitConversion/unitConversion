@@ -16,11 +16,11 @@ import inspect
 from requests import HTTPError
 
 from idodspy.idodsclient import IDODSClient
+#from utils.profiler import *
 
 __url = 'http://localhost:8000/id/device/'
 __jsonheader = {'content-type': 'application/json', 'accept': 'application/json'}
 client = IDODSClient(BaseURL=__url)
-
 
 def idStatusHelper(inputStr):
     '''
@@ -198,6 +198,12 @@ def saveInsertionDevices():
 
     print "=> elasped import: %s s" % tt.secs
 
+#@do_profile(follow=[client.testCall])
+def timeTest():
+
+    with Timer() as t:
+        client.testCall()
+    print "=> elasped client.testCall: %s s" % t.secs
 
 def importDataOnServer():
 
@@ -576,4 +582,5 @@ def importData():
     else:
         return False
 
-saveInsertionDevices()
+import cProfile
+cProfile.run('timeTest()')

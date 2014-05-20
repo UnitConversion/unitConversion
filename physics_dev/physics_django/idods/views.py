@@ -32,27 +32,27 @@ Private template for the retrieve functions
 def _retrieveData(request, fun, propList, customDict = {}):
     params = _retrievecmddict(request.GET.copy())
     res = {}
-    
+
     try:
         _checkkeys(params.keys(), propList)
         res = fun(**dict(customDict, **params))
-    
+
     except TypeError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except ValueError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except MySQLError as e:
         idods_log.exception(e)
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except Exception as e:
         idods_log.exception(e)
         raise e
-    
+
     return HttpResponse(json.dumps(res), mimetype="application/json")
 
 '''
@@ -61,33 +61,33 @@ Private template for save function
 def _saveData(request, fun, propList):
     params = _retrievecmddict(request.POST.copy())
     res = {}
-    
+
     try:
         _checkkeys(params.keys(), propList)
         res = fun(**params)
         transaction.commit_unless_managed()
-    
+
     except TypeError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except ValueError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except MySQLError as e:
         idods_log.exception(e)
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except TransactionManagementError as e:
         idods_log.exception(e)
         transaction.rollback_unless_managed()
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except Exception as e:
         idods_log.exception(e)
         raise e
-    
+
     return HttpResponse(json.dumps(res), mimetype="application/json")
 
 '''
@@ -96,33 +96,33 @@ Private template for update function
 def _updateData(request, fun, propList, customDict = {}):
     params = _retrievecmddict(request.POST.copy())
     res = {}
-    
+
     try:
         _checkkeys(params.keys(), propList)
         res = fun(**dict(customDict, **params))
         transaction.commit_unless_managed()
-    
+
     except TypeError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except ValueError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except MySQLError as e:
         idods_log.exception(e)
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except TransactionManagementError as e:
         idods_log.exception(e)
         transaction.rollback_unless_managed()
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except Exception as e:
         idods_log.exception(e)
         raise e
-    
+
     return HttpResponse(json.dumps(res), mimetype="application/json")
 
 '''
@@ -385,35 +385,35 @@ Save raw data
 @has_perm_or_basicauth('id.can_modify_id')
 def saveRawDataWS(request):
     rawFile = request.FILES.getlist('file')[0]
-    
+
     res = {}
-    
+
     try:
         res = idodsi.saveRawData(rawFile.read())
-        
+
         transaction.commit_unless_managed()
-    
+
     except TypeError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except ValueError as e:
         idods_log.exception(e)
         return HttpResponseBadRequest(HttpResponse(content=e))
-    
+
     except MySQLError as e:
         idods_log.exception(e)
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except TransactionManagementError as e:
         idods_log.exception(e)
         transaction.rollback_unless_managed()
         return HttpResponseServerError(HttpResponse(content=e))
-    
+
     except Exception as e:
         idods_log.exception(e)
         raise e
-    
+
     return HttpResponse(json.dumps(res), mimetype="application/json")
 
 '''
@@ -446,7 +446,7 @@ Save data method and offline data
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def saveDataMethodOfflineDataWS(request):
-    
+
     with Timer() as t:
         request.POST = request.POST.copy()
         request.POST['username'] = request.user.username
@@ -481,27 +481,27 @@ Upload a file
 def uploadFileWS(request):
     rawFile = request.FILES.getlist('file')[0]
     params = _retrievecmddict(request.POST.copy())
-    
+
     data = ""
-    
+
     # Go through all the chunks and assemble the file
     if(rawFile.multiple_chunks()):
-        
+
         for chunk in rawFile.chunks():
             data += chunk
-    
+
     else:
         data = rawFile.read()
-    
+
     # Try saving the file
     try:
         filePath = idodsi.saveFile(params['file_name'], data)
-    
+
         res = {
             'path': filePath['path']
         }
         return HttpResponse(json.dumps(res), mimetype="application/json")
-        
+
     except Exception as e:
         idods_log.exception(e)
         return HttpResponseServerError(HttpResponse(content=e))
@@ -565,6 +565,13 @@ def testAuth(request):
     return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
 
 '''
+Test rest call without authentication
+'''
+@require_http_methods(["POST"])
+def testCall(request):
+    return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
+
+'''
 Import devices
 '''
 @require_http_methods(["POST"])
@@ -578,7 +585,7 @@ Save insertion device
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def saveInsertionDeviceWS(request):
-    
+
     with Timer() as t:
         result = _saveData(request, idodsi.saveInsertionDevice, ['install_name', 'coordinate_center', 'project', 'beamline', 'beamline_desc', 'install_desc', 'inventory_name', 'down_corrector', 'up_corrector', 'length', 'gap_max', 'gap_min', 'gap_tolerance', 'phase1_max', 'phase1_min', 'phase2_max', 'phase2_min', 'phase3_max', 'phase3_min', 'phase4_max', 'phase4_min', 'phase_tolerance', 'k_max_circular', 'k_max_linear', 'phase_mode_a1', 'phase_mode_a2', 'phase_mode_p', 'type_name', 'type_desc'])
     print "=> elasped _saveData, idodsi.saveInsertionDevice: %s s" % t.secs

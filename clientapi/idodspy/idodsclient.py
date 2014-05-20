@@ -14,8 +14,8 @@ if sys.version_info[0] != 2 or sys.version_info[1] < 6:
     sys.exit(1)
 
 import requests
-#_requests_version=[int(x) for x in requests.__version__.split('.')]
-#if _requests_version[0] < 1 or sys.version_info[1] < 1:
+# _requests_version=[int(x) for x in requests.__version__.split('.')]
+# if _requests_version[0] < 1 or sys.version_info[1] < 1:
 #    print("This library requires at least Python-requests version 1.1.x")
 #    sys.exit(1)
 
@@ -29,6 +29,7 @@ from requests import HTTPError
 from copy import copy
 
 import urllib
+from utils.timer import Timer
 
 try:
     import json
@@ -63,7 +64,7 @@ class IDODSClient(object):
         username =
         password =
         '''
-        self.__jsonheader = {'content-type':'application/json', 'accept':'application/json'}
+        self.__jsonheader = {'content-type': 'application/json', 'accept': 'application/json'}
         self.__resource = 'test/'
 
         try:
@@ -72,12 +73,11 @@ class IDODSClient(object):
             self.__password = self.__getdefaultconfig('password', password)
 
             if self.__userName and self.__password:
-                #self.__auth = (self.__userName, self.__password)
+                # self.__auth = (self.__userName, self.__password)
                 self.__auth = auth.HTTPBasicAuth(self.__userName, self.__password)
 
             else:
                 self.__auth = None
-
 
             self.__session = requests.Session()
 
@@ -85,7 +85,7 @@ class IDODSClient(object):
             self.__session.mount('https://', SSLAdapter(ssl_version=ssl.PROTOCOL_SSLv3))
 
             requests.post(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
-            #requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
+            # requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
 
         except Exception as e:
             raise Exception('Failed to create client.')
@@ -904,12 +904,19 @@ class IDODSClient(object):
         if 'all_install' in kws:
             params['all_install'] = kws['all_install']
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def saveInsertionDevice(self, install_name, coordinate_center, project, beamline, beamline_desc, install_desc, inventory_name, down_corrector, up_corrector, length, gap_max, gap_min, gap_tolerance, phase1_max, phase1_min, phase2_max, phase2_min, phase3_max, phase3_min, phase4_max, phase4_min, phase_tolerance, k_max_circular, k_max_linear, phase_mode_a1, phase_mode_a2, phase_mode_p, type_name, type_desc):
+    def saveInsertionDevice(
+            self, install_name, coordinate_center, project, beamline, beamline_desc,
+            install_desc, inventory_name, down_corrector, up_corrector, length, gap_max,
+            gap_min, gap_tolerance, phase1_max, phase1_min, phase2_max, phase2_min,
+            phase3_max, phase3_min, phase4_max, phase4_min, phase_tolerance,
+            k_max_circular, k_max_linear, phase_mode_a1, phase_mode_a2, phase_mode_p,
+            type_name, type_desc
+            ):
         '''
         Save insertion device
 
@@ -2432,7 +2439,7 @@ class IDODSClient(object):
         url = 'saveonlinedata/'
 
         # Set parameters
-        params={
+        params = {
             'install_name': install_name
         }
 
@@ -2456,7 +2463,7 @@ class IDODSClient(object):
         if 'status' in kws:
             params['status'] = kws['status']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -2572,7 +2579,35 @@ class IDODSClient(object):
         # Try to retrieve data method
         url = 'idods_install/'
 
-        r=self.__session.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def testAuth(self):
+        '''
+        Test auth
+
+        :Raises: HTTPError
+        '''
+
+        url = 'test/'
+
+        r = self.__session.post(self.__baseURL+url, verify=False, headers=self.__jsonheader, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def testCall(self):
+        '''
+        Test call without auth
+
+        :Raises: HTTPError
+        '''
+
+        url = 'testcall/'
+
+        r = self.__session.post(self.__baseURL+url, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -2591,4 +2626,3 @@ class IDODSClient(object):
             http_error = HTTPError(http_error_msg)
             http_error.response = self
             raise http_error
-

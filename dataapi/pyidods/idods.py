@@ -282,7 +282,7 @@ class idods(object):
             cur.execute(sqlVals[0], sqlVals[1])
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return True
@@ -290,18 +290,21 @@ class idods(object):
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
-            self.logger.info('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when updating vendor:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when updating vendor:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating vendor:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def retrieveInventoryPropertyTemplate(self, name):
+    def retrieveInventoryPropertyTemplate(self, name, cmpnt_type=None):
         '''
         Retrieve inventory property template by its name
 
         :param name: Inventory property name
         :type name: str
+
+        :param cmpnt_type: component type name
+        :type cmpnt_type: str
 
         :return: a map with structure like:
 
@@ -309,8 +312,8 @@ class idods(object):
 
                 {
                     'id': {
-                        'id': ,              # int
-                        'cmpnt_type': ,      # string
+                        'id': ,             # int
+                        'cmpnt_type': ,     # string
                         'name': ,           # string
                         'description': ,    # string
                         'default': ,        # string
@@ -339,6 +342,18 @@ class idods(object):
         # Append name
         sqlAndVals = _checkWildcardAndAppend("inventory_prop_tmplt_name", name, sql, vals)
 
+        # Append component type id
+        if cmpnt_type is not None:
+            cmpnt = self.retrieveComponentType(cmpnt_type)
+
+            if len(cmpnt) == 0:
+                raise ValueError("Component type (%s) doesn't exist in the database!" % cmpnt_type)
+
+            cmpntKeys = cmpnt.keys()
+            cmpnt_type_id = cmpnt[cmpntKeys[0]]['id']
+
+            sqlAndVals = _checkWildcardAndAppend("tmp.cmpnt_type_id", cmpnt_type_id, sqlAndVals[0], sqlAndVals[1], 'AND')
+
         try:
             cur = self.conn.cursor()
             cur.execute(sqlAndVals[0], sqlAndVals[1])
@@ -361,10 +376,10 @@ class idods(object):
             return resdict
 
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description = None, default = None, unit = None):
+    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description=None, default=None, unit=None):
         '''
         Insert new inventory property template into database
 
@@ -393,13 +408,13 @@ class idods(object):
         '''
 
         # Raise an error if inventory property template exists
-        existingInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(name)
+        existingInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(name, cmpnt_type)
 
         if len(existingInventoryPropertyTemplate):
             raise ValueError("Inventory property template (%s) already exists in the database!" % name)
 
         # Check component type
-        result = self.retrieveComponentType(cmpnt_type, all_cmpnt_types = True);
+        result = self.retrieveComponentType(cmpnt_type, all_cmpnt_types=True)
 
         if len(result) == 0:
             raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
@@ -425,7 +440,7 @@ class idods(object):
             templateid = cur.lastrowid
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return {'id': templateid}
@@ -433,22 +448,33 @@ class idods(object):
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
-            self.logger.info('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when saving new inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type, name, **kws):
         '''
         Update inventory property template in a database
 
-        - tmplt_id: property template id M
-        - cmpnt_type: component type name M
-        - name: property template name M
-        - description: property template description O
-        - default: property template default value O
-        - unit: property template unit O
+        :param tmplt_id: property template id M
+        :type tmplt_id: int
+
+        :param cmpnt_type: component type name M
+        :type cmpnt_type: str
+
+        :param name: property template name M
+        :type name: str
+
+        :param description: property template description O
+        :type description: str
+
+        :param default: property template default value O
+        :type default: str
+
+        :param unit: property template unit O
+        :type unit: str
 
         :return: True if update succeeded
 
@@ -464,7 +490,7 @@ class idods(object):
         whereValue = tmplt_id
 
         # Check component type
-        result = self.retrieveComponentType(cmpnt_type);
+        result = self.retrieveComponentType(cmpnt_type)
 
         if len(result) == 0:
             raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
@@ -496,7 +522,7 @@ class idods(object):
             cur.execute(sqlVals[0], sqlVals[1])
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return True
@@ -504,22 +530,27 @@ class idods(object):
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
-            self.logger.info('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when updating inventory property template:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when updating inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def _retrieveInventoryProperty(self, inventoryId, inventoryPropertyTemplateId = None, value = None):
+    def _retrieveInventoryProperty(self, inventoryId, inventoryPropertyTemplateId=None, value=None):
         '''
         Retrieve id and value from inventory property table
 
-        parameters:
-            - inventoryId: id of the inventory entry
-            - inventoryPropertyTemplateId: id of the inventory property template
-            - value: value of the property template
+        :param inventoryId: id of the inventory entry
+        :type inventoryId: int
 
-        returns:
+        :param inventoryPropertyTemplateId: id of the inventory property template
+        :type inventoryPropertyTemplateId: int
+
+        :param value: value of the property template
+        :type value: str
+
+        :returns: Python dict
+
             { 'id': {
                     'id': #int,
                     'value': #string,
@@ -528,7 +559,7 @@ class idods(object):
                 }
             }
 
-        raises:
+        :raises:
             ValueError, MySQLError
         '''
 
@@ -580,10 +611,10 @@ class idods(object):
             return resdict
 
         except MySQLdb.Error as e:
-            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
 
-    def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName = None, value = None):
+    def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName=None, value=None, cmpnt_type=None):
         '''
         Retrieve id and value from inventory property table
 
@@ -595,6 +626,9 @@ class idods(object):
 
         :param value: value of the property template
         :type value: str
+
+        :param cmpnt_type: component type name
+        :type cmpnt_type: str
 
         :return: a map with structure like:
 
@@ -626,37 +660,51 @@ class idods(object):
         inventoryPropertyTemplateId = None
 
         if inventoryPropertyTemplateName:
-            retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName)
+            retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName, cmpnt_type)
 
             if len(retrieveInventoryPropertyTemplate) == 0:
-                raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName);
 
-            retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
-            inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
+                if cmpnt_type is not None:
+                    inventoryPropertyTemplateId = self.saveInventoryPropertyTemplate(cmpnt_type, inventoryPropertyTemplateName)['id']
+
+                else:
+                    raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName)
+
+            else:
+                retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
+                inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
 
         return self._retrieveInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
 
-    def saveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName, value):
+    def saveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName, value, cmpnt_type=None):
         '''
         Save inventory property into database
 
-        params:
-            - inventoryName: name of the inventory we are saving property for
-            - inventoryPropertyTemplateName: name of the property template/inventory property key name
-            - value: value of the property template/property key name
+        :param inventoryName: name of the inventory we are saving property for
+        :type inventoryName: str
 
-        returns:
+        :param inventoryPropertyTemplateName: name of the property template/inventory property key name
+        :type inventoryPropertyTemplateName: str
+
+        :param value: value of the property template/property key name
+        :type value: str
+
+        :param cmpnt_type: component type name. If it is not set to None then property template will be saved silently
+        :type cmpnt_type: str
+
+
+        :returns: Python dict::
+
             {'id': new inventory property id}
 
-        raises:
-            ValueError, MySQLError
+        :raises: ValueError, MySQLError
         '''
 
         # Check for previous inventory property
-        retrieveInventoryProperty = self.retrieveInventoryProperty(inventoryName, inventoryPropertyTemplateName)
+        retrieveInventoryProperty = self.retrieveInventoryProperty(inventoryName, inventoryPropertyTemplateName, cmpnt_type=cmpnt_type)
 
         if len(retrieveInventoryProperty) != 0:
-            raise ValueError("Inventory property for inventory (%s) and template (%s) already exists in the database!" % (inventoryName, inventoryPropertyTemplateName));
+            raise ValueError("Inventory property for inventory (%s) and template (%s) already exists in the database!" % (inventoryName, inventoryPropertyTemplateName))
 
         # Check inventory
         retrieveInventory = self.retrieveInventory(inventoryName)
@@ -668,10 +716,10 @@ class idods(object):
         inventoryId = retrieveInventory[retrieveInventoryKeys[0]]['id']
 
         # Check inventory property template
-        retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName)
+        retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName, cmpnt_type)
 
         if len(retrieveInventoryPropertyTemplate) == 0:
-            raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName);
+            raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName)
 
         retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
         inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
@@ -692,7 +740,7 @@ class idods(object):
             propid = cur.lastrowid
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return {'id': propid}
@@ -700,13 +748,13 @@ class idods(object):
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
             self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def updateInventoryProperty(self, oldInventoryName, oldInventoryPropertyTemplateName, value):
+    def updateInventoryProperty(self, oldInventoryName, oldInventoryPropertyTemplateName, value, cmpnt_type=None):
         '''
         Update inventory property in a database
 
@@ -737,10 +785,10 @@ class idods(object):
         whereDict['inventory_id'] = inventoryId
 
         # Check inventory property template
-        retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(oldInventoryPropertyTemplateName)
+        retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(oldInventoryPropertyTemplateName, cmpnt_type)
 
         if len(retrieveInventoryPropertyTemplate) == 0:
-            raise ValueError("Inventory property template (%s) doesn't exist in the database!" % oldInventoryPropertyTemplateName);
+            raise ValueError("Inventory property template (%s) doesn't exist in the database!" % oldInventoryPropertyTemplateName)
 
         retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
         inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
@@ -757,7 +805,7 @@ class idods(object):
             cur.execute(sqlVals[0], sqlVals[1])
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return True
@@ -765,7 +813,7 @@ class idods(object):
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
             self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
@@ -843,18 +891,20 @@ class idods(object):
             raise ValueError("Inventory (%s) already exists in inventory." % (name))
 
         # Check device type parameter
-        compnttypeid=None
+        compnttypeid = None
+        cmpnt_type_name = None
 
-        if kws.has_key('cmpnt_type') and kws['cmpnt_type'] != None:
+        if 'cmpnt_type' in kws and kws['cmpnt_type'] is not None:
 
             # Check component type parameter
             _checkParameter("component type", kws['cmpnt_type'])
+            cmpnt_type_name = kws['cmpnt_type']
 
             res = self.retrieveComponentType(kws['cmpnt_type'])
             reskeys = res.keys()
 
             if len(res) != 1:
-                raise ValueError("Insertion device type (%s) does not exist."%(kws['dtype']))
+                raise ValueError("Insertion device type (%s) does not exist." % (kws['dtype']))
 
             else:
                 compnttypeid = res[reskeys[0]]['id']
@@ -862,19 +912,19 @@ class idods(object):
         # Check alias parameter
         alias = None
 
-        if kws.has_key('alias') and kws['alias'] != None:
+        if 'alias' in kws and kws['alias'] is not None:
             alias = kws['alias']
 
         # Check serial number parameter
         serialno = None
 
-        if kws.has_key('serialno') and kws['serialno'] != None:
+        if 'serialno' in kws and kws['serialno'] is not None:
             serialno = kws['serialno']
 
         # Check vendor parameter
         vendor = None
 
-        if kws.has_key('vendor') and kws['vendor'] != None:
+        if 'vendor' in kws and kws['vendor'] is not None:
 
             # Check parameter
             _checkParameter("vendor name", kws['vendor'])
@@ -902,15 +952,15 @@ class idods(object):
             invid = cur.lastrowid
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             # Inventory is saved, now we can save properties into database
-            if kws.has_key('props') and kws['props'] != None:
+            if 'props' in kws and kws['props'] is not None:
                 props = kws['props']
 
                 # Convert to json
-                if isinstance(props, (dict)) == False:
+                if isinstance(props, (dict)) is False:
                     props = json.loads(props)
 
                 # Save all the properties
@@ -918,18 +968,18 @@ class idods(object):
                     value = props[key]
 
                     # Save it into database
-                    self.saveInventoryProperty(name, key, value)
+                    self.saveInventoryProperty(name, key, value, cmpnt_type=cmpnt_type_name)
 
             return {'id': invid}
 
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
-            self.logger.info('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def updateInventory(self, inventory_id, old_name, name, **kws):
         '''
@@ -1442,7 +1492,12 @@ class idods(object):
             self.logger.info('Error when deleting raw data:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when deleting raw data:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveMethodAndOfflineData(self, inventory_name=None, username=None, method=None, method_desc=None, data_desc=None, data_file_name=None, data_id=None, status=None, gap=None, phase1=None, phase2=None, phase3=None, phase4=None, phase_mode=None, polar_mode=None):
+    def saveMethodAndOfflineData(
+            self, inventory_name=None, username=None, method=None,
+            method_desc=None, data_desc=None, data_file_name=None,
+            data_id=None, status=None, gap=None, phase1=None, phase2=None,
+            phase3=None, phase4=None, phase_mode=None, polar_mode=None
+            ):
         '''
         Save data method and offline data into the database
 
@@ -2771,7 +2826,7 @@ class idods(object):
             cur.execute(sql, vals)
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return True
@@ -2779,11 +2834,11 @@ class idods(object):
         except MySQLdb.Error as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
-            self.logger.info('Error when deleting inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when deleting inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when deleting inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveComponentTypePropertyType(self, name):
         '''
@@ -2844,7 +2899,7 @@ class idods(object):
             self.logger.info('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when fetching component type property type:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def saveComponentTypePropertyType(self, name, description = None):
+    def saveComponentTypePropertyType(self, name, description=None):
         '''
         Insert new component type property type into database
 
@@ -3284,7 +3339,7 @@ class idods(object):
             self.logger.info('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def retrieveComponentType(self, name, description = None, all_cmpnt_types = None):
+    def retrieveComponentType(self, name, description=None, all_cmpnt_types=None):
         '''Retrieve a component type using the key words:
 
         - name
@@ -4625,7 +4680,17 @@ class idods(object):
             else:
                 return inputStr
 
-    def saveInsertionDevice(self, install_name=None, coordinate_center=None, project=None, beamline=None, beamline_desc=None, install_desc=None, inventory_name=None, down_corrector=None, up_corrector=None, length=None, gap_max=None, gap_min=None, gap_tolerance=None, phase1_max=None, phase1_min=None, phase2_max=None, phase2_min=None, phase3_max=None, phase3_min=None, phase4_max=None, phase4_min=None, phase_tolerance=None, k_max_circular=None, k_max_linear=None, phase_mode_a1=None, phase_mode_a2=None, phase_mode_p=None, type_name=None, type_desc=None):
+    def saveInsertionDevice(
+            self, install_name=None, coordinate_center=None, project=None,
+            beamline=None, beamline_desc=None, install_desc=None,
+            inventory_name=None, down_corrector=None, up_corrector=None,
+            length=None, gap_max=None, gap_min=None, gap_tolerance=None,
+            phase1_max=None, phase1_min=None, phase2_max=None,
+            phase2_min=None, phase3_max=None, phase3_min=None,
+            phase4_max=None, phase4_min=None, phase_tolerance=None,
+            k_max_circular=None, k_max_linear=None, phase_mode_a1=None,
+            phase_mode_a2=None, phase_mode_p=None, type_name=None, type_desc=None
+            ):
         '''
         Save insertion device
 
@@ -4721,30 +4786,49 @@ class idods(object):
         :raise: ValueError, MySQLError
         '''
 
-        # Save project
-        if len(self.retrieveInstall(project, all_install = True).keys()) == 0:
-            self.saveInstall(project, description = '__system__', cmpnt_type = 'project')
+        # Check install name and inventory name. Both should not be None
+        if install_name is None and inventory_name is None:
+            raise ValueError('Both inventory name and install name should not be None!')
 
-        # Save beamline
-        if len(self.retrieveInstall(beamline, all_install = True).keys()) == 0:
-            self.saveInstall(beamline, description = '__system__', cmpnt_type = 'project')
+        # Create component types
+        if len(self.retrieveComponentType('root', all_cmpnt_types=True).keys()) == 0:
+            raise ValueError('You are saving insertion device for the first time. Please run idodsInstall() and than insert device again.')
 
-        # Save beamline  - project rel
-        if len(self.retrieveInstallRel(None, 'Beamline', project).keys()) == 0:
-            self.saveInstallRel('Beamline', project)
+        # Install name is provided, beamline and project name should be defined
+        if install_name:
 
-        # Save project  - beamline rel
-        if len(self.retrieveInstallRel(None, project, beamline).keys()) == 0:
-            self.saveInstallRel(project, beamline, description = beamline_desc)
+            if beamline is None or project is None:
+                raise ValueError('If install name is defined, project and beamline should also be defined!')
+
+            # Save project
+            if len(self.retrieveInstall(project, all_install=True).keys()) == 0:
+                self.saveInstall(project, description='__system__', cmpnt_type='project')
+
+            # Save beamline
+            if len(self.retrieveInstall(beamline, all_install=True).keys()) == 0:
+                self.saveInstall(beamline, description='__system__', cmpnt_type='project')
+
+            # Save beamline  - project rel
+            if len(self.retrieveInstallRel(None, 'Beamline', project).keys()) == 0:
+                self.saveInstallRel('Beamline', project)
+
+            # Save project  - beamline rel
+            if len(self.retrieveInstallRel(None, project, beamline).keys()) == 0:
+                self.saveInstallRel(project, beamline, description=beamline_desc)
+
+        # Component type should not be None
+        if type_name is None:
+            raise ValueError('Component type parameter is missing!')
 
         # Save component type
         if len(self.retrieveComponentType(type_name).keys()) == 0:
             self.saveComponentType(type_name, type_desc)
 
-        # Save inventory
-        if len(self.retrieveInventory(inventory_name).keys()) == 0:
+        # Save inventory if inventory name is defined
+        if inventory_name:
 
-            self.saveInventory(inventory_name, cmpnt_type = type_name, props = {
+            # Save inventory
+            self.saveInventory(inventory_name, cmpnt_type=type_name, props={
                 'down_corrector': down_corrector,
                 'up_corrector': up_corrector,
                 'length': length,
@@ -4767,22 +4851,27 @@ class idods(object):
                 'phase_mode_p': phase_mode_p
             })
 
-        # Save install
-        if len(self.retrieveInstall(install_name).keys()) == 0:
+        # Save install if install name is defined
+        if install_name:
+
+            # Save install
             self.saveInstall(
                 install_name,
-                coordinatecenter = coordinate_center,
-                description = install_desc,
-                cmpnt_type = type_name
+                coordinatecenter=coordinate_center,
+                description=install_desc,
+                cmpnt_type=type_name
             )
 
         # Save beamline  - install rel
         if len(self.retrieveInstallRel(None, beamline, install_name).keys()) == 0:
             self.saveInstallRel(beamline, install_name)
 
-        # Save inventory to install
-        if len(self.retrieveInventoryToInstall(None, install_name, inventory_name).keys()) == 0:
-            self.saveInventoryToInstall(install_name, inventory_name)
+        # Only install device if inventory name and install name are defined
+        if install_name and inventory_name:
+
+            # Save inventory to install
+            if len(self.retrieveInventoryToInstall(None, install_name, inventory_name).keys()) == 0:
+                self.saveInventoryToInstall(install_name, inventory_name)
 
         return True
 
@@ -4848,12 +4937,12 @@ class idods(object):
         data = line.split(',')
 
         # Save project
-        if len(self.retrieveInstall(data[project], all_install = True).keys()) == 0:
-            self.saveInstall(data[project], description = '__system__', cmpnt_type = 'project')
+        if len(self.retrieveInstall(data[project], all_install=True).keys()) == 0:
+            self.saveInstall(data[project], description='__system__', cmpnt_type='project')
 
         # Save beamline
-        if len(self.retrieveInstall(data[beamline], all_install = True).keys()) == 0:
-            self.saveInstall(data[beamline], description = '__system__', cmpnt_type = 'project')
+        if len(self.retrieveInstall(data[beamline], all_install=True).keys()) == 0:
+            self.saveInstall(data[beamline], description='__system__', cmpnt_type='project')
 
         # Save beamline  - project rel
         if len(self.retrieveInstallRel(None, 'Beamline', data[project]).keys()) == 0:
@@ -4861,96 +4950,16 @@ class idods(object):
 
         # Save project  - beamline rel
         if len(self.retrieveInstallRel(None, data[project], data[beamline]).keys()) == 0:
-            self.saveInstallRel(data[project], data[beamline], description = data[beamline_desc])
+            self.saveInstallRel(data[project], data[beamline], description=data[beamline_desc])
 
         # Save component type
         if len(self.retrieveComponentType(data[type_name]).keys()) == 0:
             self.saveComponentType(data[type_name], data[type_desc])
 
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'down_corrector')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'up_corrector')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'length')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'gap_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'gap_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'gap_tolerance')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase1_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase1_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase2_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase2_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase3_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase3_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase4_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase4_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase_tolerance')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'k_max_circular')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'k_max_linear')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a1')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_a2')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
-            self.saveInventoryPropertyTemplate(data[type_name], 'phase_mode_p')
-
         # Save inventory
         if len(self.retrieveInventory(data[inventory_name]).keys()) == 0:
 
-            self.saveInventory(data[inventory_name], cmpnt_type = data[type_name], props = {
+            self.saveInventory(data[inventory_name], cmpnt_type=data[type_name], props={
                 'down_corrector': self.idNoneHelper(data[down_corrector]),
                 'up_corrector': self.idNoneHelper(data[up_corrector]),
                 'length': self.idNoneHelper(data[length]),
@@ -4977,9 +4986,9 @@ class idods(object):
         if len(self.retrieveInstall(data[install_name]).keys()) == 0:
             self.saveInstall(
                 data[install_name],
-                coordinatecenter = data[coordinate_center],
-                description = data[install_desc],
-                cmpnt_type = data[type_name]
+                coordinatecenter=data[coordinate_center],
+                description=data[install_desc],
+                cmpnt_type=data[type_name]
             )
 
         # Save beamline  - install rel
@@ -4993,14 +5002,13 @@ class idods(object):
                 self.saveInventoryToInstall(data[install_name], data[inventory_name])
 
             except ValueError:
-                errors +=1
+                errors += 1
                 print "Inventory already installed!"
-
 
         # Save data method
         data_method = self.idNoneHelper(data[method])
 
-        if data_method != None:
+        if data_method is not None:
 
             if len(self.retrieveDataMethod(data_method).keys()) == 0:
                 self.saveDataMethod(data_method, self.idNoneHelper(data[method_desc]))
@@ -5010,19 +5018,19 @@ class idods(object):
 
         # Save offline data
         self.saveOfflineData(
-            inventory_name = data[inventory_name],
-            description = self.idNoneHelper(data[data_desc]),
-            gap = self.idNoneHelper(data[gap], "float"),
-            phase1 = self.idNoneHelper(data[phase1], "float"),
-            phase2 = self.idNoneHelper(data[phase2], "float"),
-            phase3 = self.idNoneHelper(data[phase3], "float"),
-            phase4 = self.idNoneHelper(data[phase4], "float"),
-            phasemode = self.idNoneHelper(data[phase_mode]),
-            polarmode = self.idNoneHelper(data[polar_mode]),
-            status = self.idStatusHelper(data[data_file_obsolete]),
-            data_file_name = data[data_file_name],
-            data_id = rawData['id'],
-            method_name = self.idNoneHelper(data[method])
+            inventory_name=data[inventory_name],
+            description=self.idNoneHelper(data[data_desc]),
+            gap=self.idNoneHelper(data[gap], "float"),
+            phase1=self.idNoneHelper(data[phase1], "float"),
+            phase2=self.idNoneHelper(data[phase2], "float"),
+            phase3=self.idNoneHelper(data[phase3], "float"),
+            phase4=self.idNoneHelper(data[phase4], "float"),
+            phasemode=self.idNoneHelper(data[phase_mode]),
+            polarmode=self.idNoneHelper(data[polar_mode]),
+            status=self.idStatusHelper(data[data_file_obsolete]),
+            data_file_name=data[data_file_name],
+            data_id=rawData['id'],
+            method_name=self.idNoneHelper(data[method])
         )
 
         if errors == 0:
@@ -5057,6 +5065,12 @@ class idods(object):
 
         # Check name parameter
         _checkParameter('name', name)
+
+        # Check name parameter
+        res = self.retrieveInstall(name)
+
+        if len(res) != 0:
+            raise ValueError("Install (%s) already exists in database." % (name))
 
         # Check component type
         if 'cmpnt_type' in kws and kws['cmpnt_type'] != None:
@@ -5712,7 +5726,7 @@ class idods(object):
         '''
 
         # Retrieve offline data
-        onlineData = self.retrieveOnlineData(onlineid = online_data_id)
+        onlineData = self.retrieveOnlineData(onlineid=online_data_id)
 
         if len(onlineData) == 0:
             raise ValueError("Online data doesn't exist in the database!")
@@ -5731,7 +5745,11 @@ class idods(object):
 
         filePath = os.path.join(savePath, onlineDataObj['url'])
 
-        os.remove(filePath)
+        try:
+            os.remove(filePath)
+
+        except:
+            raise IOError("File (%s) cannot be deleted!" % filePath)
 
         # Generate SQL
         sql = "DELETE FROM id_online_data WHERE id_online_data_id = %s"
@@ -5742,7 +5760,7 @@ class idods(object):
             cur.execute(sql, vals)
 
             # Create transaction
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.commit()
 
             return True
@@ -5750,11 +5768,11 @@ class idods(object):
         except Exception as e:
 
             # Rollback changes
-            if self.transaction == None:
+            if self.transaction is None:
                 self.conn.rollback()
 
-            self.logger.info('Error when deleting online data:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when deleting online data:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when deleting online data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting online data:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveInstallOfflineData(self, install_name, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
@@ -5941,8 +5959,8 @@ class idods(object):
             return resdict
 
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching offline data from installation:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching offline data from installation:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching offline data from installation:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def idodsInstall(self):
         '''
@@ -5954,26 +5972,26 @@ class idods(object):
             self.saveComponentTypePropertyType('insertion_device')
 
         # Create component types
-        if len(self.retrieveComponentType('root', all_cmpnt_types = True).keys()) == 0:
+        if len(self.retrieveComponentType('root', all_cmpnt_types=True).keys()) == 0:
             self.saveComponentType('root', '__system__')
 
-        if len(self.retrieveComponentType('branch', all_cmpnt_types = True).keys()) == 0:
+        if len(self.retrieveComponentType('branch', all_cmpnt_types=True).keys()) == 0:
             self.saveComponentType('branch', '__system__')
 
-        if len(self.retrieveComponentType('beamline', all_cmpnt_types = True).keys()) == 0:
+        if len(self.retrieveComponentType('beamline', all_cmpnt_types=True).keys()) == 0:
             self.saveComponentType('beamline', '__system__')
 
-        if len(self.retrieveComponentType('project', all_cmpnt_types = True).keys()) == 0:
+        if len(self.retrieveComponentType('project', all_cmpnt_types=True).keys()) == 0:
             self.saveComponentType('project', '__system__')
 
         # Create install elements
-        if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install = True).keys()) == 0:
+        if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install=True).keys()) == 0:
             self.saveInstall('Trees', cmpnt_type='root')
 
-        if len(self.retrieveInstall('Installation', cmpnt_type='branch', all_install = True).keys()) == 0:
+        if len(self.retrieveInstall('Installation', cmpnt_type='branch', all_install=True).keys()) == 0:
             self.saveInstall('Installation', cmpnt_type='branch')
 
-        if len(self.retrieveInstall('Beamline', cmpnt_type='branch', all_install = True).keys()) == 0:
+        if len(self.retrieveInstall('Beamline', cmpnt_type='branch', all_install=True).keys()) == 0:
             self.saveInstall('Beamline', cmpnt_type='branch')
 
         # Create install relationship
@@ -5984,99 +6002,20 @@ class idods(object):
         if len(self.retrieveInstallRel(None, 'Trees', 'Beamline').keys()) == 0:
             self.saveInstallRel('Trees', 'Beamline')
 
-                # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('down_corrector').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'down_corrector')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('up_corrector').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'up_corrector')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('length').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'length')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('gap_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'gap_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('gap_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'gap_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('gap_tolerance').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'gap_tolerance')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase1_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase1_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase1_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase1_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase2_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase2_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase2_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase2_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase3_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase3_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase3_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase3_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase4_maximum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase4_maximum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase4_minimum').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase4_minimum')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_tolerance').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase_tolerance')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('k_max_circular').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'k_max_circular')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('k_max_linear').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'k_max_linear')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a1').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase_mode_a1')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_mode_a2').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase_mode_a2')
-
-        # Save inventory property template
-        if len(self.retrieveInventoryPropertyTemplate('phase_mode_p').keys()) == 0:
-            self.saveInventoryPropertyTemplate('root', 'phase_mode_p')
         # Create test project
-        #if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
+        # if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
         #    self.saveInstall('Project1', cmpnt_type='project')
 
         # Create test project relationship
-        #if len(self.retrieveInstallRel(None, 'Installation', 'Project1').keys()) == 0:
+        # if len(self.retrieveInstallRel(None, 'Installation', 'Project1').keys()) == 0:
         #     self.saveInstallRel('Installation', 'Project1')
 
         # Create test beamline
-        #if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
+        # if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
         #    self.saveInstall('Beamline1', cmpnt_type='beamline')
 
         # Create test beamline relationship
-        #if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1').keys()) == 0:
+        # if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1').keys()) == 0:
         #    self.saveInstallRel('Project1', 'Beamline1')
 
         return True

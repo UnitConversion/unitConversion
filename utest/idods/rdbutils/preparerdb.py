@@ -68,7 +68,7 @@ def cleanComponentTypePropertyType(namelist):
         conn.commit()
 
     conn.close()
-    
+
 def cleanComponentTypeProperty(componentTypeName, componentTypePropertyTypeName):
     '''
     Clean component type property entry
@@ -151,12 +151,12 @@ def cleanDataMethod(namelist):
         conn.commit()
 
     conn.close()
-    
+
 def cleanRawData():
     '''
     Clean raw data of all entries
     '''
-    
+
     conn=connect()
     cur = conn.cursor()
     sql = 'DELETE FROM id_raw_data WHERE id_raw_data_id >= 1'
@@ -164,7 +164,7 @@ def cleanRawData():
     conn.commit()
 
     conn.close()
-    
+
 def cleanOfflineData(descriptionList):
     '''
     Clean offline data table of specific entries
@@ -181,7 +181,7 @@ def cleanOfflineData(descriptionList):
         conn.commit()
 
     conn.close()
-    
+
 def cleanOnlineData(descriptionList):
     '''
     Clean online data table of specific entries
@@ -198,7 +198,7 @@ def cleanOnlineData(descriptionList):
         conn.commit()
 
     conn.close()
-    
+
 def cleanInstall(namelist):
     '''
     Clean install table of specific entries
@@ -226,7 +226,7 @@ def cleanInstallRel(parentName, childName):
 
     sql = '''
     DELETE FROM install_rel
-    WHERE parent_install_id = 
+    WHERE parent_install_id =
     (SELECT install_id FROM install WHERE field_name = %s)
     AND child_install_id =
     (SELECT install_id FROM install WHERE field_name = %s)
@@ -259,7 +259,7 @@ def cleanInstallRelProp(typeNameList):
     Clean install rel property entry identified by special property type name
     '''
     conn=connect()
-    
+
     if len(typeNameList) > 0:
         cur = conn.cursor()
 
@@ -272,44 +272,42 @@ def cleanInstallRelProp(typeNameList):
             cur.execute(sql, (name))
 
         conn.commit()
-        
+
     conn.close()
-    
+
 def cleanDB():
     '''
     Clean complete DB
     '''
-    conn=connect()
+    conn = connect()
     cur = conn.cursor()
 
-    sql = '''
-    SET FOREIGN_KEY_CHECKS=0;
+    sql = [
+        'delete from id_offline_data;',
+        'delete from id_raw_data;',
+        'delete from id_online_data;',
+        'delete from id_data_method;',
+        'delete from inventory__install;',
+        'delete from inventory_prop;',
+        'delete from inventory_prop_tmplt;',
+        'delete from inventory;',
+        'delete from install_rel_prop;',
+        'delete from install_rel_prop_type;',
+        'delete from install_rel;',
+        'delete from vendor;',
+        'delete from install;',
+        'delete from cmpnt_type_prop;',
+        'delete from cmpnt_type_prop_type;',
+        'delete from cmpnt_type;'
+    ]
 
-    truncate id_offline_data;
-    truncate id_online_data;
-    truncate id_raw_data;
-    truncate id_data_method;
-    truncate inventory__install;
-    truncate inventory;
-    truncate inventory_prop;
-    truncate inventory_prop_tmplt;
-    truncate install;
-    truncate install_rel;
-    truncate install_rel_prop;
-    truncate install_rel_prop_type;
-    truncate cmpnt_type;
-    truncate cmpnt_type_prop;
-    truncate cmpnt_type_prop_type;
-    truncate vendor;
-    
-    SET FOREIGN_KEY_CHECKS=1;
-    '''
-    cur.execute(sql)
+    for statement in sql:
+        cur.execute(statement)
 
     conn.commit()
-        
+
     conn.close()
-    
+
 def cleanInventoryToInstall(installName, ivnentoryName):
     '''
     Clean inventory - install entry

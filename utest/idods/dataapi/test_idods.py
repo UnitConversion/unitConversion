@@ -21,58 +21,60 @@ from pyidods.idods import idods
 class TestIdods(unittest.TestCase):
 
     def cleanTables(self):
+        cleanDB()
+
         # Clean offline data
-        cleanOfflineData(['spec1234desc'])
+        # cleanOfflineData(['spec1234desc'])
 
         # Clean install rel prop
-        cleanInstallRelProp(['testprop'])
+        # cleanInstallRelProp(['testprop'])
 
         # Clean install rel prop type
-        cleanInstallRelPropType(['testprop', 'prop2'])
+        # cleanInstallRelPropType(['testprop', 'prop2'])
 
         # Clean install rel
-        cleanInstallRel('test child', 'test parent')
-        cleanInstallRel('test parent', 'test child')
+        # cleanInstallRel('test child', 'test parent')
+        # cleanInstallRel('test parent', 'test child')
 
         # Clean online data
-        cleanOnlineData(['desc1234'])
+        # cleanOnlineData(['desc1234'])
 
         # Clean inventory install map
-        cleanInventoryToInstall('test parent', 'name')
-        cleanInventoryToInstall('test parent', 'name2')
+        # cleanInventoryToInstall('test parent', 'name')
+        # cleanInventoryToInstall('test parent', 'name2')
 
         # Clean install table
-        cleanInstall(['test parent', 'test child'])
+        # cleanInstall(['test parent', 'test child'])
 
         # Clean vendor table
-        cleanVendor(['test vendor', 'test vendor2'])
+        # cleanVendor(['test vendor', 'test vendor2'])
 
         # Clean data method
-        cleanDataMethod(['method', 'method2', 'test'])
+        # cleanDataMethod(['method', 'method2', 'test'])
 
         # Clean inventory property
-        cleanInventoryProperty('name', 'alpha')
-        cleanInventoryProperty('name2', 'alpha')
+        # cleanInventoryProperty('name', 'alpha')
+        # cleanInventoryProperty('name2', 'alpha')
         # Clean inventory
-        cleanInventory(['name', 'name2'])
+        # cleanInventory(['name', 'name2'])
         # Clean inventory property template table
-        cleanInventoryPropertyTemplate(['alpha', 'beta'])
+        # cleanInventoryPropertyTemplate(['alpha', 'beta'])
 
         # Clean component type property
-        cleanComponentTypeProperty('test cmpnt3', 'length')
-        cleanComponentTypeProperty('Magnet', 'length')
-        cleanComponentTypeProperty('Magnet', 'insertion_device')
-        cleanComponentTypeProperty('test cmpnt3', 'insertion_device')
-        cleanComponentTypeProperty('test cmpnt', 'insertion_device')
-        cleanComponentTypeProperty('test cmpnt2', 'insertion_device')
-        cleanComponentTypeProperty('test cmpnt4', 'insertion_device')
+        # cleanComponentTypeProperty('test cmpnt3', 'length')
+        #  cleanComponentTypeProperty('Magnet', 'length')
+        # cleanComponentTypeProperty('Magnet', 'insertion_device')
+        # cleanComponentTypeProperty('test cmpnt3', 'insertion_device')
+        # cleanComponentTypeProperty('test cmpnt', 'insertion_device')
+        # cleanComponentTypeProperty('test cmpnt2', 'insertion_device')
+        # cleanComponentTypeProperty('test cmpnt4', 'insertion_device')
         # Clean component type property type
-        cleanComponentTypePropertyType(['length', 'width', 'insertion_device'])
+        # cleanComponentTypePropertyType(['length', 'width', 'insertion_device'])
         # Clean if there is something left from previous runs
-        cleanComponentType(['test cmpnt', 'test cmpnt2', 'test cmpnt3', 'test cmpnt4', 'Magnet'])
+        # cleanComponentType(['test cmpnt', 'test cmpnt2', 'test cmpnt3', 'test cmpnt4', 'Magnet'])
 
         # Clean raw data
-        cleanRawData()
+        # cleanRawData()
 
     def setUp(self):
         self.con = connect()
@@ -295,6 +297,17 @@ class TestIdods(unittest.TestCase):
         # Try to save new inventory property template
         self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
+        # Save again
+        self.assertRaises(ValueError, self.api.saveInventoryPropertyTemplate, 'Magnet', 'alpha')
+
+        # Save with unknown component type
+        self.assertRaises(ValueError, self.api.saveInventoryPropertyTemplate, 'unknown', 'gamma')
+
+        resultRetrieve = self.api.retrieveInventoryPropertyTemplate('alpha', 'Magnet')
+        resultRetrieveKeys = resultRetrieve.keys()
+
+        self.assertEqual('alpha', resultRetrieve[resultRetrieveKeys[0]]['name'], 'Correct inventory property template retrieved')
+
         # Retrieve save inventory property template
         resultRetrieve = self.api.retrieveInventoryPropertyTemplate('alpha')
         resultRetrieveKeys = resultRetrieve.keys()
@@ -325,8 +338,9 @@ class TestIdods(unittest.TestCase):
             result[resultKeys[0]]['description'] == 'description' and
             result[resultKeys[0]]['default'] == 'default' and
             result[resultKeys[0]]['unit'] == 'm' and
-            result[resultKeys[0]]['cmpnt_type'] == 'Magnet'
-        , "Check all the properties in the returned object")
+            result[resultKeys[0]]['cmpnt_type'] == 'Magnet',
+            "Check all the properties in the returned object"
+        )
 
     '''
     Test updating inventory property template
@@ -339,7 +353,7 @@ class TestIdods(unittest.TestCase):
         idObject = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha', 'desc', 'default', 'units')
 
         # Update template
-        self.assertTrue(self.api.updateInventoryPropertyTemplate(idObject['id'], 'Magnet', 'beta'))
+        self.assertTrue(self.api.updateInventoryPropertyTemplate(idObject['id'], 'Magnet', 'beta', description='desc2', default='def', unit='units2'))
 
         # Retrieve updated template
         template = self.api.retrieveInventoryPropertyTemplate('beta')
@@ -350,7 +364,7 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(idObject['id'], templateObject['id'], "Ids should be the same")
 
         # Check if description stayed the same
-        self.assertEqual(templateObject['description'], 'desc')
+        self.assertEqual(templateObject['description'], 'desc2')
 
     '''
     Try a couple of scenarios of saving inventory property into database
@@ -373,6 +387,17 @@ class TestIdods(unittest.TestCase):
         retrievePropertyKeys = retrieveProperty.keys()
 
         self.assertEqual('value', retrieveProperty[retrievePropertyKeys[0]]['value'], "Property save and property retrieved have the same value.")
+
+        # Try to save property with not existing property template without providing component type name
+        self.assertRaises(ValueError, self.api.saveInventoryProperty, 'name', 'cmpnt', 1)
+
+        # Try to save property with not existing template by providing component type name
+        self.api.saveInventoryProperty('name', 'cmpnt', 1, 'Magnet')
+
+        # Retrieve newly saved property
+        result = self.api.retrieveInventoryProperty('name', 'cmpnt')
+
+        self.assertNotEqual(len(result), 0)
 
     '''
     Test updating inventory property
@@ -828,7 +853,7 @@ class TestIdods(unittest.TestCase):
         idObject2 = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Map install to inventory
         map = self.api.saveInventoryToInstall('test parent', 'name')
@@ -844,6 +869,9 @@ class TestIdods(unittest.TestCase):
         # Set install to a new inventory
         self.assertTrue(self.api.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
 
+        # Delete inventory to install
+        self.assertTrue(self.api.deleteInventoryToInstall(map['id']))
+
     '''
     Test saving online data
     '''
@@ -853,7 +881,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
@@ -887,7 +915,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
@@ -908,6 +936,68 @@ class TestIdods(unittest.TestCase):
 
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
+
+    def testOnlineData(self):
+
+        # Prepare component type
+        componentType = self.api.saveComponentType('Magnet')
+
+        # Prepare install parent
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+
+        # Save online data
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+
+        # Delete online data
+        self.assertRaises(IOError, self.api.deleteOnlineData, onlineid['id'])
+
+        fileResult = self.api.saveFile('tmp', 'bla')
+
+        # Save online data
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url=fileResult['path'], status=1)
+
+        # Delete online data
+        self.assertTrue(self.api.deleteOnlineData(onlineid['id']))
+
+    '''
+    Test preparing data for normal functioning of IDODS
+    '''
+    def testIdodsInstall(self):
+
+        self.assertTrue(self.api.idodsInstall())
+
+    '''
+    Test saving insertion device
+    '''
+    def testSaveInsertionDevice(self):
+        self.assertRaises(ValueError, self.api.saveInsertionDevice)
+
+        # If install name or inventory name is defined, component type should also be defined
+        self.assertRaises(ValueError, self.api.saveInsertionDevice, inventory_name='inventory')
+
+        # If install name is defined, beamline and project should also be defined
+        self.assertRaises(ValueError, self.api.saveInsertionDevice, install_name='install', type_name='type', beamline='beamline')
+
+        # Fail installing because idods install was not ran
+        self.assertRaises(ValueError, self.api.saveInsertionDevice, beamline='beam', project='proj', install_name='install')
+
+        # Prepare DB
+        self.assertTrue(self.api.idodsInstall())
+
+        # Save install
+        self.assertTrue(self.api.saveInsertionDevice(beamline='beam', project='proj', type_name='type', install_name='install'))
+
+        # Save inventory
+        self.assertTrue(self.api.saveInsertionDevice(type_name='type', inventory_name='inv'))
+
+        # Fail because of the duplicate install name
+        self.assertRaises(ValueError, self.api.saveInsertionDevice, beamline='beam', project='proj', type_name='type', install_name='install', inventory_name='inv2')
+
+        # Fail because of the duplicate inventory name
+        self.assertRaises(ValueError, self.api.saveInsertionDevice, beamline='beam', project='proj', type_name='type', install_name='install4', inventory_name='inv')
+
+        # Save inventory and install and install a device
+        self.assertTrue(self.api.saveInsertionDevice(beamline='beam', project='proj', type_name='type', install_name='install3', inventory_name='inv3'))
 
 if __name__ == '__main__':
     unittest.main()

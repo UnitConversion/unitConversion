@@ -1,4 +1,15 @@
+'''
+Tool to time execution of code bocks
+@author dejan.dezman@cosylab.com
+
+example of use::
+
+ with Timer() as t:
+    code
+ print "=> elasped client.saveInsertionDevice: %s s" % t.secs
+'''
 import time
+
 
 class Timer(object):
     def __init__(self, verbose=False):

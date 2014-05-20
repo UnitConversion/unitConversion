@@ -14,7 +14,7 @@ from physics_django.idods.views import (retrieveRawDataWS, saveRawDataWS)
 from physics_django.idods.views import (retrieveOfflineDataWS, retrieveOfflineDataInstallWS, saveOfflineDataWS, updateOfflineDataWS, deleteOfflineDataWS)
 from physics_django.idods.views import (uploadFileWS)
 from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS, deleteOnlineDataWS)
-from physics_django.idods.views import (testAuth, saveInsertionDeviceWS, importDeviceWS)
+from physics_django.idods.views import (testAuth, testCall, saveInsertionDeviceWS, importDeviceWS)
 from physics_django.idods.views import (idodsInstallWS)
 from physics_django.idods.views import (retrieveTreesWS)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
@@ -63,54 +63,54 @@ urlpatterns = patterns(
     url(r'^id/device/installrelproptype/$', retrieveInstallRelPropTypeWS),
     url(r'^id/device/saveinstallrelproptype/$', saveInstallRelPropTypeWS),
     url(r'^id/device/updateinstallrelproptype/$', updateInstallRelPropTypeWS),
-    
+
     # Retrieve, save and update inventory to install
     url(r'^id/device/inventorytoinstall/$', retrieveInventoryToInstallWS),
     url(r'^id/device/saveinventorytoinstall/$', saveInventoryToInstallWS),
     url(r'^id/device/updateinventorytoinstall/$', updateInventoryToInstallWS),
     url(r'^id/device/deleteinventorytoinstall/$', deleteInventoryToInstallWS),
-    
+
     # Retrieve, save and update data method
     url(r'^id/device/datamethod/$', retrieveDataMethodWS),
     url(r'^id/device/savedatamethod/$', saveDataMethodWS),
     url(r'^id/device/updatedatamethod/$', updateDataMethodWS),
-    
+
     # Retrieve, save raw data
     url(r'^id/device/rawdata/$', retrieveRawDataWS),
     url(r'^id/device/saverawdata/$', saveRawDataWS),
-    
+
     # Retrieve, save and update offline data
     url(r'^id/device/offlinedata/$', retrieveOfflineDataWS),
     url(r'^id/device/offlinedatainstall/$', retrieveOfflineDataInstallWS),
     url(r'^id/device/saveofflinedata/$', saveOfflineDataWS),
     url(r'^id/device/updateofflinedata/$', updateOfflineDataWS),
     url(r'^id/device/deleteofflinedata/$', deleteOfflineDataWS),
-    
+
     url(r'^id/device/savemethodofflinedata/$', saveDataMethodOfflineDataWS),
-    
+
     # Retrieve, save big file
     url(r'^id/device/file/$', uploadFileWS),
-    
+
     # Retrieve, save and update online data
     url(r'^id/device/onlinedata/$', retrieveOnlineDataWS),
     url(r'^id/device/saveonlinedata/$', saveOnlineDataWS),
     url(r'^id/device/updateonlinedata/$', updateOnlineDataWS),
     url(r'^id/device/deleteonlinedata/$', deleteOnlineDataWS),
-    
+
     # Idods install
     url(r'^id/device/idods_install/$', idodsInstallWS),
-    
+
     # Make tree
     url(r'^id/device/trees/$', retrieveTreesWS),
-    
+
     # Test authentication
     url(r'^id/device/test/$', testAuth),
-    
+    url(r'^id/device/testcall/$', testCall),
+
     # Save Insertion device
     url(r'^id/device/saveinsertiondevice/$', saveInsertionDeviceWS),
-    #url(r'^id/device/updateinsertiondevice/$', updateInsertionDeviceWS),
     url(r'^id/device/importdevice/$', importDeviceWS),
-    
+
     url(r'^id/web/device/$', idodsIndexHtml),
     url(r'^id/web/device/(.+)', idodsHtmls),
 )
