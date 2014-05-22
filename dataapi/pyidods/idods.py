@@ -2791,12 +2791,15 @@ class idods(object):
             self.logger.info('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory to install:\n%s (%d)' %(e.args[1], e.args[0]))
 
-    def deleteInventoryToInstall(self, inventory_to_install_id):
+    def deleteInventoryToInstall(self, inventory_to_install_id, delete_online_data=None):
         '''
         Delete inventory to install map
 
         :param inventory_to_install_id: id of the map
         :type inventory_to_install_id: int
+
+        :param delete_online_data: should online data be deleted or just set to deprecated
+        :type delete_online_data: boolean
 
         :return: True if everything was ok
 
@@ -2815,7 +2818,11 @@ class idods(object):
             onlineDataObj = onlineData[key]
 
             # Delete online data
-            self.deleteOnlineData(onlineDataObj['id'])
+            if delete_online_data is True:
+                self.deleteOnlineData(onlineDataObj['id'])
+
+            else:
+                self.updateOnlineData(onlineDataObj['id'], status=0)
 
         # Generate SQL
         sql = "DELETE FROM inventory__install WHERE inventory__install_id = %s"
@@ -5579,13 +5586,14 @@ class idods(object):
         savePath = os.path.split(savePath[0])
         savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
 
-        filePath = os.path.join(savePath, onlineDataObj['url'])
+        if onlineDataObj['url'] is not None:
+            filePath = os.path.join(savePath, onlineDataObj['url'])
 
-        try:
-            os.remove(filePath)
+            try:
+                os.remove(filePath)
 
-        except:
-            raise IOError("File (%s) cannot be deleted!" % filePath)
+            except:
+                raise IOError("File (%s) cannot be deleted!" % filePath)
 
         # Generate SQL
         sql = "DELETE FROM id_online_data WHERE id_online_data_id = %s"

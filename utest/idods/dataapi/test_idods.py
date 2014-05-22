@@ -869,8 +869,28 @@ class TestIdods(unittest.TestCase):
         # Set install to a new inventory
         self.assertTrue(self.api.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
 
+        # Save online data
+        od = self.api.saveOnlineData('test parent', status=1)
+
         # Delete inventory to install
         self.assertTrue(self.api.deleteInventoryToInstall(map['id']))
+
+        # Get online data
+        od = self.api.retrieveOnlineData(onlineid=od['id'])
+        odKeys = od.keys()
+        odObj = od[odKeys[0]]
+
+        # Test online data count
+        self.assertTrue(len(odKeys) == 1)
+
+        # Test status - it should be 0
+        self.assertTrue(odObj['status'] == 0)
+
+        # Map install to inventory
+        map = self.api.saveInventoryToInstall('test parent', 'name')
+
+        # Delete inventory to install
+        self.assertTrue(self.api.deleteInventoryToInstall(map['id'], delete_online_data=True))
 
     '''
     Test saving online data
