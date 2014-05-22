@@ -14,7 +14,7 @@ from physics_django.idods.views import (retrieveRawDataWS, saveRawDataWS)
 from physics_django.idods.views import (retrieveOfflineDataWS, retrieveOfflineDataInstallWS, saveOfflineDataWS, updateOfflineDataWS, deleteOfflineDataWS)
 from physics_django.idods.views import (uploadFileWS)
 from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, updateOnlineDataWS, deleteOnlineDataWS)
-from physics_django.idods.views import (testAuth, testCall, saveInsertionDeviceWS, importDeviceWS)
+from physics_django.idods.views import (testAuth, testCall, saveInsertionDeviceWS)
 from physics_django.idods.views import (idodsInstallWS)
 from physics_django.idods.views import (retrieveTreesWS)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
@@ -109,7 +109,6 @@ urlpatterns = patterns(
 
     # Save Insertion device
     url(r'^id/device/saveinsertiondevice/$', saveInsertionDeviceWS),
-    url(r'^id/device/importdevice/$', importDeviceWS),
 
     url(r'^id/web/device/$', idodsIndexHtml),
     url(r'^id/web/device/(.+)', idodsHtmls),

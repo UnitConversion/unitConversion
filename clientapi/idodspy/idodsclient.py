@@ -64,7 +64,8 @@ class IDODSClient(object):
         username =
         password =
         '''
-        self.__jsonheader = {'content-type': 'application/json', 'accept': 'application/json'}
+        # self.__jsonheader = {'content-type': 'application/json', 'accept': 'application/json'}
+        self.__jsonheader = {'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json'}
         self.__resource = 'test/'
 
         try:
@@ -88,10 +89,11 @@ class IDODSClient(object):
             # requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
 
         except Exception as e:
+            print e
             raise Exception('Failed to create client.')
 
     def __getdefaultconfig(self, arg, value):
-        if value == None and _conf.has_option('DEFAULT', arg):
+        if value is None and _conf.has_option('DEFAULT', arg):
             return _conf.get('DEFAULT', arg)
         else:
             return value
@@ -1016,7 +1018,7 @@ class IDODSClient(object):
         url = 'saveinsertiondevice/'
 
         # Set parameters
-        params={
+        params = {
             'install_name': install_name,
             'coordinate_center': coordinate_center,
             'project': project,
@@ -1048,33 +1050,7 @@ class IDODSClient(object):
             'type_desc': type_desc
         }
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
-        self.__raise_for_status(r.status_code, r.text)
-
-        return r.json()
-
-    def importDevice(self, line):
-        '''
-        Import insertion device into DB
-
-        :param line: row from the data file
-        :type line: str
-
-        :raises:
-            HTTPError
-
-        :returns: True/False
-        '''
-
-        # Set URL
-        url = 'importdevice/'
-
-        # Set parameters
-        params={
-            'line': line
-        }
-
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()

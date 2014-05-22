@@ -572,14 +572,6 @@ def testCall(request):
     return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
 
 '''
-Import devices
-'''
-@require_http_methods(["POST"])
-@has_perm_or_basicauth('id.can_modify_id')
-def importDeviceWS(request):
-    return _updateData(request, idodsi.importDevice, ['line'])
-
-'''
 Save insertion device
 '''
 @require_http_methods(["POST"])
