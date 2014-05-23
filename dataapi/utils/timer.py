@@ -9,11 +9,19 @@ example of use::
  print "=> elasped client.saveInsertionDevice: %s s" % t.secs
 '''
 import time
+import logging
 
 
 class Timer(object):
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, output=" "):
         self.verbose = verbose
+        self.output = output
+        self.logger = logging.getLogger('timer')
+        hdlr = logging.FileHandler('/var/tmp/timer.log')
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        hdlr.setFormatter(formatter)
+        self.logger.addHandler(hdlr)
+        self.logger.setLevel(logging.DEBUG)
 
     def __enter__(self):
         self.start = time.time()
@@ -23,5 +31,8 @@ class Timer(object):
         self.end = time.time()
         self.secs = self.end - self.start
         self.msecs = self.secs * 1000  # millisecs
+        strLog = '=> elapsed time%s: %f ms' % (self.output, self.msecs)
+        self.logger.info(strLog)
+
         if self.verbose:
-            print 'elapsed time: %f ms' % self.msecs
+            print strLog

@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServer
 from django.views.decorators.http import require_http_methods
 import traceback
 import sys
+import time
 from django.db import connection, transaction
 from django.db.transaction import TransactionManagementError
 from django.template import RequestContext
@@ -29,7 +30,7 @@ from utils.utils import _checkkeys, _retrievecmddict
 '''
 Private template for the retrieve functions
 '''
-def _retrieveData(request, fun, propList, customDict = {}):
+def _retrieveData(request, fun, propList, customDict={}):
     params = _retrievecmddict(request.GET.copy())
     res = {}
 
@@ -93,7 +94,7 @@ def _saveData(request, fun, propList):
 '''
 Private template for update function
 '''
-def _updateData(request, fun, propList, customDict = {}):
+def _updateData(request, fun, propList, customDict={}):
     params = _retrievecmddict(request.POST.copy())
     res = {}
 
@@ -245,7 +246,12 @@ Retrieve install
 '''
 @require_http_methods(["GET"])
 def retrieveInstallWS(request):
-    return _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter', 'all_install'])
+    startedd = time.time()
+    result = _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter', 'all_install'])
+    total = time.time() - startedd
+    total = total*1000
+    print '=> elapsed time view.retrieveInstall: %f ms' % total
+    return result
 
 '''
 Save install
@@ -447,11 +453,13 @@ Save data method and offline data
 @has_perm_or_basicauth('id.can_modify_id')
 def saveDataMethodOfflineDataWS(request):
 
-    with Timer() as t:
-        request.POST = request.POST.copy()
-        request.POST['username'] = request.user.username
-        result = _saveData(request, idodsi.saveMethodAndOfflineData, ['inventory_name', 'username', 'method', 'method_desc', 'data_desc', 'data_file_name', 'data_id', 'status', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phase_mode', 'polar_mode'])
-    print "=> elasped _saveData, idodsi.saveMethodAndOfflineData: %s s" % t.secs
+    startedd = time.time()
+    request.POST = request.POST.copy()
+    request.POST['username'] = request.user.username
+    result = _saveData(request, idodsi.saveMethodAndOfflineData, ['inventory_name', 'username', 'method', 'method_desc', 'data_desc', 'data_file_name', 'data_id', 'status', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phase_mode', 'polar_mode'])
+    total = time.time() - startedd
+    total = total*1000
+    print '=> elapsed time view.saveDataMethodOfflineData: %f ms' % total
 
     return result
 
@@ -577,10 +585,7 @@ Save insertion device
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def saveInsertionDeviceWS(request):
-
-    with Timer() as t:
-        result = _saveData(request, idodsi.saveInsertionDevice, ['install_name', 'coordinate_center', 'project', 'beamline', 'beamline_desc', 'install_desc', 'inventory_name', 'down_corrector', 'up_corrector', 'length', 'gap_max', 'gap_min', 'gap_tolerance', 'phase1_max', 'phase1_min', 'phase2_max', 'phase2_min', 'phase3_max', 'phase3_min', 'phase4_max', 'phase4_min', 'phase_tolerance', 'k_max_circular', 'k_max_linear', 'phase_mode_a1', 'phase_mode_a2', 'phase_mode_p', 'type_name', 'type_desc'])
-    print "=> elasped _saveData, idodsi.saveInsertionDevice: %s s" % t.secs
+    result = _saveData(request, idodsi.saveInsertionDevice, ['install_name', 'coordinate_center', 'project', 'beamline', 'beamline_desc', 'install_desc', 'inventory_name', 'down_corrector', 'up_corrector', 'length', 'gap_max', 'gap_min', 'gap_tolerance', 'phase1_max', 'phase1_min', 'phase2_max', 'phase2_min', 'phase3_max', 'phase3_min', 'phase4_max', 'phase4_min', 'phase_tolerance', 'k_max_circular', 'k_max_linear', 'phase_mode_a1', 'phase_mode_a2', 'phase_mode_p', 'type_name', 'type_desc'])
 
     return result
 
@@ -588,10 +593,10 @@ def saveInsertionDeviceWS(request):
 Load index html file
 '''
 def idodsIndexHtml(request):
-    return render_to_response("idods/index.html", context_instance = RequestContext(request))
+    return render_to_response("idods/index.html", context_instance=RequestContext(request))
 
 '''
 Load html files
 '''
 def idodsHtmls(request, url):
-    return render_to_response("idods/" + url, context_instance = RequestContext(request))
+    return render_to_response("idods/" + url, context_instance=RequestContext(request))

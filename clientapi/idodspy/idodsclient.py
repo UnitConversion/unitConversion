@@ -9,6 +9,8 @@ Created on Feb 17, 2014
 '''
 
 import sys
+import time
+
 if sys.version_info[0] != 2 or sys.version_info[1] < 6:
     print("This library requires at least Python version 2.6")
     sys.exit(1)
@@ -29,7 +31,6 @@ from requests import HTTPError
 from copy import copy
 
 import urllib
-from utils.timer import Timer
 
 try:
     import json
@@ -89,7 +90,6 @@ class IDODSClient(object):
             # requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
 
         except Exception as e:
-            print e
             raise Exception('Failed to create client.')
 
     def __getdefaultconfig(self, arg, value):
@@ -708,7 +708,7 @@ class IDODSClient(object):
         if 'vendor' in kws:
 
             # Check vendor value
-            if kws['vendor'] == None:
+            if kws['vendor'] is None:
                 self.__raise_for_status(400, 'If vendor is passed it should not be None!')
 
             params['vendor'] = kws['vendor']
@@ -717,7 +717,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -750,11 +750,11 @@ class IDODSClient(object):
         url = 'inventoryproptmplt/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -782,7 +782,7 @@ class IDODSClient(object):
         url = 'saveinventoryproptmplt/'
 
         # Set parameters
-        params={
+        params = {
             'cmpnt_type': cmpnt_type,
             'name': name
         }
@@ -799,7 +799,7 @@ class IDODSClient(object):
         if unit:
             params['unit'] = unit
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -824,7 +824,7 @@ class IDODSClient(object):
         url = 'updateinventoryproptmplt/'
 
         # Set parameters
-        params={
+        params = {
             'tmplt_id': tmplt_id,
             'cmpnt_type': cmpnt_type,
             'name': name
@@ -842,7 +842,7 @@ class IDODSClient(object):
         if 'unit' in kws:
             params['unit'] = kws['unit']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -886,7 +886,7 @@ class IDODSClient(object):
         url = 'install/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -1074,7 +1074,7 @@ class IDODSClient(object):
         url = 'saveinstall/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -1090,7 +1090,7 @@ class IDODSClient(object):
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()

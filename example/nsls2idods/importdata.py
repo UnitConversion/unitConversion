@@ -5,12 +5,12 @@ Created on May 14, 2014
 '''
 import os
 import sys
+import time
 
 import unittest
 import logging
 import requests
 import random
-from utils.timer import Timer
 
 import inspect
 from requests import HTTPError
@@ -123,87 +123,86 @@ def saveInsertionDevices():
     phase_mode = 39
     polar_mode = 40
 
-    with Timer() as t:
-        client.idodsInstall()
-    print "=> elasped client.idodsInstall: %s s" % t.secs
+    client.idodsInstall()
 
-    with Timer() as tt:
-        with open('idods_data.csv') as f:
-            index = 0
+    with open('idods_data.csv') as f:
+        index = 0
 
-            for line in f:
-                index += 1
+        for line in f:
+            index += 1
 
-                # Skip the first line
-                if index == 1:
-                    continue
+            # Skip the first line
+            if index == 1:
+                continue
 
-                data = line.split(',')
+            data = line.split(',')
 
-                try:
-                    with Timer() as t:
-                        client.saveInsertionDevice(
-                            install_name=idNoneHelper(data[install_name]),
-                            coordinate_center=idNoneHelper(data[coordinate_center]),
-                            project=idNoneHelper(data[project]),
-                            beamline=idNoneHelper(data[beamline]),
-                            beamline_desc=idNoneHelper(data[beamline_desc]),
-                            install_desc=idNoneHelper(data[install_desc]),
-                            inventory_name=idNoneHelper(data[inventory_name]),
-                            down_corrector=idNoneHelper(data[down_corrector]),
-                            up_corrector=idNoneHelper(data[up_corrector]),
-                            length=idNoneHelper(data[length]),
-                            gap_max=idNoneHelper(data[gap_max]),
-                            gap_min=idNoneHelper(data[gap_min]),
-                            gap_tolerance=idNoneHelper(data[gap_tolerance]),
-                            phase1_max=idNoneHelper(data[phase1_max]),
-                            phase1_min=idNoneHelper(data[phase1_min]),
-                            phase2_max=idNoneHelper(data[phase2_max]),
-                            phase2_min=idNoneHelper(data[phase2_min]),
-                            phase3_max=idNoneHelper(data[phase3_max]),
-                            phase3_min=idNoneHelper(data[phase3_min]),
-                            phase4_max=idNoneHelper(data[phase4_max]),
-                            phase4_min=idNoneHelper(data[phase4_min]),
-                            phase_tolerance=idNoneHelper(data[phase_tolerance]),
-                            k_max_circular=idNoneHelper(data[k_max_circular]),
-                            k_max_linear=idNoneHelper(data[k_max_linear]),
-                            phase_mode_a1=idNoneHelper(data[phase_mode_a1]),
-                            phase_mode_a2=idNoneHelper(data[phase_mode_a2]),
-                            phase_mode_p=idNoneHelper(data[phase_mode_p]),
-                            type_name=idNoneHelper(data[type_name]),
-                            type_desc=idNoneHelper(data[type_desc])
-                        )
-                    print "=> elasped client.saveInsertionDevice: %s s" % t.secs
+            try:
+                client.saveInsertionDevice(
+                    install_name=idNoneHelper(data[install_name]),
+                    coordinate_center=idNoneHelper(data[coordinate_center]),
+                    project=idNoneHelper(data[project]),
+                    beamline=idNoneHelper(data[beamline]),
+                    beamline_desc=idNoneHelper(data[beamline_desc]),
+                    install_desc=idNoneHelper(data[install_desc]),
+                    inventory_name=idNoneHelper(data[inventory_name]),
+                    down_corrector=idNoneHelper(data[down_corrector]),
+                    up_corrector=idNoneHelper(data[up_corrector]),
+                    length=idNoneHelper(data[length]),
+                    gap_max=idNoneHelper(data[gap_max]),
+                    gap_min=idNoneHelper(data[gap_min]),
+                    gap_tolerance=idNoneHelper(data[gap_tolerance]),
+                    phase1_max=idNoneHelper(data[phase1_max]),
+                    phase1_min=idNoneHelper(data[phase1_min]),
+                    phase2_max=idNoneHelper(data[phase2_max]),
+                    phase2_min=idNoneHelper(data[phase2_min]),
+                    phase3_max=idNoneHelper(data[phase3_max]),
+                    phase3_min=idNoneHelper(data[phase3_min]),
+                    phase4_max=idNoneHelper(data[phase4_max]),
+                    phase4_min=idNoneHelper(data[phase4_min]),
+                    phase_tolerance=idNoneHelper(data[phase_tolerance]),
+                    k_max_circular=idNoneHelper(data[k_max_circular]),
+                    k_max_linear=idNoneHelper(data[k_max_linear]),
+                    phase_mode_a1=idNoneHelper(data[phase_mode_a1]),
+                    phase_mode_a2=idNoneHelper(data[phase_mode_a2]),
+                    phase_mode_p=idNoneHelper(data[phase_mode_p]),
+                    type_name=idNoneHelper(data[type_name]),
+                    type_desc=idNoneHelper(data[type_desc])
+                )
 
-                    with Timer() as t:
-                        client.saveMethodAndOfflineData(
-                            inventory_name=idNoneHelper(data[inventory_name]),
-                            data_desc=idNoneHelper(data[data_desc]),
-                            gap=idNoneHelper(data[gap]),
-                            phase1=idNoneHelper(data[phase1]),
-                            phase2=idNoneHelper(data[phase2]),
-                            phase3=idNoneHelper(data[phase3]),
-                            phase4=idNoneHelper(data[phase4]),
-                            phase_mode=idNoneHelper(data[phase_mode]),
-                            polar_mode=idNoneHelper(data[polar_mode]),
-                            data_file_name=idNoneHelper(data[data_file_name]),
-                            data_file_path='file.txt',
-                            method=idNoneHelper(data[method]),
-                            method_desc=idNoneHelper(data[method_desc]),
-                            status=idStatusHelper(data[data_file_obsolete])
-                        )
-                    print "=> elasped client.saveMethodAndOfflineData: %s s" % t.secs
+            except HTTPError as e:
+                print e
 
-                except HTTPError as e:
-                    print e
+            try:
+                startedd = time.time()
+                client.saveMethodAndOfflineData(
+                    inventory_name=idNoneHelper(data[inventory_name]),
+                    data_desc=idNoneHelper(data[data_desc]),
+                    gap=idNoneHelper(data[gap]),
+                    phase1=idNoneHelper(data[phase1]),
+                    phase2=idNoneHelper(data[phase2]),
+                    phase3=idNoneHelper(data[phase3]),
+                    phase4=idNoneHelper(data[phase4]),
+                    phase_mode=idNoneHelper(data[phase_mode]),
+                    polar_mode=idNoneHelper(data[polar_mode]),
+                    data_file_name=idNoneHelper(data[data_file_name]),
+                    data_file_path='file.txt',
+                    method=idNoneHelper(data[method]),
+                    method_desc=idNoneHelper(data[method_desc]),
+                    status=idStatusHelper(data[data_file_obsolete])
+                )
+                total = time.time() - startedd
+                total = total*1000
+                print '=> elapsed time example.saveMethodAndOfflineData: %f ms' % total
 
-    print "=> elasped import: %s s" % tt.secs
+            except HTTPError as e:
+                print e
 
-@do_profile(follow=[client.testCall])
+# @do_profile(follow=[client.testCall])
 def timeTest():
     client.testCall()
 
-import cProfile
-cProfile.run('timeTest()')
+# import cProfile
+# cProfile.run('timeTest()')
 
 saveInsertionDevices()
