@@ -7,7 +7,4 @@ Client API Library
 ---------------------
 
 .. automodule:: idodspy.idodsclient
-    :members: 
-
-.. autoclass:: idodsclient
-    :members:   
+    :members:

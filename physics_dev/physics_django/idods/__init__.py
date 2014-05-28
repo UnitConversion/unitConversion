@@ -4,11 +4,19 @@ import time
 
 startedd = 0
 
+
 def started(sender, **kwargs):
+    '''
+    Request/response cycle started
+    '''
     global startedd
     startedd = time.time()
 
+
 def finished(sender, **kwargs):
+    '''
+    Request/response cycle ended
+    '''
     total = time.time() - startedd
     total = total*1000
     print '=> elapsed time request/response: %f ms' % total

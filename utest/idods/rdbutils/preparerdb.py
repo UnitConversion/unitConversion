@@ -7,10 +7,9 @@ thru web service.
 @author: shengb
 @update: dejan.dezman@cosylab.com
 '''
-
 import MySQLdb
-
 from rdbinfo import (host, user, pw, db)
+
 
 def connect():
     if host.startswith("/"):
@@ -19,11 +18,12 @@ def connect():
         conn = MySQLdb.connect(host=host, user=user, passwd=pw, db=db, port=3306)
     return conn
 
+
 def cleanVendor(namelist):
     '''
     Clean vendor table
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -35,11 +35,12 @@ def cleanVendor(namelist):
 
     conn.close()
 
+
 def cleanComponentType(namelist):
     '''
     Clean componenttype table
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -52,11 +53,12 @@ def cleanComponentType(namelist):
 
     conn.close()
 
+
 def cleanComponentTypePropertyType(namelist):
     '''
     Clean component type property type
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -69,11 +71,12 @@ def cleanComponentTypePropertyType(namelist):
 
     conn.close()
 
+
 def cleanComponentTypeProperty(componentTypeName, componentTypePropertyTypeName):
     '''
     Clean component type property entry
     '''
-    conn=connect()
+    conn = connect()
     cur = conn.cursor()
 
     sql = '''
@@ -85,11 +88,12 @@ def cleanComponentTypeProperty(componentTypeName, componentTypePropertyTypeName)
     conn.commit()
     conn.close()
 
+
 def cleanInventory(namelist):
     '''
     Clean inventory table of specific entries
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -102,11 +106,12 @@ def cleanInventory(namelist):
 
     conn.close()
 
+
 def cleanInventoryPropertyTemplate(namelist):
     '''
     Clean inventory property template
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -119,11 +124,12 @@ def cleanInventoryPropertyTemplate(namelist):
 
     conn.close()
 
+
 def cleanInventoryProperty(ivnentoryName, templateName):
     '''
     Clean inventory property entry
     '''
-    conn=connect()
+    conn = connect()
     cur = conn.cursor()
 
     sql = '''
@@ -135,11 +141,12 @@ def cleanInventoryProperty(ivnentoryName, templateName):
     conn.commit()
     conn.close()
 
+
 def cleanDataMethod(namelist):
     '''
     Clean data method of specific entries
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -152,12 +159,13 @@ def cleanDataMethod(namelist):
 
     conn.close()
 
+
 def cleanRawData():
     '''
     Clean raw data of all entries
     '''
 
-    conn=connect()
+    conn = connect()
     cur = conn.cursor()
     sql = 'DELETE FROM id_raw_data WHERE id_raw_data_id >= 1'
     cur.execute(sql)
@@ -165,11 +173,12 @@ def cleanRawData():
 
     conn.close()
 
+
 def cleanOfflineData(descriptionList):
     '''
     Clean offline data table of specific entries
     '''
-    conn=connect()
+    conn = connect()
 
     if len(descriptionList) > 0:
         cur = conn.cursor()
@@ -182,11 +191,12 @@ def cleanOfflineData(descriptionList):
 
     conn.close()
 
+
 def cleanOnlineData(descriptionList):
     '''
     Clean online data table of specific entries
     '''
-    conn=connect()
+    conn = connect()
 
     if len(descriptionList) > 0:
         cur = conn.cursor()
@@ -199,11 +209,12 @@ def cleanOnlineData(descriptionList):
 
     conn.close()
 
+
 def cleanInstall(namelist):
     '''
     Clean install table of specific entries
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -216,11 +227,12 @@ def cleanInstall(namelist):
 
     conn.close()
 
+
 def cleanInstallRel(parentName, childName):
     '''
     Clean install relationships table of specific entries
     '''
-    conn=connect()
+    conn = connect()
 
     cur = conn.cursor()
 
@@ -237,11 +249,12 @@ def cleanInstallRel(parentName, childName):
 
     conn.close()
 
+
 def cleanInstallRelPropType(namelist):
     '''
     Clean install rel property type
     '''
-    conn=connect()
+    conn = connect()
 
     if len(namelist) > 0:
         cur = conn.cursor()
@@ -254,11 +267,12 @@ def cleanInstallRelPropType(namelist):
 
     conn.close()
 
+
 def cleanInstallRelProp(typeNameList):
     '''
     Clean install rel property entry identified by special property type name
     '''
-    conn=connect()
+    conn = connect()
 
     if len(typeNameList) > 0:
         cur = conn.cursor()
@@ -274,6 +288,7 @@ def cleanInstallRelProp(typeNameList):
         conn.commit()
 
     conn.close()
+
 
 def cleanDB():
     '''
@@ -308,11 +323,12 @@ def cleanDB():
 
     conn.close()
 
+
 def cleanInventoryToInstall(installName, ivnentoryName):
     '''
     Clean inventory - install entry
     '''
-    conn=connect()
+    conn = connect()
     cur = conn.cursor()
 
     sql = '''

@@ -46,7 +46,7 @@ app.value('EntityError', function(key, value){
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
@@ -55,7 +55,7 @@ app.value('EntityError', function(key, value){
  		if('old_name' in obj) {
  			this.old_name = obj.old_name;
  		}
- 		
+
  		this.description = obj.description;
  	}
 
@@ -102,12 +102,12 @@ app.value('CmpntTypeInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
  		this.name = obj.name;
- 		
+
  		if('old_name' in obj) {
  			this.old_name = obj.old_name;
  		}
@@ -127,7 +127,7 @@ app.value('CmpntTypeInfo', {
 
 
  		}
- 		
+
  		this.description = obj.description;
  	}
 
@@ -161,7 +161,7 @@ app.value('CmpntTypeTypeInfo', {
  	this.save = ["name", "description"];
  	this.update = ["old_name", "name", "description"];
  	this.display = {"name": "Name", "description": "Description", "id": "Id"};
- 	
+
  	this.id = "";
  	this.old_name = "";
  	this.name = "";
@@ -172,16 +172,16 @@ app.value('CmpntTypeTypeInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
  		this.name = obj.name;
- 		
+
  		if('old_name' in obj) {
  			this.old_name = obj.old_name;
  		}
- 		
+
  		this.description = obj.description;
  	}
 
@@ -208,7 +208,7 @@ app.value('InventoryInfo', {
  * Inventory object
  */
  app.value('Inventory', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["name", "cmpnt_type", "vendor"];
 
@@ -223,7 +223,7 @@ app.value('InventoryInfo', {
 
  	// Parameters used for save URL
  	this.save = ["name", "cmpnt_type", "vendor", "alias", "serialno", "props"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["name", "cmpnt_type", "vendor", "alias", "serialno"];
 
@@ -255,13 +255,13 @@ app.value('InventoryInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
 
  		this.name = obj.name;
- 		
+
  		if('old_name' in obj) {
  			this.old_name = obj.old_name;
  		}
@@ -279,7 +279,7 @@ app.value('InventoryInfo', {
  				this.prop_keys.push({'name':key, 'value':obj[key]});
  			}
  		}
- 		
+
  		this.cmpnt_type = obj.cmpnt_type;
  		this.vendor = obj.vendor;
  		this.alias = obj.alias;
@@ -309,7 +309,7 @@ app.value('InventoryTypeInfo', {
  * Inventory property tempalte object
  */
  app.value('InventoryType', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["name", "cmpnt_type"];
 
@@ -324,7 +324,7 @@ app.value('InventoryTypeInfo', {
 
  	// Parameters used for save URL
  	this.save = ["name", "cmpnt_type", "description", "default", "unit"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["name", "cmpnt_type", "description", "default", "unit"];
 
@@ -353,7 +353,7 @@ app.value('InventoryTypeInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  			this.tmplt_id = obj.tmplt_id;
@@ -390,7 +390,7 @@ app.value('InstallRelInfo', {
  * Install rel object
  */
  app.value('InstallRel', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["description", "parent_install", "child_install"];
 
@@ -405,7 +405,7 @@ app.value('InstallRelInfo', {
 
  	// Parameters used for save URL
  	this.save = ["parent_install", "child_install", "description", "order", "props"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["parent_install", "child_install", "description", "order"];
 
@@ -442,7 +442,7 @@ app.value('InstallRelInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  			this.old_name = obj.old_name;
@@ -500,7 +500,7 @@ app.value('InstallRelTypeInfo', {
  * Install rel type object
  */
  app.value('InstallRelType', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["name"];
 
@@ -515,7 +515,7 @@ app.value('InstallRelTypeInfo', {
 
  	// Parameters used for save URL
  	this.save = ["name", "description", "unit"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["name", "description", "unit"];
 
@@ -540,7 +540,7 @@ app.value('InstallRelTypeInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  			this.old_name = obj.old_name;
@@ -574,7 +574,7 @@ app.value('InstallInfo', {
  * Install object
  */
  app.value('Install', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["name", "cmpnt_type"];
 
@@ -589,7 +589,7 @@ app.value('InstallInfo', {
 
  	// Parameters used for save URL
  	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["name", "cmpnt_type", "description", "coordinatecenter"];
 
@@ -615,7 +615,7 @@ app.value('InstallInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
@@ -630,7 +630,7 @@ app.value('InstallInfo', {
 
  		if (obj.coordinatecenter === null) {
  			this.coordinatecenter = undefined;
- 		
+
  		} else {
  			this.coordinatecenter = obj.coordinatecenter;
  		}
@@ -660,7 +660,7 @@ app.value('InventoryToInstallInfo', {
  * Inventory to Install object
  */
  app.value('InventoryToInstall', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["install_name", "inv_name"];
 
@@ -675,7 +675,7 @@ app.value('InventoryToInstallInfo', {
 
  	// Parameters used for save URL
  	this.save = ["install_name", "inv_name"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["install_name", "inv_name"];
 
@@ -701,7 +701,7 @@ app.value('InventoryToInstallInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		this.inventory_to_install_id = obj.id;
  		this.id = obj.id;
  		this.install_name = obj.installname;
@@ -739,7 +739,7 @@ app.value('DataMethodInfo', {
  * Data method object
  */
  app.value('DataMethod', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["name"];
 
@@ -754,7 +754,7 @@ app.value('DataMethodInfo', {
 
  	// Parameters used for save URL
  	this.save = ["name", "description"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["name", "description"];
 
@@ -776,7 +776,7 @@ app.value('DataMethodInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
@@ -813,9 +813,9 @@ app.value('OfflineDataInfo', {
  * Offline data object
  */
  app.value('OfflineData', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_name", "data_id", "status", "method_name"];
+ 	this.m = ["inventory_name", "data_id", "status"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["inventory_name"];
@@ -828,7 +828,7 @@ app.value('OfflineDataInfo', {
 
  	// Parameters used for save URL
  	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
 
@@ -889,7 +889,7 @@ app.value('OfflineDataInfo', {
 
  			if(obj[this.all[i]] === null) {
  				this[this.all[i]] = undefined;
- 			
+
  			} else {
  				this[this.all[i]] = obj[this.all[i]];
  			}
@@ -921,7 +921,7 @@ app.value('OfflineDataInstallInfo', {
  * Offline data (via install) object
  */
  app.value('OfflineDataInstall', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["inventory_name", "data_id", "status", "method_name"];
 
@@ -936,7 +936,7 @@ app.value('OfflineDataInstallInfo', {
 
  	// Parameters used for save URL
  	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
 
@@ -1029,7 +1029,7 @@ app.value('OnlineDataInfo', {
  * Online data object
  */
  app.value('OnlineData', function(obj){
- 	
+
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["install_name", "status", "file_name"];
 
@@ -1044,7 +1044,7 @@ app.value('OnlineDataInfo', {
 
  	// Parameters used for save URL
  	this.save = ["install_name", "description", "status", "url"];
- 	
+
  	// Parameters that are displayed when saving new item
  	this.save_show = ["install_name", "description", "status"];
 
@@ -1074,7 +1074,7 @@ app.value('OnlineDataInfo', {
  		if(obj === undefined) {
  			return undefined;
  		}
- 		
+
  		if('id' in obj) {
  			this.id = obj.id;
  		}
@@ -1097,7 +1097,7 @@ app.value('OnlineDataInfo', {
 	 		if (urlParts.length >= 1) {
 	 			this.file_name = urlParts[urlParts.length-1];
 	 		}
- 		
+
  		} else {
  			this.file_name = obj.file_name;
  		}

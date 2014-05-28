@@ -18,7 +18,7 @@ from requests import HTTPError
 from idodspy.idodsclient import IDODSClient
 from utils.profiler import *
 
-__url = 'http://localhost:8000/id/device/'
+__url = 'http://10.5.1.66:8000/id/device/'
 __jsonheader = {'content-type': 'application/json', 'accept': 'application/json'}
 client = IDODSClient(BaseURL=__url)
 

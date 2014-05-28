@@ -53,6 +53,7 @@ class SSLAdapter(HTTPAdapter):
                                        block=block,
                                        ssl_version=self.ssl_version)
 
+
 class IDODSClient(object):
     '''
     IDODSClient provides a client connection object to perform
@@ -128,7 +129,7 @@ class IDODSClient(object):
         url = 'vendor/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -136,12 +137,12 @@ class IDODSClient(object):
         if description:
             params['description'] = description
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def saveVendor(self, name, description = None):
+    def saveVendor(self, name, description=None):
         '''Save vendor and its description into database
 
         :param name: vendor name
@@ -165,7 +166,7 @@ class IDODSClient(object):
         url = 'savevendor/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -173,7 +174,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -200,7 +201,7 @@ class IDODSClient(object):
         url = 'updatevendor/'
 
         # Set parameters
-        params={
+        params = {
             'vendor_id': None,
             'old_name': old_name,
             'name': name
@@ -210,12 +211,12 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveComponentType(self, name, description = None):
+    def retrieveComponentType(self, name, description=None):
         '''Retrieve a component type using the key words:
 
         - name
@@ -249,7 +250,7 @@ class IDODSClient(object):
         url = 'cmpnttype/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -257,7 +258,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -292,7 +293,7 @@ class IDODSClient(object):
         url = 'savecmpnttype/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -304,7 +305,7 @@ class IDODSClient(object):
         if props:
             params['props'] = json.dumps(props)
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -340,7 +341,7 @@ class IDODSClient(object):
         url = 'updatecmpnttype/'
 
         # Set parameters
-        params={
+        params = {
             'component_type_id': None,
             'old_name': old_name,
             'name': name
@@ -354,7 +355,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -384,16 +385,16 @@ class IDODSClient(object):
         url = 'cmpnttypeproptype/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def saveComponentTypePropertyType(self, name, description = None):
+    def saveComponentTypePropertyType(self, name, description=None):
         '''
         Insert new component type property type into database
 
@@ -413,7 +414,7 @@ class IDODSClient(object):
         url = 'savecmpnttypeproptype/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -421,7 +422,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -443,7 +444,7 @@ class IDODSClient(object):
         url = 'updatecmpnttypeproptype/'
 
         # Set parameters
-        params={
+        params = {
             'property_type_id': None,
             'old_name': old_name,
             'name': name
@@ -453,7 +454,7 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -510,11 +511,11 @@ class IDODSClient(object):
         url = 'inventory/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -587,7 +588,7 @@ class IDODSClient(object):
         url = 'saveinventory/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -607,7 +608,7 @@ class IDODSClient(object):
         if 'vendor' in kws:
 
             # Check vendor value
-            if kws['vendor'] == None:
+            if kws['vendor'] is None:
                 self.__raise_for_status(400, 'If vendor is passed it should not be None!')
 
             params['vendor'] = kws['vendor']
@@ -616,7 +617,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -686,7 +687,7 @@ class IDODSClient(object):
         url = 'updateinventory/'
 
         # Set parameters
-        params={
+        params = {
             'inventory_id': None,
             'old_name': old_name,
             'name': name
@@ -759,7 +760,7 @@ class IDODSClient(object):
 
         return r.json()
 
-    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description = None, default = None, unit = None):
+    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description=None, default=None, unit=None):
         '''
         Insert new inventory property template into database
 
@@ -1115,7 +1116,7 @@ class IDODSClient(object):
         url = 'updateinstall/'
 
         # Set parameters
-        params={
+        params = {
             'old_name': old_name,
             'name': name
         }
@@ -1128,7 +1129,7 @@ class IDODSClient(object):
         if 'cmpnt_type' in kws:
 
             # Check for none
-            if kws['cmpnt_type'] == None:
+            if kws['cmpnt_type'] is None:
                 self.__raise_for_status(400, 'If component type parameter is present it should not be set to None!')
 
             params['cmpnt_type'] = kws['cmpnt_type']
@@ -1137,53 +1138,68 @@ class IDODSClient(object):
         if 'coordinatecenter' in kws:
             params['coordinatecenter'] = kws['coordinatecenter']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveInstallRel(self, install_rel_id = None, parent_install = None, child_install = None, description = None, order = None, date = None, expected_property = None):
+    def retrieveInstallRel(self, install_rel_id=None, parent_install=None, child_install=None, description=None, order=None, date=None, expected_property=None):
         '''
         Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
         all the parents of specific child.
 
-        params:
-            - install_rel_id: id of the install_rel table
-            - parent_install: name of the parent install element
-            - child_install: name of the child install element
-            - description: description of a relationship
-            - order: order number of child element in the parent element; accepts a range in a tuple
-            - date: date of the device installation; accepts a range in a tuple
-            - expected_property: if we want to search for relationships with specific property set to a specific value, we
+        :param install_rel_id: id of the install_rel table
+        :type install_rel_id: int
+
+        :param parent_install: name of the parent install element
+        :type parent_install: str
+
+        :param child_install: name of the child install element
+        :type child_install: str
+
+        :param description: description of a relationship
+        :type description: str
+
+        :param order: order number of child element in the parent element; accepts a range in a tuple
+        :type order: order number of child element in the parent element; accepts a range in a tuple
+
+        :param date: date of the device installation; accepts a range in a tuple
+        :type date: str
+
+        :param expected_property: if we want to search for relationships with specific property set to a specific value, we
               can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
               beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
 
-        returns:
-            {
-                'id': {
-                    'id':           #int,
-                    'parentid':     #int,
-                    'parentname':   #string,
-                    'childid':      #int,
-                    'childname':    #string,
-                    'description':  #string,
-                    'order':        #int,
-                    'date':         #string,
-                    'prop1key':     #string,
-                    ...
-                    'propNkey':     #string
-                }
-            }
+        :type expected_property: dict
 
-        raises:
-            HTTPError
+        :return: a map with structure like:
+
+            .. code-block: python
+
+                {
+                    'id': {
+                        'id':           #int,
+                        'parentid':     #int,
+                        'parentname':   #string,
+                        'childid':      #int,
+                        'childname':    #string,
+                        'description':  #string,
+                        'order':        #int,
+                        'date':         #string,
+                        'prop1key':     #string,
+                        ...
+                        'propNkey':     #string
+                    }
+                }
+
+        :raises: HTTPError
         '''
 
         # Set URL
         url = 'installrel/'
 
         # Set parameters
-        params={
+        params = {
             'install_rel_id': install_rel_id,
             'parent_install': parent_install,
             'child_install': child_install,
@@ -1192,38 +1208,53 @@ class IDODSClient(object):
             'date': date
         }
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def saveInstallRel(self, parent_install, child_install, description = None, order = None, props = None):
+    def saveInstallRel(self, parent_install, child_install, description=None, order=None, props=None):
         '''
         Save install relationship in the database.
 
-        params:
-            - parent_install: id of the parent element
-            - child_install: id of the child element
-            - description: description of the relationship
-            - order: order of the child in the relationship
-            - props :
+        :param parent_install: id of the parent element
+        :type parent_install: int
+
+        :param child_install: id of the child element
+        :type child_install: int
+
+        :param description: description of the relationship
+        :type description: str
+
+        :param order: order of the child in the relationship
+        :type order: int
+
+        :param props: dict structure:
+
+            .. code-block: python
+
                 {
                     'key1': 'value1',
                     ...
                     'keyN': 'valueN'
                 }
-        returns:
-            {'id': id of the saved install rel}
 
-        raises:
-            HTTPError
+        :type props: dict
+
+        :return: a map with structure like:
+
+            .. code-block: python
+
+                {'id': id of the saved install rel}
+
+        :raises: HTTPError
         '''
 
         # Set URL
         url = 'saveinstallrel/'
 
         # Set parameters
-        params={
+        params = {
             'parent_install': parent_install,
             'child_install': child_install
         }
@@ -1240,7 +1271,7 @@ class IDODSClient(object):
         if props:
             params['props'] = json.dumps(props)
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1249,17 +1280,29 @@ class IDODSClient(object):
         '''
         Update install relationship.
 
-        params:
-            - parent_install: name of the parent element we want ot update by
-            - child_install: name of the child element we want ot update by
-            - description: description of the relationship
-            - order: order of the child in the relationship
-            - props :
+        :param parent_install: name of the parent element we want ot update by
+        :type parent_install: str
+
+        :param child_install: name of the child element we want ot update by
+        :type child_install: str
+
+        :param description: description of the relationship
+        :type description: str
+
+        :param order: order of the child in the relationship
+        :type order: int
+
+        :param props: dict structure
+
+            .. code-block:: python
+
                 {
                     'key1': 'value1',
                     ...
                     'keyN': 'valueN'
                 }
+
+        :type props: dict
 
         returns:
             True if everything is ok
@@ -1272,7 +1315,7 @@ class IDODSClient(object):
         url = 'updateinstallrel/'
 
         # Set parameters
-        params={
+        params = {
             'parent_install': parent_install,
             'child_install': child_install
         }
@@ -1289,7 +1332,7 @@ class IDODSClient(object):
         if 'props' in kws:
             params['props'] = json.dumps(kws['props'])
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1320,16 +1363,16 @@ class IDODSClient(object):
         url = 'installrelproptype/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def saveInstallRelPropertyType(self, name, description = None, unit = None):
+    def saveInstallRelPropertyType(self, name, description=None, unit=None):
         '''
         Insert new install relationship property type into database
 
@@ -1350,7 +1393,7 @@ class IDODSClient(object):
         url = 'saveinstallrelproptype/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -1362,7 +1405,7 @@ class IDODSClient(object):
         if unit:
             params['unit'] = unit
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1385,7 +1428,7 @@ class IDODSClient(object):
         url = 'updateinstallrelproptype/'
 
         # Set parameters
-        params={
+        params = {
             'old_name': old_name,
             'name': name
         }
@@ -1398,7 +1441,7 @@ class IDODSClient(object):
         if 'unit' in kws:
             params['unit'] = kws['unit']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1441,13 +1484,13 @@ class IDODSClient(object):
         url = 'inventorytoinstall/'
 
         # Set parameters
-        params={
+        params = {
             'inventory_to_install_id': inventory_to_install_id,
             'install_name': install_name,
             'inv_name': inv_name
         }
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1476,12 +1519,12 @@ class IDODSClient(object):
         url = 'saveinventorytoinstall/'
 
         # Set parameters
-        params={
+        params = {
             'install_name': install_name,
             'inv_name': inv_name
         }
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1508,18 +1551,18 @@ class IDODSClient(object):
         url = 'updateinventorytoinstall/'
 
         # Set parameters
-        params={
+        params = {
             'inventory_to_install_id': inventory_to_install_id,
             'install_name': install_name,
             'inv_name': inv_name
         }
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveDataMethod(self, name, description = None):
+    def retrieveDataMethod(self, name, description=None):
         '''Retrieve a method name and its description which is used when producing data set for an insertion device.
 
         :param name: name of the method
@@ -1531,6 +1574,7 @@ class IDODSClient(object):
         :return: a map with structure like:
 
             .. code-block:: python
+
                 {'id':
                     {'id': data method id,
                      'name': method name,
@@ -1545,7 +1589,7 @@ class IDODSClient(object):
         url = 'datamethod/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -1553,7 +1597,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1580,7 +1624,7 @@ class IDODSClient(object):
         url = 'savedatamethod/'
 
         # Set parameters
-        params={
+        params = {
             'name': name
         }
 
@@ -1588,7 +1632,7 @@ class IDODSClient(object):
         if description:
             params['description'] = description
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1617,7 +1661,7 @@ class IDODSClient(object):
         url = 'updatedatamethod/'
 
         # Set parameters
-        params={
+        params = {
             'datamethod_id': None,
             'old_name': old_name,
             'name': name
@@ -1627,7 +1671,7 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1723,7 +1767,7 @@ class IDODSClient(object):
         url = 'offlinedata/'
 
         # Set parameters
-        params={}
+        params = {}
 
         # Add offline id
         if 'offlineid' in kws:
@@ -1773,13 +1817,13 @@ class IDODSClient(object):
         if 'inventory_name' in kws:
             params['inventory_name'] = kws['inventory_name']
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         returnData = r.json()
 
         # Append data if with_data is set
-        if 'with_data' in kws and kws['with_data'] == True:
+        if 'with_data' in kws and kws['with_data'] is True:
 
             # Set URL
             url = 'rawdata/'
@@ -1791,7 +1835,7 @@ class IDODSClient(object):
                 offlineData = returnData[key]
 
                 # Set parameters
-                params={
+                params = {
                     'raw_data_id': offlineData['data_id']
                 }
 
@@ -1891,8 +1935,7 @@ class IDODSClient(object):
 
         params['data_id'] = ur.json()['id']
 
-
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -1983,13 +2026,13 @@ class IDODSClient(object):
         url = 'saveofflinedata/'
 
         # Set parameters
-        params={}
+        params = {}
 
         # Add inventory name
         if 'inventory_name' in kws:
 
             # Check inventory name
-            if kws['inventory_name'] == None:
+            if kws['inventory_name'] is None:
                 self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
 
             params['inventory_name'] = kws['inventory_name']
@@ -2064,7 +2107,7 @@ class IDODSClient(object):
         if 'method_name' in kws:
             params['method_name'] = kws['method_name']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -2151,7 +2194,7 @@ class IDODSClient(object):
         url = 'updateofflinedata/'
 
         # Set parameters
-        params={
+        params = {
             'offline_data_id': offline_data_id
         }
 
@@ -2159,7 +2202,7 @@ class IDODSClient(object):
         if 'inventory_name' in kws:
 
             # Check inventory name
-            if kws['inventory_name'] == None:
+            if kws['inventory_name'] is None:
                 self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
 
             params['inventory_name'] = kws['inventory_name']
@@ -2234,12 +2277,12 @@ class IDODSClient(object):
         if 'method_name' in kws:
 
             # Check method name
-            if kws['method_name'] == None:
+            if kws['method_name'] is None:
                 self.__raise_for_status(400, 'If method name is passed it should not be None!')
 
             params['method_name'] = kws['method_name']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -2281,7 +2324,8 @@ class IDODSClient(object):
         :param data_path: path to the local file in which downloaded file will be put to
         :type data_path: string
 
-        :param callback: reference to a local method that will receive info about a file that is being downloaded. This parameter, if present, is a hook function that will be called once on establishment of the network connection and once after each block read thereafter. The hook will be passed three arguments; a count of blocks transferred so far, a block size in bytes, and the total size of the file. The third argument may be -1 in some cases.
+        :param callback: reference to a local method that will receive info about a file that is being downloaded. This parameter, if present, is a hook function that will be called once on establishment of the network connection and once after each
+                        block read thereafter. The hook will be passed three arguments; a count of blocks transferred so far, a block size in bytes, and the total size of the file. The third argument may be -1 in some cases.
 
             Example of the callback method
 
@@ -2313,7 +2357,7 @@ class IDODSClient(object):
         url = 'onlinedata/'
 
         # Set parameters
-        params={}
+        params = {}
 
         # Add online id
         if 'onlineid' in kws:
@@ -2339,7 +2383,7 @@ class IDODSClient(object):
         if 'status' in kws:
             params['status'] = kws['status']
 
-        r=self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
         returnData = r.json()
@@ -2357,7 +2401,7 @@ class IDODSClient(object):
             callback = kws['callback']
 
         # Append data if with_data is set
-        if 'with_data' in kws and kws['with_data'] == True:
+        if 'with_data' in kws and kws['with_data'] is True:
 
             # Go through all returned online data and append data
             onlineDataKeys = returnData.keys()
@@ -2484,7 +2528,7 @@ class IDODSClient(object):
         url = 'updateonlinedata/'
 
         # Set parameters
-        params={
+        params = {
             'online_data_id': online_data_id
         }
 
@@ -2492,7 +2536,7 @@ class IDODSClient(object):
         if 'install_name' in kws:
 
             # Check install name
-            if kws['install_name'] == None:
+            if kws['install_name'] is None:
                 self.__raise_for_status(400, 'If install name is passed it should not be None!')
 
             params['install_name'] = kws['install_name']
@@ -2517,7 +2561,7 @@ class IDODSClient(object):
         if 'status' in kws:
             params['status'] = kws['status']
 
-        r=self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -2534,7 +2578,7 @@ class IDODSClient(object):
         with open(data, 'rb') as f:
 
             # Set parameters
-            params={
+            params = {
                 'file_name': file_name
             }
 
