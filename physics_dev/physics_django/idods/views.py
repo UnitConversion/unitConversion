@@ -269,7 +269,7 @@ def retrieveInstallWS(request):
     result = _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter', 'all_install'])
     total = time.time() - startedd
     total = total*1000
-    print '=> elapsed time view.retrieveInstall: %f ms' % total
+    print '=> elapsed time view.retrieveInstall.V: %f ms' % total
     return result
 
 
@@ -432,9 +432,14 @@ def saveRawDataWS(request):
     res = {}
 
     try:
-        res = idodsi.saveRawData(rawFile.read())
+        startedd = time.time()
 
+        res = idodsi.saveRawData(rawFile.read())
         transaction.commit_unless_managed()
+
+        total = time.time() - startedd
+        total = total*1000
+        print '=> elapsed time view.saveRawData.V: %f ms' % total
 
     except TypeError as e:
         idods_log.exception(e)
@@ -482,9 +487,13 @@ def saveOfflineDataWS(request):
     '''
     Save offline data
     '''
+
+    startedd = time.time()
+
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
-    return _saveData(request, idodsi.saveOfflineData, [
+
+    result = _saveData(request, idodsi.saveOfflineData, [
         'inventory_name',
         'username',
         'description',
@@ -503,6 +512,12 @@ def saveOfflineDataWS(request):
         'script',
         'method_name'
     ])
+
+    total = time.time() - startedd
+    total = total*1000
+    print '=> elapsed time view.saveOfflineData.V: %f ms' % total
+
+    return result
 
 
 @require_http_methods(["POST"])

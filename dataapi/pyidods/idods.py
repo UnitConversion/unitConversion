@@ -1227,11 +1227,18 @@ class idods(object):
         sqlVals = _checkWildcardAndAppend('inv.name', name, sql, vals)
 
         try:
+            startedd = time.time()
+
             cur = self.conn.cursor()
             cur.execute(sqlVals[0], sqlVals[1])
 
             # Get any one since it should be unique
             res = cur.fetchall()
+
+            total = time.time() - startedd
+            total = total*1000
+            print '=> elapsed time idods.retrieveInventory.DB: %f ms' % total
+
             resdict = {}
 
             for r in res:
@@ -1342,6 +1349,8 @@ class idods(object):
         '''
 
         try:
+            startedd = time.time()
+
             # Insert data into database
             cur = self.conn.cursor()
             cur.execute(sql, data)
@@ -1352,6 +1361,10 @@ class idods(object):
             # Handle transaction
             if self.transaction is None:
                 self.conn.commit()
+
+            total = time.time() - startedd
+            total = total*1000
+            print '=> elapsed time idods.saveRawData.DB: %f ms' % total
 
             return {'id': dataid}
 
@@ -1656,8 +1669,6 @@ class idods(object):
         :Raises: ValueError, exception
         '''
 
-        startedd = time.time()
-
         # Check inventoryname
         inventoryname = None
         inventoryid = None
@@ -1842,10 +1853,6 @@ class idods(object):
             total2 = time.time() - startedd2
             total2 = total2*1000
             print '=> elapsed time idods.saveOfflineData.DB: %f ms' % total2
-
-            total = time.time() - startedd
-            total = total*1000
-            print '=> elapsed time idods.saveOfflineData.W: %f ms' % total
 
             return {'id': offlinedataid}
 
@@ -3450,9 +3457,15 @@ class idods(object):
 
         # Execute SQL
         try:
+            startedd = time.time()
+
             cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
+
+            total = time.time() - startedd
+            total = total*1000
+            print '=> elapsed time idods.retrieveComponentType.DB: %f ms' % total
 
             # Create return dictionry
             resdict = {}
