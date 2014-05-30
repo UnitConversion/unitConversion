@@ -17,11 +17,11 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/vendor',																										'index.vendor').
 		when('/vendor/search/:search/name/:name?/description/:description?/list',											'index.vendor.list').
 		when('/vendor/search/:search/name/:name?/description/:description?/id/:id/action/:action',							'index.vendor.list.details').
-		
+
 		when('/cmpnt_type',																									'index.cmpnt_type').
 		when('/cmpnt_type/search/:search/name/:name?/description/:description?/list',										'index.cmpnt_type.list').
 		when('/cmpnt_type/search/:search/name/:name?/description/:description?/id/:id/action/:action',						'index.cmpnt_type.list.details').
-		
+
 		when('/cmpnt_type_type',																							'index.cmpnt_type_type').
 		when('/cmpnt_type_type/search/:search/name/:name?/description/:description?/list',									'index.cmpnt_type_type.list').
 		when('/cmpnt_type_type/search/:search/name/:name?/description/:description?/id/:id/action/:action',					'index.cmpnt_type_type.list.details').
@@ -33,11 +33,11 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/inventory_type',																								'index.inventory_type').
 		when('/inventory_type/search/:search/name/:name?/list',																'index.inventory_type.list').
 		when('/inventory_type/search/:search/name/:name?/id/:id/action/:action',											'index.inventory_type.list.details').
-		
+
 		when('/install',																																			'index.install').
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/list',						'index.install.list').
 		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',		'index.install.list.details').
-		
+
 		when('/inventory_to_install',																						'index.inventory_to_install').
 		when('/inventory_to_install/search/:search/inv_name/:inv_name?/install_name/:install_name?/list',					'index.inventory_to_install.list').
 		when('/inventory_to_install/search/:search/inv_name/:inv_name?/install_name/:install_name?/id/:id/action/:action',	'index.inventory_to_install.list.details').
@@ -53,15 +53,15 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/data_method',																								'index.data_method').
 		when('/data_method/search/:search/name/:name?/description/:description?/list',										'index.data_method.list').
 		when('/data_method/search/:search/name/:name?/description/:description?/id/:id/action/:action',						'index.data_method.list.details').
-		
+
 		when('/offline_data',																								'index.offline_data').
 		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',					'index.offline_data.list').
 		when('/offline_data/search/:search/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action','index.offline_data.list.details').
-				
+
 		when('/offline_data_install',																									'index.offline_data_install').
 		when('/offline_data_install/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',							'index.offline_data_install.list').
 		when('/offline_data_install/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',		'index.offline_data_install.list.details').
-		
+
 		when('/online_data',																											'index.online_data').
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/status/:status?/list',									'index.online_data.list').
 		when('/online_data/search/:search/install_name/:install_name?/description/:description?/date/:date?/status/:status?/id/:id/action/:action',					'index.online_data.list.details').
@@ -86,7 +86,7 @@ app.config(function($routeSegmentProvider, $routeProvider){
 			templateUrl: 'content.html',
 			controller: 'mainCtrl'
 		}).
-		
+
 		within().
 			segment('vendor', {
 				templateUrl: 'search/vendor.html',
@@ -443,6 +443,6 @@ app.config(function($routeSegmentProvider, $routeProvider){
 				up().
 			up().
 		up();
-	
-		$routeProvider.otherwise({redirectTo: '/vendor'});
+
+		$routeProvider.otherwise({redirectTo: '/install'});
 });

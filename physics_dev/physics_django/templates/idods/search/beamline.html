@@ -6,13 +6,14 @@
 	</div>
 
 	<div>
-		<select ng-model="search.type" ng-options="s.value for s in dataTypes" ng-change="changeEntity()"></select>
+		<select ng-model="group" ng-options="type.name as type.value for type in masterTypes"></select>
+		<select ng-model="search.type" ng-options="s.value for s in dataTypes[group]" ng-change="changeEntity()"></select>
 		<br />
 		<br />
 	</div>
 	<div class="">
 		Display:
-		
+
 		<label class="radio">
 			<input type="radio" ng-model="display" name="optionsRadios" id="optionsRadios1" value="online_data">
 			Online data
@@ -22,7 +23,7 @@
 			<input type="radio" ng-model="display" name="optionsRadios" id="optionsRadios2" value="offline_data">
 			Offline data
 		</label>
-		
+
 		<br />
 	</div>
 

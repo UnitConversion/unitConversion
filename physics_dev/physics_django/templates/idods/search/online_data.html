@@ -6,7 +6,8 @@
 	</div>
 
 	<div>
-		<select ng-model="search.type" ng-options="s.value for s in dataTypes" ng-change="changeEntity()"></select>
+		<select ng-model="group" ng-options="type.name as type.value for type in masterTypes"></select>
+		<select ng-model="search.type" ng-options="s.value for s in dataTypes[group]" ng-change="changeEntity()"></select>
 		<br />
 		<br />
 	</div>

@@ -12,12 +12,12 @@ app.value('EntityError', function(key, value){
 	this.add = function(key, value) {
 		this.errorDict[key] = value;
 		this.num ++;
-	}
+	};
 
 	this.reset = function() {
 		this.errorDict = {};
 		this.num = 0;
-	}
+	};
 
 	if (key !== undefined && value !== undefined) {
 		this.add(key, value);
@@ -57,7 +57,7 @@ app.value('EntityError', function(key, value){
  		}
 
  		this.description = obj.description;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -129,7 +129,7 @@ app.value('CmpntTypeInfo', {
  		}
 
  		this.description = obj.description;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -183,7 +183,7 @@ app.value('CmpntTypeTypeInfo', {
  		}
 
  		this.description = obj.description;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -284,7 +284,7 @@ app.value('InventoryInfo', {
  		this.vendor = obj.vendor;
  		this.alias = obj.alias;
  		this.serialno = obj.serialno;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -364,7 +364,7 @@ app.value('InventoryTypeInfo', {
  		this.description = obj.description;
  		this.default = obj.default;
  		this.unit = obj.unit;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -467,7 +467,7 @@ app.value('InstallRelInfo', {
  		this.date = obj.date;
  		this.order = obj.order;
 
- 		if (this.order == null) {
+ 		if (this.order === null) {
  			this.order = undefined;
  		}
 
@@ -475,7 +475,7 @@ app.value('InstallRelInfo', {
  		this.parentname = obj.parentname;
  		this.parent_install = obj.parent_install;
  		this.child_install = obj.child_install;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -549,7 +549,7 @@ app.value('InstallRelTypeInfo', {
  		this.name = obj.name;
  		this.description = obj.description;
  		this.unit = obj.unit;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -634,7 +634,7 @@ app.value('InstallInfo', {
  		} else {
  			this.coordinatecenter = obj.coordinatecenter;
  		}
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -714,7 +714,7 @@ app.value('InventoryToInstallInfo', {
  		if(obj.inv_name) {
  			this.inv_name = obj.inv_name;
  		}
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -787,7 +787,7 @@ app.value('DataMethodInfo', {
 
  		this.name = obj.name;
  		this.description = obj.description;
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -838,6 +838,9 @@ app.value('OfflineDataInfo', {
  	// All props
  	this.all = ["id", "offline_data_id", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
+ 	// Parameters that are displayed in install details pane
+ 	this.install_display = ["date", "description", "status", "gap", "phase1"];
+
  	this.display = {
  		"id": "Id",
  		"inventory_name": "Inventory name",
@@ -846,9 +849,9 @@ app.value('OfflineDataInfo', {
  		"methoddesc": "Method description",
  		"phasemode": "Phase mode",
  		"data_file_name": "Data file name",
- 		"script_name": "Script name",
  		"method_name": "Method name",
  		"data_id": "Data id",
+ 		"date": "Date",
  		"gap": "Gap",
  		"phase1": "Phase 1",
  		"phase2": "Phase 2",
@@ -895,7 +898,7 @@ app.value('OfflineDataInfo', {
  			}
 
   		}
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -955,7 +958,6 @@ app.value('OfflineDataInstallInfo', {
  		"methoddesc": "Method description",
  		"phasemode": "Phase mode",
  		"data_file_name": "Data file name",
- 		"script_name": "Script name",
  		"method_name": "Method name",
  		"data_id": "Data id",
  		"gap": "Gap",
@@ -1003,7 +1005,7 @@ app.value('OfflineDataInstallInfo', {
 
  			this[this.all[i]] = obj[this.all[i]];
  		}
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);
@@ -1051,11 +1053,15 @@ app.value('OnlineDataInfo', {
  	// Parameters used as update URL parameters
  	this.update = ["online_data_id", "install_name", "description", "status", "url"];
 
+ 	// Parameters that are displayed in install details pane
+ 	this.install_display = ["date", "description", "status"];
+
  	this.display = {
  		"id": "Id",
  		"install_name": "Install name",
  		"description": "Description",
  		"status": "Status",
+ 		"date": "Date",
  		"url": "Data file",
  		"file_name": "Data file name"
  	};
@@ -1101,7 +1107,7 @@ app.value('OnlineDataInfo', {
  		} else {
  			this.file_name = obj.file_name;
  		}
- 	}
+ 	};
 
  	if(obj !== undefined) {
  		this.set(obj);

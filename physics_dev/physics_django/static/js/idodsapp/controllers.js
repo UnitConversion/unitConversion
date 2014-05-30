@@ -79,7 +79,10 @@ app.controller('mainCtrl', function($scope, $window, $modal){
 app.controller('searchVendorCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[0];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[0];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -111,9 +114,8 @@ app.controller('listVendorCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.style.middle_class = "container-scroll-middle-no-img";
 
 	$scope.id = $routeParams.id;
-
+	var previousItem;
 	$scope.vendors = [];
-	var previousItem = undefined;
 
 	vendorFactory.retrieveVendors($routeParams).then(function(result) {
 
@@ -136,12 +138,12 @@ app.controller('listVendorCtrl', function($scope, $routeParams, $http, $window, 
 		});
 		$scope.vendors.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "vendor", ["name", "description"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -175,7 +177,7 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.error = {};
 	$scope.alert = {};
 	$scope.alert.show = false;
-	
+
 	// Get vendor from the factory
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
@@ -184,13 +186,13 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 			$scope.element.old_name = result.name;
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "vendor", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "vendor", ["name", "description"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var vendor = new Vendor(newItem);
@@ -200,25 +202,25 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			delete $scope.error;
 			var promise;
 			l($scope.element);
-			
+
 			if(action === "update") {
 				promise = vendorFactory.updateVendor($scope.element);
 
 			} else if(action == "save") {
 				promise = vendorFactory.saveVendor($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Vendor successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -226,7 +228,7 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -235,7 +237,10 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 app.controller('searchCmpntTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[1];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[1];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -270,9 +275,8 @@ app.controller('listCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 
 	$scope.id = $routeParams.id;
 	$scope.info = CmpntTypeInfo;
-
+	var previousItem;
 	$scope.types = [];
-	var previousItem = undefined;
 
 	cmpntTypeFactory.retrieveCompntTypes($routeParams).then(function(result) {
 
@@ -295,12 +299,12 @@ app.controller('listCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 		});
 		$scope.types.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "cmpnt_type", ["name", "description"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -346,24 +350,24 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 			$scope.types.push(item.name);
 		});
 	});
-	
+
 	// Append new property
 	$scope.appendProperty = function() {
 
 		if($routeParams.action === "save"){
 			$scope.new.prop_keys.push({'name': '', 'value': ''});
-		
+
 		} else {
 			$scope.element.prop_keys.push({'name': '', 'value': ''});
 		}
 		l($scope.props);
-	}
+	};
 
 	// Property name dropdown has changed
 	$scope.changePropertyName = function() {
 		l($scope.props);
-	}
-	
+	};
+
 	// Get component type from the factory
 	if($routeParams.action != "save") {
 		cmpntTypeFactory.retrieveCmpntType($routeParams).then(function(result) {
@@ -372,13 +376,13 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "cmpnt_type", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "cmpnt_type", ["name", "description"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new CmpntType(newItem);
@@ -388,13 +392,13 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 
 				$.each($scope.element.prop_keys, function(i, prop) {
@@ -414,13 +418,13 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 				$scope.new.props = JSON.stringify(propsObject);
 				promise = cmpntTypeFactory.saveCmpntType($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Component type successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -428,7 +432,7 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -437,7 +441,10 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 app.controller('searchCmpntTypeTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[2];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[2];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -472,9 +479,8 @@ app.controller('listCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 
 	$scope.id = $routeParams.id;
 	$scope.info = CmpntTypeTypeInfo;
-
+	var previousItem;
 	$scope.types = [];
-	var previousItem = undefined;
 
 	cmpntTypeTypeFactory.retrieveCompntTypeTypes($routeParams).then(function(result) {
 
@@ -497,12 +503,12 @@ app.controller('listCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 		});
 		$scope.types.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "cmpnt_type_type", ["name", "description"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -538,20 +544,20 @@ app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 	$scope.alert.show = false;
 	$scope.info = CmpntTypeTypeInfo;
 
-	// Get component type from the factory 
+	// Get component type from the factory
 	if($routeParams.action != "save") {
 		cmpntTypeTypeFactory.retrieveCmpntTypeType($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "cmpnt_type_type", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "cmpnt_type_type", ["name", "description"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	// Save item into database
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
@@ -562,24 +568,24 @@ app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 				promise = cmpntTypeTypeFactory.updateCmpntTypeType($scope.element);
 
 			} else if(action == "save") {
 				promise = cmpntTypeTypeFactory.saveCmpntTypeType($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Component type property type successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -587,7 +593,7 @@ app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -596,7 +602,10 @@ app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 app.controller('searchInventoryCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[3];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.device[1];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -631,9 +640,8 @@ app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $windo
 
 	$scope.id = $routeParams.id;
 	$scope.info = InventoryInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	inventoryFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -656,12 +664,12 @@ app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $windo
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "inventory", ["name"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -724,39 +732,39 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 			$scope.vendors.push(item.name);
 		});
 	});
-	
+
 	// Append new property
 	$scope.appendProperty = function() {
 
 		if($routeParams.action === "save"){
 			$scope.new.prop_keys.push({'name': '', 'value': ''});
-		
+
 		} else {
 			$scope.element.prop_keys.push({'name': '', 'value': ''});
 		}
-	}
+	};
 
 	// Property name dropdown has changed
 	$scope.changePropertyName = function() {
 		l($scope.props);
-	}
-	
+	};
+
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		inventoryFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "inventory", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "inventory", ["name"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new Inventory(newItem);
@@ -765,13 +773,13 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 
 				$.each($scope.element.prop_keys, function(i, prop) {
@@ -789,16 +797,16 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 				});
 
 				$scope.new.props = JSON.stringify(propsObject);
-				
+
 				promise = inventoryFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Inventory successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -806,7 +814,7 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -815,7 +823,10 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 app.controller('searchInventoryTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[4];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[3];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -850,9 +861,8 @@ app.controller('listInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 
 	$scope.id = $routeParams.id;
 	$scope.info = InventoryTypeInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	inventoryTypeFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -875,12 +885,12 @@ app.controller('listInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "inventory_type", ["name"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -927,20 +937,20 @@ app.controller('showInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		inventoryTypeFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.tmplt_id = result.id;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "inventory_type", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "inventory_type", ["name"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new InventoryType(newItem);
@@ -949,26 +959,26 @@ app.controller('showInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 				promise = inventoryTypeFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
 				promise = inventoryTypeFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Inventory property template successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -976,7 +986,7 @@ app.controller('showInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -985,7 +995,10 @@ app.controller('showInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 app.controller('searchInstallCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[5];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.device[0];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1020,9 +1033,8 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 
 	$scope.id = $routeParams.id;
 	$scope.info = InstallInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	installFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -1045,12 +1057,12 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -1079,7 +1091,7 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Show details in the right pane
  */
-app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, cmpntTypeFactory, EntityError){
+app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, onlineDataFactory, OnlineData, offlineDataFactory, OfflineData, cmpntTypeFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1090,6 +1102,9 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	$scope.info = InstallInfo;
 
 	$scope.types = [];
+	$scope.onlinedata = [];
+	$scope.offlinedata = [];
+	$scope.statusMap = statusArrMap;
 
 	// Retrieve all Component types
 	cmpntTypeFactory.retrieveCompntTypes({'all_cmpnt_types': true}).then(function(result) {
@@ -1102,44 +1117,59 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
 		l($routeParams);
-		
+
 		installFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.old_name = result.name;
-			l($scope.element);
 
 			if ($routeParams.action == "retrieve") {
 				$scope.map = {};
 
-				inventoryToInstallFactory.retrieveItems({'install_name': $scope.element['name'], 'inv_name': '*'}).then(function(result) {
+				inventoryToInstallFactory.retrieveItems({'install_name': $scope.element.name, 'inv_name': '*'}).then(function(result) {
 					var keys = Object.keys(result);
 
 					if(keys.length > 0) {
 						$scope.map = result[keys[0]];
+
+						// Get offline data
+						offlineDataFactory.retrieveItems({'inventory_name': $scope.map.name}).then(function(result) {
+							$.each(result, function(i, item){
+								$scope.offlinedata.push(new OfflineData(item));
+							});
+
+							l($scope.offlinedata);
+						});
 					}
 					l($scope.map);
 				});
 			}
+
+			// Get online data
+			onlineDataFactory.retrieveItems({'install_name': result.name}).then(function(result) {
+				$.each(result, function(i, item){
+					$scope.onlinedata.push(new OnlineData(item));
+				});
+			});
 		});
 	}
 
 	$scope.goToMap = function(inv, install, id) {
 		var newLocation = createRouteUrl({'inv_name': inv, 'install_name': install, 'search': new Date().getTime()}, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + id + "/action/retrieve";
 		$window.location = newLocation;
-	}
+	};
 
 	$scope.goToInventory = function(id) {
 
 		var location = createRouteUrl({'name': '*', 'search': new Date().getTime()}, "inventory", ["name"]) + "/id/" + id + "/action/retrieve";
 		$window.location = location;
-	}
-	
+	};
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new Install(newItem);
@@ -1148,26 +1178,26 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 				promise = installFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
 				promise = installFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Install item successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -1175,7 +1205,7 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -1184,7 +1214,10 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 app.controller('searchInventoryToInstallCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[6];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[4];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1219,9 +1252,8 @@ app.controller('listInventoryToInstallCtrl', function($scope, $routeParams, $htt
 
 	$scope.id = $routeParams.id;
 	$scope.info = InventoryToInstallInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	inventoryToInstallFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -1244,12 +1276,12 @@ app.controller('listInventoryToInstallCtrl', function($scope, $routeParams, $htt
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -1305,19 +1337,19 @@ app.controller('showInventoryToInstallCtrl', function($scope, $modal, $routePara
 
 	// Get inventory to install from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		inventoryToInstallFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
+	};
 
 	$scope.deleteItem = function(localI2iId) {
 		var modalInstance = $modal.open({
@@ -1329,8 +1361,8 @@ app.controller('showInventoryToInstallCtrl', function($scope, $modal, $routePara
 				}
 			}
 		});
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new InventoryToInstall(newItem);
@@ -1340,26 +1372,26 @@ app.controller('showInventoryToInstallCtrl', function($scope, $modal, $routePara
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 				promise = inventoryToInstallFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
 				promise = inventoryToInstallFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Install item successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -1367,7 +1399,7 @@ app.controller('showInventoryToInstallCtrl', function($scope, $modal, $routePara
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -1425,7 +1457,10 @@ app.controller('deleteInventoryToInstallCtrl', function($scope, $routeParams, $m
 app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[7];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[5];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1475,10 +1510,9 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 
 	$scope.id = $routeParams.id;
 	$scope.info = InstallRelInfo;
-
+	var previousItem;
 	$scope.items = [];
 
-	var previousItem = undefined;
 	$scope.tree = {};
 	$scope.showTree = false;
 
@@ -1492,7 +1526,7 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 			$scope.tree = drawDataTree("", result, 0);
 			//$("#tree").html(drawDataTree("", result, 0));
 		});
-	
+
 	} else {
 
 		installRelFactory.retrieveItems($routeParams).then(function(result) {
@@ -1517,7 +1551,7 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 			$scope.items.reverse();
 		});
 	}
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function(parent) {
 
@@ -1530,7 +1564,7 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/new/action/save";
 		l(location);
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -1600,42 +1634,42 @@ app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $htt
 
 		if($routeParams.action === "save"){
 			$scope.new.prop_keys.push({'name': '', 'value': ''});
-		
+
 		} else {
 			$scope.element.prop_keys.push({'name': '', 'value': ''});
 		}
-	}
+	};
 
 	// Property name dropdown has changed
 	$scope.changePropertyName = function() {
 		l($scope.props);
-	}
+	};
 
 	// Get install rel type from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		installRelFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.child_install = result.childname;
 			$scope.element.parent_install = result.parentname;
 			l($scope.element);
 		});
-	
+
 	} else {
 		$scope.new.parent_install = $routeParams.parent_install;
 		$scope.new.parentname = $routeParams.parent_install;
 	}
 
 	// Disable parent if parent is set in url
-	if ($routeParams.parent_install !== undefined && $routeParams.parent_install != "") {
+	if ($routeParams.parent_install !== undefined && $routeParams.parent_install !== "") {
 		$scope.parentDisabled = true;
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
+	};
 
 	$scope.deleteItem = function(localParent, localChild) {
 		var modalInstance = $modal.open({
@@ -1650,8 +1684,8 @@ app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $htt
 				}
 			}
 		});
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new InstallRel(newItem);
@@ -1660,13 +1694,13 @@ app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $htt
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 
 				$.each($scope.element.prop_keys, function(i, prop) {
@@ -1687,13 +1721,13 @@ app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $htt
 
 				promise = installRelFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Install rel type successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -1701,7 +1735,7 @@ app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $htt
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -1759,7 +1793,10 @@ app.controller('deleteInstallRelCtrl', function($scope, $routeParams, $modalInst
 app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[8];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[6];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1794,9 +1831,8 @@ app.controller('listInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 
 	$scope.id = $routeParams.id;
 	$scope.info = InstallRelTypeInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	installRelTypeFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -1819,12 +1855,12 @@ app.controller('listInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "install_rel_type", ["name"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -1861,20 +1897,20 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 
 	// Get install rel type from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		installRelTypeFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "install_rel_type", ["name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "install_rel_type", ["name"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new InstallRelType(newItem);
@@ -1883,26 +1919,26 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 				promise = installRelTypeFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
 				promise = installRelTypeFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Install rel type successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -1910,7 +1946,7 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -1919,7 +1955,10 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[9];
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[7];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1954,9 +1993,8 @@ app.controller('listDataMethodCtrl', function($scope, $routeParams, $http, $wind
 
 	$scope.id = $routeParams.id;
 	$scope.info = DataMethodInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	dataMethodFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -1979,12 +2017,12 @@ app.controller('listDataMethodCtrl', function($scope, $routeParams, $http, $wind
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -2022,20 +2060,20 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		dataMethodFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "data_method", ["name", "description"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
-	
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
 		var item = new DataMethod(newItem);
@@ -2044,26 +2082,26 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 			var propsObject = {};
 
 			delete $scope.error;
 			var promise;
-			
+
 			if(action === "update") {
 				promise = dataMethodFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
 				promise = dataMethodFactory.saveItem($scope.new);
 			}
-			
+
 			promise.then(function(data) {
 				$scope.alert.show = true;
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Data method item successfully saved!";
-			
+
 			}, function(error) {
 				$scope.alert.show = true;
 				$scope.alert.success = false;
@@ -2071,7 +2109,7 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 				$scope.alert.body = error;
 			});
 		}
-	}
+	};
 });
 
 /*
@@ -2080,9 +2118,13 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[10];
+	$scope.masterTypes = masterTypes;
 	$scope.statusArr2 = statusArr;
 	$scope.statusArr2.push({name:"", value:"-"});
+
+	$scope.search.type = dataTypes.others[8];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -2102,7 +2144,7 @@ app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	// Item search button click
 	$scope.searchForItem = function(search) {
 		search.search = new Date().getTime();
-		
+
 		if(search.date_from && search.date_to) {search.date='["' + search.date_from + '","' + search.date_to + '"]';} else {search.date = undefined;}
 		if(search.gap_from && search.gap_to) {search.gap="[" + search.gap_from + "," + search.gap_to + "]";} else {search.gap = undefined;}
 		if(search.phase1_from && search.phase1_to) {search.phase1="[" + search.phase1_from + "," + search.phase1_to + "]";} else {search.phase1 = undefined;}
@@ -2111,7 +2153,7 @@ app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 		if(search.phase4_from && search.phase4_to) {search.phase4="[" + search.phase4_from + "," + search.phase4_to + "]";} else {search.phase4 = undefined;}
 		if(search.phasemode_from && search.phasemode_to) {search.phasemode="[" + search.phasemode_from + "," + search.phasemode_to + "]";} else {search.phasemode = undefined;}
 		if(search.polarmode_from && search.polarmode_to) {search.polarmode="[" + search.polarmode_from + "," + search.polarmode_to + "]";} else {search.polarmode = undefined;}
-		
+
 		var newLocation = createRouteUrl(search, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
@@ -2127,9 +2169,8 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 
 	$scope.id = $routeParams.id;
 	$scope.info = OfflineDataInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	offlineDataFactory.retrieveItems($routeParams).then(function(result) {
 
@@ -2152,12 +2193,12 @@ app.controller('listOfflineDataCtrl', function($scope, $routeParams, $http, $win
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -2192,7 +2233,6 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = OfflineDataInfo;
-	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
 
@@ -2241,10 +2281,10 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 		l(e);
 
 		if($scope.action === "update") {
-			$scope.element.data_id = JSON.parse(response)["id"];
+			$scope.element.data_id = JSON.parse(response).id;
 
 		} else if($scope.action == "save") {
-			$scope.new.data_id = JSON.parse(response)["id"];
+			$scope.new.data_id = JSON.parse(response).id;
 		}
 
 		saveData($scope, offlineDataFactory);
@@ -2256,19 +2296,19 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		offlineDataFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
+	};
 
 	// Delete offline data
 	$scope.deleteItem = function(localOfflineId) {
@@ -2284,12 +2324,12 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 				}
 			}
 		});
-	}
-	
+	};
+
 	$scope.saveItem = function(action) {
 
 		if (uploadData === undefined && action === "save") {
-			$scope.error['data_id'] = "Raw data field is mandatory!";
+			$scope.error.data_id = "Raw data field is mandatory!";
 
 		} else if (uploadData === undefined && action !== "save") {
 			saveData($scope, offlineDataFactory);
@@ -2297,19 +2337,19 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 		} else {
 			uploadData.submit();
 		}
-	}
+	};
 
 	$scope.downloadScript = function(element) {
 		download(element.script_name, element.script, true);
-	}
+	};
 
 	$scope.downloadRawData = function(element) {
 		// Retrieve raw file
 		offlineDataFactory.retrieveRawFile(element.data_id).then(function(result) {
 			l(result);
-			download(element.data_file_name, result[element.data_id]['data'], result[element.data_id]['is_ascii']);
+			download(element.data_file_name, result[element.data_id].data, result[element.data_id].is_ascii);
 		});
-	}
+	};
 });
 
 /*
@@ -2368,9 +2408,13 @@ app.controller('deleteOfflineDataCtrl', function($scope, $routeParams, $modalIns
 app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[11];
+	$scope.masterTypes = masterTypes;
 	$scope.statusArr2 = statusArr;
 	$scope.statusArr2.push({name:"", value:"-"});
+
+	$scope.search.type = dataTypes.others[9];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -2415,9 +2459,8 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 
 	$scope.id = $routeParams.id;
 	$scope.info = OfflineDataInstallInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	var pathParts = $location.path().split('/');
 	var type = pathParts[1];
@@ -2448,12 +2491,12 @@ app.controller('listOfflineDataInstallCtrl', function($scope, $routeParams, $htt
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, type, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -2489,11 +2532,10 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = OfflineDataInstallInfo;
-	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
 	$scope.inventory = {};
-	
+
 	$scope.inventories = [];
 	$scope.inventoriesMap = {};
 	$scope.methods = [];
@@ -2547,10 +2589,10 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 		l(e);
 
 		if($scope.action === "update") {
-			$scope.element.data_id = JSON.parse(response)["id"];
+			$scope.element.data_id = JSON.parse(response).id;
 
 		} else if($scope.action == "save") {
-			$scope.new.data_id = JSON.parse(response)["id"];
+			$scope.new.data_id = JSON.parse(response).id;
 		}
 
 		saveData($scope, offlineDataFactory);
@@ -2562,19 +2604,19 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		offlineDataInstallFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.offline_data_id = result.id;
 			l($scope.element);
 		});
 	}
-	
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
+	};
 
 	// Delete offline data
 	$scope.deleteItem = function(localOfflineId) {
@@ -2590,12 +2632,12 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 				}
 			}
 		});
-	}
-	
+	};
+
 	$scope.saveItem = function(action) {
 
 		if (uploadData === undefined && action === "save") {
-			$scope.error['data_id'] = "Raw data field is mandatory!";
+			$scope.error.data_id = "Raw data field is mandatory!";
 
 		} else if (uploadData === undefined && action !== "save") {
 			saveData($scope, offlineDataFactory);
@@ -2603,19 +2645,19 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 		} else {
 			uploadData.submit();
 		}
-	}
+	};
 
 	$scope.downloadScript = function(element) {
 		download(element.script_name, element.script, true);
-	}
+	};
 
 	$scope.downloadRawData = function(element) {
 		// Retrieve raw file
 		offlineDataFactory.retrieveRawFile(element.data_id).then(function(result) {
 			l(result);
-			download(element.data_file_name, result[element.data_id]['data'], result[element.data_id]['is_ascii']);
+			download(element.data_file_name, result[element.data_id].data, result[element.data_id].is_ascii);
 		});
-	}
+	};
 });
 
 /*
@@ -2674,9 +2716,13 @@ app.controller('deleteOfflineDataInstallCtrl', function($scope, $routeParams, $m
 app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[12];
+	$scope.masterTypes = masterTypes;
 	$scope.statusArr2 = statusArr;
 	$scope.statusArr2.push({name:"", value:"-"});
+
+	$scope.search.type = dataTypes.others[10];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -2713,9 +2759,8 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 
 	$scope.id = $routeParams.id;
 	$scope.info = OnlineDataInfo;
-
+	var previousItem;
 	$scope.items = [];
-	var previousItem = undefined;
 
 	var pathParts = $location.path().split('/');
 	var type = pathParts[1];
@@ -2746,12 +2791,12 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 		});
 		$scope.items.reverse();
 	});
-	
+
 	// Show add form in the right pane
 	$scope.addItem = function() {
 		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "status"]) + "/id/new/action/save";
 		$window.location = location;
-	}
+	};
 
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
@@ -2786,10 +2831,9 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = OnlineDataInfo;
-	var uploadData = undefined;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
-	
+
 	$scope.installs = [];
 	$scope.installMap = {};
 
@@ -2816,7 +2860,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		
+
 		onlineDataFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.online_data_id = result.id;
@@ -2845,10 +2889,10 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 		l(e);
 
 		if($scope.action === "update") {
-			$scope.element.url = JSON.parse(response)["path"];
+			$scope.element.url = JSON.parse(response).path;
 
 		} else if($scope.action == "save") {
-			$scope.new.url = JSON.parse(response)["path"];
+			$scope.new.url = JSON.parse(response).path;
 		}
 
 		saveData($scope, onlineDataFactory);
@@ -2860,13 +2904,13 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 
 	$scope.download = function(url) {
 		$window.location.href = serviceurlraw + url;
-	}
-	
+	};
+
 	// Show update form in the right pane
 	$scope.updateItem = function() {
-		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "status"]) + "/id/" + $routeParams["id"] + "/action/update";
+		var location = createRouteUrl($routeParams, type, ["install_name", "description", "date", "status"]) + "/id/" + $routeParams.id + "/action/update";
 		$window.location = location;
-	}
+	};
 
 	$scope.deleteItem = function(localOnlineId) {
 		var modalInstance = $modal.open({
@@ -2881,8 +2925,8 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 				}
 			}
 		});
-	}
-	
+	};
+
 	$scope.saveItem = function(action) {
 
 		if($scope.action === "update") {
@@ -2897,11 +2941,11 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 
 		if(result !== true) {
 			$scope.error = result.errorDict;
-		
+
 		} else {
 
 			if (uploadData === undefined && action === "save") {
-				$scope.error['url'] = "Data file field is mandatory!";
+				$scope.error.url = "Data file field is mandatory!";
 
 			} else if (uploadData === undefined && action !== "save") {
 				saveData($scope, onlineDataFactory);
@@ -2911,7 +2955,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 				uploadData.submit();
 			}
 		}
-	}
+	};
 });
 
 /*
@@ -2972,8 +3016,12 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[13];
+	$scope.masterTypes = masterTypes;
 	$scope.display = "online_data";
+
+	$scope.search.type = dataTypes.hierarchy[0];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	var pathParts = $location.path().split('/');
 
@@ -3008,7 +3056,7 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 
 		if ($scope.display === "offline_data") {
 			params = ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
-		
+
 		} else if ($scope.display === "online_data") {
 			params = ["install_name", "description", "date", "status"];
 		}
@@ -3027,8 +3075,12 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
-	$scope.search.type = dataTypes[14];
+	$scope.masterTypes = masterTypes;
 	$scope.display = "online_data";
+
+	$scope.search.type = dataTypes.hierarchy[1];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
 	var pathParts = $location.path().split('/');
 
@@ -3063,7 +3115,7 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 
 		if ($scope.display === "offline_data") {
 			params = ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
-		
+
 		} else if ($scope.display === "online_data") {
 			params = ["install_name", "description", "date", "status"];
 		}
