@@ -6,7 +6,7 @@
 <div ng-if="action == 'retrieve'">
 	<div class="details_data">
 		<h3>{{info.retrieve_title}}</h3>
-		
+
 		{% endverbatim %}
 			{% if user.is_authenticated %}
 			{% verbatim %}
@@ -28,7 +28,7 @@
 				<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
 
 				<td ng-if="property != 'status' && property != 'script_name' && property != 'data_file_name'">{{element[property]}}</td>
-				
+
 				<td ng-if="property == 'script_name'"><span ng-if="!element.script">Script was not saved!</span><button ng-if="element.script" class="btn btn-info" ng-click="downloadScript(element)">Download script file</button></td>
 
 				<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(element)" class="btn btn-info">Download raw file</button></td>
@@ -37,7 +37,7 @@
 			</tr>
 		</table>
 
-		<h3>Inventory device data</h3>
+		<h3>Device information</h3>
 
 		<table class="table table-bordered">
 			<tr>
@@ -59,7 +59,7 @@
 <div ng-if="action == 'save'">
 	<div class="details_data">
 		<h3>{{info.save_title}}</h3>
-		
+
 		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
@@ -77,7 +77,7 @@
 					<td>
 						<span class="control-group" ng-class="{'error': error[property]}">
 							<span class="controls">
-								
+
 								<select ng-if="property == 'inventory_name'" ng-model="new[property]" ng-options="inv for inv in inventories"></select>
 
 								<select ng-if="property == 'method_name'" ng-model="new[property]" ng-options="method for method in methods"></select>
@@ -87,7 +87,7 @@
 								<input ng-if="property != 'status' && property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="new[property]" />
 
 								<select ng-if="property == 'status'" ng-model="new[property]" ng-options="s.name as s.value for s in statusArr"></select>
-								
+
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
 						</span>
@@ -123,14 +123,14 @@
 <div ng-if="action == 'update'">
 	<div class="details_data">
 		<h3>{{info.update_title}}</h3>
-		
+
 		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
 		</div>
 
 		<form data-file-upload="options" method="post" enctype="multipart/form-data">
-		
+
 			<table class="table table-bordered">
 				<tr>
 					<th>Key</th>

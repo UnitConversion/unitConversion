@@ -4852,8 +4852,8 @@ class idods(object):
                 self.saveInstall(beamline, description='__system__', cmpnt_type='project')
 
             # Save beamline  - project rel
-            if len(self.retrieveInstallRel(None, 'Beamline', project).keys()) == 0:
-                self.saveInstallRel('Beamline', project)
+            if len(self.retrieveInstallRel(None, 'Beamline project', project).keys()) == 0:
+                self.saveInstallRel('Beamline project', project)
 
             # Save project  - beamline rel
             if len(self.retrieveInstallRel(None, project, beamline).keys()) == 0:
@@ -5898,19 +5898,19 @@ class idods(object):
         if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install=True).keys()) == 0:
             self.saveInstall('Trees', cmpnt_type='root')
 
-        if len(self.retrieveInstall('Installation', cmpnt_type='branch', all_install=True).keys()) == 0:
-            self.saveInstall('Installation', cmpnt_type='branch')
+        if len(self.retrieveInstall('Device geometric layout', cmpnt_type='branch', all_install=True).keys()) == 0:
+            self.saveInstall('Device geometric layout', cmpnt_type='branch')
 
-        if len(self.retrieveInstall('Beamline', cmpnt_type='branch', all_install=True).keys()) == 0:
-            self.saveInstall('Beamline', cmpnt_type='branch')
+        if len(self.retrieveInstall('Beamline project', cmpnt_type='branch', all_install=True).keys()) == 0:
+            self.saveInstall('Beamline project', cmpnt_type='branch')
 
         # Create install relationship
-        if len(self.retrieveInstallRel(None, 'Trees', 'Installation').keys()) == 0:
-            self.saveInstallRel('Trees', 'Installation')
+        if len(self.retrieveInstallRel(None, 'Trees', 'Device geometric layout').keys()) == 0:
+            self.saveInstallRel('Trees', 'Device geometric layout')
 
         # Create test relationship
-        if len(self.retrieveInstallRel(None, 'Trees', 'Beamline').keys()) == 0:
-            self.saveInstallRel('Trees', 'Beamline')
+        if len(self.retrieveInstallRel(None, 'Trees', 'Beamline project').keys()) == 0:
+            self.saveInstallRel('Trees', 'Beamline project')
 
         # Create test project
         # if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:

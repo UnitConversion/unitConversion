@@ -45,8 +45,8 @@ var dataTypes = {
 		{name:"online_data", value:"Online data"}
 	],
 	"hierarchy": [
-		{name:"beamline", value:"Beamline"},
-		{name:"installation", value:"Installation"}
+		{name:"beamline", value:"Beamline project"},
+		{name:"installation", value:"Device geometric layout"}
 	]};
 
 // Map master types to data types

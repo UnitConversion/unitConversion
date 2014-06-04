@@ -20,6 +20,7 @@ sys.path.append(libPath)
 
 from idodspy.idodsclient import IDODSClient
 
+
 class Test(unittest.TestCase):
 
     __url = 'http://localhost:8000/id/device/'
@@ -72,7 +73,7 @@ class Test(unittest.TestCase):
         # Clean component type property type
         cleanComponentTypePropertyType(['length', 'width'])
         # Clean if there is something left from previous runs
-        cleanComponentType(['test cmpnt', 'test cmpnt2','test cmpnt3', 'test cmpnt4','Magnet'])
+        cleanComponentType(['test cmpnt', 'test cmpnt2', 'test cmpnt3', 'test cmpnt4', 'Magnet'])
 
         # Clean raw data
         cleanRawData()

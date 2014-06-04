@@ -694,7 +694,7 @@ app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $windo
 /*
  * Show details in the right pane
  */
-app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $window, InventoryInfo, CmpntType, Inventory, cmpntTypeFactory, inventoryTypeFactory, inventoryFactory, vendorFactory, EntityError){
+app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $window, InventoryInfo, CmpntType, Inventory, cmpntTypeFactory, offlineDataFactory, OfflineData, inventoryTypeFactory, inventoryFactory, vendorFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -708,6 +708,7 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 	$scope.props = [];
 	$scope.vendors = [];
 	$scope.new.prop_keys = [];
+	$scope.offlinedata = [];
 
 	// Retrieve all Component types
 	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
@@ -756,6 +757,18 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 			$scope.element = result;
 			$scope.element.old_name = result.name;
 			l($scope.element);
+
+			if ($routeParams.action == "retrieve") {
+
+				// Get offline data
+				offlineDataFactory.retrieveItems({'inventory_name': result.name}).then(function(result) {
+					$.each(result, function(i, item){
+						$scope.offlinedata.push(new OfflineData(item));
+					});
+
+					l($scope.offlinedata);
+				});
+			}
 		});
 	}
 
@@ -1161,6 +1174,24 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	$scope.goToInventory = function(id) {
 
 		var location = createRouteUrl({'name': '*', 'search': new Date().getTime()}, "inventory", ["name"]) + "/id/" + id + "/action/retrieve";
+		$window.location = location;
+	};
+
+	$scope.goToOnlineData = function(name, id) {
+		var search = {};
+		search.search = new Date().getTime();
+		search.install_name = name;
+
+		var location = createRouteUrl(search, "online_data", ["install_name", "description", "date", "status"]) + "/id/" + id + "/action/retrieve";
+		$window.location = location;
+	};
+
+	$scope.goToOfflineData = function(name, id) {
+		var search = {};
+		search.search = new Date().getTime();
+		search.inventory_name = name;
+
+		var location = createRouteUrl(search, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + id + "/action/retrieve";
 		$window.location = location;
 	};
 
@@ -3029,7 +3060,7 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 		$scope.display = pathParts[2];
 	}
 
-	installRelFactory.retrieveTree({'install_name': 'beamline'}).then(function(result) {
+	installRelFactory.retrieveTree({'install_name': 'Beamline project'}).then(function(result) {
 
 		l(result);
 		$scope.tree = drawDataTree2("", result, 0);
@@ -3088,7 +3119,7 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 		$scope.display = pathParts[2];
 	}
 
-	installRelFactory.retrieveTree({'install_name': 'installation'}).then(function(result) {
+	installRelFactory.retrieveTree({'install_name': 'Device geometric layout'}).then(function(result) {
 
 		l(result);
 		$scope.tree = drawDataTree2("", result, 0);

@@ -31,7 +31,7 @@
 			</tr>
 		</table>
 
-		<h3>Device installed to</h3>
+		<h3>Device in inventory</h3>
 
 		<table ng-if="map.inventoryname" class="table table-bordered">
 			<tr>
@@ -43,11 +43,11 @@
 				<td>{{map.inventoryname}}</td>
 			</tr>
 			<tr>
-				<td>Inventory to install map</td>
+				<td>Inventory <=> install map</td>
 				<td><button ng-click="goToMap(map.inventoryname, map.installname, map.id)" class="btn btn-info">Show</button></td>
 			</tr>
 			<tr>
-				<td>Inventory device data</td>
+				<td>Device info</td>
 				<td><button ng-click="goToInventory(map.inventoryid)" class="btn btn-info">Show</button></td>
 			</tr>
 		</table>
@@ -63,6 +63,10 @@
 				<td ng-if="property == 'status'">{{statusMap[online[property]]}}</td>
 				<td ng-if="property != 'status'">{{online[property]}}</td>
 			</tr>
+			<tr>
+				<td>Online data details</td>
+				<td><button ng-click="goToOnlineData(online.install_name, online.id)" class="btn btn-info">Show</button></td>
+			</tr>
 		</table>
 
 		<h3 onclick="toggleOnlineOfflineData(this, 'offline_data');" ng-if="offlinedata.length > 0"><i style="vertical-align: middle" class='icon-chevron-right'></i> Offline data</h3>
@@ -75,6 +79,10 @@
 				<td>{{offline.display[property]}}</td>
 				<td ng-if="property == 'status'">{{statusMap[offline[property]]}}</td>
 				<td ng-if="property != 'status'">{{offline[property]}}</td>
+			</tr>
+			<tr>
+				<td>Offline data details</td>
+				<td><button ng-click="goToOfflineData(offline.inventory_name, offline.id)" class="btn btn-info">Show</button></td>
 			</tr>
 		</table>
 

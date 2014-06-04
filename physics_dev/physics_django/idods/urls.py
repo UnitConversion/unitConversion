@@ -110,6 +110,6 @@ urlpatterns = patterns(
     # Save Insertion device
     url(r'^id/device/saveinsertiondevice/$', saveInsertionDeviceWS),
 
-    url(r'^id/web/device/$', idodsIndexHtml),
-    url(r'^id/web/device/(.+)', idodsHtmls),
+    url(r'^id/web/$', idodsIndexHtml),
+    url(r'^id/web/(.+)', idodsHtmls),
 )
