@@ -119,3 +119,46 @@ app.directive('resizeRight', function() {
 		});
 	};
 });
+
+/*
+ * Directive for displaying a table with results
+ */
+app.directive('offline_data', function() {
+	return {
+		restrict: 'E',
+		template : '\n\
+			<tr>\n\
+				<td ng-repeat="property in offline.retrieve_show">\n\
+					<span ng-if="property == \'status\'">{{statusMap[offline[property]]}}</span>\n\
+					<span ng-if="property != \"status\"">{{offline[property]}}</span>\n\
+				</td>\n\
+				<td>\n\
+					<button onclick="toggleTableRows(this, \"offline_data\"")" class="btn btn-info">Show</button>\n\
+				</td>\n\
+			</tr>\n\
+			<tr class="info offline_data" style="display: none;">\n\
+				<td colspan="3">\n\
+					<table class="table table-bordered">\n\
+						<tr ng-repeat="property in offline.retrieve_hide">\n\
+							<td>{{offline.display[property] | iff : offline.display[property] : property | firstLetterUppercase}}</td>\n\
+							<td ng-if="property != \"script_name\"" && property != \"data_file_name\"">{{offline[property]}}</td>\n\
+							<td ng-if="property == \"script_name\""><span ng-if="!offline.script">Script was not saved!</span><button ng-if="offline.script" class="btn btn-info" ng-click="downloadScript(offline)">Download script file</button></td>\n\
+							<td ng-if="property == \"data_file_name\""><button ng-click="downloadRawData(offline)" class="btn btn-info">Download raw file</button></td>\n\
+						</tr>\n\
+					</table>\n\
+				</td>\n\
+			</tr>\n\
+		',
+		scope: {
+			offline: '=offline'
+		},
+		link: function (scope, element, attrs) {
+            l("attrs");
+            l(attrs);
+
+            scope.$watch('offline', function (newVal) {
+                l('offline', newVal);
+            });
+        }
+	};
+});

@@ -10,8 +10,9 @@ import os
 import base64
 import time
 
-from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery)
+from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery, _checkRangeAndAppend)
 from _mysql_exceptions import MySQLError
+from pyphysics.physics import physics
 
 try:
     from django.utils import simplejson as json
@@ -44,55 +45,12 @@ class idods(object):
         self.logger.addHandler(hdlr)
         self.logger.setLevel(logging.DEBUG)
 
+        self.physics = physics(conn, transaction)
+
         self.conn = conn
 
         # Use django transaction manager
         self.transaction = transaction
-
-    def _checkRangeAndAppend(self, parameterKey, parameterValue, sqlString, valsList, prependedOperator=None, valueType=None):
-        '''
-        Check for ranges in a parameter value and append appropriate sql
-
-        parameters:
-            - parameterKey: name of the parameter in the DB table
-            - parameterValue: value of this parameter, it can be a tuple
-            - sqlString: existing sql string that was generated outside of this function
-            - valsList: list of formated values that should be inserted into sql statement
-            - prepandedOperator: sql operator that will be prepended before the new condition
-
-        return:
-            tuple of new sql string and new list of values
-        '''
-
-        # If value type is set, cast a value
-        if valueType == "float":
-            parameterValue = float(parameterValue)
-
-        # Prepend operator if it exists
-        if prependedOperator is not None:
-            sqlString += " " + prependedOperator + " "
-
-        # Check if value equals tuple
-        parameterValue = json.loads(parameterValue)
-
-        if isinstance(parameterValue, (list, tuple)):
-
-            # Check tuple length. It should be 2.
-            if len(parameterValue) != 2:
-                raise ValueError("Range tuple for attribute %s should contain two values!" % parameterKey)
-
-            # If everything is ok, append conditions to sql statement
-            else:
-                sqlString += ' ' + parameterKey + ' IS NOT NULL AND ' + parameterKey + ' >= %s AND ' + parameterKey + ' <= %s '
-                valsList.append(parameterValue[0])
-                valsList.append(parameterValue[1])
-
-        # There is not tuple so just append equals
-        else:
-            sqlString += " " + parameterKey + " = %s"
-            valsList.append(parameterValue)
-
-        return (sqlString, valsList)
 
     def retrieveVendor(self, name, description=None):
         '''
@@ -116,48 +74,21 @@ class idods(object):
                     }
                  ...
                 }
-
-        :Raises: ValueError, Exception
         '''
 
-        # Check for vendor name parameter
-        _checkParameter('name', name)
+        # Get any one since it should be unique
+        res = self.physics.retrieveVendor(name, description)
+        resdict = {}
 
-        # Generate SQL statement
-        vals = []
-        sql = '''
-        SELECT vendor_id, vendor_name, vendor_description FROM vendor WHERE
-        '''
+        # Generate return dictionary
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'name': r[1],
+                'description': r[2]
+            }
 
-        # Append name
-        sqlVals = _checkWildcardAndAppend('vendor_name', name, sql, vals)
-
-        # Append description
-        if description is not None:
-            sqlVals = _checkWildcardAndAppend('vendor_description', description, sqlVals[0], sqlVals[1], 'AND')
-
-        try:
-            # Execute sql
-            cur = self.conn.cursor()
-            cur.execute(sqlVals[0], sqlVals[1])
-
-            # Get any one since it should be unique
-            res = cur.fetchall()
-            resdict = {}
-
-            # Generate return dictionary
-            for r in res:
-                resdict[r[0]] = {
-                    'id': r[0],
-                    'name': r[1],
-                    'description': r[2]
-                }
-
-            return resdict
-
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching vendor:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching vendor:\n%s (%d)' % (e.args[1], e.args[0]))
+        return resdict
 
     def saveVendor(self, name, description=None):
         '''Save vendor and its description into database
@@ -175,54 +106,11 @@ class idods(object):
             .. code-block:: python
 
                 {'id': vendor_id}
-
-        :Raises: ValueError, MySQLError
         '''
 
-        # Check for vendor name parameter
-        _checkParameter('name', name)
-
-        # Try to retrieve vendor by its name
-        existingVendor = self.retrieveVendor(name, description=description)
-
-        if len(existingVendor):
-            raise ValueError("Vendor (%s) already exists in the database!" % name)
-
-        # Generate SQL statement
-        if description is not None:
-            sql = '''
-            INSERT INTO vendor (vendor_name, vendor_description) VALUES (%s, %s)
-            '''
-            vals = [name, description]
-
-        else:
-            sql = '''
-            INSERT INTO vendor (vendor_name) VALUES (%s)
-            '''
-            vals = [name]
-
-        try:
-            # Execute sql
-            cur = self.conn.cursor()
-            cur.execute(sql, vals)
-
-            # Get last row id
-            vendorid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': vendorid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving vendor:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving vendor:\n%s (%d)' % (e.args[1], e.args[0]))
+        # Get last row id
+        vendorid = self.physics.saveVendor(name, description)
+        return {'id': vendorid}
 
     def updateVendor(self, vendor_id, old_name, name, **kws):
         '''Update vendor and its description
@@ -2197,37 +2085,37 @@ class idods(object):
 
         # Append date parameter
         if 'date' in kws and kws['date'] is not None:
-            sqlVal = self._checkRangeAndAppend('iod.date', kws['date'], sql, vals, 'AND')
+            sqlVal = _checkRangeAndAppend('iod.date', kws['date'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
 
         # Append gap parameter
         if 'gap' in kws and kws['gap'] is not None:
-            sqlVal = self._checkRangeAndAppend('iod.gap', kws['gap'], sql, vals, 'AND')
+            sqlVal = _checkRangeAndAppend('iod.gap', kws['gap'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
 
         # Append phase1 parameter
         if 'phase1' in kws and kws['phase1'] is not None:
-            sqlVal = self._checkRangeAndAppend('iod.phase1', kws['phase1'], sql, vals, 'AND')
+            sqlVal = _checkRangeAndAppend('iod.phase1', kws['phase1'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
 
         # Append phase2 parameter
         if 'phase2' in kws and kws['phase2'] is not None:
-            sqlVal = self._checkRangeAndAppend('iod.phase2', kws['phase2'], sql, vals, 'AND')
+            sqlVal = _checkRangeAndAppend('iod.phase2', kws['phase2'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
 
         # Append phase3 parameter
         if 'phase3' in kws and kws['phase3'] is not None:
-            sqlVal = self._checkRangeAndAppend('iod.phase3', kws['phase3'], sql, vals, 'AND')
+            sqlVal = _checkRangeAndAppend('iod.phase3', kws['phase3'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
 
         # Append phase4 parameter
         if 'phase4' in kws and kws['phase4'] is not None:
-            sqlVal = self._checkRangeAndAppend('iod.phase4', kws['phase4'], sql, vals, 'AND')
+            sqlVal = _checkRangeAndAppend('iod.phase4', kws['phase4'], sql, vals, 'AND')
             sql = sqlVal[0]
             vals = sqlVal[1]
 
@@ -2894,7 +2782,8 @@ class idods(object):
         '''
         Retrieve component type property type by its name
 
-        - name: property type name
+        :param name: property type name
+        :type name: str
 
         :return: a map with structure like:
 
@@ -2907,102 +2796,39 @@ class idods(object):
                         'description': ,    # string
                     }
                 }
-
-        :Raises: ValueError, MySQLError
         '''
 
-        # Check name
-        _checkParameter("name", name)
+        # Retrieve component type property type
+        res = self.physics.retrieveComponentTypePropertyType(name)
+        resdict = {}
 
-        # Construct SQL
-        sql = '''
-        SELECT
-            cmpnt_type_prop_type_id, cmpnt_type_prop_type_name, cmpnt_type_prop_type_desc
-        FROM
-            cmpnt_type_prop_type
-        WHERE
-        '''
-        vals = []
+        # Construct return dict
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'name': r[1],
+                'description': r[2]
+            }
 
-        # Append name
-        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_prop_type_name", name, sql, vals)
-
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sqlAndVals[0], sqlAndVals[1])
-
-            # Get any one since it should be unique
-            res = cur.fetchall()
-            resdict = {}
-
-            # Construct return dict
-            for r in res:
-                resdict[r[0]] = {
-                    'id': r[0],
-                    'name': r[1],
-                    'description': r[2]
-                }
-
-            return resdict
-
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching component type property type:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching component type property type:\n%s (%d)' % (e.args[1], e.args[0]))
+        return resdict
 
     def saveComponentTypePropertyType(self, name, description=None):
         '''
         Insert new component type property type into database
 
         - name: name of the component type property type M
-        - description: description of the component type property tpye O
+        - description: description of the component type property type O
 
         :return: a map with structure like:
 
             .. code-block:: python
 
                 {'id': propertytypeid}
-
-        :Raises: ValueError, MySQLError
         '''
 
-        # Raise an error if component type property type exists
-        existingComponentTypePropertyType = self.retrieveComponentTypePropertyType(name)
-
-        if len(existingComponentTypePropertyType):
-            raise ValueError("Component type property type (%s) already exists in the database!" % name)
-
-        # Check name
-        _checkParameter("name", name)
-
-        # Generate SQL
-        sql = '''
-        INSERT INTO cmpnt_type_prop_type
-            (cmpnt_type_prop_type_name, cmpnt_type_prop_type_desc)
-        VALUES
-            (%s, %s)
-        '''
-
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (name, description))
-
-            # Get last row id
-            typeid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': typeid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving new component type property type:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new component type property type:\n%s (%d)' % (e.args[1], e.args[0]))
+        # Execute save
+        typeid = self.physics.saveComponentTypePropertyType(name, description)
+        return {'id': typeid}
 
     def updateComponentTypePropertyType(self, property_type_id, old_name, name, **kws):
         '''
@@ -3438,7 +3264,7 @@ class idods(object):
         sql = sqlAndVals[0]
         vals = sqlAndVals[1]
 
-        # Append desciprtion if exists
+        # Append description if exists
         if description is not None:
 
             # Append __system__ component types if descriptions is set to retrieve them
@@ -4592,13 +4418,13 @@ class idods(object):
 
         # Check order parameter
         if order:
-            sqlVals = self._checkRangeAndAppend('ir.logical_order', order, sql, vals, 'AND')
+            sqlVals = _checkRangeAndAppend('ir.logical_order', order, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
 
         # Check date parameter
         if date:
-            sqlVals = self._checkRangeAndAppend('ir.install_date', date, sql, vals, 'AND')
+            sqlVals = _checkRangeAndAppend('ir.install_date', date, sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
 
@@ -5221,7 +5047,7 @@ class idods(object):
 
         # Append coordination center parameter
         if 'coordinatecenter' in kws and kws['coordinatecenter'] is not None:
-            sqlVals = self._checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND')
+            sqlVals = _checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND')
 
         # Exclude all system component types
         if ('all_install' in kws) is False or ('all_install' in kws and kws['all_install'] is False):
@@ -5485,7 +5311,7 @@ class idods(object):
 
         # Append status
         if 'status' in kws and kws['status'] is not None:
-            sqlVals = self._checkRangeAndAppend('iod.status', kws['status'], sql, vals, 'AND')
+            sqlVals = _checkRangeAndAppend('iod.status', kws['status'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
 

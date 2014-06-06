@@ -709,6 +709,7 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 	$scope.vendors = [];
 	$scope.new.prop_keys = [];
 	$scope.offlinedata = [];
+	$scope.statusMap = statusArrMap;
 
 	// Retrieve all Component types
 	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
@@ -733,6 +734,11 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 			$scope.vendors.push(item.name);
 		});
 	});
+
+	$scope.toggleTableRows = function(el, type, index) {
+		l(el);
+		toggleTableRows(el.target, type + index);
+	};
 
 	// Append new property
 	$scope.appendProperty = function() {
@@ -1131,9 +1137,9 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	if($routeParams.action != "save") {
 		l($routeParams);
 
-		installFactory.retrieveItem($routeParams).then(function(result) {
-			$scope.element = result;
-			$scope.element.old_name = result.name;
+		installFactory.retrieveItem($routeParams).then(function(inst_result) {
+			$scope.element = inst_result;
+			$scope.element.old_name = inst_result.name;
 
 			if ($routeParams.action == "retrieve") {
 				$scope.map = {};
@@ -1143,28 +1149,33 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 
 					if(keys.length > 0) {
 						$scope.map = result[keys[0]];
+						l($scope.map);
 
 						// Get offline data
-						offlineDataFactory.retrieveItems({'inventory_name': $scope.map.name}).then(function(result) {
+						offlineDataFactory.retrieveItems({'inventory_name': $scope.map.inventoryname}).then(function(result) {
+							l(result);
+
 							$.each(result, function(i, item){
 								$scope.offlinedata.push(new OfflineData(item));
 							});
-
-							l($scope.offlinedata);
 						});
 					}
-					l($scope.map);
 				});
 			}
 
 			// Get online data
-			onlineDataFactory.retrieveItems({'install_name': result.name}).then(function(result) {
+			onlineDataFactory.retrieveItems({'install_name': inst_result.name}).then(function(result) {
 				$.each(result, function(i, item){
 					$scope.onlinedata.push(new OnlineData(item));
 				});
 			});
 		});
 	}
+
+	$scope.toggleTableRows = function(el, type, index) {
+		l(el);
+		toggleTableRows(el.target, type + index);
+	};
 
 	$scope.goToMap = function(inv, install, id) {
 		var newLocation = createRouteUrl({'inv_name': inv, 'install_name': install, 'search': new Date().getTime()}, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + id + "/action/retrieve";

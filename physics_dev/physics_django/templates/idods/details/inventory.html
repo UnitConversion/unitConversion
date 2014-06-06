@@ -15,37 +15,78 @@
 			{% endif %}
 		{% verbatim %}
 
-
 		<table class="table table-bordered">
 			<tr>
-				<th>Key</th>
-				<th>Value</th>
+				<th ng-repeat="property in element.retrieve_show">
+					{{element.display[property]}}
+				</th>
+				<th>Show additional data</th>
 			</tr>
-			<tr ng-repeat="property in element.retrieve">
-				<td>{{element.display[property]}}</td>
-				<td>{{element[property]}}</td>
+			<tr>
+				<td ng-repeat="property in element.retrieve_show">
+					{{element[property]}}
+				</td>
+				<td><button onclick="toggleTableRows(this, 'inventory')" class="btn btn-info">Show</button></td>
 			</tr>
-			<tr ng-repeat="property in element.prop_keys">
-				<td>{{property.name}}</td>
-				<td>{{property.value}}</td>
+			<tr class="info inventory" style="display: none;">
+				<td colspan="3">
+					<table class="table table-bordered">
+						<tr ng-repeat="property in element.retrieve_hide">
+							<td>{{element.display[property]}}</td>
+							<td>{{element[property]}}</td>
+						</tr>
+						<tr ng-repeat="property in element.prop_keys">
+							<td>{{property.name}}</td>
+							<td>{{property.value}}</td>
+						</tr>
+					</table>
+				</td>
 			</tr>
 		</table>
 
-		<h3 onclick="toggleOnlineOfflineData(this, 'offline_data');" ng-if="offlinedata.length > 0"><i style="vertical-align: middle" class='icon-chevron-right'></i> Offline data</h3>
+		<h3>Offline data</h3>
 
-		<table style="display: none;" class="table table-bordered offline_data" ng-repeat="offline in offlinedata">
-			<tr>
-				<th colspan="2">{{offline['description']}}</th>
-			</tr>
-			<tr ng-repeat="property in offline.install_display">
-				<td>{{offline.display[property]}}</td>
-				<td ng-if="property == 'status'">{{statusMap[offline[property]]}}</td>
-				<td ng-if="property != 'status'">{{offline[property]}}</td>
-			</tr>
-			<tr>
+		<span ng-if="offlinedata.length == 0">No offline data</span>
+
+		<table class="table table-bordered offline_data">
+			<thead>
+				<tr>
+					<th>Id</th>
+					<th>data status</th>
+					<th>Show additional data</th>
+				</tr>
+			</thead>
+			<tbody ng-repeat="offline in offlinedata">
+				<tr>
+					<td ng-repeat="property in offline.retrieve_show">
+						<span ng-if="property == 'status'">{{statusMap[offline[property]]}}</span>
+						<span ng-if="property != 'status'">{{offline[property]}}</span>
+					</td>
+
+					<td>
+						<button ng-click="toggleTableRows($event, 'offline_data_', $index)" class="btn btn-info">Show</button>
+					</td>
+				</tr>
+				<tr class="info offline_data_{{$index}}" style="display: none;">
+					<td colspan="3">
+						<table class="table table-bordered">
+							<tr ng-repeat="property in offline.retrieve_hide">
+								<td>{{offline.display[property] | iff : offline.display[property] : property | firstLetterUppercase}}</td>
+
+								<td ng-if="property != 'script_name' && property != 'data_file_name'">{{offline[property]}}</td>
+
+								<td ng-if="property == 'script_name'"><span ng-if="!offline.script">Script was not saved!</span><button ng-if="offline.script" class="btn btn-info" ng-click="downloadScript(offline)">Download script file</button></td>
+
+								<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(offline)" class="btn btn-info">Download raw file</button></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+			<!--<tr>
 				<td>Offline data details</td>
 				<td><button ng-click="goToOfflineData(offline.inventory_name, offline.id)" class="btn btn-info">Show</button></td>
-			</tr>
+			</tr>-->
 		</table>
 	</div>
 </div>

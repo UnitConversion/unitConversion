@@ -6,7 +6,7 @@
 <div ng-if="action == 'retrieve'">
 	<div class="details_data">
 		<h3>{{info.retrieve_title}}</h3>
-		
+
 		{% endverbatim %}
 			{% if user.is_authenticated %}
 			{% verbatim %}
@@ -18,20 +18,35 @@
 			{% endif %}
 		{% verbatim %}
 
-
 		<table class="table table-bordered">
 			<tr>
-				<th>Key</th>
-				<th>Value</th>
+				<th ng-repeat="property in element.retrieve_show">
+					{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}
+				</th>
+				<th>Show additional data</th>
 			</tr>
-			<tr ng-repeat="property in element.retrieve">
-				<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
+			<tr>
+				<td ng-repeat="property in element.retrieve_show">
+					<span ng-if="property == 'status'"><select ng-disabled="true" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></span>
 
-				<td ng-if="property == 'url'"><button ng-click="download(element[property])" class="btn btn-info">Download file</button></td>
-				
-				<td ng-if="property != 'url' && property != 'status'">{{element[property]}}</td>
+					<span ng-if="property != 'status'">{{element[property]}}</span>
+				</td>
+				<td>
+					<button onclick="toggleTableRows(this, 'online_data')" class="btn btn-info">Show</button>
+				</td>
+			</tr>
+			<tr class="info online_data" style="display: none;">
+				<td colspan="3">
+					<table class="table table-bordered">
+						<tr ng-repeat="property in element.retrieve_hide">
+							<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
 
-				<td ng-if="property == 'status'"><select ng-disabled="true" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></td>
+							<td ng-if="property == 'url'"><button ng-click="download(element[property])" class="btn btn-info">Download file</button></td>
+
+							<td ng-if="property != 'url'">{{element[property]}}</td>
+						</tr>
+					</table>
+				</td>
 			</tr>
 		</table>
 
@@ -39,16 +54,30 @@
 
 		<table class="table table-bordered">
 			<tr>
-				<th>Key</th>
-				<th>Value</th>
+				<th ng-repeat="property in install.retrieve_show">
+					{{install.display[property]}}
+				</th>
+				<th>Show additional data</th>
 			</tr>
-			<tr ng-repeat="property in install.retrieve">
-				<td>{{install.display[property]}}</td>
-				<td>{{install[property]}}</td>
+			<tr>
+				<td ng-repeat="property in install.retrieve_show">
+					{{install[property]}}
+				</td>
+				<td><button onclick="toggleTableRows(this, 'install')" class="btn btn-info">Show</button></td>
 			</tr>
-			<tr ng-repeat="property in install.prop_keys">
-				<td>{{property.name}}</td>
-				<td>{{property.value}}</td>
+			<tr class="info install" style="display: none;">
+				<td colspan="3">
+					<table class="table table-bordered">
+						<tr ng-repeat="property in install.retrieve_hide">
+							<td>{{install.display[property]}}</td>
+							<td>{{install[property]}}</td>
+						</tr>
+						<tr ng-repeat="property in install.prop_keys">
+							<td>{{property.name}}</td>
+							<td>{{property.value}}</td>
+						</tr>
+					</table>
+				</td>
 			</tr>
 		</table>
 	</div>
@@ -57,7 +86,7 @@
 <div ng-if="action == 'save'">
 	<div class="details_data">
 		<h3>{{info.save_title}}</h3>
-		
+
 		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
@@ -75,13 +104,13 @@
 					<td>
 						<span class="control-group" ng-class="{'error': error[property]}">
 							<span class="controls">
-								
+
 								<select ng-if="property == 'install_name'" ng-model="new[property]" ng-options="inst for inst in installs"></select>
 
 								<input ng-if="property != 'install_name' && property != 'status'" type="text" ng-model="new[property]" />
 
 								<select ng-if="property == 'status'" ng-model="new[property]" ng-options="s.name as s.value for s in statusArr"></select>
-								
+
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
 						</span>
@@ -92,9 +121,9 @@
 					<td>
 						<span class="control-group" ng-class="{'error': error['file_name']}">
 							<span class="controls">
-								
+
 								<input type="text" name="file_name" ng-model="new['file_name']" />
-								
+
 								<span class="help-inline">{{error['file_name']}}</span>
 							</span>
 						</span>
@@ -130,12 +159,12 @@
 <div ng-if="action == 'update'">
 	<div class="details_data">
 		<h3>{{info.update_title}}</h3>
-		
+
 		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
 		</div>
-		
+
 		<form data-file-upload="options" method="post" enctype="multipart/form-data">
 
 			<table class="table table-bordered">
@@ -152,7 +181,7 @@
 							<span class="controls">
 
 								<select ng-if="property == 'install_name'" ng-model="element[property]" ng-options="inst for inst in installs"></select>
-								
+
 								<input ng-if="property != 'status' && property != 'install_name'" type="text" ng-model="element[property]" />
 
 								<select ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select>
@@ -167,9 +196,9 @@
 					<td>
 						<span class="control-group" ng-class="{'error': error['file_name']}">
 							<span class="controls">
-								
+
 								<input type="text" name="file_name" ng-model="element['file_name']" />
-								
+
 								<span class="help-inline">{{error['file_name']}}</span>
 							</span>
 						</span>

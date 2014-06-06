@@ -4,3 +4,4 @@ from utils import _generateFilePath
 from utils import _checkParameter
 from utils import _checkWildcardAndAppend
 from utils import _generateUpdateQuery
+from utils import _checkRangeAndAppend

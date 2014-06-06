@@ -21,19 +21,35 @@
 
 		<table class="table table-bordered">
 			<tr>
-				<th>Key</th>
-				<th>Value</th>
+				<th ng-repeat="property in element.retrieve_show">
+					{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}
+				</th>
+				<th>Show additional data</th>
 			</tr>
-			<tr ng-repeat="property in element.retrieve">
-				<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
+			<tr>
+				<td ng-repeat="property in element.retrieve_show">
+					<span ng-if="property != 'status'">{{element[property]}}</span>
 
-				<td ng-if="property != 'script_name' && property != 'data_file_name' && property != 'status'">{{element[property]}}</td>
+					<span ng-if="property == 'status'"><select ng-disabled="true" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></span>
+				</td>
+				<td>
+					<button onclick="toggleTableRows(this, 'offline_data')" class="btn btn-info">Show</button>
+				</td>
+			</tr>
+			<tr class="info offline_data" style="display: none;">
+				<td colspan="3">
+					<table class="table table-bordered">
+						<tr ng-repeat="property in element.retrieve_hide">
+							<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
 
-				<td ng-if="property == 'script_name'"><span ng-if="!element.script">Script was not saved!</span><button ng-if="element.script" class="btn btn-info" ng-click="downloadScript(element)">Download script file</button></td>
+							<td ng-if="property != 'script_name' && property != 'data_file_name'">{{element[property]}}</td>
 
-				<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(element)" class="btn btn-info">Download raw file</button></td>
+							<td ng-if="property == 'script_name'"><span ng-if="!element.script">Script was not saved!</span><button ng-if="element.script" class="btn btn-info" ng-click="downloadScript(element)">Download script file</button></td>
 
-				<td ng-if="property == 'status'"><select ng-disabled="true" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select></td>
+							<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(element)" class="btn btn-info">Download raw file</button></td>
+						</tr>
+					</table>
+				</td>
 			</tr>
 		</table>
 
@@ -41,16 +57,30 @@
 
 		<table class="table table-bordered">
 			<tr>
-				<th>Key</th>
-				<th>Value</th>
+				<th ng-repeat="property in inventory.retrieve_show">
+					{{inventory.display[property]}}
+				</th>
+				<th>Show additional data</th>
 			</tr>
-			<tr ng-repeat="property in inventory.retrieve">
-				<td>{{inventory.display[property]}}</td>
-				<td>{{inventory[property]}}</td>
+			<tr>
+				<td ng-repeat="property in inventory.retrieve_show">
+					{{inventory[property]}}
+				</td>
+				<td><button onclick="toggleTableRows(this, 'inventory')" class="btn btn-info">Show</button></td>
 			</tr>
-			<tr ng-repeat="property in inventory.prop_keys">
-				<td>{{property.name}}</td>
-				<td>{{property.value}}</td>
+			<tr class="info inventory" style="display: none;">
+				<td colspan="3">
+					<table class="table table-bordered">
+						<tr ng-repeat="property in inventory.retrieve_hide">
+							<td>{{inventory.display[property]}}</td>
+							<td>{{inventory[property]}}</td>
+						</tr>
+						<tr ng-repeat="property in inventory.prop_keys">
+							<td>{{property.name}}</td>
+							<td>{{property.value}}</td>
+						</tr>
+					</table>
+				</td>
 			</tr>
 		</table>
 	</div>

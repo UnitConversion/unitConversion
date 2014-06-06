@@ -13,3 +13,5 @@ _build
 /utest/idods/clientapi/large2
 /utest/idods/dataapi/download_128
 /utest/idods/dataapi/download_4
+/example/nsls2idods/file10mb.txt
+/example/nsls2idods/result

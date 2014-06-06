@@ -111,10 +111,10 @@ class TestIdods(unittest.TestCase):
         idObject = self.api.saveVendor('test vendor', 'desc')
 
         # Update vendor name and description
-        self.assertTrue(self.api.updateVendor(idObject['id'], None, 'test vendor2', description = 'desc2'))
+        self.assertTrue(self.api.updateVendor(idObject['id'], None, 'test vendor2', description='desc2'))
 
         # Try to update without vendor id
-        self.assertRaises(ValueError, self.api.updateVendor, None, None, 'test vendor2', description = 'desc2')
+        self.assertRaises(ValueError, self.api.updateVendor, None, None, 'test vendor2', description='desc2')
 
         # Retrieve updated vendor
         vendor = self.api.retrieveVendor('test vendor2')
@@ -186,7 +186,7 @@ class TestIdods(unittest.TestCase):
         self.api.saveComponentTypePropertyType('length', 'test description')
 
         # Save new component type
-        cmpntid = self.api.saveComponentType('test cmpnt3', 'test description', props = {'length': 4.354})
+        cmpntid = self.api.saveComponentType('test cmpnt3', 'test description', props={'length': 4.354})
         result = self.api.retrieveComponentType('test cmpnt3')
 
         # Check if returned name is the same as saved one
@@ -215,10 +215,10 @@ class TestIdods(unittest.TestCase):
         self.api.saveComponentTypePropertyType('length', 'test description')
 
         # Save new component type
-        self.api.saveComponentType('test cmpnt3', 'test description', props = {'length': 4.354})
+        self.api.saveComponentType('test cmpnt3', 'test description', props={'length': 4.354})
 
         # Try updating
-        self.assertTrue(self.api.updateComponentType(None, 'test cmpnt3', 'Magnet', description = 'desc', props = {'length': 3}))
+        self.assertTrue(self.api.updateComponentType(None, 'test cmpnt3', 'Magnet', description='desc', props={'length': 3}))
 
         # Get updated component type
         cmpnt = self.api.retrieveComponentType('Magnet')
@@ -674,10 +674,10 @@ class TestIdods(unittest.TestCase):
         self.api.saveComponentType('Magnet')
 
         # Prepare install
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Try to update
-        self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description = 'desc2'))
+        self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description='desc2'))
 
         # Try to update by setting component type to None
         self.assertRaises(ValueError, self.api.updateInstall, None, 'test child', 'test child', cmpnt_type=None)
@@ -733,7 +733,7 @@ class TestIdods(unittest.TestCase):
         propType = self.api.saveInstallRelPropertyType('testprop')
 
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
@@ -764,7 +764,7 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
@@ -804,7 +804,7 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
         savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')

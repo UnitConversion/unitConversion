@@ -297,6 +297,29 @@ function toggleOnlineOfflineData(el, type) {
 }
 
 /**
+ * Toggle table rows and Show/Hide button
+ * @param  {[type]} el DOM element that has icon in it
+ * @param  {[type]} type should we toggle online data tables or offline data tables
+ * @return {[type]}    [description]
+ */
+function toggleTableRows(el, type) {
+	var elObj = $(el);
+	l(type);
+
+	if (elObj.html() == 'Show') {
+		elObj.html('Hide');
+		elObj.addClass('active');
+
+	} else {
+		elObj.html('Show');
+		elObj.removeClass('active');
+	}
+
+	var block = $(el).parents('table').find('.' + type);
+	block.toggle();
+}
+
+/**
  * Represent jason data as a tree with <ul> and <li> elements.
  * @param {type} html html code to start with
  * @param {type} data json data object

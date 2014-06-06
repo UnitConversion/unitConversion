@@ -298,6 +298,7 @@ def cleanDB():
     cur = conn.cursor()
 
     sql = [
+        'delete from cmpnttype__vendor;',
         'delete from id_offline_data;',
         'delete from id_raw_data;',
         'delete from id_online_data;',

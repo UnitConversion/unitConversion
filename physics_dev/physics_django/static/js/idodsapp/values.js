@@ -218,6 +218,12 @@ app.value('InventoryInfo', {
  	// Parameters that are displayed when showing item details
  	this.retrieve = ["id", "name", "cmpnt_type", "vendor", "alias", "serialno"];
 
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_show = ["id", "name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_hide = ["cmpnt_type", "vendor", "alias", "serialno"];
+
  	// Parameters that are checked before saving or updating
  	this.list = ["name", "cmpnt_type", "vendor", "alias", "serialno"];
 
@@ -584,6 +590,12 @@ app.value('InstallInfo', {
  	// Parameters that are displayed when showing item details
  	this.retrieve = ["id", "name", "cmpnt_type", "description", "coordinatecenter"];
 
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_show = ["id", "name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_hide = ["cmpnt_type", "description", "coordinatecenter"];
+
  	// Parameters that are checked before saving or updating
  	this.list = ["name", "cmpnt_type", "description", "coordinatecenter", "all_install"];
 
@@ -823,6 +835,12 @@ app.value('OfflineDataInfo', {
  	// Parameters that are displayed when showing item details
  	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_show = ["id", "status"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_hide = ["inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "script_name", "method_name", "methoddesc"];
+
  	// Parameters that are checked before saving or updating
  	this.list = ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 
@@ -934,6 +952,12 @@ app.value('OfflineDataInstallInfo', {
  	// Parameters that are displayed when showing item details
  	this.retrieve = ["id", "inventory_name", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_show = ["id", "status"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_hide = ["inventory_name", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "script_name", "method_name", "methoddesc"];
+
  	// Parameters that are checked before saving or updating
  	this.list = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 
@@ -1040,6 +1064,12 @@ app.value('OnlineDataInfo', {
 
  	// Parameters that are displayed when showing item details
  	this.retrieve = ["id", "install_name", "description", "username", "status", "url", "date"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_show = ["id", "status"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_hide = ["install_name", "description", "username", "url", "date"];
 
  	// Parameters that are checked before saving or updating
  	this.list = ["install_name", "description", "date", "status"];
