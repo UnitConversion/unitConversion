@@ -1736,7 +1736,7 @@ class IDODSClient(object):
 
             .. code-block:: python
 
-                {'data_id': {
+                {'offlinedata_id': {
                         'username': ,      # string
                         'description': ,   # string
                         'date': ,          # timestamp
@@ -2287,6 +2287,30 @@ class IDODSClient(object):
 
         return r.json()
 
+    def deleteOfflineData(self, offline_data_id):
+        '''
+        Delete offline data
+
+        :param offline_data_id: offline data id
+        :type offline_data_id: int
+
+        :return: True if everything was ok
+
+        :Raises: HTTPError
+        '''
+        # Set URL
+        url = 'deleteofflinedata/'
+
+        # Set parameters
+        params = {
+            'offline_data_id': offline_data_id
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
     def retrieveOnlineData(self, **kws):
         '''Retrieve insertion device online data using any of the acceptable key words:
 
@@ -2560,6 +2584,30 @@ class IDODSClient(object):
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def deleteOnlineData(self, online_data_id):
+        '''
+        Delete online data
+
+        :param online_data_id: online data id
+        :type online_data_id: int
+
+        :return: True if everything was ok
+
+        :Raises: HTTPError
+        '''
+        # Set URL
+        url = 'deleteonlinedata/'
+
+        # Set parameters
+        params = {
+            'online_data_id': online_data_id
+        }
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)

@@ -1019,6 +1019,11 @@ app.controller('searchInstallCtrl', function($scope, $window, $routeParams){
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 
+	$scope.changeMaster = function(type) {
+		l(type);
+		l($scope.group);
+	};
+
 	// Redirect to list
 	if(!$routeParams.search) {
 		var search = {};
@@ -1110,7 +1115,7 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Show details in the right pane
  */
-app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, onlineDataFactory, OnlineData, offlineDataFactory, OfflineData, cmpntTypeFactory, EntityError){
+app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, onlineDataFactory, inventoryFactory, Inventory, OnlineData, offlineDataFactory, OfflineData, cmpntTypeFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1135,7 +1140,6 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 
 	// Get inventory from the factory if updating
 	if($routeParams.action != "save") {
-		l($routeParams);
 
 		installFactory.retrieveItem($routeParams).then(function(inst_result) {
 			$scope.element = inst_result;
@@ -1149,11 +1153,16 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 
 					if(keys.length > 0) {
 						$scope.map = result[keys[0]];
-						l($scope.map);
+
+						// Get offline data
+						inventoryFactory.retrieveItems({'name': $scope.map.inventoryname}).then(function(result) {
+							l(result);
+							var keys = Object.keys(result);
+							$scope.inventory = new Inventory(result[keys[0]]);
+						});
 
 						// Get offline data
 						offlineDataFactory.retrieveItems({'inventory_name': $scope.map.inventoryname}).then(function(result) {
-							l(result);
 
 							$.each(result, function(i, item){
 								$scope.offlinedata.push(new OfflineData(item));

@@ -2,18 +2,23 @@
 <div class="clear"></div>
 <div id="search_form">
 	<div class="">
-		<h5>Search</h5>
+		<h5>Select view</h5>
 	</div>
-
+	<div ng-repeat="type in masterTypes">
+		<label class="radio">
+			<input type="radio" name="master" ng-value="type.name" ng-model="$parent.group"> {{type.value}}
+		</label>
+	</div>
+	<br/>
 	<div>
-		<select ng-model="group" ng-options="type.name as type.value for type in masterTypes"></select>
 		<select ng-model="search.type" ng-options="s.value for s in dataTypes[group]" ng-change="changeEntity()"></select>
 		<br />
 		<br />
 	</div>
 	<div class="">
-		Display:
-
+		<h5>Display</h5>
+	</div>
+	<div class="">
 		<label class="radio">
 			<input type="radio" ng-model="display" name="optionsRadios" id="optionsRadios1" value="online_data">
 			Online data
@@ -27,7 +32,9 @@
 		<br />
 	</div>
 
-	Browse:
+	<div class="">
+		<h5>Browse</h5>
+	</div>
 	<div id="tree" compile="tree"></div>
 </div>
 {% endverbatim %}

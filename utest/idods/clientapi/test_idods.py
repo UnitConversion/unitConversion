@@ -465,6 +465,16 @@ class Test(unittest.TestCase):
         # Check data
         self.assertNotEqual(updatedDataObject['data'], '')
 
+        # Delete offline data
+        self.assertTrue(self.client.deleteOfflineData(savedOfflineData['id']))
+
+        # Try to retrieve deleted offline data
+        retrievedData = self.client.retrieveOfflineData(offlineid=savedOfflineData['id'])
+        retrievedDataKeys = retrievedData.keys()
+
+        # There should be none returned
+        self.assertEqual(len(retrievedDataKeys), 0)
+
     '''
     Callback method for testing uploading files with online data methods
     '''
@@ -480,7 +490,7 @@ class Test(unittest.TestCase):
         self.client.saveComponentType('Magnet')
 
         # Prepare install parent
-        self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        self.client.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.client.saveOnlineData('test parent', username='username', description='desc1234', data='../dataapi/download_128', data_file_name='datafile', status=1)

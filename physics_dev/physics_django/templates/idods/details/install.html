@@ -47,7 +47,7 @@
 
 		<h3>Device in inventory</h3>
 
-		<table ng-if="map.inventoryname" class="table table-bordered">
+		<!-- <table ng-if="map.inventoryname" class="table table-bordered">
 			<tr>
 				<th>Key</th>
 				<th>Value</th>
@@ -63,6 +63,35 @@
 			<tr>
 				<td>Device info</td>
 				<td><button ng-click="goToInventory(map.inventoryid)" class="btn btn-info">Show</button></td>
+			</tr>
+		</table> -->
+
+		<table class="table table-bordered">
+			<tr>
+				<th ng-repeat="property in inventory.retrieve_show">
+					{{inventory.display[property]}}
+				</th>
+				<th>Show additional data</th>
+			</tr>
+			<tr>
+				<td ng-repeat="property in inventory.retrieve_show">
+					{{inventory[property]}}
+				</td>
+				<td><button onclick="toggleTableRows(this, 'inventory')" class="btn btn-info">Show</button></td>
+			</tr>
+			<tr class="info inventory" style="display: none;">
+				<td colspan="3">
+					<table class="table table-bordered">
+						<tr ng-repeat="property in inventory.retrieve_hide">
+							<td>{{inventory.display[property]}}</td>
+							<td>{{inventory[property]}}</td>
+						</tr>
+						<tr ng-repeat="property in inventory.prop_keys">
+							<td>{{property.name}}</td>
+							<td>{{property.value}}</td>
+						</tr>
+					</table>
+				</td>
 			</tr>
 		</table>
 
