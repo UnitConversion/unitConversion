@@ -5540,8 +5540,8 @@ class idods(object):
 
             .. code-block:: python
 
-                {'data_id': {
-                        'install_name': ,      # string
+                {'offlinedata_id': {
+                        'install_name': ,  # string
                         'username': ,      # string
                         'description': ,   # string
                         'date': ,          # timestamp
@@ -5557,7 +5557,7 @@ class idods(object):
                         'resultfiletime':, # string
                         'scriptfile':,     # string
                         'script':,         # string
-                        'data':,           # JSON string
+                        'data_id':,           # int
                         'methodname':,     # string
                         'methoddesc':,     # string
                     }
@@ -5719,6 +5719,12 @@ class idods(object):
 
         if len(self.retrieveComponentType('project', all_cmpnt_types=True).keys()) == 0:
             self.saveComponentType('project', '__system__')
+
+        if len(self.retrieveComponentType('cell', all_cmpnt_types=True).keys()) == 0:
+            self.saveComponentType('cell', '__system__')
+
+        if len(self.retrieveComponentType('girder', all_cmpnt_types=True).keys()) == 0:
+            self.saveComponentType('girder', '__system__')
 
         # Create install elements
         if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install=True).keys()) == 0:

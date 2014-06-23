@@ -304,7 +304,7 @@ class Test(unittest.TestCase):
         self.client.saveComponentType('Magnet')
 
         # Prepare install parent
-        self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        self.client.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
         self.client.saveInstall('test child', cmpnt_type='Magnet')
@@ -439,6 +439,12 @@ class Test(unittest.TestCase):
         # Prepare inventory
         self.client.saveInventory('name', cmpnt_type='Magnet', alias='name2')
 
+        # Prepare install
+        self.client.saveInstall('install', cmpnt_type='Magnet')
+
+        # Connect install in inventory
+        self.client.saveInventoryToInstall('install', 'name')
+
         # Create offline data
         savedOfflineData = self.client.saveOfflineData(inventory_name='name', method_name='method', status=1, data='../dataapi/download_128', data_file_name='datafile', gap=3.4, description='spec1234desc')
 
@@ -464,6 +470,13 @@ class Test(unittest.TestCase):
 
         # Check data
         self.assertNotEqual(updatedDataObject['data'], '')
+
+        # Retrieve updated offline data by id
+        retData = self.client.retrieveInstallOfflineData(install_name='install')
+        retDataKeys = retData.keys()
+
+        # There should be eno returned
+        self.assertEqual(len(retDataKeys), 1)
 
         # Delete offline data
         self.assertTrue(self.client.deleteOfflineData(savedOfflineData['id']))

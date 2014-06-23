@@ -1849,6 +1849,180 @@ class IDODSClient(object):
 
         return returnData
 
+    def retrieveInstallOfflineData(self, **kws):
+        '''Retrieve insertion device offline data using any of the acceptable key words:
+
+        - install_name
+        - description
+        - date
+        - gap
+        - phase1
+        - phase2
+        - phase3
+        - phase4
+        - phasemode
+        - polarmode
+        - status
+        - method_name
+        - with_data
+
+        :param description: a brief description for this data entry
+        :type description: str
+
+        :param date: offline data date
+        :type date: str
+
+        :param gap: gap when this data set is produced
+        :type gap: float
+
+        :param phase1: phase 1 when this data set is produced
+        :type phase1: float
+
+        :param phase2: phase 2 when this data set is produced
+        :type phase2: float
+
+        :param phase3: phase 3 when this data set is produced
+        :type phase3: float
+
+        :param phase4: phase 4 when this data set is produced
+        :type phase4: float
+
+        :param phasemode: description for the mode of phase, which is determined by gap/phase
+        :type phasemode: str
+
+        :param polarmode: description for the mode of polar, which is determined by gap/phase
+        :type polarmode: str
+
+        :param status: status of this data set
+        :type status: int
+
+        :param method_name: name of method used to produce the data
+        :type method_name: str
+
+        :param install_name: name of install item
+        :type install_name: str
+
+        :param with_data: do we want data is returned together with the result?
+        :type with_data: True/False
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'offlinedata_id': {
+                        'install_name': ,  # string
+                        'username': ,      # string
+                        'description': ,   # string
+                        'date': ,          # timestamp
+                        'gap':,            # float
+                        'phase1': ,        # float
+                        'phase2': ,        # float
+                        'phase3':,         # float
+                        'phase4':,         # float
+                        'phasemode':,      # string
+                        'polarmode':,      # string
+                        'status':,         # int
+                        'data_file_name':, # string
+                        'data_file_ts':,   # string
+                        'data_id':,        # int
+                        'script_name':,    # string
+                        'script':,         # string
+                        'method_name':,    # string
+                        'methoddesc':,     # string
+                        'inventory_name':, # string
+                        'data':            # string, base64 encoded file content
+                    }
+                }
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'offlinedatainstall/'
+
+        # Set parameters
+        params = {}
+
+        # Add description
+        if 'description' in kws:
+            params['description'] = kws['description']
+
+        # Add date
+        if 'date' in kws:
+            params['date'] = kws['date']
+
+        # Add gap
+        if 'gap' in kws:
+            params['gap'] = kws['gap']
+
+        # Add phase1
+        if 'phase1' in kws:
+            params['phase1'] = kws['phase1']
+
+        # Add phase2
+        if 'phase2' in kws:
+            params['phase2'] = kws['phase2']
+
+        # Add phase3
+        if 'phase3' in kws:
+            params['phase3'] = kws['phase3']
+
+        # Add phase4
+        if 'phase4' in kws:
+            params['phase4'] = kws['phase4']
+
+        # Add phasemode
+        if 'phasemode' in kws:
+            params['phasemode'] = kws['phasemode']
+
+        # Add polarmode
+        if 'polarmode' in kws:
+            params['polarmode'] = kws['polarmode']
+
+        # Add status
+        if 'status' in kws:
+            params['status'] = kws['status']
+
+        # Add method name
+        if 'method_name' in kws:
+            params['method_name'] = kws['method_name']
+
+        # Add install name
+        if 'install_name' in kws:
+            params['install_name'] = kws['install_name']
+
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+
+        returnData = r.json()
+
+        # Append data if with_data is set
+        if 'with_data' in kws and kws['with_data'] is True:
+
+            # Set URL
+            url = 'rawdata/'
+
+            # Go through all returned offline data and append data
+            offlineDataKeys = returnData.keys()
+
+            for key in offlineDataKeys:
+                offlineData = returnData[key]
+
+                # Set parameters
+                params = {
+                    'raw_data_id': offlineData['data_id']
+                }
+
+                result = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+                self.__raise_for_status(r.status_code, r.text)
+                resultData = result.json()
+
+                resultKeys = resultData.keys()
+                resultObject = resultData[resultKeys[0]]
+                returnData[key]['data'] = resultObject['data']
+
+        return returnData
+
     def saveMethodAndOfflineData(self, inventory_name, method, method_desc, data_desc, data_file_name, data_file_path, status, gap, phase1, phase2, phase3, phase4, phase_mode, polar_mode):
         '''
         Save data method and offline data into the database

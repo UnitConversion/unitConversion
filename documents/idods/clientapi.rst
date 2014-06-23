@@ -26,20 +26,20 @@ Before we can call methods from Python API, we should initialize the client. We 
 
 	from idodspy.idodsclient import IDODSClient
 
-and then by executing the initialize call:
+and then by executing the initialization call:
 
 .. code-block:: python
 
 	client = IDODSClient(BaseURL='http://localhost:8000')
 
-When calling the constructor we should provide base server URL to it.
+When calling the constructor we should provide base server URL.
 
 Inventory
 +++++++++++++
 
 In inventory there are devices that are not yet installed.
 
-To save inventory item we should call **saveInventory** method. Input parameters and returned object is displayed in the `Client API Library`_. Mandatory parameters are: **name** and **cmpnt_type**. There is also a predefined list of properties that should be saved together with the inventory. Some of the items in the list can be set to **None**. When providing those parameters, entities with provided names should already exist in the database or **saveInventory** will return an exception.
+To save inventory item we should call **saveInventory** method. Input parameters and returned object are displayed in the `Client API Library`_. Mandatory parameters are: **name** and **cmpnt_type**. There is also a predefined list of properties that should be saved together with inventory. Some of the items in the list can be set to **None**. Component type with given name should already exist in the database or **saveInventory** will return an exception.
 
 Example:
 
@@ -79,7 +79,7 @@ Example:
 
 	inventory = client.retrieveInventory('IVU*')
 
-In the above example we retrieve all inventory items with names starting with **IVU**. Retrieved data is JSON structure and is explained in the `Client API Library`_.
+In the above example we retrieve all inventory items with names starting with **IVU**. Retrieved data is JSON structure as explained in the `Client API Library`_.
 
 Inventory item cannot be deleted but it can be updated. To update existing item we should provide name of the saved item through the **old_name** parameter and then all parameters we want to update. In the example below we will update the name of the existing inventory item.
 
@@ -102,7 +102,7 @@ Example:
 
 	client.saveInstall('ivu22g1c10c', cmpnt_type='IVU', coordinatecenter = 2.2)
 
-To retrieve information about installed device, we should call **retrieveInstall** method. Mandatory parameter is **name** but Wildcard characters can also be used to e.g. retrieve information about all installed devices. In the following example information about all devices is retrieved.
+To retrieve information about installed device, we should call **retrieveInstall** method. Mandatory parameter is **name** but Wildcard characters can also be used to e.g. asterisk to retrieve information about all installed devices. In the following example information about all devices is retrieved.
 
 Example:
 
@@ -147,7 +147,7 @@ Example:
 
 	client.updateInventoryToInstall(3, 'ivu22g1c10d', 'IVU23')
 
-We should have in mind a rule that one install item can be linked to only one inventory items and vice versa.
+We should have in mind a rule that one install item can be linked to only one inventory item and vice versa.
 
 A shortcut
 +++++++++++++
@@ -162,7 +162,7 @@ We can use this method to also mimic basic methods to save inventory or install 
 Offline data
 +++++++++++++
 
-Offline data is the data source of the insertion device which is measured without a beam and is attached to device in inventory.
+Offline data is the data source of the insertion device which is measured without a beam and is attached to a device in inventory.
 
 To save offline data we should use **saveOfflineData**. At least **inventory_name**, **status**, **data** and **data_file_name** should be provided to successfully save offline data into a database. **data_file_name** parameter is a new file name of the file found at **data** path on a local filesystem.
 
@@ -240,7 +240,7 @@ Example:
 
     client.saveOnlineData('epu57g1c02c', data='../dataapi/download_128', data_file_name='datafile', status=1)
 
-We can retrieve online data by calling **retrieveOnlineData** method. We can provide one or more of the following parameters: **onlineid**, **install_name**, **username**, **description**, **url**, **status**. To retrieve uploaded file together with other data, we should provide **with_data** parameter and set it to **True**. Because this is actual file saved on a server, we also need to provide path to where file will be saved on our local drive. We can do this by providing **data_path** parameter with valid local path to a file where file will be downloaded to. Downloading of uploaded file can take some time and we have a possibility to track download progress. To track download progress we should provide **callback** parameter by which we provide a callback method that will be called at the start of the download process and after each file block is downloaded.
+We can retrieve online data by calling **retrieveOnlineData** method. We can provide one or more of the following parameters: **onlineid**, **install_name**, **username**, **description**, **url**, **status**. To retrieve uploaded file together with other data, we should provide **with_data** parameter and set it to **True**. Because this is an actual file saved on a server, we also need to provide path to where file will be saved on our local drive. We can do this by providing **data_path** parameter with valid local path to a file where file will be downloaded to. Downloading of uploaded file can take some time and we have a possibility to track download progress. To track download progress we should provide **callback** parameter by which we provide a callback method that will be called at the start of the download process and after each file block is downloaded.
 
 Example of the callback method definition:
 
@@ -287,3 +287,46 @@ Advanced
 ~~~~~~~~~~
 
 To save all the data we mentioned in the previous section we also need support data to be present in the database like: information about vendor, data method, component type property types etc. Client API allows us to save and update all of them. Most answers on how to do this can be found by reading auto generated documentation that can be found at `Client API Library`_. In this section we will provide a couple of examples of some tricky stuff we sometimes have to do so data in the database is correctly structured and consistent.
+
+Device hierarchies / install IDODS
++++++++++++++++++++++++++++++++++++
+
+Devices can be placed into two hierarchical trees. First tree represents device in a financial structure. Device can be assigned to project and to a beamline. This tree is named **Beamline project**. Second tree represents device's geometric layout. Device can be found in a cell and and in a girder. Second tree is named **Device geometric layout**. To create this hierarchy, some system component types and install items have to be saved into a database. The purpose of system component types and system install items is to separate those items from real devices when retrieving component types and install items.
+
+Client API provides a method **idodsInstall** that saves first two levels of hierarchy and also creates connections between nodes. It creates a couple of system component types: **root**, **branch**, **beamline**, **project**, **cell** and **girder**. Each element of a tree that is not a device / leaf element has to be of one of those types. Install method also creates a couple of system install items: **Trees (root)**, **Device geometric layout (branch)** and **Beamline project (branch)**. Then it connects root item to both branch items by calling **saveInstallRel**.
+
+After running the **idodsInstall** method we get the following result::
+
+ +-- Trees
+      +-- Device geometric layout
+      +-- Beamline project
+
+When starting tree structure is present in the database, we can start adding beamlines, projects, cells and girders.
+
+We can add new project to a hierarchy by calling **saveInstall** and setting **cmpnt_type** to **project**. When install item is created we should also take care of connection to a right place in a tree. We should call **saveInstallRel** and provide first parameter which is a child we just created and second parameter which is a parent already present in a tree.
+
+Example of adding install item and connecting it to a tree:
+
+.. code-block:: python
+
+    client.saveInstall('NSLS-II', cmpnt_type='project')
+    client.saveInstallRel('NSLS-II', 'Beamline project')
+
+Saving custom property to a hierarchical tree node
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+To add a custom property to a device and this property is location or project specific, we can attach it to a tree node. Firstly property type has to be created.
+
+Example of creating tree node property type:
+
+.. code-block:: python
+
+    client.saveInstallRelPropertyType('straight section')
+
+After property type is created we can add or update tree node and set a value to a property.
+
+Example:
+
+.. code-block:: python
+
+    client.saveInstallRel('IXS', 'ivu22g1c10c', props={'straight section': 'asd'})
