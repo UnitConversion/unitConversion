@@ -212,25 +212,12 @@ class idods(object):
         :Raises: ValueError, MySQLError
         '''
 
-        # Check name
-        _checkParameter("name", name)
-
-        # Construct SQL
-        sql = '''
-        SELECT
-            tmp.inventory_prop_tmplt_id, cmpnt.cmpnt_type_name,
-            tmp.inventory_prop_tmplt_name, tmp.inventory_prop_tmplt_desc,
-            tmp.inventory_prop_tmplt_default, tmp.inventory_prop_tmplt_units
-        FROM inventory_prop_tmplt tmp
-        LEFT JOIN cmpnt_type cmpnt ON tmp.cmpnt_type_id = cmpnt.cmpnt_type_id
-        WHERE
-        '''
-        vals = []
-
-        # Append name
-        sqlAndVals = _checkWildcardAndAppend("inventory_prop_tmplt_name", name, sql, vals)
+        # Check for vendor name parameter
+        _checkParameter('name', name)
 
         # Append component type id
+        cmpnt_type_id = None
+
         if cmpnt_type is not None:
             cmpnt = self.retrieveComponentType(cmpnt_type)
 
@@ -240,32 +227,21 @@ class idods(object):
             cmpntKeys = cmpnt.keys()
             cmpnt_type_id = cmpnt[cmpntKeys[0]]['id']
 
-            sqlAndVals = _checkWildcardAndAppend("tmp.cmpnt_type_id", cmpnt_type_id, sqlAndVals[0], sqlAndVals[1], 'AND')
+        resdict = {}
+        res = self.physics.retrieveInventoryPropertyTemplate(name, cmpnt_type_id)
 
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sqlAndVals[0], sqlAndVals[1])
+        # Construct return dict
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'name': r[1],
+                'description': r[2],
+                'default': r[3],
+                'unit': r[4],
+                'cmpnt_type': r[5]
+            }
 
-            # get any one since it should be unique
-            res = cur.fetchall()
-            resdict = {}
-
-            # Construct return dict
-            for r in res:
-                resdict[r[0]] = {
-                    'id': r[0],
-                    'cmpnt_type': r[1],
-                    'name': r[2],
-                    'description': r[3],
-                    'default': r[4],
-                    'unit': r[5]
-                }
-
-            return resdict
-
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+        return resdict
 
     def saveInventoryPropertyTemplate(self, cmpnt_type, name, description=None, default=None, unit=None):
         '''
@@ -312,35 +288,9 @@ class idods(object):
         # Check name
         _checkParameter("name", name)
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO inventory_prop_tmplt
-        (cmpnt_type_id, inventory_prop_tmplt_name, inventory_prop_tmplt_desc, inventory_prop_tmplt_default, inventory_prop_tmplt_units)
-        VALUES
-        (%s, %s, %s, %s, %s)
-        '''
+        result = self.physics.saveInventoryPropertyTemplate(name, cmpnt_typeid, description, default, unit)
 
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (cmpnt_typeid, name, description, default, unit))
-
-            # Get last row id
-            templateid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': templateid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving new inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': result}
 
     def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type, name, **kws):
         '''
@@ -2894,79 +2844,6 @@ class idods(object):
             self.logger.info('Error when updating component type property type:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating component type property type:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def _retrieveComponentTypeProperty(self, componentTypeId, componentTypePropertyTypeId=None, value=None):
-        '''
-        Retrieve component type property from the database
-
-        parameters:
-            - componentTypeId: id of the component type entry
-            - componentTypePropertyTypeId: id of the property type
-            - value: value of the property
-
-        returns:
-            { 'id': {
-                    'id': #int,
-                    'value': #string,
-                    'cmpnt_typename': #string,
-                    'typename': #string
-                }
-            }
-
-        raises:
-            ValueError, MySQLError
-        '''
-
-        # Generate SQL
-        sql = '''
-        SELECT
-            cp.cmpnt_type_prop_id,
-            cp.cmpnt_type_id,
-            cp.cmpnt_type_prop_type_id,
-            cp.cmpnt_type_prop_value,
-            cpt.cmpnt_type_prop_type_name,
-            ct.cmpnt_type_name
-        FROM cmpnt_type_prop cp
-        LEFT JOIN cmpnt_type_prop_type cpt ON (cp.cmpnt_type_prop_type_id = cpt.cmpnt_type_prop_type_id)
-        LEFT JOIN cmpnt_type ct ON (cp.cmpnt_type_id = ct.cmpnt_type_id)
-        WHERE
-        '''
-
-        # Add component type id parameter
-        sql += ' cp.cmpnt_type_id = %s '
-        vals = [componentTypeId]
-
-        # Add component type property type parameter
-        if componentTypePropertyTypeId:
-            sql += ' AND cp.cmpnt_type_prop_type_id = %s '
-            vals.append(componentTypePropertyTypeId)
-
-        sqlVals = (sql, vals)
-
-        # Add value parameter if exists
-        if value:
-            sqlVals = _checkWildcardAndAppend('cmpnt_type_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
-
-        try:
-            # Retrieve objects from the database
-            cur = self.conn.cursor()
-            cur.execute(sqlVals[0], sqlVals[1])
-            res = cur.fetchall()
-            resdict = {}
-
-            for r in res:
-                resdict[r[0]] = {
-                    'id': r[0],
-                    'value': r[3],
-                    'cmpnt_typename': r[5],
-                    'typename': r[4]
-                }
-
-            return resdict
-
-        except MySQLdb.Error as e:
-            self.logger.info('Error when retrieving component type property from the table:\n%s (%s)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when retrieving component type property from the table:\n%s (%s)' % (e.args[1], e.args[0]))
-
     def retrieveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName=None, value=None):
         '''
         Retrieve component type property from the database by name
@@ -2987,6 +2864,8 @@ class idods(object):
                 { 'id': {
                         'id': #int,
                         'value': #string,
+                        'typeid': #int,
+                        'cmpnt_typeid': #int,
                         'cmpnt_typename': #string,
                         'typename': #string
                     }
@@ -3018,7 +2897,21 @@ class idods(object):
             retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
             componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
 
-        return self._retrieveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
+        properties = self.physics.retrieveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
+
+        resdict = {}
+
+        for r in properties:
+            resdict[r[0]] = {
+                'id': r[0],
+                'value': r[1],
+                'cmpnt_typeid': r[2],
+                'typeid': r[3],
+                'typename': r[4],
+                'cmpnt_typename': r[5]
+            }
+
+        return resdict
 
     def saveComponentTypePropertyById(self, componentTypeId, componentTypePropertyTypeName, value):
         '''
@@ -3048,35 +2941,10 @@ class idods(object):
         retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
         componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO cmpnt_type_prop
-            (cmpnt_type_id, cmpnt_type_prop_type_id, cmpnt_type_prop_value)
-        VALUES
-            (%s, %s, %s)
-        '''
+        # Call save from physics dataapi
+        result = self.physics.saveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
 
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (componentTypeId, componentTypePropertyTypeId, value))
-
-            # Get last row id
-            propid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': propid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': result}
 
     def saveComponentTypeProperty(self, componentTypeName, componentTypePropertyTypeName, value):
         '''
@@ -3120,55 +2988,28 @@ class idods(object):
         retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
         componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO cmpnt_type_prop
-            (cmpnt_type_id, cmpnt_type_prop_type_id, cmpnt_type_prop_value)
-        VALUES
-            (%s, %s, %s)
-        '''
+        # Call save from physics dataapi
+        result = self.physics.saveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
 
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (componentTypeId, componentTypePropertyTypeId, value))
-
-            # Get last row id
-            propid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': propid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': result}
 
     def updateComponentTypeProperty(self, oldComponentTypeName, oldComponentTypePropertyTypeName, value):
         '''
         Save inventory property into database
 
-        params:
-            - oldComponentTypeName: name of the component type
-            - oldComponentTypePropertyTypeName: name of the component type property type
-            - value: value of the component type property
+        :param oldComponentTypeName: name of the component type
+        :type oldComponentTypeName: str
 
-        returns:
-            True if everything is ok
+        :param oldComponentTypePropertyTypeName: name of the component type property type
+        :type oldComponentTypePropertyTypeName: str
 
-        raises:
-            ValueError, MySQLError
+        :param value: value of the component type property
+        :type value: int/str
+
+        :returns: True if everything is ok
+
+        :raises: ValueError, MySQLError
         '''
-
-        # Define query dict
-        queryDict = {}
-        whereDict = {}
 
         # Check component type
         retrieveComponentType = self.retrieveComponentType(oldComponentTypeName)
@@ -3178,7 +3019,6 @@ class idods(object):
 
         retrieveComponentTypeKeys = retrieveComponentType.keys()
         componentTypeId = retrieveComponentType[retrieveComponentTypeKeys[0]]['id']
-        whereDict['cmpnt_type_id'] = componentTypeId
 
         # Check component type property type
         retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(oldComponentTypePropertyTypeName)
@@ -3188,32 +3028,9 @@ class idods(object):
 
         retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
         componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
-        whereDict['cmpnt_type_prop_type_id'] = componentTypePropertyTypeId
 
-        # Set value parameter
-        queryDict['cmpnt_type_prop_value'] = value
-
-        # Generate SQL
-        sqlVals = _generateUpdateQuery('cmpnt_type_prop', queryDict, None, None, whereDict)
-
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sqlVals[0], sqlVals[1])
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return True
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when updating component type property:\n%s (%d)' % (e.args[1], e.args[0]))
+        # Call update from physics dataapi
+        return self.physics.updateComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
 
     def retrieveComponentType(self, name, description=None, all_cmpnt_types=None):
         '''Retrieve a component type using the key words:
@@ -3304,11 +3121,21 @@ class idods(object):
                 resdict[r[0]]['prop_keys'] = []
 
                 # Get the rest of the properties
-                properties = self._retrieveComponentTypeProperty(r[0])
+                properties = self.physics.retrieveComponentTypeProperty(r[0])
+
+                propdict = {}
+
+                for pr in properties:
+                    propdict[pr[0]] = {
+                        'id': pr[0],
+                        'value': pr[1],
+                        'cmpnt_typename': pr[5],
+                        'typename': pr[4]
+                    }
 
                 # Append properties to existing object
-                for prop in properties:
-                    obj = properties[prop]
+                for prop in propdict:
+                    obj = propdict[prop]
                     resdict[r[0]][obj['typename']] = obj['value']
                     resdict[r[0]]['prop_keys'].append(obj['typename'])
 

@@ -26,6 +26,7 @@ import MySQLdb
 
 from utils import (_wildcardformat, _assemblesql)
 from pyphysics.physics import physics
+from _mysql_exceptions import MySQLError
 
 
 class municonvdata(object):
@@ -206,8 +207,7 @@ class municonvdata(object):
             res = self.physics.retrieveComponentTypePropertyType(name, desc)
             return res
 
-        except MySQLdb.Error as e:
-            self.logger.info(e)
+        except MySQLError as e:
             raise Exception(e)
 
         except ValueError as e:
@@ -225,8 +225,7 @@ class municonvdata(object):
             res = self.physics.saveComponentTypePropertyType(name, desc)
             return res
 
-        except MySQLdb.Error as e:
-            self.logger.info(e)
+        except MySQLError as e:
             raise Exception(e)
 
         except ValueError as e:
@@ -234,67 +233,45 @@ class municonvdata(object):
             raise Exception(e)
 
     def retrievecmpnttypeprop(self, ctypeid, cptypeid, value=None):
-        '''Retrieve value and id of given component type id and component type property type id.
+        '''
+        Retrieve value and id of given component type id and component type property type id.
         Any property belonging to component type and shared by all inventory instances is save in the component type property table.
         The type name of that property is defined in the component type property type table.
 
-        Return: tuple of component type property value and id ((component property id, property value)).
-        '''
-        sql = '''
-        select cmpnt_type_prop_id, cmpnt_type_prop_value
-        from cmpnt_type_prop
-        where
-        cmpnt_type_id = %s and cmpnt_type_prop_type_id = %s
+        :Return: tuple of component type property value and id ((component property id, property value)).
         '''
         try:
-            cur = self.conn.cursor()
-            if value:
-                value = _wildcardformat(value)
-                if "%" in value or "_" in value:
-                    sql += " and cmpnt_type_prop_value like %s "
-                else:
-                    sql += " and cmpnt_type_prop_value = %s "
-                cur.execute(sql, (ctypeid, cptypeid, value))
-            else:
-                cur.execute(sql, (ctypeid, cptypeid))
-            res = cur.fetchall()
-        except MySQLdb.Error, e:
-            self.logger.info("Error when fetching component type property value:\n%s (%d)" %(e.args[1], e.args[0]))
-            raise Exception("Error when fetching component type property value:\n%s (%d)" %(e.args[1], e.args[0]))
-        return res
+            res = self.physics.retrieveComponentTypeProperty(ctypeid, cptypeid, value)
+            return res
+
+        except MySQLError as e:
+            raise Exception(e)
+
+        except ValueError as e:
+            self.logger.info(e)
+            raise Exception(e)
 
     def savecmpnttypeprop(self, value, ctypeid, cptypeid):
-        '''Save value to component type property table with given component type id and component type property type id.
+        '''
+        Save value to component type property table with given component type id and component type property type id.
         Any property belonging to component type and shared by all inventory instances is save in the component type property table.
         The type name of that property is defined in the component type property type table.
 
-        return component type property id.
+        :Return: component type property id.
         '''
-        if not isinstance (value, (str, unicode)):
+        if not isinstance(value, (str, unicode)):
             raise Exception("Component type property value has to be a string ")
 
         res = self.retrievecmpnttypeprop(ctypeid, cptypeid)
         if len(res) > 0:
             raise ValueError('A value has been given')
 
-        sql = '''
-        insert into cmpnt_type_prop
-        (cmpnt_type_id, cmpnt_type_prop_type_id, cmpnt_type_prop_value)
-        values(%s, %s, %s)
-        '''
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (ctypeid, cptypeid, value))
-            self.commit()
-            # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-            # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-            # it is per connection.
-            lastid = cur.lastrowid
-        except MySQLdb.Error, e:
-            self.logger.info('Error when saving component type property value:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving component type property value:\n%s (%d)' % (e.args[1], e.args[0]))
+            res = self.physics.saveComponentTypeProperty(ctypeid, cptypeid, value)
+            return res
 
-        return lastid
+        except MySQLError as e:
+            raise Exception(e)
 
     def updatecmpnttypeprop(self, value, ctypeid, cptypeid):
         '''Update value of component type property value column in component type property table
@@ -302,28 +279,19 @@ class municonvdata(object):
 
         return True if success, otherwise, throw out an exception.
         '''
-        if not isinstance (value, (str, unicode)):
+        if not isinstance(value, (str, unicode)):
             raise Exception("Component type property value has to be a string ")
 
         res = self.retrievecmpnttypeprop(ctypeid, cptypeid)
         if len(res) == 0:
             raise Exception('No entity found.')
-        sql = '''
-        update cmpnt_type_prop
-        SET
-        cmpnt_type_prop_value = %s
-        WHERE
-        cmpnt_type_id = %s AND cmpnt_type_prop_type_id = %s
-        '''
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (value, ctypeid, cptypeid))
-            self.commit()
-        except MySQLdb.Error, e:
-            self.logger.info('Error when saving component type property value:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving component type property value:\n%s (%d)' % (e.args[1], e.args[0]))
 
-        return True
+        try:
+            res = self.physics.updateComponentTypeProperty(ctypeid, cptypeid, value)
+            return res
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def retrieveinventoryproptmplt(self, name, ctypeid=None, desc=None):
         '''Retrieve id of a given inventory property template name, with optional component type id or description
@@ -336,34 +304,11 @@ class municonvdata(object):
         if not isinstance(name, (str, unicode)):
             raise Exception('Inventory property template name has to be a string.')
 
-        sql = '''
-        select
-        inventory_prop_tmplt_id, inventory_prop_tmplt_name, inventory_prop_tmplt_desc, inventory_prop_tmplt_default, inventory_prop_tmplt_units
-        from inventory_prop_tmplt
-        where
-        inventory_prop_tmplt_name like %s
-        '''
-
-        name = _wildcardformat(name)
-        value = [name]
-
-        if ctypeid:
-            sql += ' and cmpnt_type_id = %s '
-            value.append(ctypeid)
-
-        if desc:
-            sql += ' and inventory_prop_tmplt_desc like %s '
-            value.append(desc)
-
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, value)
-            res = cur.fetchall()
-        except MySQLdb.Error, e:
-            self.logger.info('Error when fetching inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when fetching inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+            return self.physics.retrieveInventoryPropertyTemplate(name, ctypeid, desc)
 
-        return res
+        except MySQLError as e:
+            raise Exception(e)
 
     def saveinventoryproptmplt(self, name, ctypeid, desc=None, default=None, units=None):
         '''Save an inventory property template instance with given name, component type id, and some optional field.
@@ -376,45 +321,13 @@ class municonvdata(object):
         res = self.retrieveinventoryproptmplt(name, ctypeid, desc=desc)
         if len(res) > 0:
             raise Exception('Name (%s) with given component type id (%s) for inventory property template exists already'
-                            %(name, ctypeid))
-        sql = '''
-        insert into inventory_prop_tmplt
-        (inventory_prop_tmplt_name, cmpnt_type_id
-        '''
-        sqlext = ''
-        sqlval = ' values (%s, %s'
-        val = [name, ctypeid]
-        if desc:
-            sqlext += ', inventory_prop_tmplt_desc'
-            sqlval += ', %s'
-            val.append(desc)
-
-        if default:
-            sqlext += ', inventory_prop_tmplt_default'
-            sqlval += ', %s'
-            val.append(default)
-
-        if units:
-            sqlext += ', inventory_prop_tmplt_units'
-            sqlval += ', %s'
-            val.append(units)
-
-        sql += sqlext + ')' + sqlval + ')'
+                            % (name, ctypeid))
 
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, val)
-            self.commit()
-            # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-            # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-            # it is per connection.
-            lastid = cur.lastrowid
-        except MySQLdb.Error, e:
-            self.logger.info('Error when saving inventory property template name:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving inventory property template name:\n%s (%d)' % (e.args[1], e.args[0]))
+            return self.physics.saveInventoryPropertyTemplate(name, ctypeid, desc, default, units)
 
-        return lastid
-
+        except MySQLError as e:
+            raise Exception(e)
 
     def retrieveinventoryprop(self, inventoryid, iproptmpltid, value=None):
         '''Retrieve id and value from inventory property table with given inventory id and inventory property template id.
@@ -447,8 +360,8 @@ class municonvdata(object):
             cur.execute(sql, values)
             res = cur.fetchall()
         except MySQLdb.Error as e:
-            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
-            raise Exception('Error when retrieve id and vale from inventory property table:\n%s (%s)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
+            raise Exception('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
 
         return res
 
@@ -459,7 +372,7 @@ class municonvdata(object):
 
         return inventory property id, or throw an exception if existing already.
         '''
-        if not isinstance (value, (str, unicode)):
+        if not isinstance(value, (str, unicode)):
             # could be a json dumped text.
             raise Exception("Inventory value has to be a string ")
 

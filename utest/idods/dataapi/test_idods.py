@@ -23,59 +23,6 @@ class TestIdods(unittest.TestCase):
     def cleanTables(self):
         cleanDB()
 
-        # Clean offline data
-        # cleanOfflineData(['spec1234desc'])
-
-        # Clean install rel prop
-        # cleanInstallRelProp(['testprop'])
-
-        # Clean install rel prop type
-        # cleanInstallRelPropType(['testprop', 'prop2'])
-
-        # Clean install rel
-        # cleanInstallRel('test child', 'test parent')
-        # cleanInstallRel('test parent', 'test child')
-
-        # Clean online data
-        # cleanOnlineData(['desc1234'])
-
-        # Clean inventory install map
-        # cleanInventoryToInstall('test parent', 'name')
-        # cleanInventoryToInstall('test parent', 'name2')
-
-        # Clean install table
-        # cleanInstall(['test parent', 'test child'])
-
-        # Clean vendor table
-        # cleanVendor(['test vendor', 'test vendor2'])
-
-        # Clean data method
-        # cleanDataMethod(['method', 'method2', 'test'])
-
-        # Clean inventory property
-        # cleanInventoryProperty('name', 'alpha')
-        # cleanInventoryProperty('name2', 'alpha')
-        # Clean inventory
-        # cleanInventory(['name', 'name2'])
-        # Clean inventory property template table
-        # cleanInventoryPropertyTemplate(['alpha', 'beta'])
-
-        # Clean component type property
-        # cleanComponentTypeProperty('test cmpnt3', 'length')
-        #  cleanComponentTypeProperty('Magnet', 'length')
-        # cleanComponentTypeProperty('Magnet', 'insertion_device')
-        # cleanComponentTypeProperty('test cmpnt3', 'insertion_device')
-        # cleanComponentTypeProperty('test cmpnt', 'insertion_device')
-        # cleanComponentTypeProperty('test cmpnt2', 'insertion_device')
-        # cleanComponentTypeProperty('test cmpnt4', 'insertion_device')
-        # Clean component type property type
-        # cleanComponentTypePropertyType(['length', 'width', 'insertion_device'])
-        # Clean if there is something left from previous runs
-        # cleanComponentType(['test cmpnt', 'test cmpnt2', 'test cmpnt3', 'test cmpnt4', 'Magnet'])
-
-        # Clean raw data
-        # cleanRawData()
-
     def setUp(self):
         self.con = connect()
         self.api = idods(self.con)
@@ -268,12 +215,19 @@ class TestIdods(unittest.TestCase):
 
         # Save component type property type
         propertyType = self.api.saveComponentTypePropertyType('length', 'test description')
+        propertyType2 = self.api.saveComponentTypePropertyType('length2', 'test description')
 
         # Prepare component type
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Save component type property
         property = self.api.saveComponentTypeProperty('Magnet', 'length', 3)
+
+        # Save component type property by id
+        propertyId = self.api.saveComponentTypePropertyById(savedComponentType['id'], 'length2', 3)
+
+        # Test if we got back id
+        self.assertNotEqual(propertyId['id'], 0)
 
         # Try to update
         self.assertTrue(self.api.updateComponentTypeProperty('Magnet', 'length', 4))

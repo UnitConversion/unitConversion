@@ -76,5 +76,99 @@ class TestIdods(unittest.TestCase):
         # If retrieved with name set to None it should return an exception
         self.assertRaises(Exception, self.api.retrievecmpnttypeproptype, None)
 
+    def testComponentTypeProperty(self):
+        '''
+        Test component type property
+        '''
+
+        # Prepare component type
+        typeid = self.api.savecmpnttype('cmpnt', 'desc', 'vendor')
+        typeid = typeid[0]
+
+        # Prepare component type property type
+        typepropid = self.api.savecmpnttypeproptype('name', 'desc')
+
+        # Save property
+        self.api.savecmpnttypeprop("1", typeid, typepropid)
+
+        # Check value exception
+        self.assertRaises(Exception, self.api.savecmpnttypeprop, 1, typeid, typepropid)
+
+        # Try to set value again
+        self.assertRaises(ValueError, self.api.savecmpnttypeprop, "2", typeid, typepropid)
+
+        # Test mysql error
+        self.assertRaises(Exception, self.api.savecmpnttypeprop, "2", typepropid, typeid)
+
+        # Retrieve property
+        prop = self.api.retrievecmpnttypeprop(typeid, typepropid)
+
+        # Check value
+        self.assertEqual(prop[0][1], '1')
+
+        # Update with int value
+        self.assertRaises(Exception, self.api.updatecmpnttypeprop, 1, typeid, typepropid)
+
+        # Update undefined property
+        self.assertRaises(Exception, self.api.updatecmpnttypeprop, '1', 123, 321)
+
+        # Successfully update
+        self.assertTrue(self.api.updatecmpnttypeprop('3', typeid, typepropid))
+
+        # Retrieve property
+        prop = self.api.retrievecmpnttypeprop(typeid, typepropid)
+
+        # Check value
+        self.assertEqual(prop[0][1], '3')
+
+    def testInventoryPropertyTemplate(self):
+        '''
+        Test inventory property template
+        '''
+
+        # Prepare component type
+        typeid = self.api.savecmpnttype('component type', 'desc')
+
+        # Save template with int name
+        self.assertRaises(Exception, self.api.saveinventoryproptmplt, 123, 321)
+
+        # Save template
+        templateid = self.api.saveinventoryproptmplt('tmplt', typeid, 'desc', 'default', 'units')
+
+        # Save template with existing name
+        self.assertRaises(Exception, self.api.saveinventoryproptmplt, 'tmplt', typeid)
+
+        # Retrieve with int name
+        self.assertRaises(Exception, self.api.retrieveinventoryproptmplt, 12)
+
+        # Normal retrieve
+        template = self.api.retrieveinventoryproptmplt('tmplt')
+
+        # Test id
+        self.assertEqual(template[0][0], templateid)
+
+        # Test name
+        self.assertEqual(template[0][1], 'tmplt')
+
+        # Test desc
+        self.assertEqual(template[0][2], 'desc')
+
+        # Test default
+        self.assertEqual(template[0][3], 'default')
+
+        # Test units
+        self.assertEqual(template[0][4], 'units')
+
+    def testInventoryProperty(self):
+        '''
+        Test inventory property
+        '''
+
+        # Prepare component type
+        typeid = self.api.savecmpnttype('component type', 'desc')
+
+        # prepare inventory
+        #invid = self.api.saveinventory('123', 'component type', None)
+
 if __name__ == '__main__':
     unittest.main()
