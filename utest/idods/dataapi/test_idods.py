@@ -331,6 +331,9 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
+        self.assertRaises(ValueError, self.api.saveInventory, None, cmpnt_type='Magnet')
+
+        # Create inventory
         inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
 
         # Create property

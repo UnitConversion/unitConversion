@@ -48,7 +48,7 @@
 
 		<span ng-if="offlinedata.length == 0">No offline data</span>
 
-		<table class="table table-bordered offline_data">
+		<table ng-if="offlinedata.length != 0" class="table table-bordered offline_data">
 			<thead>
 				<tr>
 					<th>Id</th>

@@ -159,6 +159,206 @@ class physics(object):
             self.logger.info('Error when saving vendor:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving vendor:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def retrieveComponentType(self, name, description=None):
+        '''
+        Retrieve a component type
+
+        :param name: component type type name
+        :type name: str
+
+        :param description: description for this device
+        :type desctiprion: str
+
+        :return: a map with structure like:
+
+            .. code-block: python
+
+                (
+                    (
+                        component_type_id,
+                        component_type_name,
+                        description
+                    ),
+                    ...
+                )
+
+        :Raises: MySQLError
+        '''
+
+        # Start SQL
+        sql = '''
+        SELECT cmpnt_type_id, cmpnt_type_name, description FROM cmpnt_type WHERE
+        '''
+
+        vals = []
+
+        # Append component type
+        sqlAndVals = _checkWildcardAndAppend("cmpnt_type_name", name, sql, vals)
+
+        # Append description if it exist
+        if description is not None:
+            sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
+
+        # Execute SQL
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlAndVals[0], sqlAndVals[1])
+            res = cur.fetchall()
+
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching component type:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching component type:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def saveComponentType(self, component_type_name, description=None):
+        '''
+        Save a component type
+
+        :param component_type_name: component type name
+        :type component_type_name: str
+
+        :param description: description for this device
+        :type desctiprion: str
+
+        :return: id of a new component type
+
+        :Raises: MySQLError
+        '''
+
+        # Save it into database and return its new id
+        sql = ''' INSERT into cmpnt_type (cmpnt_type_name, description) VALUES (%s, %s) '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (component_type_name, description))
+            componenttypeid = cur.lastrowid
+
+            # Commit transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return componenttypeid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving component type:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving component type:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def retrieveComponentTypeVendor(self, component_type_id, vendor_id):
+        '''
+        Retrieve component type - vendor map
+
+        :param component_type_id: component type id
+        :type component_type_id: int
+
+        :param vendor_id: vendor id
+        :type vendor_id: int
+
+        :return: a tuple::
+
+                (
+                    (
+                        id,
+                        component_type_id,
+                        component_type_name,
+                        vendor_id,
+                        vendor_name
+                    ),
+                    ...
+                }
+
+        :Raises: ValueError, Exception
+        '''
+
+        # Generate SQL statement
+        vals = []
+        sql = '''
+        SELECT
+            cv.cmpnttype__vendor_id,
+            cv.cmpnt_type_id,
+            ct.cmpnt_type_name,
+            cv.vendor_id,
+            v.vendor_name
+        FROM cmpnttype__vendor cv
+        LEFT JOIN vendor v ON(cv.vendor_id = v.vendor_id)
+        LEFT JOIN cmpnt_type ct ON(cv.cmpnt_type_id = ct.cmpnt_type_id)
+        WHERE
+        '''
+
+        # Append component type id
+        sqlVals = _checkWildcardAndAppend('ct.cmpnt_type_id', component_type_id, sql, vals)
+
+        # Append vendor id
+        sqlVals = _checkWildcardAndAppend('v.vendor_id', vendor_id, sqlVals[0], sqlVals[1], 'AND')
+
+        try:
+            # Execute sql
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Get all
+            res = cur.fetchall()
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching component type - vendor map:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching component type - vendor map:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def saveComponentTypeVendor(self, component_type_id, vendor_id):
+        '''
+        Save component type - vendor map
+
+        :param component_type_id: component type id
+        :type component_type_id: int
+
+        :param vendor_id: vendor id
+        :type vendor_id: int
+
+        :return: id of the map
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Try to retrieve existing map
+        existingMap = self.retrieveComponentTypeVendor(component_type_id, vendor_id)
+
+        if len(existingMap):
+            raise ValueError("Map already exists in the database!")
+
+        # Generate SQL statement
+        sql = '''
+        INSERT INTO cmpnttype__vendor (cmpnt_type_id, vendor_id) VALUES (%s, %s)
+        '''
+        vals = [component_type_id, vendor_id]
+
+        try:
+            # Execute sql
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+
+            # Get last row id
+            mapid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return mapid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving component type - vendor map:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving component type - vendor map:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def retrieveComponentTypePropertyType(self, name, description=None):
         '''
         Retrieve component type property type by its name
@@ -569,3 +769,175 @@ class physics(object):
 
             self.logger.info('Error when saving new inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving new inventory property template:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def retrieveInventoryProperty(self, inventory_id, inventory_property_template_id=None, value=None):
+        '''
+        Retrieve id and value from inventory property table
+
+        :param inventory_id: id of the inventory entry
+        :type inventory_id: int
+
+        :param inventory_property_template_id: id of the inventory property template
+        :type inventory_property_template_id: int
+
+        :param value: value of the property template
+        :type value: str
+
+        :returns: Python tuple
+
+            (
+                (
+                    inventory_prop_id,
+                    inventory_prop_value,
+                    inventory_prop_tmplt_id,
+                    inventory_id,
+                    inventory_prop_tmplt_name,
+                    invnetory_name
+                ),
+                ...
+            )
+
+        :raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        SELECT
+            ip.inventory_prop_id,
+            ip.inventory_prop_value,
+            ip.inventory_prop_tmplt_id,
+            ip.inventory_id,
+            ipt.inventory_prop_tmplt_name,
+            inv.name
+        FROM inventory_prop ip
+        LEFT JOIN inventory_prop_tmplt ipt ON (ip.inventory_prop_tmplt_id = ipt.inventory_prop_tmplt_id)
+        LEFT JOIN inventory inv ON (ip.inventory_id = inv.inventory_id)
+        WHERE
+        '''
+
+        # Add inventory_id parameter
+        sql += ' ip.inventory_id = %s '
+        vals = [inventory_id]
+
+        # Add inventory_prop_tmplt_id parameter
+        if inventory_property_template_id:
+            sql += ' AND ip.inventory_prop_tmplt_id = %s '
+            vals.append(inventory_property_template_id)
+
+        sqlVals = (sql, vals)
+
+        # Add value parameter if exists
+        if value:
+            sqlVals = _checkWildcardAndAppend('inventory_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
+
+        try:
+            # Retrieve objects from the database
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+            res = cur.fetchall()
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
+
+    def saveInventoryProperty(self, inventory_id, inventory_property_template_id, value):
+        '''
+        Save inventory property into database
+
+        :param inventory_id: id of the inventory we are saving property for
+        :type inventory_id: int
+
+        :param inventory_property_template_id: id of the property template/inventory property key name
+        :type inventory_property_template_id: int
+
+        :param value: value of the property template/property key name
+        :type value: str
+
+        :returns: id of the new property
+
+        :raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO inventory_prop
+        (inventory_id, inventory_prop_tmplt_id, inventory_prop_value)
+        VALUES
+        (%s, %s, %s)
+        '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (inventory_id, inventory_property_template_id, value))
+
+            # Get last row id
+            propid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return propid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def updateInventoryProperty(self, inventory_id, inventory_property_template_id, value):
+        '''
+        Update inventory property in a database
+
+        :prop inventory_id: name of the inventory we are saving property for
+        :type inventory_id: str
+
+        :prop inventory_property_template_id: name of the property template/inventory property key name
+        :type inventory_property_template_id: str
+
+        :prop value: value of the property template/property key name
+        :type value: str
+
+        :returns: True if everything is ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+
+        # Set inventory
+        whereDict['inventory_id'] = inventory_id
+
+        # Set property template
+        whereDict['inventory_prop_tmplt_id'] = inventory_property_template_id
+
+        # Set value parameter
+        queryDict['inventory_prop_value'] = value
+
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return True
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))

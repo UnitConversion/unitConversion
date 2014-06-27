@@ -46,7 +46,7 @@ class municonvdata(object):
         self.physics = physics(connection, None)
 
     def connectdb(self, host=None, user=None, pwd=None, db=None, port=3306):
-        if host == None or user == None or pwd == None or db == None:
+        if host is None or user is None or pwd is None or db is None:
             raise ValueError("Cannot initialize municonv database since information is not sufficient.")
 
         if host.startswith("/"):
@@ -70,62 +70,51 @@ class municonvdata(object):
         return True
 
     def retrievecmpnttype(self, name, desc=None, vendor=None):
-        '''Retrieve id of a given component type name, description [optional], and vendor [optional].
+        '''
+        Retrieve id of a given component type name, description [optional], and vendor [optional].
 
         Wildcards are support in component type name search, which uses "*" for multiple match,
         and "?" for single character match.
 
-        Return: tuple of component ((id, name, description, vendor, vendor id), ...) if vendor is provide,
+        Return: tuple of component ((id, name, description, vendor, vendor id), ...) if vendor is provided,
                 otherwise ((id, name, description), ...).
         '''
 
-        if vendor:
-            # retrieve also vendor information
-            sql = '''
-            select
-            ctype.cmpnt_type_id, ctype.cmpnt_type_name, ctype.description, vendor.vendor_name, vendor.vendor_id
-            from cmpnt_type ctype
-            left join cmpnttype__vendor ctvendor on ctvendor.cmpnt_type_id = ctype.cmpnt_type_id
-            left join vendor on ctvendor.vendor_id = vendor.vendor_id
-            where
-            ctype.cmpnt_type_name like %s
-            '''
-        else:
-            # ignore vendor information since vendor is not provided.
-            sql = '''
-            select
-            ctype.cmpnt_type_id, ctype.cmpnt_type_name, ctype.description
-            from cmpnt_type ctype
-            where
-            ctype.cmpnt_type_name like %s
-            '''
+        # Name should not be none
+        if name is None:
+            return ()
 
-        name = _wildcardformat(name)
+        resWithVendor = ()
+
         try:
-            cur = self.conn.cursor()
-            if desc and vendor:
-                desc = _wildcardformat(desc)
-                vendor = _wildcardformat(vendor)
-                sql += " and ctype.description like %s and vendor.vendor_name like %s "
-                cur.execute(sql, (name, desc, vendor))
-            elif desc:
-                desc = _wildcardformat(desc)
-                sql += " and ctype.description like %s "
-                cur.execute(sql, (name, desc))
-            elif vendor:
-                vendor = _wildcardformat(vendor)
-                sql += " and vendor.vendor_name like %s "
-                cur.execute(sql, (name, vendor))
-            else:
-                cur.execute(sql, (name,))
-            res = cur.fetchall()
-        except MySQLdb.Error, e:
-            self.logger.info('Error when fetching component types:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when fetching component types:\n%s (%d)' % (e.args[1], e.args[0]))
-        return res
+            res = self.physics.retrieveComponentType(name, desc)
+
+            # Append vendor if parameter exists
+            if vendor:
+                vendorObj = self.physics.retrieveVendor(vendor)
+
+                # If there is no vendor there is also no cmpnttype_vendor map
+                if len(vendorObj) == 0:
+                    return ()
+
+                # Ge through results and append vendor parts
+                for r in res:
+                    vendorMap = self.physics.retrieveComponentTypeVendor(r[0], vendorObj[0][0])
+
+                    if len(vendorMap) != 0:
+                        r += (vendorMap[0][4], vendorMap[0][3])
+                        resWithVendor += (r,)
+
+                return resWithVendor
+
+            return res
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def savecmpnttype(self, name, desc, vendor=None):
-        '''Save a new component type, and link this component with the given vendor.
+        '''
+        Save a new component type, and link this component with the given vendor.
         Link this component type to given vendor, or throw an exception if component exist already
         and is linked to given vendor.
 
@@ -139,60 +128,40 @@ class municonvdata(object):
         res = self.retrievecmpnttype(name, desc=desc, vendor=vendor)
         if len(res):
             if vendor:
-                raise ValueError('Component (%s) with description (%s) for vendor (%s) exists already.' %(name, desc, vendor))
+                raise ValueError('Component (%s) with description (%s) for vendor (%s) exists already.' % (name, desc, vendor))
             else:
-                raise ValueError('Component (%s) with description (%s) exists already.' %(name, desc))
+                raise ValueError('Component (%s) with description (%s) exists already.' % (name, desc))
 
-        cur = self.conn.cursor()
-        # obtain component type id
-        sql = '''select cmpnt_type_id from cmpnt_type where cmpnt_type_name = %s and description = %s'''
+        res = self.retrievecmpnttype(name, desc)
+
         try:
-            cur.execute(sql, (name, desc))
-            ctid = cur.fetchone()
-            if not ctid:
-                # component type does not exist yet. create a new entry.
-                sql = '''insert into cmpnt_type (cmpnt_type_name, description) values (%s, %s)'''
-                cur.execute(sql, (name, desc))
-
-                self.commit()
-                # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-                # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-                # it is per connection.
-                ctid = cur.lastrowid
-            else:
-                ctid = ctid[0]
-        except MySQLdb.Error as e:
-            self.logger.info('Error when trying to obtain component type id:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when trying to obtain component type id:\n%s (%d)' % (e.args[1], e.args[0]))
-
-        if vendor:
-            # obtain vendor
-            vendorObj = self.physics.retrieveVendor(vendor)
-
-            if len(vendorObj) == 0:
-                vndrid = self.physics.saveVendor(vendor)
+            if len(res) == 0:
+                typeid = self.physics.saveComponentType(name, desc)
 
             else:
-                vndrid = vendorObj[0][0]
+                typeid = res[0][0]
 
-            sql = '''select cmpnttype__vendor_id from cmpnttype__vendor where cmpnt_type_id = %s and vendor_id = %s'''
-            try:
-                cur.execute(sql, (ctid, vndrid))
-                res = cur.fetchall()
-                if len(res):
-                    self.logger.info('component type (%s) has been linked to vendor(%s):\n%s (%d)' % (name, vendor, e.args[1], e.args[0]))
-                    raise Exception('component type (%s) has been linked to vendor(%s):\n%s (%d)' % (name, vendor, e.args[1], e.args[0]))
+            cur = self.conn.cursor()
+
+            if vendor:
+                # obtain vendor
+                vendorObj = self.physics.retrieveVendor(vendor)
+
+                if len(vendorObj) == 0:
+                    vndrid = self.physics.saveVendor(vendor)
+
                 else:
-                    sql = '''insert into cmpnttype__vendor (cmpnt_type_id, vendor_id) values (%s, %s)'''
-                    cur.execute(sql, (ctid, vndrid))
-                    self.commit()
-            except MySQLdb.Error as e:
-                self.logger.info('Error when linking component type (%s) to vendor(%s):\n%s (%d)' % (name, vendor, e.args[1], e.args[0]))
-                raise Exception('Error when linking component type (%s) to vendor(%s):\n%s (%d)' % (name, vendor, e.args[1], e.args[0]))
+                    vndrid = vendorObj[0][0]
 
-            return (ctid, vndrid)
-        else:
-            return ctid
+                self.physics.saveComponentTypeVendor(typeid, vndrid)
+
+                return (typeid, vndrid)
+
+            else:
+                return typeid
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def retrievecmpnttypeproptype(self, name, desc=None):
         '''Retrieve id of a given component type property type name, and description [optional]
@@ -330,7 +299,8 @@ class municonvdata(object):
             raise Exception(e)
 
     def retrieveinventoryprop(self, inventoryid, iproptmpltid, value=None):
-        '''Retrieve id and value from inventory property table with given inventory id and inventory property template id.
+        '''
+        Retrieve id and value from inventory property table with given inventory id and inventory property template id.
         An inventory property has to belong to a property template, which belongs to component type.
 
         Use component type property table to retrieve a property, which is common for a component type.
@@ -338,35 +308,20 @@ class municonvdata(object):
         Return: tuple of inventory property id, inventory property value, property template id and inventory_id,
                 ((property id, inventory property value, property template id, inventory_id), ...).
         '''
-        sql = '''
-        select
-        inventory_prop_id, inventory_prop_value, inventory_prop_tmplt_id, inventory_id
-        from inventory_prop
-        where
-        inventory_id = %s and inventory_prop_tmplt_id = %s
-        '''
-        values = [inventoryid, iproptmpltid]
 
-        if value:
-            value = _wildcardformat(value)
-            if "%" in value or "_" in value:
-                sql += " value like %s "
-            else:
-                sql += " value = %s "
-            values.append(value)
+        # So it works like previous code did
+        if iproptmpltid is None:
+            return ()
 
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, values)
-            res = cur.fetchall()
-        except MySQLdb.Error as e:
-            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
-            raise Exception('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
+            return self.physics.retrieveInventoryProperty(inventoryid, iproptmpltid, value)
 
-        return res
+        except MySQLError as e:
+            raise Exception(e)
 
     def saveinventoryprop(self, value, inventoryid, iproptmpltid):
-        '''Save value to inventory property table with given inventory id and inventory property template id.
+        '''
+        Save value to inventory property table with given inventory id and inventory property template id.
         The inventory property could be for a particular device, and in this case, inventory id has to be give.
         Otherwise, it is a common property for given component type.
 
@@ -381,52 +336,30 @@ class municonvdata(object):
             raise Exception('A value exists already.')
 
         try:
-            cur = self.conn.cursor()
-            sql = '''
-            insert into inventory_prop
-            (inventory_id, inventory_prop_tmplt_id, inventory_prop_value)
-            values(%s, %s, %s)
-            '''
+            return self.physics.saveInventoryProperty(inventoryid, iproptmpltid, value)
 
-            cur.execute(sql, (inventoryid, iproptmpltid, value))
-            self.commit()
-            # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-            # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-            # it is per connection.
-            lastid = cur.lastrowid
-        except MySQLdb.Error as e:
-            self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
-
-        return lastid
+        except MySQLError as e:
+            raise Exception(e)
 
     def updateinventoryprop(self, value, inventoryid, iproptmpltid):
-        '''Update value to inventory property table with given inventory id and inventory property template id.
+        '''
+        Update value to inventory property table with given inventory id and inventory property template id.
 
         return True if success, otherwise, throw out an exception.
         '''
-        if not isinstance (value, (str, unicode)):
+        if not isinstance(value, (str, unicode)):
             raise Exception("Inventory value has to be a string ")
 
         res = self.retrieveinventoryprop(inventoryid, iproptmpltid)
+
         if len(res) == 0:
             raise Exception('No entity found in inventory property table.')
-        sql = '''
-        update inventory_prop
-        SET
-        inventory_prop_value = %s
-        where
-        inventory_id = %s and inventory_prop_tmplt_id = %s
-        '''
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (value, inventoryid, iproptmpltid))
-            self.commit()
-        except MySQLdb.Error, e:
-            self.logger.info('Error when saving component type property value:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when saving component type property value:\n%s (%d)' % (e.args[1], e.args[0]))
 
-        return True
+        try:
+            return self.physics.updateInventoryProperty(inventoryid, iproptmpltid, value)
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def retrieveinstall(self, name, ctypename=None, location=None):
         '''Retrieve installed device name with table id upon giving device name.
@@ -470,17 +403,19 @@ class municonvdata(object):
             raise Exception('Both device name and location info have to be string.')
 
         sql = 'select cmpnt_type_name from cmpnt_type where cmpnt_type_id = %s'
-        cur=self.conn.cursor()
+        cur = self.conn.cursor()
         cur.execute(sql, (ctypeid,))
         ctypename = cur.fetchone()
-        if ctypename != None:
-            ctypename=ctypename[0]
+
+        if ctypename is not None:
+            ctypename = ctypename[0]
+
         else:
-            raise ValueError("component type (id=%s) does not exist."%(ctypeid))
+            raise ValueError("component type (id=%s) does not exist." % (ctypeid))
 
         res = self.retrieveinstall(name, ctypename=ctypename, location=location)
         if len(res) > 0:
-            raise Exception('Device (%s) exists already' %(name) )
+            raise Exception('Device (%s) exists already' % (name))
 
         # For data consistency, using transaction to avoid insertion error
         try:
@@ -491,7 +426,7 @@ class municonvdata(object):
             values (%s, %s, %s)
             '''
             cur.execute(sql, (ctypeid, name, location))
-            #self.commit()
+            # self.commit()
             instid = cur.lastrowid
 
             # create relationship between inventory and install
@@ -557,12 +492,12 @@ class municonvdata(object):
             if vendor:
                 vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
 
-            cur=self.conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' %(serial, e.args[1], e.args[0]))
-            raise Exception('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' %(serial, e.args[1], e.args[0]))
+            self.logger.info('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' % (serial, e.args[1], e.args[0]))
+            raise Exception('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' % (serial, e.args[1], e.args[0]))
 
         return res
 
@@ -583,26 +518,21 @@ class municonvdata(object):
         res = self.retrieveinventory(serial, ctype, vendor)
         if len(res) != 0:
             # entry exists already.
-            raise Exception("Device (%s) with component type (%s) from vendor (%s) exists already." %(serial, ctype, vendor))
+            raise Exception("Device (%s) with component type (%s) from vendor (%s) exists already." % (serial, ctype, vendor))
 
-        self.retrievecmpnttype(ctype, vendor=vendor)
-        sql = '''
-        select ctype.cmpnt_type_id, vendor.vendor_id
-        from cmpnt_type ctype
-        left join cmpnttype__vendor ctvndr on ctype.cmpnt_type_id = ctvndr.cmpnt_type_id
-        left join vendor on ctvndr.vendor_id = vendor.vendor_id
-        where vendor.vendor_name = %s and ctype.cmpnt_type_name = %s
-        '''
-        cur = self.conn.cursor()
-        cur.execute(sql, (vendor, ctype))
+        res = self.retrievecmpnttype(ctype, vendor=vendor)
 
-        res = cur.fetchall()
-        #if len(res) == 0:
+        # if len(res) == 0:
         if len(res) != 1:
             # Throw an exception since either the entry is not unique, or not linked in advance
-            raise Exception("Component type (%s) from vendor (%s) does not exist, or not unique."%(ctype, vendor))
+            raise Exception("Component type (%s) from vendor (%s) does not exist, or not unique." % (ctype, vendor))
 
-        ctypeid, vendorid = res[0]
+        ctypeid = res[0][0]
+        vendorid = res[0][4]
+
+        # TODO: Not OK! Component can be saved without a vendor but not inventory!
+        # if len(res[0]) > 3:
+        #    vendorid = res[0][4]
 
         sql = '''
         insert into inventory (cmpnt_type_id, vendor_id, serial_no)
@@ -618,9 +548,9 @@ class municonvdata(object):
         except MySQLdb.Error as e:
             self.conn.rollback()
             self.logger.info('Error when inserting device (%s) into inventory with type (%s) from vendor (%s):\n%s (%b)'
-                             %(serial, ctype, vendor, e.args[1], e.args[0]))
+                             % (serial, ctype, vendor, e.args[1], e.args[0]))
             raise Exception('Error when inserting device (%s) into inventory with type (%s) from vendor (%s):\n%s (%b)'
-                            %(serial, ctype, vendor, e.args[1], e.args[0]))
+                            % (serial, ctype, vendor, e.args[1], e.args[0]))
 
         self.commit()
         return invid
@@ -677,9 +607,9 @@ class municonvdata(object):
             res = cur.fetchall()
         except MySQLdb.Error as e:
             self.logger.info('Error when selecting installed device (%s) with serial no (%s) from inventory with type (%s) from vendor (%s):\n%s (%b)'
-                             %(name, serial, ctypename, vendor, e.args[1], e.args[0]))
+                             % (name, serial, ctypename, vendor, e.args[1], e.args[0]))
             raise Exception('Error when selecting installed device (%s) with serial no (%s) from inventory with type (%s) from vendor (%s):\n%s (%b)'
-                            %(name, serial, ctypename, vendor, e.args[1], e.args[0]))
+                            % (name, serial, ctypename, vendor, e.args[1], e.args[0]))
 
         return res
 
@@ -690,11 +620,11 @@ class municonvdata(object):
         sqlinst = '''select 1 from install where install_id = %s'''
         sqlinv = '''select 1 from inventory where inventory_id = %s'''
 
-        cur=self.conn.cursor()
+        cur = self.conn.cursor()
 
         if not cur.execute(sqlinst, (installid,)) or not cur.execute(sqlinv, (inventoryid,)):
             raise ValueError('Given install id (%s) or inventory id (%s) does not exist. Can not link them together.'
-                             %(installid, inventoryid))
+                             % (installid, inventoryid))
         sql = '''select inventory__install_id from inventory__install where install_id = %s or inventory_id = %s'''
         cur.execute(sql, (installid, inventoryid))
         res = cur.fetchall()
@@ -704,8 +634,8 @@ class municonvdata(object):
             if len(res) > 1:
                 # either inventory id or install can be in inventory__install table once.
                 # One device in inventory can only be installed in one place.
-                self.logger.info("More than one entry found for installed (id: %s) device in inventory (%s)" %(installid, inventoryid))
-                raise ValueError("More than one entry found for installed (id: %s) device in inventory (%s)" %(installid, inventoryid))
+                self.logger.info("More than one entry found for installed (id: %s) device in inventory (%s)" % (installid, inventoryid))
+                raise ValueError("More than one entry found for installed (id: %s) device in inventory (%s)" % (installid, inventoryid))
             ii_id = res[0][0]
         else:
             sql = '''insert into inventory__install (install_id, inventory_id) values(%s, %s)
@@ -719,9 +649,9 @@ class municonvdata(object):
             except MySQLdb.Error as e:
                 self.conn.rollback()
                 self.logger.info('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)'
-                                 %(installid, inventoryid, e.args[1], e.args[0]))
+                                 % (installid, inventoryid, e.args[1], e.args[0]))
                 raise Exception('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)'
-                                 %(installid, inventoryid, e.args[1], e.args[0]))
+                                % (installid, inventoryid, e.args[1], e.args[0]))
 
             self.commit()
 
@@ -747,13 +677,13 @@ class municonvdata(object):
         except MySQLdb.Error as e:
             self.conn.rollback()
             self.logger.info('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)'
-                             %(installid, inventoryid, e.args[1], e.args[0]))
+                             % (installid, inventoryid, e.args[1], e.args[0]))
             raise Exception('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)'
-                             %(installid, inventoryid, e.args[1], e.args[0]))
+                            % (installid, inventoryid, e.args[1], e.args[0]))
 
         return ii_id
 
-    def retrievesystem(self, location = None):
+    def retrievesystem(self, location=None):
         '''
         retrieve location information from install table
         '''
@@ -761,7 +691,7 @@ class municonvdata(object):
         select distinct location from install where
         '''
         val = None
-        if location == None:
+        if location is None:
             sql += " location like %s "
             val = "%"
         else:
@@ -775,8 +705,8 @@ class municonvdata(object):
                 cur.execute(sql, (val,))
             rawres = cur.fetchall()
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching system from install table:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching system from install table:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching system from install table:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when fetching system from install table:\n%s (%d)' % (e.args[1], e.args[0]))
 
         system = []
         for r in rawres:

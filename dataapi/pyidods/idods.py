@@ -396,61 +396,21 @@ class idods(object):
                     'templatename': #string
                 }
             }
-
-        :raises:
-            ValueError, MySQLError
         '''
 
-        # Generate SQL
-        sql = '''
-        SELECT
-            ip.inventory_prop_id,
-            ip.inventory_prop_value,
-            ip.inventory_prop_tmplt_id,
-            ip.inventory_id,
-            ipt.inventory_prop_tmplt_name,
-            inv.name
-        FROM inventory_prop ip
-        LEFT JOIN inventory_prop_tmplt ipt ON (ip.inventory_prop_tmplt_id = ipt.inventory_prop_tmplt_id)
-        LEFT JOIN inventory inv ON (ip.inventory_id = inv.inventory_id)
-        WHERE
-        '''
+        # Call retrieve from physics
+        res = self.physics.retrieveInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
+        resdict = {}
 
-        # Add inventory_id parameter
-        sql += ' ip.inventory_id = %s '
-        vals = [inventoryId]
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'value': r[1],
+                'inventoryname': r[5],
+                'templatename': r[4]
+            }
 
-        # Add inventory_prop_tmplt_id parameter
-        if inventoryPropertyTemplateId:
-            sql += ' AND ip.inventory_prop_tmplt_id = %s '
-            vals.append(inventoryPropertyTemplateId)
-
-        sqlVals = (sql, vals)
-
-        # Add value parameter if exists
-        if value:
-            sqlVals = _checkWildcardAndAppend('inventory_prop_value', value, sqlVals[0], sqlVals[1], 'AND')
-
-        try:
-            # Retrieve objects from the database
-            cur = self.conn.cursor()
-            cur.execute(sqlVals[0], sqlVals[1])
-            res = cur.fetchall()
-            resdict = {}
-
-            for r in res:
-                resdict[r[0]] = {
-                    'id': r[0],
-                    'value': r[1],
-                    'inventoryname': r[5],
-                    'templatename': r[4]
-                }
-
-            return resdict
-
-        except MySQLdb.Error as e:
-            self.logger.info('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when retrieve id and vale from inventory property table:\n%s (%s)' % (e.args[1], e.args[0]))
+        return resdict
 
     def retrieveInventoryProperty(self, inventoryName, inventoryPropertyTemplateName=None, value=None, cmpnt_type=None):
         '''
@@ -562,55 +522,27 @@ class idods(object):
         retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
         inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO inventory_prop
-        (inventory_id, inventory_prop_tmplt_id, inventory_prop_value)
-        VALUES
-        (%s, %s, %s)
-        '''
+        result = self.physics.saveInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
 
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (inventoryId, inventoryPropertyTemplateId, value))
-
-            # Get last row id
-            propid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': propid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving inventory property value:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': result}
 
     def updateInventoryProperty(self, oldInventoryName, oldInventoryPropertyTemplateName, value, cmpnt_type=None):
         '''
         Update inventory property in a database
 
-        params:
-            - oldInventoryName: name of the inventory we are saving property for
-            - oldInventoryPropertyTemplateName: name of the property template/inventory property key name
-            - value: value of the property template/property key name
+        :prop oldInventoryName: name of the inventory we are saving property for
+        :type oldInventoryName: str
 
-        returns:
-            True if everything is ok
+        :prop oldInventoryPropertyTemplateName: name of the property template/inventory property key name
+        :type oldInventoryPropertyTemplateName: str
 
-        raises:
-            ValueError, MySQLError
+        :prop value: value of the property template/property key name
+        :type value: str
+
+        :returns: True if everything is ok
+
+        :raises: ValueError, MySQLError
         '''
-
-        # Define query dict
-        queryDict = {}
-        whereDict = {}
 
         # Check inventory
         retrieveInventory = self.retrieveInventory(oldInventoryName)
@@ -620,7 +552,6 @@ class idods(object):
 
         retrieveInventoryKeys = retrieveInventory.keys()
         inventoryId = retrieveInventory[retrieveInventoryKeys[0]]['id']
-        whereDict['inventory_id'] = inventoryId
 
         # Check inventory property template
         retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(oldInventoryPropertyTemplateName, cmpnt_type)
@@ -630,32 +561,8 @@ class idods(object):
 
         retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
         inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
-        whereDict['inventory_prop_tmplt_id'] = inventoryPropertyTemplateId
 
-        # Set value parameter
-        queryDict['inventory_prop_value'] = value
-
-        # Generate SQL
-        sqlVals = _generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)
-
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sqlVals[0], sqlVals[1])
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return True
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
+        return self.physics.updateInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
 
     def saveInventory(self, name, **kws):
         '''
@@ -2410,11 +2317,6 @@ class idods(object):
     def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''
         Return installed devices or psecific map
-
-        params:
-            - inventory_to_install_id
-            - install_name
-            - inv_name
 
         :param inventory_to_install_id: id of the inventory to install map
         :type inventory_to_install_id: int

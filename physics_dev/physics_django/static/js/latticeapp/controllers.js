@@ -121,7 +121,7 @@ app.controller('searchFormCtrl', function($scope, $window, $routeParams, $locati
 	$scope.searchForLattice = function(search) {
 		var newLocation = createLatticeListQuery(search, true) + "/list";
 		var currentPath = "#"+$location.path();
-		
+
 		// If location won't change, reload the page
 		if (newLocation === currentPath) {
 			$window.location.reload();
@@ -135,7 +135,7 @@ app.controller('searchFormCtrl', function($scope, $window, $routeParams, $locati
 	$scope.searchForModel = function(search) {
 		var newLocation = createModelListQuery(search, true) + "/list";
 		var currentPath = "#"+$location.path();
-		
+
 		// If location won't change, reload the page
 		if (newLocation === currentPath) {
 			$window.location.reload();
@@ -715,28 +715,28 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 
 	$scope.settings = {};
 	$scope.settings.zoom = "x";
-	$scope.settings['points'] = false;
+	$scope.settings.points = false;
 
 	// Plot data when properties are selected
 	$scope.plotData = function() {
 		$scope.plotPlaceholder.show = true;
 		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
-	}
+	};
 
 	$scope.zoomX = function() {
 		$scope.settings.zoom = "x";
 		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
-	}
+	};
 
 	$scope.zoomY = function() {
 		$scope.settings.zoom = "y";
 		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
-	}
+	};
 
 	$scope.zoomMouse = function() {
 		$scope.settings.zoom = "mouse";
 		flot = drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
-	}
+	};
 
 	$scope.showPoints = function() {
 		$scope.settings['points'] ? $scope.settings['points'] = false : $scope.settings['points'] = true;
@@ -746,7 +746,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 			$.each(flot.getData(), function(i, opt) {
 				if ($scope.settings['points']) {
 					opt.points.show = true;
-					
+
 				} else {
 					opt.points.show = false;
 				}
@@ -755,7 +755,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 			flot.setupGrid();
 			flot.draw();
 		}
-	}
+	};
 
 	$scope.exportImage = function() {
 
@@ -765,7 +765,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 			image = image.replace("image/png","image/octet-stream");
 			document.location.href=image;
 		}
-	}
+	};
 
 	$scope.enableInteractiveZoom = function() {
 		($scope.settings['interactiveZoom']) ? $scope.settings['interactiveZoom'] = false : $scope.settings['interactiveZoom'] = true;
@@ -786,7 +786,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 			//opt.zoom.interactive = true;
 			//flot.setupGrid();
 		}
-	}
+	};
 
 	// Export data to csv file
 	$scope.exportData = function() {
@@ -812,7 +812,7 @@ app.controller('showModelDetailsCtrl', function($scope, $routeParams, $http, $wi
 /*
  * Show details in the right pane
  */
-app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $q){
+app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $window, $q){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.raw = {};
@@ -866,9 +866,80 @@ app.controller('showModelsDetailsCtrl', function($scope, $routeParams, $http, $q
 		});
 	};
 
+	$scope.settings = {};
+	$scope.settings.zoom = "x";
+	$scope.settings.points = false;
+
 	$scope.plotData = function() {
 		$scope.plotPlaceholder.show = true;
-		drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
+		flot = drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
+	};
+
+	$scope.zoomX = function() {
+		$scope.settings.zoom = "x";
+		flot = drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
+	};
+
+	$scope.zoomY = function() {
+		$scope.settings.zoom = "y";
+		flot = drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
+	};
+
+	$scope.zoomMouse = function() {
+		$scope.settings.zoom = "mouse";
+		flot = drawPlotTransposed(".placeholder", $scope.compare.selection, $scope.compare.factor, $scope.compare.data, nameToIdMap, "Position", $scope);
+	};
+
+	$scope.showPoints = function() {
+		$scope.settings.points ? $scope.settings.points = false : $scope.settings.points = true;
+
+		if (flot !== undefined) {
+
+			$.each(flot.getData(), function(i, opt) {
+				if ($scope.settings.points) {
+					opt.points.show = true;
+
+				} else {
+					opt.points.show = false;
+				}
+			});
+
+			flot.setupGrid();
+			flot.draw();
+		}
+	};
+
+	$scope.exportImage = function() {
+
+		if (flot !== undefined) {
+			var myCanvas = flot.getCanvas();
+			var image = myCanvas.toDataURL();
+			image = image.replace("image/png","image/octet-stream");
+			document.location.href=image;
+		}
+	};
+
+	$scope.enableInteractiveZoom = function() {
+		($scope.settings.interactiveZoom) ? $scope.settings.interactiveZoom = false : $scope.settings.interactiveZoom = true;
+		$scope.plotPlaceholder.show = true;
+		//drawPlotTransposed(".placeholder", $scope.raw.selection, $scope.raw.factor, $scope.raw.data, undefined, "Position", $scope);
+
+		if (flot !== undefined) {
+			opt = flot.getOptions();
+			l(opt);
+			l(flot.getData());
+
+			opt.zoom.interactive = true;
+
+			flot.getData()[0].points.show = false;
+		}
+	};
+
+	// Export data to csv file
+	$scope.exportData = function() {
+		l("export data");
+		var output = createCsvString($scope.compare.data, $scope.compare.selection, $scope.compare.factor);
+		$window.open('data:application/download,' + encodeURIComponent(output));
 	};
 
 	$scope.trim = function(input) {

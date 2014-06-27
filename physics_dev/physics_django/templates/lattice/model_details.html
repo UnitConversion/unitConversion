@@ -153,10 +153,20 @@
 			</table>
 			<button class="btn" ng-click="plotData()">Plot data</button>
 			<br/>
-
 			<br/>
+
+			<div ng-show="plotPlaceholder.show">
+				<button ng-click="zoomY()" class="btn" ng-class="{'active': settings.zoom == 'y'}">Zoom V</button>
+				<button ng-click="zoomX()" class="btn" ng-class="{'active': settings.zoom == 'x'}">Zoom H</button>
+				<button ng-click="zoomMouse()" class="btn" ng-class="{'active': settings.zoom == 'mouse'}">Zoom Mouse</button>
+				<button ng-click="showPoints()" class="btn" ng-class="{'active': settings.points}">Show points</button>
+				<button ng-click="exportImage()" class="btn">Export image</button>
+				<br/>
+				<br/>
+			</div>
+
 			<div class="resize_container ui-resizable" ng-class="{resize_container_border: plotPlaceholder.show}">
-				<div class="placeholder"></div>
+				<div ng-click="enableInteractiveZoom()" class="placeholder"></div>
 				<div class='x_label axisLabel xaxisLabel'></div>
 				<div class='y2_label axisLabel yaxis2Label'></div>
 				<div class='y_label axisLabel yaxisLabel'></div>

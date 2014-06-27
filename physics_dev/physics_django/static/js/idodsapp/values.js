@@ -210,7 +210,7 @@ app.value('InventoryInfo', {
  app.value('Inventory', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name", "cmpnt_type", "vendor"];
+ 	this.m = ["name", "cmpnt_type"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["name"];
@@ -249,7 +249,7 @@ app.value('InventoryInfo', {
  	this.old_name = "";
  	this.name = "";
  	this.cmpnt_type = "";
- 	this.vendor = "";
+ 	this.vendor = undefined;
  	this.alias = "";
  	this.serialno = "";
 
@@ -896,7 +896,7 @@ app.value('OfflineDataInfo', {
  	this.data_file_name = "";
  	this.script_name = "";
  	this.script = "";
- 	this.method_name = "";
+ 	this.method_name = undefined;
  	this.methoddesc = "";
  	this.data_id = "";
 

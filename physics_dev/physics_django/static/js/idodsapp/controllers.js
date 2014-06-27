@@ -2286,6 +2286,7 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 	$scope.info = OfflineDataInfo;
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
+	uploadData = undefined;
 
 	$scope.inventories = [];
 	$scope.inventoriesMap = {};
