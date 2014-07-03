@@ -389,8 +389,8 @@ class municonvdata(object):
             cur.execute(sql, vals)
             res = cur.fetchall()
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching device from install table:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching device from install table:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching device from install table:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when fetching device from install table:\n%s (%d)' % (e.args[1], e.args[0]))
 
         return res
 
@@ -637,23 +637,14 @@ class municonvdata(object):
                 self.logger.info("More than one entry found for installed (id: %s) device in inventory (%s)" % (installid, inventoryid))
                 raise ValueError("More than one entry found for installed (id: %s) device in inventory (%s)" % (installid, inventoryid))
             ii_id = res[0][0]
-        else:
-            sql = '''insert into inventory__install (install_id, inventory_id) values(%s, %s)
-            '''
-            try:
-                cur.execute(sql, (installid, inventoryid))
-                # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-                # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-                # it is per connection.
-                ii_id = cur.lastrowid
-            except MySQLdb.Error as e:
-                self.conn.rollback()
-                self.logger.info('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)'
-                                 % (installid, inventoryid, e.args[1], e.args[0]))
-                raise Exception('Error when linking install (id: %s) with inventory (id: %s):\n%s (%s)'
-                                % (installid, inventoryid, e.args[1], e.args[0]))
 
-            self.commit()
+        else:
+
+            try:
+                ii_id = self.physics.saveInventoryToInstall(installid, inventoryid)
+
+            except MySQLError as e:
+                raise Exception(e)
 
         return ii_id
 

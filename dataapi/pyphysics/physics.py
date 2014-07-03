@@ -941,3 +941,46 @@ class physics(object):
 
             self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def saveInventoryToInstall(self, install_id, inventory_id):
+        '''
+        Link a device as installed once it is installed into field
+
+        :param install_id: id of the install entity
+        :type install_id: int
+
+        :param inventory_id: id of the inventory
+        :type inventory_id: int
+
+        :return: id of a map entry
+
+        :Raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO inventory__install (install_id, inventory_id)
+        VALUES (%s, %s)
+        '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (install_id, inventory_id))
+
+            # Get last id
+            lastid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return lastid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))

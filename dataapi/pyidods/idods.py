@@ -2398,9 +2398,8 @@ class idods(object):
             raise MySQLError('Error when fetching installed devices:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveInventoryToInstall(self, install_name, inv_name):
-        '''Link a device as installed once it is installed into field using the key words:
-        - install_name
-        - inv_name
+        '''
+        Link a device as installed once it is installed into field
 
         :param install_name: label name after installation
         :type install_name: str
@@ -2447,33 +2446,9 @@ class idods(object):
         if len(existing):
             raise ValueError("Install position already taken!")
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO inventory__install (install_id, inventory_id)
-        VALUES (%s, %s)
-        '''
+        res = self.physics.saveInventoryToInstall(installObject['id'], inventoryObject['id'])
 
-        try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (installObject['id'], inventoryObject['id']))
-
-            # Get last id
-            lastid = cur.lastrowid
-
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            return {'id': lastid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': res}
 
     def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
         '''Update a device as installed when its installation has been changed using the key words:
