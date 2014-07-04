@@ -299,12 +299,24 @@ class TestIdods(unittest.TestCase):
         Test install
         '''
 
+        # Name should be string
+        self.assertRaises(Exception, self.api.saveinstall, None, None, 'asd')
+
+        # Location should be string
+        self.assertRaises(Exception, self.api.saveinstall, 'isntall', None, 1.1)
+
+        # Component type should be set
+        self.assertRaises(ValueError, self.api.saveinstall, 'install', None, 'asd')
+
         # Prepare component type
         typeid = self.api.savecmpnttype('component type', 'desc', 'vendor')
         typeid = typeid[0]
 
         # Save install
         installid = self.api.saveinstall('name', typeid, 'loc')
+
+        # Save again
+        self.assertRaises(Exception, self.api.saveinstall, 'name', typeid, 'asd')
 
         # Test returned id
         self.assertNotEqual(installid, 0)
@@ -329,6 +341,16 @@ class TestIdods(unittest.TestCase):
 
         # There should be one record
         self.assertEqual(len(installObj), 1)
+
+        # Prepare inventory
+        invid = self.api.saveinventory('bane', 'component type', 'vendor')
+
+        # Save install and create a map
+        instid = self.api.saveinstall('name3', typeid, 'loc', invid)
+
+        res = self.phyapi.retrieveInventoryToInstall(None, instid, invid)
+
+        self.assertEqual(len(res), 1)
 
     def testInventoryToInstall(self):
         '''
@@ -357,18 +379,10 @@ class TestIdods(unittest.TestCase):
 
         self.assertNotEqual(ii, 0)
 
-        # Normal save again
-        ii = self.api.inventory2install(installid, invid)
-
-        self.assertNotEqual(ii, 0)
-
         # Update link
         self.assertRaises(Exception, self.api.updateinventory2install, installid, None)
         self.assertRaises(Exception, self.api.updateinventory2install, None, invid2)
         self.assertRaises(Exception, self.api.updateinventory2install, None, None)
-
-        # Normal save
-        ii = self.api.inventory2install(installid, invid2)
 
         # Normal save
         ii = self.api.inventory2install(installid2, invid2)

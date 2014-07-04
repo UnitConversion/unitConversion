@@ -942,6 +942,128 @@ class physics(object):
             self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def saveInventory(self, name, component_type_id, alias, serial_number, vendor_id):
+        '''
+        Save device into inventory
+
+        :param name: device name, which is usually different from its field name (the name after installation).
+        :type name: str
+
+        :param component_type_id: component type id
+        :type component_type_id: int
+
+        :param alias: alias name if it exists
+        :type alias: str
+
+        :param serial_number: serial number
+        :type serial_number: str
+
+        :param vendor_id: name of vendor id
+        :type vendor_id: str
+
+        :return: id of the new device in the inventory
+
+        :Raises: MySQLError
+
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO inventory (cmpnt_type_id, vendor_id, name, alias, serial_no) VALUES
+        (%s, %s, %s, %s, %s)
+        '''
+
+        try:
+            # Insert inventory into database
+            cur = self.conn.cursor()
+            cur.execute(sql, (component_type_id, vendor_id, name, alias, serial_number))
+
+            # Get last row id
+            invid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return invid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def retrieveInventoryToInstall(self, inventory__install_id, install_id, inventory_id):
+        '''
+        Return installed devices or psecific map
+
+        :param inventory__install_id: id of the inventory to install map
+        :type inventory__install_id: int
+
+        :param install_id: id of the instaleld device
+        :type install_id: int
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :return: a tuple with a structure like:
+
+            .. code-block:: python
+
+                (
+                    (
+                        id,
+                        install_id,
+                        inventory_id,
+                    ),
+                    ...
+                )
+
+        :Raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        SELECT
+            ii.inventory__install_id,
+            ii.install_id,
+            ii.inventory_id
+        FROM inventory__install ii
+        WHERE 1=1
+        '''
+
+        vals = []
+
+        # Check primary key
+        if inventory__install_id:
+            sql += ' AND ii.inventory__install_id = %s '
+            vals.append(inventory__install_id)
+
+        # Check inventory name
+        if inventory_id:
+            sqlVals = _checkWildcardAndAppend('ii.inventory_id', inventory_id, sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+
+        # Check install name
+        if install_id:
+            sqlVals = _checkWildcardAndAppend('ii.install_id', install_id, sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            res = cur.fetchall()
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching installed devices:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching installed devices:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def saveInventoryToInstall(self, install_id, inventory_id):
         '''
         Link a device as installed once it is installed into field

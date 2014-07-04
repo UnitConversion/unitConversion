@@ -502,7 +502,8 @@ class municonvdata(object):
         return res
 
     def saveinventory(self, serial, ctype, vendor):
-        '''Save inventory with given device name, vendor, and component type.
+        '''
+        Save inventory with given device name, vendor, and component type.
         An assumption here is that it a component type from a given vendor is unique.
         Therefore, it forces a hardware from one vendor, which belongs to certain component type is unique.
 
@@ -530,30 +531,11 @@ class municonvdata(object):
         ctypeid = res[0][0]
         vendorid = res[0][4]
 
-        # TODO: Not OK! Component can be saved without a vendor but not inventory!
-        # if len(res[0]) > 3:
-        #    vendorid = res[0][4]
-
-        sql = '''
-        insert into inventory (cmpnt_type_id, vendor_id, serial_no)
-        values (%s, %s, %s)
-        '''
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, (ctypeid, vendorid, serial))
-            # cursor.lastrowid is a dbapi/PEP249 extension supported by MySQLdb.
-            # it is cheaper than connection.insert_id(), and much more cheaper than "select last_insert_id()"
-            # it is per connection.
-            invid = cur.lastrowid
-        except MySQLdb.Error as e:
-            self.conn.rollback()
-            self.logger.info('Error when inserting device (%s) into inventory with type (%s) from vendor (%s):\n%s (%b)'
-                             % (serial, ctype, vendor, e.args[1], e.args[0]))
-            raise Exception('Error when inserting device (%s) into inventory with type (%s) from vendor (%s):\n%s (%b)'
-                            % (serial, ctype, vendor, e.args[1], e.args[0]))
+            return self.physics.saveInventory(None, ctypeid, None, serial, vendorid)
 
-        self.commit()
-        return invid
+        except MySQLError as e:
+            raise Exception(e)
 
     def retrieveinstalledinventory(self, name, serial, ctypename=None, vendor=None, location=None):
         '''
@@ -625,7 +607,7 @@ class municonvdata(object):
         if not cur.execute(sqlinst, (installid,)) or not cur.execute(sqlinv, (inventoryid,)):
             raise ValueError('Given install id (%s) or inventory id (%s) does not exist. Can not link them together.'
                              % (installid, inventoryid))
-        sql = '''select inventory__install_id from inventory__install where install_id = %s or inventory_id = %s'''
+        sql = '''select inventory__install_id, install_id, inventory_id from inventory__install where install_id = %s or inventory_id = %s'''
         cur.execute(sql, (installid, inventoryid))
         res = cur.fetchall()
 
@@ -636,6 +618,13 @@ class municonvdata(object):
                 # One device in inventory can only be installed in one place.
                 self.logger.info("More than one entry found for installed (id: %s) device in inventory (%s)" % (installid, inventoryid))
                 raise ValueError("More than one entry found for installed (id: %s) device in inventory (%s)" % (installid, inventoryid))
+
+            else:
+
+                if res[0][1] == installid or res[0][2] == inventoryid:
+                    self.logger.info("Install or inventory entity already mapped")
+                    raise ValueError("Install or inventory entity already mapped")
+
             ii_id = res[0][0]
 
         else:

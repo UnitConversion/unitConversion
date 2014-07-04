@@ -682,49 +682,24 @@ class idods(object):
             resKeys = res.keys()
             vendor = res[resKeys[0]]['id']
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO inventory (cmpnt_type_id, vendor_id, name, alias, serial_no) VALUES
-        (%s, %s, %s, %s, %s)
-        '''
+        invid = self.physics.saveInventory(name, compnttypeid, alias, serialno, vendor)
 
-        try:
-            # Insert inventory into database
-            cur = self.conn.cursor()
-            cur.execute(sql, (compnttypeid, vendor, name, alias, serialno))
+        # Inventory is saved, now we can save properties into database
+        if 'props' in kws and kws['props'] is not None:
+            props = kws['props']
 
-            # Get last row id
-            invid = cur.lastrowid
+            # Convert to json
+            if isinstance(props, (dict)) is False:
+                props = json.loads(props)
 
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
+            # Save all the properties
+            for key in props:
+                value = props[key]
 
-            # Inventory is saved, now we can save properties into database
-            if 'props' in kws and kws['props'] is not None:
-                props = kws['props']
+                # Save it into database
+                self.saveInventoryProperty(name, key, value, cmpnt_type=cmpnt_type_name)
 
-                # Convert to json
-                if isinstance(props, (dict)) is False:
-                    props = json.loads(props)
-
-                # Save all the properties
-                for key in props:
-                    value = props[key]
-
-                    # Save it into database
-                    self.saveInventoryProperty(name, key, value, cmpnt_type=cmpnt_type_name)
-
-            return {'id': invid}
-
-        except MySQLdb.Error as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': invid}
 
     def updateInventory(self, inventory_id, old_name, name, **kws):
         '''
@@ -2451,7 +2426,8 @@ class idods(object):
         return {'id': res}
 
     def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
-        '''Update a device as installed when its installation has been changed using the key words:
+        '''
+        Update a device as installed when its installation has been changed using the key words:
 
         - inventory_to_install_id
         - install_name
