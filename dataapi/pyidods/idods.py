@@ -930,62 +930,37 @@ class idods(object):
         # Check name parameter
         _checkParameter('name', name)
 
-        # Generate SQL
-        sql = '''
-        SELECT inv.inventory_id, inv.name, inv.alias, inv.serial_no,
-            ctype.cmpnt_type_name, ctype.description,
-            vendor.vendor_name
-        FROM inventory inv
-        LEFT JOIN vendor on vendor.vendor_id = inv.vendor_id
-        LEFT JOIN cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
-        WHERE
-        '''
+        startedd = time.time()
 
-        vals = []
+        res = self.physics.retrieveInventory(name, None, None, None)
 
-        # Append inv.name parameter
-        sqlVals = _checkWildcardAndAppend('inv.name', name, sql, vals)
+        total = time.time() - startedd
+        total = total*1000
+        print '=> elapsed time idods.retrieveInventory.DB: %f ms' % total
 
-        try:
-            startedd = time.time()
+        resdict = {}
 
-            cur = self.conn.cursor()
-            cur.execute(sqlVals[0], sqlVals[1])
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'name': r[1],
+                'alias': r[2],
+                'serialno': r[3],
+                'cmpnt_type': r[4],
+                'vendor': r[6],
+                'prop_keys': []
+            }
 
-            # Get any one since it should be unique
-            res = cur.fetchall()
+            # Get the rest of the properties
+            properties = self._retrieveInventoryProperty(r[0])
 
-            total = time.time() - startedd
-            total = total*1000
-            print '=> elapsed time idods.retrieveInventory.DB: %f ms' % total
+            # Append properties to existing object
+            for prop in properties:
+                obj = properties[prop]
+                resdict[r[0]][obj['templatename']] = obj['value']
+                resdict[r[0]]['prop_keys'].append(obj['templatename'])
 
-            resdict = {}
-
-            for r in res:
-                resdict[r[0]] = {
-                    'id': r[0],
-                    'name': r[1],
-                    'alias': r[2],
-                    'serialno': r[3],
-                    'cmpnt_type': r[4],
-                    'vendor': r[6],
-                    'prop_keys': []
-                }
-
-                # Get the rest of the properties
-                properties = self._retrieveInventoryProperty(r[0])
-
-                # Append properties to existing object
-                for prop in properties:
-                    obj = properties[prop]
-                    resdict[r[0]][obj['templatename']] = obj['value']
-                    resdict[r[0]]['prop_keys'].append(obj['templatename'])
-
-            return resdict
-
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching insertion device inventory:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching insertion device inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+        return resdict
 
     def retrieveRawData(self, raw_data_id):
         '''
@@ -4425,7 +4400,8 @@ class idods(object):
         return True
 
     def saveInstall(self, name, **kws):
-        '''Save insertion device installation using any of the acceptable key words:
+        '''
+        Save insertion device installation using any of the acceptable key words:
 
         :param name: installation name, which is its label on field
         :type name: str
@@ -4477,46 +4453,19 @@ class idods(object):
         if 'coordinatecenter' in kws and kws['coordinatecenter'] is not None:
             coordinate = kws['coordinatecenter']
 
-        # Generate SQL
-        sql = '''
-        INSERT INTO install
-            (cmpnt_type_id, field_name, location, coordinate_center)
-        VALUES
-            (%s, %s, %s, %s)
-        '''
+        startedd2 = time.time()
+        key = componentType[componentTypeKeys[0]]['id']
+        invid = self.physics.saveInstall(name, description, key, coordinate)
 
-        try:
-            startedd2 = time.time()
-            # Insert record into database
-            cur = self.conn.cursor()
-            key = componentType[componentTypeKeys[0]]['id']
-            cur.execute(sql, (key, name, description, coordinate))
+        total2 = time.time() - startedd2
+        total2 = total2*1000
+        print '=> elapsed time idods.saveInstall.DB: %f ms' % total2
 
-            # Get last row id
-            invid = cur.lastrowid
+        total = time.time() - startedd
+        total = total*1000
+        print '=> elapsed time idods.saveInstall.W: %f ms' % total
 
-            # Create transaction
-            if self.transaction is None:
-                self.conn.commit()
-
-            total2 = time.time() - startedd2
-            total2 = total2*1000
-            print '=> elapsed time idods.saveInstall.DB: %f ms' % total2
-
-            total = time.time() - startedd
-            total = total*1000
-            print '=> elapsed time idods.saveInstall.W: %f ms' % total
-
-            return {'id': invid}
-
-        except Exception as e:
-
-            # Rollback changes
-            if self.transaction is None:
-                self.conn.rollback()
-
-            self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+        return {'id': invid}
 
     def updateInstall(self, install_id, old_name, name, **kws):
         '''Update insertion device installation using any of the acceptable key words:
@@ -4704,13 +4653,13 @@ class idods(object):
             ct.description
         FROM install inst
         LEFT JOIN cmpnt_type ct ON(inst.cmpnt_type_id = ct.cmpnt_type_id)
-        WHERE 1=1
+        WHERE
         '''
 
         vals = []
 
         # Append name parameter
-        sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals, "AND")
+        sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals)
 
         # Append description parameter
         if 'description' in kws and kws['description'] is not None:

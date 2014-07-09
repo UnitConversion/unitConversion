@@ -414,6 +414,29 @@ class TestIdods(unittest.TestCase):
         # Exception should be raised if inventory property template doesn't exist
         self.assertRaises(ValueError, self.api.saveInventory, 'name', compnttype='Magnet', props={'beta': 43})
 
+        # Test retrieve with int name
+        self.assertRaises(ValueError, self.api.retrieveInventory, 1)
+
+        # Test retrieve with none name
+        self.assertRaises(ValueError, self.api.retrieveInventory, None)
+
+        # Prepare vendor
+        self.api.saveVendor('vendor')
+
+        # Save inventory
+        idObject = self.api.saveInventory('name3', cmpnt_type='Magnet', alias='alias', serialno='serial', vendor='vendor', props={'prop': 'true'})
+
+        retrievedInventory = self.api.retrieveInventory('name3')
+        invObj = retrievedInventory[retrievedInventory.keys()[0]]
+
+        # Test props
+        self.assertEqual(invObj['name'], 'name3')
+        self.assertEqual(invObj['serialno'], 'serial')
+        self.assertEqual(invObj['alias'], 'alias')
+        self.assertEqual(invObj['cmpnt_type'], 'Magnet')
+        self.assertEqual(invObj['vendor'], 'vendor')
+        self.assertEqual(invObj['prop'], 'true')
+
     '''
     Try to update inventory
     '''
@@ -630,8 +653,14 @@ class TestIdods(unittest.TestCase):
         # Prepare component type
         self.api.saveComponentType('Magnet')
 
+        # Test name parameter
+        self.assertRaises(ValueError, self.api.saveInstall, None)
+
         # Prepare install
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+
+        # Test another save
+        self.assertRaises(ValueError, self.api.saveInstall, 'test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Try to update
         self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description='desc2'))

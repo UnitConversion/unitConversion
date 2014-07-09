@@ -289,7 +289,27 @@ class TestIdods(unittest.TestCase):
         # Retrieve inventory
         res = self.api.retrieveinventory('bane')
 
+        self.assertEqual(res[0][0], None)
         self.assertEqual(res[0][1], invid)
+        self.assertEqual(res[0][2], None)
+        self.assertEqual(res[0][3], None)
+        self.assertEqual(res[0][4], 'bane')
+        self.assertEqual(res[0][5], 'component type')
+        self.assertEqual(res[0][7], 'vendor')
+
+        # Prepare install
+        installid = self.api.saveinstall('name', typeid[0], 'loc')
+
+        # Normal save
+        ii = self.api.inventory2install(installid, invid)
+
+        # Retrieve inventory
+        res = self.api.retrieveinventory('bane')
+
+        self.assertEqual(res[0][0], installid)
+        self.assertEqual(res[0][1], invid)
+        self.assertEqual(res[0][2], 'name')
+        self.assertEqual(res[0][3], 'loc')
         self.assertEqual(res[0][4], 'bane')
         self.assertEqual(res[0][5], 'component type')
         self.assertEqual(res[0][7], 'vendor')
@@ -327,6 +347,14 @@ class TestIdods(unittest.TestCase):
         # There should be one record
         self.assertEqual(len(installObj), 1)
 
+        # Test parameters
+        self.assertEqual(installObj[0][0], installid)
+        self.assertEqual(installObj[0][1], 'name')
+        self.assertEqual(installObj[0][2], 'loc')
+        self.assertEqual(installObj[0][3], 'component type')
+        self.assertEqual(installObj[0][4], 'desc')
+        self.assertEqual(installObj[0][5], 'vendor')
+
         # Prepare component type
         typeid = self.api.savecmpnttype('component type2', 'desc')
 
@@ -341,6 +369,14 @@ class TestIdods(unittest.TestCase):
 
         # There should be one record
         self.assertEqual(len(installObj), 1)
+
+        # Test parameters
+        self.assertEqual(installObj[0][0], installid)
+        self.assertEqual(installObj[0][1], 'name2')
+        self.assertEqual(installObj[0][2], 'loc')
+        self.assertEqual(installObj[0][3], 'component type2')
+        self.assertEqual(installObj[0][4], 'desc')
+        self.assertEqual(installObj[0][5], None)
 
         # Prepare inventory
         invid = self.api.saveinventory('bane', 'component type', 'vendor')
@@ -360,10 +396,12 @@ class TestIdods(unittest.TestCase):
         # Prepare component type
         typeid = self.api.savecmpnttype('component type', 'desc', 'vendor')
         typeid = typeid[0]
+        typeid2 = self.api.savecmpnttype('component type2', 'desc')
 
         # Prepare install
         installid = self.api.saveinstall('name', typeid, 'loc')
         installid2 = self.api.saveinstall('name2', typeid, 'loc')
+        installid3 = self.api.saveinstall('name3', typeid2, 'loc')
 
         # Prepare inventory
         invid = self.api.saveinventory('bane', 'component type', 'vendor')
@@ -389,6 +427,33 @@ class TestIdods(unittest.TestCase):
 
         # Expecting exception
         self.assertRaises(ValueError, self.api.inventory2install, installid2, invid)
+
+        # Name should not be None
+        self.assertRaises(Exception, self.api.retrieveinstalledinventory, None, '*')
+
+        # Serial should not be None
+        self.assertRaises(Exception, self.api.retrieveinstalledinventory, '*', None)
+
+        # Serial and name should not be None
+        self.assertRaises(Exception, self.api.retrieveinstalledinventory, None, None)
+
+        # Retrieve inventory that is not installed
+        inv = self.api.retrieveinstalledinventory('name3', '*')
+        self.assertEqual(len(inv), 0)
+
+        # Retrieve installed inventory
+        inv = self.api.retrieveinstalledinventory('name2', '*')
+        self.assertEqual(len(inv), 1)
+
+        # Test parameters
+        self.assertEqual(inv[0][0], installid2)
+        self.assertEqual(inv[0][1], invid2)
+        self.assertEqual(inv[0][2], 'name2')
+        self.assertEqual(inv[0][3], 'loc')
+        self.assertEqual(inv[0][4], 'bane2')
+        self.assertEqual(inv[0][5], 'component type')
+        self.assertEqual(inv[0][6], 'desc')
+        self.assertEqual(inv[0][7], 'vendor')
 
 if __name__ == '__main__':
     unittest.main()

@@ -55,6 +55,13 @@ STATIC_URL = '/static/'
 STATIC_DOC_ROOT = os.path.join(ROOT_PATH, 'static')
 STATICFILES_DIRS = (STATIC_DOC_ROOT,)
 
+AUTH_LDAP_SERVER_URI = "ldap://54.225.232.114"
+
+AUTHENTICATION_BACKENDS = (
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 #ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 STATICFILES_FINDERS = (

@@ -362,40 +362,41 @@ class municonvdata(object):
             raise Exception(e)
 
     def retrieveinstall(self, name, ctypename=None, location=None):
-        '''Retrieve installed device name with table id upon giving device name.
-
-        return: tuple with format as ((id, field name, location, component type name, description, vendor), ...)
         '''
-        sql = '''
-        select install_id, field_name, location, cmpnt_type_name, description, vendor_name
-        from install
-        left join cmpnt_type on install.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-        left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
-        left join vendor on cmpnttype__vendor.vendor_id = vendor.vendor_id
-        where
+        Retrieve installed device name with table id upon giving device name.
+
+        :return: tuple with format as ((id, field name, location, component type name, description, vendor), ...)
         '''
-        vals = []
-
-        vals, sql = _assemblesql(sql, name, " field_name ", vals)
-
-        if ctypename:
-            vals, sql = _assemblesql(sql, ctypename, " cmpnt_type_name ", vals, connector="and")
-
-        if location:
-            vals, sql = _assemblesql(sql, location, " location ", vals, connector="and")
+        result_block = ()
 
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, vals)
-            res = cur.fetchall()
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching device from install table:\n%s (%d)' % (e.args[1], e.args[0]))
-            raise Exception('Error when fetching device from install table:\n%s (%d)' % (e.args[1], e.args[0]))
+            res = self.physics.retrieveInstall(name, ctypename, location)
 
-        return res
+            for r in res:
+                install_id = r[0]
+                install_name = r[1]
+                install_location = r[2]
+                component_type_name = r[3]
+                component_type_description = r[4]
+                component_type_id = r[5]
+                vendor = None
+
+                vendor_res = self.physics.retrieveComponentTypeVendor(component_type_id, None)
+
+                if len(vendor_res) > 0:
+                    vendor = vendor_res[0][4]
+
+                result_line = (install_id, install_name, install_location, component_type_name, component_type_description, vendor)
+                result_block += (result_line,)
+
+            return result_block
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def saveinstall(self, name, ctypeid, location, inventoryid=None):
-        '''Save installed device into install table.
+        '''
+        Save installed device into install table.
 
         Return id if success, otherwise throw out an exception.
         '''
@@ -414,50 +415,30 @@ class municonvdata(object):
             raise ValueError("component type (id=%s) does not exist." % (ctypeid))
 
         res = self.retrieveinstall(name, ctypename=ctypename, location=location)
+
         if len(res) > 0:
             raise Exception('Device (%s) exists already' % (name))
 
-        # For data consistency, using transaction to avoid insertion error
         try:
-            # insert device name to install table
-            sql = '''
-            insert into install
-            (cmpnt_type_id, field_name, location)
-            values (%s, %s, %s)
-            '''
-            cur.execute(sql, (ctypeid, name, location))
-            # self.commit()
-            instid = cur.lastrowid
+            # Save install
+            instid = self.physics.saveInstall(name, location, ctypeid, None)
 
             # create relationship between inventory and install
             if inventoryid:
-                sql = '''
-                select * from inventory__install
-                where
-                install_id = %s and inventory_id = %s
-                '''
-                cur.execute(sql, (instid, inventoryid))
-                res = cur.fetchone()
+                res = self.physics.retrieveInventoryToInstall(None, instid, inventoryid)
+
                 # create a new entry if it does not exist
-                if not res:
-                    sql = '''
-                    insert into inventory__install
-                    (install_id, inventory_id)
-                    values (%s, %s)
-                    '''
-                cur.execute(sql, (instid, inventoryid))
+                if len(res) == 0:
+                    self.physics.saveInventoryToInstall(instid, inventoryid)
 
-        except MySQLdb.Error:
-            self.conn.rollback()
-            self.logger.info('Error to save device name into install table')
-            raise Exception('Error to save device name into install table')
+            return instid
 
-        # commit all changes if everything is OK.
-        self.commit()
-        return instid
+        except MySQLError as e:
+            raise Exception(e)
 
     def retrieveinventory(self, serial, ctypename=None, vendor=None):
-        '''Retrieve an inventory information according given serial number, vendor name, and component type name.
+        '''
+        Retrieve an inventory information according given serial number, vendor name, and component type name.
 
         Wildcards are support in all parameters (device name, serial number, component type name, and vendor),
         which uses "*" for multiple match, and "?" for single character match.
@@ -470,36 +451,37 @@ class municonvdata(object):
             raise Exception('Serial no has to be string.')
 
         serial = _wildcardformat(serial)
-        sql = '''
-        select install.install_id, inv.inventory_id, install.field_name, install.location,
-        inv.serial_no,
-        ctype.cmpnt_type_name, ctype.description,
-        vendor.vendor_name
-        from inventory inv
-        left join vendor on vendor.vendor_id = inv.vendor_id
-        left join cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
-        left join inventory__install on inventory__install.inventory_id = inv.inventory_id
-        left join install on inventory__install.install_id = install.install_id
-        where
-        '''
-        vals = []
+
         try:
-            vals, sql = _assemblesql(sql, serial, " inv.serial_no ", vals)
+            res = self.physics.retrieveInventory(None, serial, ctypename, vendor)
+            result_block = ()
 
-            if ctypename:
-                vals, sql = _assemblesql(sql, ctypename, " ctype.cmpnt_type_name ", vals, connector="and")
+            for r in res:
+                install_id = None
+                inventory_id = r[0]
+                install_name = None
+                location = None
+                serial_number = r[3]
+                component_type_name = r[4]
+                component_type_description = r[5]
+                vendor_name = r[6]
 
-            if vendor:
-                vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
+                install = self.physics.retrieveInventoryToInstall(None, None, inventory_id)
 
-            cur = self.conn.cursor()
-            cur.execute(sql, vals)
-            res = cur.fetchall()
-        except MySQLdb.Error as e:
-            self.logger.info('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' % (serial, e.args[1], e.args[0]))
-            raise Exception('Error when fetching inventory information for a given serial no (%s):\n%s (%b)' % (serial, e.args[1], e.args[0]))
+                if len(install) > 0:
+                    installObj = install[0]
 
-        return res
+                    install_id = installObj[1]
+                    install_name = installObj[3]
+                    location = installObj[5]
+
+                result_line = (install_id, inventory_id, install_name, location, serial_number, component_type_name, component_type_description, vendor_name)
+                result_block += (result_line,)
+
+            return result_block
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def saveinventory(self, serial, ctype, vendor):
         '''
@@ -546,54 +528,43 @@ class municonvdata(object):
 
         Return: tuple with format like ((install id, inventory id, device name, location, serial number, component type name, description, vendor name), ...).
         '''
-        sql = '''select install.install_id, inventory.inventory_id, install.field_name, install.location,
-        inventory.serial_no,
-        cmpnt_type.cmpnt_type_name, cmpnt_type.description,
-        vendor.vendor_name
-        from install
-        left join inventory__install on install.install_id = inventory__install.install_id
-        left join inventory on inventory__install.inventory_id = inventory.inventory_id
-        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-        left join vendor on vendor.vendor_id = inventory.vendor_id
-        where
-        '''
-#        sql = '''select install.install_id, inventory.inventory_id, install.field_name, install.location,
-#        inventory.serial_no,
-#        cmpnt_type.cmpnt_type_name, cmpnt_type.description,
-#        vendor.vendor_name
-#        from install
-#        left join inventory__install on install.install_id = inventory__install.install_id
-#        left join inventory on inventory__install.inventory_id = inventory.inventory_id
-#        left join cmpnt_type on inventory.cmpnt_type_id = cmpnt_type.cmpnt_type_id
-#        left join cmpnttype__vendor on cmpnt_type.cmpnt_type_id = cmpnttype__vendor.cmpnt_type_id
-#        left join vendor on vendor.vendor_id = cmpnttype__vendor.vendor_id
-#        where
-#        '''
-        vals = []
 
-        vals, sql = _assemblesql(sql, name, " install.field_name ", vals)
+        # Check name
+        if name is None:
+            raise Exception('Name should not be None!')
 
-        vals, sql = _assemblesql(sql, serial, " inventory.serial_no ", vals, connector="and")
-
-        if ctypename:
-            vals, sql = _assemblesql(sql, ctypename, " cmpnt_type.cmpnt_type_name ", vals, connector="and")
-
-        if vendor:
-            vals, sql = _assemblesql(sql, vendor, " vendor.vendor_name ", vals, connector="and")
-        if location:
-            vals, sql = _assemblesql(sql, location, " install.location ", vals, connector="and")
+        # Check serial number
+        if serial is None:
+            raise Exception('Serial number should not be None!')
 
         try:
-            cur = self.conn.cursor()
-            cur.execute(sql, vals)
-            res = cur.fetchall()
-        except MySQLdb.Error as e:
-            self.logger.info('Error when selecting installed device (%s) with serial no (%s) from inventory with type (%s) from vendor (%s):\n%s (%b)'
-                             % (name, serial, ctypename, vendor, e.args[1], e.args[0]))
-            raise Exception('Error when selecting installed device (%s) with serial no (%s) from inventory with type (%s) from vendor (%s):\n%s (%b)'
-                            % (name, serial, ctypename, vendor, e.args[1], e.args[0]))
+            result_block = ()
 
-        return res
+            res = self.physics.retrieveInstall(name, ctypename, location)
+
+            for r in res:
+                install_id = r[0]
+                install_name = r[1]
+                install_description = r[2]
+                component_type_name = r[3]
+                component_type_description = r[4]
+                ii_map = self.physics.retrieveInventoryToInstall(None, install_id, None)
+
+                if len(ii_map) > 0:
+                    inventory_id = ii_map[0][2]
+                    inventory_res = self.physics.retrieveInventory(None, None, None, None, inventory_id)
+
+                    if len(inventory_res) > 0:
+                        vendor = inventory_res[0][6]
+                        serial_no = inventory_res[0][3]
+
+                        result_line = (install_id, inventory_id, install_name, install_description, serial_no, component_type_name, component_type_description, vendor)
+                        result_block += (result_line,)
+
+            return result_block
+
+        except MySQLError as e:
+            raise Exception(e)
 
     def inventory2install(self, installid, inventoryid):
         '''
@@ -717,9 +688,10 @@ class municonvdata(object):
             cur = self.conn.cursor()
             cur.execute(sql, (invid, invproptmpltname, invproptmpltdesc))
             res = cur.fetchone()
+
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' % (e.args[1], e.args[0]))
 
         return res
 
@@ -750,9 +722,10 @@ class municonvdata(object):
             cur = self.conn.cursor()
             cur.execute(sql, (invid, ctypeproptypetmpltname, ctypeproptmpltdesc))
             res = cur.fetchone()
+
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching magnet unit conversion information for inventory with given component type:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching magnet unit conversion information for inventory with given component type:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching magnet unit conversion information for inventory with given component type:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when fetching magnet unit conversion information for inventory with given component type:\n%s (%d)' % (e.args[1], e.args[0]))
 
         return res
 
@@ -782,9 +755,10 @@ class municonvdata(object):
             cur = self.conn.cursor()
             cur.execute(sql, (name, ctypeproptypetmpltname, ctypeproptmpltdesc))
             res = cur.fetchone()
+
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching magnet unit conversion information for install:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching magnet unit conversion information for install:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching magnet unit conversion information for install:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when fetching magnet unit conversion information for install:\n%s (%d)' % (e.args[1], e.args[0]))
 
         return res
 
@@ -796,14 +770,16 @@ class municonvdata(object):
         left join inventory__install ii on ii.install_id = install.install_id
         where
         '''
-        vals=[]
+        vals = []
         vals, sql = _assemblesql(sql, name, " field_name ", vals)
+
         try:
-            cur=self.conn.cursor()
+            cur = self.conn.cursor()
             cur.execute(sql, vals)
             res = cur.fetchall()
+
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching device name and inventory information:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise Exception('Error when fetching device name and inventory information:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching device name and inventory information:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise Exception('Error when fetching device name and inventory information:\n%s (%d)' % (e.args[1], e.args[0]))
 
         return res

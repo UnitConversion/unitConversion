@@ -294,7 +294,8 @@ class physics(object):
         sqlVals = _checkWildcardAndAppend('ct.cmpnt_type_id', component_type_id, sql, vals)
 
         # Append vendor id
-        sqlVals = _checkWildcardAndAppend('v.vendor_id', vendor_id, sqlVals[0], sqlVals[1], 'AND')
+        if vendor_id:
+            sqlVals = _checkWildcardAndAppend('v.vendor_id', vendor_id, sqlVals[0], sqlVals[1], 'AND')
 
         try:
             # Execute sql
@@ -942,6 +943,94 @@ class physics(object):
             self.logger.info('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating inventory property:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def retrieveInventory(self, name, serial_number, component_type_name, vendor, inventory_id=None):
+        '''
+        Retrieve an insertion device from inventory.
+        Wildcard matching is supported for inventory name, device type and vendor. ::
+
+            * for multiple characters matching
+            ? for single character matching
+
+
+        :param name: insertion device inventory name, which is usually different from its field name (the name after installation).
+        :type name: str
+
+        :param serial_number: device serial number
+        :type serial_number: str
+
+        :param component_type_name: name of the component type
+        :type component_type_name: str
+
+        :param vendor: name of the vendor name
+        :type vendor: str
+
+        :return: a tuple with structure like:
+
+            .. code-block:: python
+
+                (
+                    (
+                        inventory_id,
+                        inventory_name,
+                        alias,
+                        serial_no,
+                        cmpnt_type_name,
+                        cmpnt_type_description,
+                        vendor_name
+                    ),
+                    ...
+                )
+
+        :Raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        SELECT inv.inventory_id, inv.name, inv.alias, inv.serial_no,
+            ctype.cmpnt_type_name, ctype.description,
+            vendor.vendor_name
+        FROM inventory inv
+        LEFT JOIN vendor on vendor.vendor_id = inv.vendor_id
+        LEFT JOIN cmpnt_type ctype on ctype.cmpnt_type_id = inv.cmpnt_type_id
+        WHERE 1=1
+        '''
+
+        vals = []
+        sqlVals = (sql, vals)
+
+        # Append inventory id
+        if inventory_id:
+            sqlVals = _checkWildcardAndAppend('inv.inventory_id', inventory_id, sqlVals[0], sqlVals[1], 'AND')
+
+        # Append inv.name parameter
+        if name:
+            sqlVals = _checkWildcardAndAppend('inv.name', name, sql, vals, 'AND')
+
+        # Append serial number
+        if serial_number:
+            sqlVals = _checkWildcardAndAppend('inv.serial_no', serial_number, sqlVals[0], sqlVals[1], 'AND')
+
+        # Append component type name
+        if component_type_name:
+            sqlVals = _checkWildcardAndAppend('ctype.cmpnt_type_name', component_type_name, sqlVals[0], sqlVals[1], 'AND')
+
+        # Append vendor
+        if vendor:
+            sqlVals = _checkWildcardAndAppend('vendor.vendor_name', vendor, sqlVals[0], sqlVals[1], 'AND')
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Get any one since it should be unique
+            res = cur.fetchall()
+
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching insertion device inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching insertion device inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def saveInventory(self, name, component_type_id, alias, serial_number, vendor_id):
         '''
         Save device into inventory
@@ -996,6 +1085,131 @@ class physics(object):
             self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def retrieveInstall(self, name, component_type_name, description):
+        '''Retrieve insertion device installation using any of the acceptable key words:
+
+        :param name: installation name, which is its label on field
+        :type name: str
+
+        :param description: installation description
+        :type description: str
+
+        :param component_type_name: component type name of the device
+        :type component_type_name: str
+
+        :return: a tuple with structure like:
+
+            .. code-block:: python
+
+                (
+                    (
+                        install_id,
+                        name,
+                        location,
+                        cmpnt_type_name,
+                        cmpnt_type_description,
+                        cmpnt_type_id,
+                        coordinatecenter
+                    ),
+                    ...
+                )
+
+        :Raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        SELECT
+            inst.install_id,
+            inst.field_name,
+            inst.location,
+            ct.cmpnt_type_name,
+            ct.description,
+            inst.cmpnt_type_id,
+            inst.coordinate_center
+        FROM install inst
+        LEFT JOIN cmpnt_type ct ON(inst.cmpnt_type_id = ct.cmpnt_type_id)
+        WHERE
+        '''
+
+        vals = []
+
+        # Append name parameter
+        sqlVals = _checkWildcardAndAppend('inst.field_name', name, sql, vals)
+
+        # Append description parameter
+        if description:
+            sqlVals = _checkWildcardAndAppend('inst.location', description, sqlVals[0], sqlVals[1], 'AND')
+
+        # Append component type parameter
+        if component_type_name:
+            sqlVals = _checkWildcardAndAppend('ct.cmpnt_type_name', component_type_name, sqlVals[0], sqlVals[1], 'AND')
+
+        try:
+            # Execute SQL
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Get last id
+            res = cur.fetchall()
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching installation:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching installation:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def saveInstall(self, name, description, cmpnt_type_id, coordinate_center):
+        '''
+        Install a device
+
+        :param name: installation name, which is its label on field
+        :type name: str
+
+        :param description: installation description
+        :type description: str
+
+        :param cmpnt_type_id: id of the component type
+        :type cmpnt_type_id: int
+
+        :param coordinate_center: coordinate center number
+        :type coordinate_center: float
+
+        :return: new install id
+
+        :raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO install
+            (cmpnt_type_id, field_name, location, coordinate_center)
+        VALUES
+            (%s, %s, %s, %s)
+        '''
+
+        try:
+            # Insert record into database
+            cur = self.conn.cursor()
+            cur.execute(sql, (cmpnt_type_id, name, description, coordinate_center))
+
+            # Get last row id
+            invid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return invid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def retrieveInventoryToInstall(self, inventory__install_id, install_id, inventory_id):
         '''
         Return installed devices or psecific map
@@ -1018,6 +1232,9 @@ class physics(object):
                         id,
                         install_id,
                         inventory_id,
+                        install_name,
+                        inventory_name,
+                        install_location
                     ),
                     ...
                 )
@@ -1030,8 +1247,13 @@ class physics(object):
         SELECT
             ii.inventory__install_id,
             ii.install_id,
-            ii.inventory_id
+            ii.inventory_id,
+            inst.field_name,
+            inv.name,
+            inst.location
         FROM inventory__install ii
+        LEFT JOIN install inst ON(ii.install_id = inst.install_id)
+        LEFT JOIN inventory inv ON(ii.inventory_id = inv.inventory_id)
         WHERE 1=1
         '''
 
