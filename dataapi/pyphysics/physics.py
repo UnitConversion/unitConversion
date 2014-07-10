@@ -964,6 +964,9 @@ class physics(object):
         :param vendor: name of the vendor name
         :type vendor: str
 
+        :param inventory_id: inventory id
+        :type inventory_id: int
+
         :return: a tuple with structure like:
 
             .. code-block:: python

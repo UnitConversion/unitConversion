@@ -542,16 +542,21 @@ class municonvdata(object):
 
             res = self.physics.retrieveInstall(name, ctypename, location)
 
+            # Go through all results
             for r in res:
                 install_id = r[0]
                 install_name = r[1]
                 install_description = r[2]
                 component_type_name = r[3]
                 component_type_description = r[4]
+
+                # Get map, there should be only one inventory mapped to one install and vice versa
                 ii_map = self.physics.retrieveInventoryToInstall(None, install_id, None)
 
                 if len(ii_map) > 0:
                     inventory_id = ii_map[0][2]
+
+                    # Get inventory by its id
                     inventory_res = self.physics.retrieveInventory(None, None, None, None, inventory_id)
 
                     if len(inventory_res) > 0:

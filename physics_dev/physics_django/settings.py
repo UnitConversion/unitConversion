@@ -1,5 +1,7 @@
 # Django settings for example project.
 import os
+import ldap
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
 #The Production setting allows apps and links to be turned on and off
 #To set PRODUCTION = False, set PRODUCTION = False in your copy of credentials.py
@@ -55,12 +57,21 @@ STATIC_URL = '/static/'
 STATIC_DOC_ROOT = os.path.join(ROOT_PATH, 'static')
 STATICFILES_DIRS = (STATIC_DOC_ROOT,)
 
+# LDAP configuration START
 AUTH_LDAP_SERVER_URI = "ldap://54.225.232.114"
+
+# Set up the basic group parameters.
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=olog,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)")
+AUTH_LDAP_GROUP_TYPE = PosixGroupType()
+AUTH_LDAP_FIND_GROUP_PERMS = True
+
+AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=people,dc=olog,dc=com"
 
 AUTHENTICATION_BACKENDS = (
     'django_auth_ldap.backend.LDAPBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
+# LDAP configuration END
 
 #ADMIN_MEDIA_PREFIX = '/static/admin/'
 

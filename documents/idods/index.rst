@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    introduction
+   installation
    dataapi
    clientapi
    webclient
