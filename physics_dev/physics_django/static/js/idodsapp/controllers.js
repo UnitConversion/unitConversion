@@ -1088,6 +1088,12 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 		$window.location = location;
 	};
 
+	// Show add form in the right pane
+	$scope.addInsertionDevice = function() {
+		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/saveid";
+		$window.location = location;
+	};
+
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
 		$scope.id = undefined;
@@ -1180,6 +1186,153 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 			});
 		});
 	}
+
+	$scope.toggleTableRows = function(el, type, index) {
+		l(el);
+		toggleTableRows(el.target, type + index);
+	};
+
+	$scope.goToMap = function(inv, install, id) {
+		var newLocation = createRouteUrl({'inv_name': inv, 'install_name': install, 'search': new Date().getTime()}, "inventory_to_install", ["inv_name", "install_name"]) + "/id/" + id + "/action/retrieve";
+		$window.location = newLocation;
+	};
+
+	$scope.goToInventory = function(id) {
+
+		var location = createRouteUrl({'name': '*', 'search': new Date().getTime()}, "inventory", ["name"]) + "/id/" + id + "/action/retrieve";
+		$window.location = location;
+	};
+
+	$scope.goToOnlineData = function(name, id) {
+		var search = {};
+		search.search = new Date().getTime();
+		search.install_name = name;
+
+		var location = createRouteUrl(search, "online_data", ["install_name", "description", "date", "status"]) + "/id/" + id + "/action/retrieve";
+		$window.location = location;
+	};
+
+	$scope.goToOfflineData = function(name, id) {
+		var search = {};
+		search.search = new Date().getTime();
+		search.inventory_name = name;
+
+		var location = createRouteUrl(search, "offline_data", ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"]) + "/id/" + id + "/action/retrieve";
+		$window.location = location;
+	};
+
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "install", ["name", "cmpnt_type", "description", "coordinatecenter"]) + "/id/" + $routeParams.id + "/action/update";
+		$window.location = location;
+	};
+
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new Install(newItem);
+		var result = installFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+
+			if(action === "update") {
+				promise = installFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = installFactory.saveItem($scope.new);
+			}
+
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Install item successfully saved!";
+
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showInsertionDeviceCtrl', function($scope, $routeParams, $http, $window, InsertionDeviceInfo, InsertionDevice, InventoryToInstall, installFactory, inventoryToInstallFactory, onlineDataFactory, inventoryFactory, Inventory, OnlineData, offlineDataFactory, OfflineData, cmpntTypeFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new InsertionDevice();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = InsertionDeviceInfo;
+
+	$scope.types = [];
+	$scope.onlinedata = [];
+	$scope.offlinedata = [];
+	$scope.statusMap = statusArrMap;
+
+	// Retrieve all Component types
+	cmpntTypeFactory.retrieveCompntTypes({'all_cmpnt_types': true}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.types.push(item.name);
+		});
+	});
+
+	// Get inventory from the factory if updating
+	// if($routeParams.action != "save") {
+
+	// 	installFactory.retrieveItem($routeParams).then(function(inst_result) {
+	// 		$scope.element = inst_result;
+	// 		$scope.element.old_name = inst_result.name;
+
+	// 		if ($routeParams.action == "retrieve") {
+	// 			$scope.map = {};
+
+	// 			inventoryToInstallFactory.retrieveItems({'install_name': $scope.element.name, 'inv_name': '*'}).then(function(result) {
+	// 				var keys = Object.keys(result);
+
+	// 				if(keys.length > 0) {
+	// 					$scope.map = result[keys[0]];
+
+	// 					// Get offline data
+	// 					inventoryFactory.retrieveItems({'name': $scope.map.inventoryname}).then(function(result) {
+	// 						l(result);
+	// 						var keys = Object.keys(result);
+	// 						$scope.inventory = new Inventory(result[keys[0]]);
+	// 					});
+
+	// 					// Get offline data
+	// 					offlineDataFactory.retrieveItems({'inventory_name': $scope.map.inventoryname}).then(function(result) {
+
+	// 						$.each(result, function(i, item){
+	// 							$scope.offlinedata.push(new OfflineData(item));
+	// 						});
+	// 					});
+	// 				}
+	// 			});
+	// 		}
+
+	// 		// Get online data
+	// 		onlineDataFactory.retrieveItems({'install_name': inst_result.name}).then(function(result) {
+	// 			$.each(result, function(i, item){
+	// 				$scope.onlinedata.push(new OnlineData(item));
+	// 			});
+	// 		});
+	// 	});
+	// }
 
 	$scope.toggleTableRows = function(el, type, index) {
 		l(el);

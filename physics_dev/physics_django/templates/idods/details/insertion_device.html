@@ -1,0 +1,43 @@
+{% load verbatim %}
+{% verbatim %}
+
+<a name="{{scroll.scroll}}"></a>
+
+<div>
+	<div class="details_data">
+		<h3>{{info.save_title}}</h3>
+
+		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
+			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+			<strong>{{alert.title}}</strong> {{alert.body}}
+		</div>
+
+		<table class="table table-bordered">
+			<tr>
+				<th>Key</th>
+				<th>Value</th>
+			</tr>
+			<tr ng-repeat="property in new.save_show">
+				<td>{{new.display[property]}} <span ng-if="new.m.indexOf(property) > -1">*</span></td>
+				<td>
+					<span class="control-group" ng-class="{'error': error[property]}">
+						<span class="controls">
+
+							<select ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
+
+							<input ng-if="property != 'cmpnt_type'" type="text" ng-model="new[property]" />
+
+							<span class="help-inline">{{error[property]}}</span>
+						</span>
+					</span>
+				</td>
+			</tr>
+		</table>
+		<br/>
+		<button ng-click="saveItem(new, 'save')" class="btn btn-success">{{info.save_button}}</button>
+		<br/>
+		<br/>
+		<div>* mandatory field</div>
+	</div>
+</div>
+{% endverbatim %}

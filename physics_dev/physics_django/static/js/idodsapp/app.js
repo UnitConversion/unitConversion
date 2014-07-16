@@ -34,9 +34,10 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/inventory_type/search/:search/name/:name?/list',																'index.inventory_type.list').
 		when('/inventory_type/search/:search/name/:name?/id/:id/action/:action',											'index.inventory_type.list.details').
 
-		when('/install',																																			'index.install').
-		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/list',						'index.install.list').
-		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',		'index.install.list.details').
+		when('/install',																																		'index.install').
+		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/list',					'index.install.list').
+		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/id/:id/action/:action',	'index.install.list.details').
+		when('/install/search/:search/name/:name?/cmpnt_type/:cmpnt_type?/description/:description?/coordinatecenter/:coordinatecenter?/saveid',				'index.install.list.saveid').
 
 		when('/inventory_to_install',																						'index.inventory_to_install').
 		when('/inventory_to_install/search/:search/inv_name/:inv_name?/install_name/:install_name?/list',					'index.inventory_to_install.list').
@@ -208,6 +209,11 @@ app.config(function($routeSegmentProvider, $routeProvider){
 						templateUrl: 'details/install.html',
 						controller: 'showInstallCtrl',
 						dependencies: ['search', 'id', 'action']
+					}).
+					segment('saveid', {
+						templateUrl: 'details/insertion_device.html',
+						controller: 'showInsertionDeviceCtrl',
+						dependencies: ['search']
 					}).
 				up().
 			up().

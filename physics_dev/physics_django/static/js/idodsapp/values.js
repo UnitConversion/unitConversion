@@ -573,6 +573,7 @@ app.value('InstallInfo', {
 	'update_title': 'Update Install',
 	'update_button': 'Update Install',
 	'search_button': 'Add Install',
+	'add_insertion_device_button': 'Add Insertion Device',
 	'search_filter': 'Filter Install items ...'
 });
 
@@ -580,6 +581,98 @@ app.value('InstallInfo', {
  * Install object
  */
  app.value('Install', function(obj){
+
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["name", "cmpnt_type"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ["id", "name", "cmpnt_type", "description", "coordinatecenter"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_show = ["id", "name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve_hide = ["cmpnt_type", "description", "coordinatecenter"];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter", "all_install"];
+
+ 	// Parameters used for save URL
+ 	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
+
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = ["name", "cmpnt_type", "description", "coordinatecenter"];
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ["old_name", "name", "cmpnt_type", "description", "coordinatecenter"];
+
+ 	this.display = {
+ 		"id": "Id",
+ 		"name": "Name",
+ 		"cmpnt_type": "Component type",
+ 		"description": "Description",
+ 		"coordinatecenter": "Coordinate center"
+ 	};
+
+ 	this.id = "";
+ 	this.name = "";
+ 	this.cmpnt_type = "";
+ 	this.description = "";
+ 	this.coordinatecenter = undefined;
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		if('id' in obj) {
+ 			this.id = obj.id;
+ 		}
+
+ 		if('old_name' in obj) {
+ 			this.old_name = obj.old_name;
+ 		}
+
+ 		this.name = obj.name;
+ 		this.cmpnt_type = obj.cmpnt_type;
+ 		this.description = obj.description;
+
+ 		if (obj.coordinatecenter === null) {
+ 			this.coordinatecenter = undefined;
+
+ 		} else {
+ 			this.coordinatecenter = obj.coordinatecenter;
+ 		}
+ 	};
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
+ /*
+ * Insertion device info object
+ */
+app.value('InsertionDeviceInfo', {
+	'save_title': 'Save Insertion Device',
+	'save_button': 'Save Insertion Device',
+	'retrieve_title': 'Insertion Device',
+	'retrieve_update_button': 'Update Insertion Device',
+	'update_title': 'Update Insertion Device',
+	'update_button': 'Update Insertion Device',
+	'search_button': 'Add Insertion Device',
+	'add_insertion_device_button': 'Add Insertion Device',
+	'search_filter': 'Filter Insertion Device items ...'
+});
+
+/*
+ * Insertion device object
+ */
+ app.value('InsertionDevice', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
  	this.m = ["name", "cmpnt_type"];
