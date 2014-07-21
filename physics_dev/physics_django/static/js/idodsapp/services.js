@@ -39,7 +39,7 @@ function checkItem(item, error) {
 
 	if(error.num === 0) {
 		return true;
-	
+
 	} else {
 		return error;
 	}
@@ -63,7 +63,7 @@ function retrieveItem($q, $http, url, obj, Class) {
 
 	$http.get(query).success(function(data){
 		deffered.resolve(new Class(data[obj.id]));
-	
+
 	}).error(function(data, status, headers, config) {
 		deffered.reject(data);
 	});
@@ -88,7 +88,7 @@ function retrieveItems($q, $http, url, list, params, mandatoryList) {
 
 	$http.get(query).success(function(data){
 		deffered.resolve(data);
-	
+
 	}).error(function(data, status, headers, config) {
 		deffered.reject(data);
 	});
@@ -111,7 +111,7 @@ function saveItem($q, $http, url, obj) {
 
 	$http.post(query, params).success(function(data){
 		deffered.resolve(data);
-	
+
 	}).error(function(data, status, headers, config) {
 		deffered.reject(data);
 	});
@@ -133,7 +133,7 @@ function updateItem($q, $http, url, obj) {
 
 	$http.post(query, params).success(function(data){
 		deffered.resolve(data);
-	
+
 	}).error(function(data, status, headers, config) {
 		deffered.reject(data);
 	});
@@ -152,7 +152,7 @@ app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
 	// Set vendor object
 	factory.setVendor = function(vendor) {
 		this.eVendor.set(vendor);
-	}
+	};
 
 	// Check vendor before sending it to the server
 	factory.checkVendor = function(vendor) {
@@ -162,7 +162,7 @@ app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
 		}
 
 		return checkItem(factory.eVendor, factory.error);
-	}
+	};
 
 	// Get vendor from server
 	factory.retrieveVendor = function(vendor) {
@@ -172,12 +172,12 @@ app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "vendor", this.eVendor, Vendor);
-	}
+	};
 
 	// Get vendors from server
 	factory.retrieveVendors = function(params) {
 		return retrieveItems($q, $http, "vendor", this.eVendor.list, params, this.eVendor.search_m);
-	}
+	};
 
 	// Save new vendor
 	factory.saveVendor = function(vendor) {
@@ -187,7 +187,7 @@ app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
 		}
 
 		return saveItem($q, $http, "savevendor", this.eVendor);
-	}
+	};
 
 	// Update a vendor
 	factory.updateVendor = function(vendor) {
@@ -197,7 +197,7 @@ app.factory('vendorFactory', function($http, $q, Vendor, EntityError) {
 		}
 
 		return updateItem($q, $http, "updatevendor", this.eVendor);
-	}
+	};
 
 	return factory;
 });
@@ -213,7 +213,7 @@ app.factory('cmpntTypeFactory', function($http, $q, CmpntType, EntityError) {
 	// Set component type object
 	factory.setCmpntType = function(cmpntType) {
 		this.eCmpntType.set(cmpntType);
-	}
+	};
 
 	// Check component type before sending it to the server
 	factory.checkCmpntType = function(cmpntType) {
@@ -223,7 +223,7 @@ app.factory('cmpntTypeFactory', function($http, $q, CmpntType, EntityError) {
 		}
 
 		return checkItem(this.eCmpntType, this.error);
-	}
+	};
 
 	// Get componet type from server
 	factory.retrieveCmpntType = function(cmpntType) {
@@ -233,12 +233,12 @@ app.factory('cmpntTypeFactory', function($http, $q, CmpntType, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "cmpnttype", this.eCmpntType, CmpntType);
-	}
+	};
 
 	// Get component types from server
 	factory.retrieveCompntTypes = function(params) {
 		return retrieveItems($q, $http, "cmpnttype", this.eCmpntType.list, params, this.eCmpntType.search_m);
-	}
+	};
 
 	// Save new component type
 	factory.saveCmpntType = function(cmpntType) {
@@ -248,7 +248,7 @@ app.factory('cmpntTypeFactory', function($http, $q, CmpntType, EntityError) {
 		}
 
 		return saveItem($q, $http, "savecmpnttype", this.eCmpntType);
-	}
+	};
 
 	// Update component tpye
 	factory.updateCmpntType = function(cmpntType) {
@@ -258,7 +258,7 @@ app.factory('cmpntTypeFactory', function($http, $q, CmpntType, EntityError) {
 		}
 
 		return updateItem($q, $http, "updatecmpnttype", this.eCmpntType);
-	}
+	};
 
 	return factory;
 });
@@ -274,7 +274,7 @@ app.factory('cmpntTypeTypeFactory', function($http, $q, CmpntTypeType, EntityErr
 	// Set component type property type object
 	factory.setCmpntTypeType = function(cmpntTypeType) {
 		this.eCmpntTypeType.set(cmpntTypeType);
-	}
+	};
 
 	// Check component type property type before sending it to the server
 	factory.checkCmpntTypeType = function(cmpntTypeType) {
@@ -284,7 +284,7 @@ app.factory('cmpntTypeTypeFactory', function($http, $q, CmpntTypeType, EntityErr
 		}
 
 		return checkItem(this.eCmpntTypeType, this.error);
-	}
+	};
 
 	// Get componet type property type from server
 	factory.retrieveCmpntTypeType = function(cmpntTypeType) {
@@ -294,12 +294,12 @@ app.factory('cmpntTypeTypeFactory', function($http, $q, CmpntTypeType, EntityErr
 		}
 
 		return retrieveItem($q, $http, "cmpnttypeproptype", this.eCmpntTypeType, CmpntTypeType);
-	}
+	};
 
 	// Get component type property types from server
 	factory.retrieveCompntTypeTypes = function(params) {
 		return retrieveItems($q, $http, "cmpnttypeproptype", this.eCmpntTypeType.list, params, this.eCmpntTypeType.search_m);
-	}
+	};
 
 	// Save new component type property type
 	factory.saveCmpntTypeType = function(cmpntTypeType) {
@@ -309,7 +309,7 @@ app.factory('cmpntTypeTypeFactory', function($http, $q, CmpntTypeType, EntityErr
 		}
 
 		return saveItem($q, $http, "savecmpnttypeproptype", this.eCmpntTypeType);
-	}
+	};
 
 	// Update component type property type
 	factory.updateCmpntTypeType = function(cmpntTypeType) {
@@ -319,7 +319,7 @@ app.factory('cmpntTypeTypeFactory', function($http, $q, CmpntTypeType, EntityErr
 		}
 
 		return updateItem($q, $http, "updatecmpnttypeproptype", this.eCmpntTypeType);
-	}
+	};
 
 	return factory;
 });
@@ -335,7 +335,7 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 	// Set inventory object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check inventory before sending it to the server
 	factory.checkItem = function(item) {
@@ -345,7 +345,7 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get inventory from server
 	factory.retrieveItem = function(item) {
@@ -355,12 +355,12 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "inventory", this.entity, Inventory);
-	}
+	};
 
 	// Get inventories from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "inventory", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new inventory
 	factory.saveItem = function(item) {
@@ -370,7 +370,7 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 		}
 
 		return saveItem($q, $http, "saveinventory", this.entity);
-	}
+	};
 
 	// Update inventory
 	factory.updateItem = function(item) {
@@ -380,7 +380,7 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 		}
 
 		return updateItem($q, $http, "updateinventory", this.entity);
-	}
+	};
 
 	return factory;
 });
@@ -396,7 +396,7 @@ app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityErr
 	// Set inventory property template object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check inventory property tempalte before sending it to the server
 	factory.checkItem = function(item) {
@@ -406,7 +406,7 @@ app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityErr
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get inventory property template from server
 	factory.retrieveItem = function(item) {
@@ -416,12 +416,12 @@ app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityErr
 		}
 
 		return retrieveItem($q, $http, "inventoryproptmplt", this.entity, InventoryType);
-	}
+	};
 
 	// Get inventorie property templates from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "inventoryproptmplt", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new inventory property template
 	factory.saveItem = function(item) {
@@ -431,7 +431,7 @@ app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityErr
 		}
 
 		return saveItem($q, $http, "saveinventoryproptmplt", this.entity);
-	}
+	};
 
 	// Update inventory property template
 	factory.updateItem = function(item) {
@@ -441,7 +441,7 @@ app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityErr
 		}
 
 		return updateItem($q, $http, "updateinventoryproptmplt", this.entity);
-	}
+	};
 
 	return factory;
 });
@@ -457,7 +457,7 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 	// Set install object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check install before sending it to the server
 	factory.checkItem = function(item) {
@@ -467,7 +467,7 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get install from server
 	factory.retrieveItem = function(item) {
@@ -477,12 +477,12 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "install", this.entity, Install);
-	}
+	};
 
 	// Get install from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "install", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new install
 	factory.saveItem = function(item) {
@@ -492,7 +492,7 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 		}
 
 		return saveItem($q, $http, "saveinstall", this.entity);
-	}
+	};
 
 	// Update install
 	factory.updateItem = function(item) {
@@ -502,7 +502,7 @@ app.factory('installFactory', function($http, $q, Install, EntityError) {
 		}
 
 		return updateItem($q, $http, "updateinstall", this.entity);
-	}
+	};
 
 	return factory;
 });
@@ -518,7 +518,7 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 	// Set inventory to install object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check inventory to install before sending it to the server
 	factory.checkItem = function(item) {
@@ -528,7 +528,7 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get inventory to install from server
 	factory.retrieveItem = function(item) {
@@ -538,12 +538,12 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 		}
 
 		return retrieveItem($q, $http, "inventorytoinstall", this.entity, InventoryToInstall);
-	}
+	};
 
 	// Get inventory to install from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "inventorytoinstall", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new inventory to install
 	factory.saveItem = function(item) {
@@ -553,7 +553,7 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 		}
 
 		return saveItem($q, $http, "saveinventorytoinstall", this.entity);
-	}
+	};
 
 	// Update inventory to install
 	factory.updateItem = function(item) {
@@ -563,7 +563,7 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 		}
 
 		return updateItem($q, $http, "updateinventorytoinstall", this.entity);
-	}
+	};
 
 	// Delete inventory to install
 	factory.deleteItem = function(item) {
@@ -581,13 +581,13 @@ app.factory('inventoryToInstallFactory', function($http, $q, InventoryToInstall,
 
 		$http.post(query, params).success(function(data){
 			deffered.resolve(data);
-		
+
 		}).error(function(data, status, headers, config) {
 			deffered.reject(data);
 		});
 
 		return promise;
-	}
+	};
 
 	return factory;
 });
@@ -603,7 +603,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 	// Set install rel type object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check install rel type before sending it to the server
 	factory.checkItem = function(item) {
@@ -613,7 +613,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get install rel tree from server
 	factory.retrieveTree = function(item) {
@@ -621,7 +621,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		if(item !== undefined) {
 			this.setItem(item);
 		}
-		
+
 		var query = serviceurl + "/trees/?";
 		query += prepareUrlParameters(["install_name"], this.entity);
 
@@ -630,13 +630,13 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 
 		$http.get(query).success(function(data){
 			deffered.resolve(data);
-		
+
 		}).error(function(data, status, headers, config) {
 			deffered.reject(data);
 		});
 
 		return promise;
-	}
+	};
 
 	// Get install from server
 	factory.retrieveItem = function(item) {
@@ -646,12 +646,12 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "installrel", this.entity, InstallRel);
-	}
+	};
 
 	// Get install rel type from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "installrel", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new install rel type
 	factory.saveItem = function(item) {
@@ -661,7 +661,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		}
 
 		return saveItem($q, $http, "saveinstallrel", this.entity);
-	}
+	};
 
 	// Update install rel type
 	factory.updateItem = function(item) {
@@ -671,7 +671,7 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		}
 
 		return updateItem($q, $http, "updateinstallrel", this.entity);
-	}
+	};
 
 	// Delete install rel
 	factory.deleteItem = function(item) {
@@ -689,13 +689,13 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 
 		$http.post(query, params).success(function(data){
 			deffered.resolve(data);
-		
+
 		}).error(function(data, status, headers, config) {
 			deffered.reject(data);
 		});
 
 		return promise;
-	}
+	};
 
 	return factory;
 });
@@ -711,7 +711,7 @@ app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityE
 	// Set install rel type object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check install rel type before sending it to the server
 	factory.checkItem = function(item) {
@@ -721,7 +721,7 @@ app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityE
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get install rel type from server
 	factory.retrieveItem = function(item) {
@@ -731,12 +731,12 @@ app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityE
 		}
 
 		return retrieveItem($q, $http, "installrelproptype", this.entity, InstallRelType);
-	}
+	};
 
 	// Get install rel type from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "installrelproptype", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new install rel type
 	factory.saveItem = function(item) {
@@ -746,7 +746,7 @@ app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityE
 		}
 
 		return saveItem($q, $http, "saveinstallrelproptype", this.entity);
-	}
+	};
 
 	// Update install rel type
 	factory.updateItem = function(item) {
@@ -756,7 +756,7 @@ app.factory('installRelTypeFactory', function($http, $q, InstallRelType, EntityE
 		}
 
 		return updateItem($q, $http, "updateinstallrelproptype", this.entity);
-	}
+	};
 
 	return factory;
 });
@@ -772,7 +772,7 @@ app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {
 	// Set data method object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check data method before sending it to the server
 	factory.checkItem = function(item) {
@@ -782,7 +782,7 @@ app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get data method from server
 	factory.retrieveItem = function(item) {
@@ -792,12 +792,12 @@ app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "datamethod", this.entity, DataMethod);
-	}
+	};
 
 	// Get data method from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "datamethod", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new data method
 	factory.saveItem = function(item) {
@@ -807,7 +807,7 @@ app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {
 		}
 
 		return saveItem($q, $http, "savedatamethod", this.entity);
-	}
+	};
 
 	// Update data method
 	factory.updateItem = function(item) {
@@ -817,7 +817,7 @@ app.factory('dataMethodFactory', function($http, $q, DataMethod, EntityError) {
 		}
 
 		return updateItem($q, $http, "updatedatamethod", this.entity);
-	}
+	};
 
 	return factory;
 });
@@ -833,7 +833,7 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 	// Set offline data object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check offline data before sending it to the server
 	factory.checkItem = function(item) {
@@ -843,7 +843,7 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get offline data from server
 	factory.retrieveItem = function(item) {
@@ -853,7 +853,7 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 		}
 
 		return retrieveItem($q, $http, "offlinedata", this.entity, OfflineData);
-	}
+	};
 
 	// Raw data file
 	factory.retrieveRawFile = function(id) {
@@ -864,18 +864,18 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 
 		$http.get(query).success(function(data){
 			deffered.resolve(data);
-		
+
 		}).error(function(data, status, headers, config) {
 			deffered.reject(data);
 		});
 
 		return promise;
-	}
+	};
 
 	// Get offline data from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "offlinedata", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new offline data
 	factory.saveItem = function(item) {
@@ -885,7 +885,7 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 		}
 
 		return saveItem($q, $http, "saveofflinedata", this.entity);
-	}
+	};
 
 	// Update offline data
 	factory.updateItem = function(item) {
@@ -895,7 +895,7 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 		}
 
 		return updateItem($q, $http, "updateofflinedata", this.entity);
-	}
+	};
 
 	// Delete offline data
 	factory.deleteItem = function(item) {
@@ -913,13 +913,13 @@ app.factory('offlineDataFactory', function($http, $q, OfflineData, EntityError) 
 
 		$http.post(query, params).success(function(data){
 			deffered.resolve(data);
-		
+
 		}).error(function(data, status, headers, config) {
 			deffered.reject(data);
 		});
 
 		return promise;
-	}
+	};
 
 	return factory;
 });
@@ -935,7 +935,7 @@ app.factory('offlineDataInstallFactory', function($http, $q, OfflineDataInstall,
 	// Set offline data install object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check offline data install before sending it to the server
 	factory.checkItem = function(item) {
@@ -945,7 +945,7 @@ app.factory('offlineDataInstallFactory', function($http, $q, OfflineDataInstall,
 		}
 
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get offline data install from server
 	factory.retrieveItem = function(item) {
@@ -955,12 +955,12 @@ app.factory('offlineDataInstallFactory', function($http, $q, OfflineDataInstall,
 		}
 
 		return retrieveItem($q, $http, "offlinedatainstall", this.entity, OfflineDataInstall);
-	}
+	};
 
 	// Get offline data install from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "offlinedatainstall", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	return factory;
 });
@@ -976,7 +976,7 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 	// Set online data object
 	factory.setItem = function(item) {
 		this.entity.set(item);
-	}
+	};
 
 	// Check online data before sending it to the server
 	factory.checkItem = function(item) {
@@ -987,7 +987,7 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 		}
 		l(this.entity);
 		return checkItem(this.entity, this.error);
-	}
+	};
 
 	// Get online data from server
 	factory.retrieveItem = function(item) {
@@ -997,12 +997,12 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 		}
 
 		return retrieveItem($q, $http, "onlinedata", this.entity, OnlineData);
-	}
+	};
 
 	// Get online data from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "onlinedata", this.entity.list, params, this.entity.search_m);
-	}
+	};
 
 	// Save new online data
 	factory.saveItem = function(item) {
@@ -1012,7 +1012,7 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 		}
 
 		return saveItem($q, $http, "saveonlinedata", this.entity);
-	}
+	};
 
 	// Update online data
 	factory.updateItem = function(item) {
@@ -1022,7 +1022,7 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 		}
 
 		return updateItem($q, $http, "updateonlinedata", this.entity);
-	}
+	};
 
 	// Delete online data
 	factory.deleteItem = function(item) {
@@ -1040,13 +1040,13 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 
 		$http.post(query, params).success(function(data){
 			deffered.resolve(data);
-		
+
 		}).error(function(data, status, headers, config) {
 			deffered.reject(data);
 		});
 
 		return promise;
-	}
+	};
 
 	return factory;
 });

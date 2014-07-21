@@ -1213,6 +1213,61 @@ class physics(object):
             self.logger.info('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving new inventory:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def saveInstallRel(self, parent_install_id, child_install_id, description=None, order=None):
+        '''
+        Save install relationship into a database.
+
+        :param parent_install_id: id of the parent element
+        :type parent_install_id: int
+
+        :param child_install_id: id of the child element
+        :type child_install_id: int
+
+        :param description: description of the relationship
+        :type description: str
+
+        :param order: order of the child in the relationship
+        :type order: int
+
+        :return:  new install rel id
+
+        :raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO install_rel (
+            parent_install_id,
+            child_install_id,
+            logical_desc,
+            logical_order,
+            install_date
+        ) VALUES (%s, %s, %s, %s, NOW())
+        '''
+
+        try:
+            # Insert entity
+            cur = self.conn.cursor()
+            cur.execute(sql, (parent_install_id, child_install_id, description, order))
+
+            # Get last row id
+            idrel = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return idrel
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving new install rel:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving new install rel:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def retrieveInventoryToInstall(self, inventory__install_id, install_id, inventory_id):
         '''
         Return installed devices or psecific map

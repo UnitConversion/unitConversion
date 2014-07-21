@@ -1135,9 +1135,11 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	$scope.onlinedata = [];
 	$scope.offlinedata = [];
 	$scope.statusMap = statusArrMap;
+	$scope.nodeTypeList = nodeTypeList;
+	$scope.deviceCatagoryList = deviceCatagoryList;
 
 	// Retrieve all Component types
-	cmpntTypeFactory.retrieveCompntTypes({'all_cmpnt_types': true}).then(function(result) {
+	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
 
 		$.each(result, function(i, item){
 			$scope.types.push(item.name);
@@ -1284,7 +1286,7 @@ app.controller('showInsertionDeviceCtrl', function($scope, $routeParams, $http, 
 	$scope.statusMap = statusArrMap;
 
 	// Retrieve all Component types
-	cmpntTypeFactory.retrieveCompntTypes({'all_cmpnt_types': true}).then(function(result) {
+	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
 
 		$.each(result, function(i, item){
 			$scope.types.push(item.name);
@@ -1817,7 +1819,7 @@ app.controller('showInstallRelCtrl', function($scope, $modal, $routeParams, $htt
 	$scope.props = [];
 
 	// Get install
-	installFactory.retrieveItems({'name': '*', 'all_install': 'True'}).then(function(result) {
+	installFactory.retrieveItems({'name': '*'}).then(function(result) {
 		$.each(result, function(i, item){
 
 			$scope.installs.push(item.name);

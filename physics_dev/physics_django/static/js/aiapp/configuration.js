@@ -5,9 +5,6 @@
  * @created Mar 6, 2014
  */
 
-// For accessing the REST service
-var serviceurl = "http://localhost:8000";
-
 //Version number
 var version = "1.0";
 

@@ -9,7 +9,7 @@
  */
 
 // For accessing the REST service
-var serviceurlraw = "http://localhost:8000/";
+var serviceurlraw = serviceurl;
 var serviceurl = serviceurlraw + "id/device";
 
 //Version number
@@ -81,3 +81,17 @@ var statusArrMap = {
 	1: statusArr[0].value,
 	0: statusArr[1].value
 };
+
+// Node type options
+var nodeTypeList = [
+	{name:"root", value:"Root"},
+	{name:"virtual", value:"Virtual"},
+	{name:"real", value:"Real"}
+];
+
+// Device catagory options
+var deviceCatagoryList = [
+	{name:"id", value:"Insertion Device"},
+	{name:"magnet", value:"Magnet"},
+	{name:"other", value:"Other"}
+];

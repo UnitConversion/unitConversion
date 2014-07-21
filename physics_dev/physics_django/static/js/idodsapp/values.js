@@ -85,7 +85,7 @@ app.value('CmpntTypeInfo', {
  	this.m = ["name"];
  	this.search_m = ["name"];
  	this.retrieve = ["id", "name", "description"];
- 	this.list = ["name", "description", "all_cmpnt_types"];
+ 	this.list = ["name", "description"];
  	this.save = ["name", "description", "props"];
  	this.save_show = ["name", "description"];
  	this.update = ["old_name", "name", "description", "props"];
@@ -598,13 +598,13 @@ app.value('InstallInfo', {
  	this.retrieve_hide = ["cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter", "all_install"];
+ 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters used for save URL
  	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.save_show = ["name", "cmpnt_type", "description", "coordinatecenter", "node_type", "device_category", "beamline", "project"];
 
  	// Parameters used as update URL parameters
  	this.update = ["old_name", "name", "cmpnt_type", "description", "coordinatecenter"];
@@ -614,7 +614,11 @@ app.value('InstallInfo', {
  		"name": "Name",
  		"cmpnt_type": "Component type",
  		"description": "Description",
- 		"coordinatecenter": "Coordinate center"
+ 		"coordinatecenter": "Coordinate center",
+ 		"device_category": "Device category",
+ 		"node_type": "Node type",
+ 		"beamline": "Beamline name",
+ 		"project": "Project name"
  	};
 
  	this.id = "";
@@ -622,6 +626,12 @@ app.value('InstallInfo', {
  	this.cmpnt_type = "";
  	this.description = "";
  	this.coordinatecenter = undefined;
+
+ 	// Properties
+ 	this.device_category = "";
+ 	this.node_type = "";
+ 	this.beamline = "";
+ 	this.project = "";
 
  	this.set = function(obj) {
 
@@ -690,7 +700,7 @@ app.value('InsertionDeviceInfo', {
  	this.retrieve_hide = ["cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter", "all_install"];
+ 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters used for save URL
  	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];

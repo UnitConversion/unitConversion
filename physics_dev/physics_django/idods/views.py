@@ -161,7 +161,7 @@ def retrieveCompntTypeWS(request):
     '''
     Retrieve component type
     '''
-    return _retrieveData(request, idodsi.retrieveComponentType, ['name', 'description', 'all_cmpnt_types'])
+    return _retrieveData(request, idodsi.retrieveComponentType, ['name', 'description'])
 
 
 @require_http_methods(["POST"])
@@ -266,7 +266,7 @@ def retrieveInstallWS(request):
     Retrieve install
     '''
     startedd = time.time()
-    result = _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter', 'all_install'])
+    result = _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
     total = time.time() - startedd
     total = total*1000
     print '=> elapsed time view.retrieveInstall.V: %f ms' % total
@@ -650,7 +650,7 @@ def deleteOnlineDataWS(request):
     return _updateData(request, idodsi.deleteOnlineData, ['online_data_id'])
 
 
-@require_http_methods(["POST"])
+@require_http_methods(["GET", "POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def idodsInstallWS(request):
     '''

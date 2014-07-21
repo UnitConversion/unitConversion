@@ -278,7 +278,7 @@ class idods(object):
             raise ValueError("Inventory property template (%s) already exists in the database!" % name)
 
         # Check component type
-        result = self.retrieveComponentType(cmpnt_type, all_cmpnt_types=True)
+        result = self.retrieveComponentType(cmpnt_type)
 
         if len(result) == 0:
             raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type))
@@ -2860,7 +2860,7 @@ class idods(object):
         # Call update from physics dataapi
         return self.physics.updateComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
 
-    def retrieveComponentType(self, name, description=None, all_cmpnt_types=None):
+    def retrieveComponentType(self, name, description=None):
         '''Retrieve a component type using the key words:
 
         - name
@@ -2871,9 +2871,6 @@ class idods(object):
 
         :param description: description for this device
         :type desctiprion: str
-
-        :param all_cmpnt_types: return also system component types
-        :type all_cmpnt_types: boolean
 
         :return: a map with structure like:
 
@@ -2912,19 +2909,10 @@ class idods(object):
         # Append description if exists
         if description is not None:
 
-            # Append __system__ component types if descriptions is set to retrieve them
-            if description == '__system__':
-                all_cmpnt_types = True
-
-            else:
-                sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
-                sql = sqlAndVals[0]
-                vals = sqlAndVals[1]
-
-        # Exclude all system component types
-        if all_cmpnt_types is None or all_cmpnt_types is False:
-            sql += ' AND (description != %s OR description IS NULL) '
-            vals.append('__system__')
+            # Append description
+            sqlAndVals = _checkWildcardAndAppend("description", description, sqlAndVals[0], sqlAndVals[1], "AND")
+            sql = sqlAndVals[0]
+            vals = sqlAndVals[1]
 
         # Execute SQL
         try:
@@ -3688,7 +3676,7 @@ class idods(object):
             raise ValueError("Same relationship already exists in the database!")
 
         # Check if parent exists in install
-        existingParent = self.retrieveInstall(parent_install, all_install=True)
+        existingParent = self.retrieveInstall(parent_install)
 
         if len(existingParent) == 0:
             raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
@@ -3697,7 +3685,7 @@ class idods(object):
         parentObject = existingParent[parentKeys[0]]
 
         # Check if child exists in install
-        existingChild = self.retrieveInstall(child_install, all_install=True)
+        existingChild = self.retrieveInstall(child_install)
 
         if len(existingChild) == 0:
             raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
@@ -3791,7 +3779,7 @@ class idods(object):
         whereDict = {}
 
         # Check if parent exists in install
-        existingParent = self.retrieveInstall(parent_install, all_install=True)
+        existingParent = self.retrieveInstall(parent_install)
 
         if len(existingParent) == 0:
             raise ValueError("Parent with id (%s) does not exist in the database!" % parent_install)
@@ -3802,7 +3790,7 @@ class idods(object):
         whereDict['parent_install_id'] = parentObject['id']
 
         # Check if child exists in install
-        existingChild = self.retrieveInstall(child_install, all_install=True)
+        existingChild = self.retrieveInstall(child_install)
 
         if len(existingChild) == 0:
             raise ValueError("Child with id (%s) does not exist in the database!" % child_install)
@@ -4015,7 +4003,7 @@ class idods(object):
             FROM install_rel ir
             LEFT JOIN install insp ON(ir.parent_install_id = insp.install_id)
             LEFT JOIN install insc ON(ir.child_install_id = insc.install_id)
-            WHERE 1=1
+            WHERE ir.parent_install_id != ir.child_install_id
             '''
         else:
 
@@ -4315,7 +4303,7 @@ class idods(object):
             raise ValueError('Both inventory name and install name should not be None!')
 
         # Create component types
-        if len(self.retrieveComponentType('root', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('root').keys()) == 0:
             raise ValueError('You are saving insertion device for the first time. Please run idodsInstall() and than insert device again.')
 
         # Install name is provided, beamline and project name should be defined
@@ -4325,11 +4313,11 @@ class idods(object):
                 raise ValueError('If install name is defined, project and beamline should also be defined!')
 
             # Save project
-            if len(self.retrieveInstall(project, all_install=True).keys()) == 0:
+            if len(self.retrieveInstall(project).keys()) == 0:
                 self.saveInstall(project, description='__system__', cmpnt_type='project')
 
             # Save beamline
-            if len(self.retrieveInstall(beamline, all_install=True).keys()) == 0:
+            if len(self.retrieveInstall(beamline).keys()) == 0:
                 self.saveInstall(beamline, description='__system__', cmpnt_type='project')
 
             # Save beamline  - project rel
@@ -4435,7 +4423,7 @@ class idods(object):
 
         # Check component type
         if 'cmpnt_type' in kws and kws['cmpnt_type'] is not None:
-            componentType = self.retrieveComponentType(kws['cmpnt_type'], all_cmpnt_types=True)
+            componentType = self.retrieveComponentType(kws['cmpnt_type'])
             componentTypeKeys = componentType.keys()
 
         else:
@@ -4464,6 +4452,9 @@ class idods(object):
         total = time.time() - startedd
         total = total*1000
         print '=> elapsed time idods.saveInstall.W: %f ms' % total
+
+        # Save install rel so properties can be saved fot install
+        mapid = self.physics.saveInstallRel(invid, invid)
 
         return {'id': invid}
 
@@ -4618,9 +4609,6 @@ class idods(object):
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: str
 
-        :param all_install: retrieve also system installs
-        :type all_install: str
-
         :return: a map with structure like:
 
             .. code-block:: python
@@ -4663,12 +4651,8 @@ class idods(object):
 
         # Append description parameter
         if 'description' in kws and kws['description'] is not None:
-            # Append __system__ installs if description is set to __system__
-            if kws['description'] == '__system__':
-                kws['all_install'] = True
-
-            else:
-                sqlVals = _checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
+            # Append description
+            sqlVals = _checkWildcardAndAppend('inst.location', kws['description'], sqlVals[0], sqlVals[1], 'AND')
 
         # Append component type parameter
         if 'cmpnt_type' in kws and kws['cmpnt_type'] is not None:
@@ -4677,16 +4661,6 @@ class idods(object):
         # Append coordination center parameter
         if 'coordinatecenter' in kws and kws['coordinatecenter'] is not None:
             sqlVals = _checkRangeAndAppend('inst.coordinate_center', kws['coordinatecenter'], sqlVals[0], sqlVals[1], 'AND')
-
-        # Exclude all system component types
-        if ('all_install' in kws) is False or ('all_install' in kws and kws['all_install'] is False):
-            sql = sqlVals[0]
-            vals = sqlVals[1]
-
-            sql += ' AND (ct.description != %s OR ct.description IS NULL ) '
-            vals.append('__system__')
-
-            sqlVals = (sql, vals)
 
         try:
 
@@ -5336,33 +5310,46 @@ class idods(object):
         if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
             self.saveComponentTypePropertyType('insertion_device')
 
+        # Create install property types
+        if len(self.retrieveInstallRelPropertyType('__device_category__').keys()) == 0:
+            self.saveInstallRelPropertyType('__device_category__', 'System parameter')
+
+        if len(self.retrieveInstallRelPropertyType('__node_type__').keys()) == 0:
+            self.saveInstallRelPropertyType('__node_type__', 'System parameter')
+
+        if len(self.retrieveInstallRelPropertyType('beamline').keys()) == 0:
+            self.saveInstallRelPropertyType('beamline', 'Beamline name')
+
+        if len(self.retrieveInstallRelPropertyType('project').keys()) == 0:
+            self.saveInstallRelPropertyType('project', 'Project name')
+
         # Create component types
-        if len(self.retrieveComponentType('root', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('root').keys()) == 0:
             self.saveComponentType('root', '__system__')
 
-        if len(self.retrieveComponentType('branch', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('branch').keys()) == 0:
             self.saveComponentType('branch', '__system__')
 
-        if len(self.retrieveComponentType('beamline', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('beamline').keys()) == 0:
             self.saveComponentType('beamline', '__system__')
 
-        if len(self.retrieveComponentType('project', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('project').keys()) == 0:
             self.saveComponentType('project', '__system__')
 
-        if len(self.retrieveComponentType('cell', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('cell').keys()) == 0:
             self.saveComponentType('cell', '__system__')
 
-        if len(self.retrieveComponentType('girder', all_cmpnt_types=True).keys()) == 0:
+        if len(self.retrieveComponentType('girder').keys()) == 0:
             self.saveComponentType('girder', '__system__')
 
         # Create install elements
-        if len(self.retrieveInstall('Trees', cmpnt_type='root', all_install=True).keys()) == 0:
+        if len(self.retrieveInstall('Trees', cmpnt_type='root').keys()) == 0:
             self.saveInstall('Trees', cmpnt_type='root')
 
-        if len(self.retrieveInstall('Device geometric layout', cmpnt_type='branch', all_install=True).keys()) == 0:
+        if len(self.retrieveInstall('Device geometric layout', cmpnt_type='branch').keys()) == 0:
             self.saveInstall('Device geometric layout', cmpnt_type='branch')
 
-        if len(self.retrieveInstall('Beamline project', cmpnt_type='branch', all_install=True).keys()) == 0:
+        if len(self.retrieveInstall('Beamline project', cmpnt_type='branch').keys()) == 0:
             self.saveInstall('Beamline project', cmpnt_type='branch')
 
         # Create install relationship
@@ -5374,7 +5361,7 @@ class idods(object):
             self.saveInstallRel('Trees', 'Beamline project')
 
         # Create test project
-        # if len(self.retrieveInstall('Project1', cmpnt_type='project', all_install = True).keys()) == 0:
+        # if len(self.retrieveInstall('Project1', cmpnt_type='project').keys()) == 0:
         #    self.saveInstall('Project1', cmpnt_type='project')
 
         # Create test project relationship
@@ -5382,7 +5369,7 @@ class idods(object):
         #     self.saveInstallRel('Installation', 'Project1')
 
         # Create test beamline
-        # if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline', all_install = True).keys()) == 0:
+        # if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline').keys()) == 0:
         #    self.saveInstall('Beamline1', cmpnt_type='beamline')
 
         # Create test beamline relationship

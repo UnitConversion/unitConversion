@@ -124,6 +124,10 @@ class TestIdods(unittest.TestCase):
         keys = result.keys()
         self.assertEqual(result[keys[0]]['description'], 'test description', 'Correct component type retrieved')
 
+        # Save a system component type
+        ctid = self.api.saveComponentType('root', '__system__')
+        self.assertNotEqual(ctid['id'], 0)
+
     '''
     Test different options of saving component type
     '''
