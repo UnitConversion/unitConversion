@@ -213,26 +213,55 @@ class ActiveInterlockClient(object):
         
         if status == "approved":
             statusParam = 1
-            
         elif status == "active":
             statusParam = 2
-            
         else:
             self.__raise_for_status(400, "Status parameter not acceptable!")
 
-        # Set url
-        url = 'download/'
-        
         # Set parameters
-        params={
-            'status': statusParam,
-            'modified_by': self.__userName
-        }
-        
-        r=self.__session.post(self.__baseURL+self.__resource+url, data=params, verify=False, headers=self.__jsonheader, auth=self.__auth)
-        self.__raise_for_status(r.status_code, r.text)
-        
-        return r.json()
+        if self.__auth is None:
+            res = {}
+            params={
+                'ai_status': statusParam,
+                'name': '*'
+            }
+            
+            url = 'activeinterlockheader/'
+            r=self.__session.get(self.__baseURL+self.__resource+url, params={'status': statusParam}, verify=False, headers=self.__jsonheader)
+            self.__raise_for_status(r.status_code, r.text)
+            ds = r.json()
+            if len(ds) != 1:
+                raise RuntimeError("Do not find a unique data set. Please check data set status.")
+            aiid = ds.keys()[0]
+            
+            url = 'device/'
+            params.update({'definition': 'bm'})
+            r=self.__session.get(self.__baseURL+self.__resource+url, params=params, verify=False, headers=self.__jsonheader)
+            self.__raise_for_status(r.status_code, r.text)
+            res.update({'bm': r.json()})
+            
+            params.update({'definition': 'id'})
+            r=self.__session.get(self.__baseURL+self.__resource+url, params=params, verify=False, headers=self.__jsonheader)
+            self.__raise_for_status(r.status_code, r.text)
+            res.update({'id': r.json()})
+            
+            url = 'logic/'
+            r=self.__session.get(self.__baseURL+self.__resource+url, params={'name': '*', 'ai_id': aiid}, verify=False, headers=self.__jsonheader)
+            self.__raise_for_status(r.status_code, r.text)
+            res.update({'logic': r.json()})
+            
+            return res        
+        else:
+            # Set url
+            params={
+                'status': statusParam,
+                'modified_by': self.__userName
+            }
+            
+            url = 'download/'
+            r=self.__session.post(self.__baseURL+self.__resource+url, data=params, verify=False, headers=self.__jsonheader, auth=self.__auth)
+            self.__raise_for_status(r.status_code, r.text)
+            return r.json()
     
     @classmethod
     def __raise_for_status(self, status_code, reason):
