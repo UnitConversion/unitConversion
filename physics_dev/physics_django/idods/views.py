@@ -352,6 +352,24 @@ def updateInstallRelPropTypeWS(request):
     return _updateData(request, idodsi.updateInstallRelPropertyType, ['old_name', 'name', 'description', 'unit'], {'type_id': None})
 
 
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveInstallRelPropWS(request):
+    '''
+    Save install rel property
+    '''
+    return _saveData(request, idodsi.saveInstallRelProperty, ['install_rel_id', 'install_rel_property_type_name', 'install_rel_property_value'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def updateInstallRelPropWS(request):
+    '''
+    Update install rel property
+    '''
+    return _updateData(request, idodsi.updateInstallRelPropertyByMap, ['install_rel_parent', 'install_rel_child', 'install_rel_property_type_name', 'install_rel_property_value'], {})
+
+
 @require_http_methods(["GET"])
 def retrieveInventoryToInstallWS(request):
     '''

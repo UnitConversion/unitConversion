@@ -1143,6 +1143,80 @@ class IDODSClient(object):
 
         return r.json()
 
+    def saveInstallRelProperty(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
+        '''
+        Save install rel property into database
+
+        :param install_rel_parent: name of the parent in the install rel
+        :type install_rel_parent: str
+
+        :param install_rel_child: name of the child in the install rel
+        :type install_rel_child: str
+
+        :param install_rel_property_type_name: name of the install rel property type
+        :type install_rel_property_type_name: str
+
+        :param install_rel_property_value: value of the install rel property
+        :type install_rel_property_value: str
+
+        :raises: HTTPError
+
+        :returns: {'id': new install rel property id}
+        '''
+
+        # Set URL
+        url = 'saveinstallrelprop/'
+
+        # Set parameters
+        params = {
+            'install_rel_parent': install_rel_parent,
+            'install_rel_child': install_rel_child,
+            'install_rel_property_type_name': install_rel_property_type_name,
+            'install_rel_property_value': install_rel_property_value
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def updateInstallRelProperty(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
+        '''
+        Update install rel property in the database
+
+        :param install_rel_parent: name of the parent in the install rel
+        :type install_rel_parent: str
+
+        :param install_rel_child: name of the child in the install rel
+        :type install_rel_child: str
+
+        :param install_rel_property_type_name: name of the install rel property type
+        :type install_rel_property_type_name: str
+
+        :param install_rel_property_value: value of the install rel property
+        :type install_rel_property_value: str
+
+        :raises: HTTPError
+
+        :returns: True if everything was OK
+        '''
+
+        # Set URL
+        url = 'updateinstallrelprop/'
+
+        # Set parameters
+        params = {
+            'install_rel_parent': install_rel_parent,
+            'install_rel_child': install_rel_child,
+            'install_rel_property_type_name': install_rel_property_type_name,
+            'install_rel_property_value': install_rel_property_value
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
     def retrieveInstallRel(self, install_rel_id=None, parent_install=None, child_install=None, description=None, order=None, date=None, expected_property=None):
         '''
         Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or

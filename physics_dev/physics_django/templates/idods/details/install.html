@@ -201,15 +201,15 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<select ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
+							<select title="Available only for real devices" ng-disabled="new.node_type != 'real'" ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
 
 							<input ng-if="property != 'cmpnt_type' && property != 'device_category' && property != 'node_type' && property != 'beamline' && property != 'project'" type="text" ng-model="new[property]" />
 
 							<input title="Available only for insertion devices" ng-disabled="new.device_category != 'id'" ng-if="property == 'beamline' || property == 'project'" type="text" ng-model="new[property]" />
 
-							<select title="Available only for real node types" ng-disabled="new.node_type != 'real'" ng-if="property == 'device_category'" ng-model="new[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
+							<select title="Available only for real devices" ng-disabled="new.node_type != 'real'" ng-if="property == 'device_category'" ng-model="new[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
 
-							<select ng-if="property == 'node_type'" ng-model="new[property]" ng-options="s.name as s.value for s in nodeTypeList"></select>
+							<select ng-change="changeNodeType(new[property], new)" ng-if="property == 'node_type'" ng-model="new[property]" ng-options="s.name as s.value for s in nodeTypeList"></select>
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>

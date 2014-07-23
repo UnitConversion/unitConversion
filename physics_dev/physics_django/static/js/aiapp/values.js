@@ -9,7 +9,7 @@
  * History object
  */
 app.value('History', function(obj) {
-	
+
 	this.retrieve_display = ["description", "created_by", "created_date", "modified_by", "modified_date"];
 
 	// All possible parameters
@@ -47,16 +47,16 @@ app.value('Logic', function(obj) {
 
 	// Parameters for saving
 	this.save = ["name", "shape", "logic", "code"];
-	
+
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name"];
 
 	// Parameters for updating
 	this.update = ["id", "name", "shape", "logic", "code", "status"];
-	
+
 	// All parameters for retrieving
 	this.retrieve = ["name", "shape", "logic", "code", "status", "ai_id"];
-	
+
 	this.all = ["id", "name", "shape", "logic", "code", "status", "num", "ai_id"];
 
 	this.id = "";
@@ -77,7 +77,7 @@ app.value('Logic', function(obj) {
  		for(i=0; i<this.all.length; i++) {
  			this[this.all[i]] = obj[this.all[i]];
  		}
-	}
+	};
 
 	if(obj !== undefined) {
  		this.set(obj);
@@ -96,13 +96,13 @@ app.value('BendingMagnet', function(obj) {
 
 	// Save parameters in data
 	this.save_data = ["bm_cell", "bm_sequence", "bm_type", "bm_s", "bm_aiolh", "bm_aiorh", "bm_aiolv", "bm_aiorv", "bm_safe_current", "bm_in_use"];
-	
+
 	// Parameters that are displayed for saving
 	this.save_display = ["bm_cell", "bm_sequence", "name", "bm_type", "bm_s", "logic", "bm_aiolh", "bm_aiorh", "logic", "bm_aiolv", "bm_aiorv", "bm_safe_current", "bm_in_use"];
 
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name", "definition"];
-	
+
 	// All parameters for retrieving
 	this.retrieve = ["ai_id", "aid_id", "ai_status", "name", "definition"];
 
@@ -117,7 +117,7 @@ app.value('BendingMagnet', function(obj) {
 
 	// Cells that need to be approved after saving
 	this.approvable = {"bm_sequence":true, "bm_aiolh":true, "bm_aiorh":true, "bm_aiolv":true, "bm_aiorv":true, "bm_safe_current":true, "bm_in_use":true};
-	
+
 	this.all = ["id", "ai_id", "aid_id", "prop_statuses", "ai_status", "name", "props", "definition", "logic", "bm_cell", "bm_sequence", "bm_type", "bm_s", "bm_aiolh", "bm_aiorh", "bm_aiolv", "bm_aiorv", "bm_safe_current", "bm_in_use"];
 
 	this.id = "";
@@ -159,14 +159,14 @@ app.value('BendingMagnet', function(obj) {
  		for(i=0; i<this.all.length; i++) {
 
  			for(i=0; i<this.all.length; i++) {
- 			
+
 	 			if(this.all[i] === 'bm_s') {
 	 				this[this.all[i]] = parseFloat(obj[this.all[i]]);
-	 				
+
 	 			} else {
 	 				this[this.all[i]] = obj[this.all[i]];
 	 			}
-	 			
+
 	 		}
  		}
 	}
@@ -188,13 +188,13 @@ app.value('InsertionDevice', function(obj) {
 
 	// Save parameters in data
 	this.save_data = ["cell", "type", "set", "str_sect", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_origin_s1", "x_offset_s2", "x_offset_origin_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_origin_s1", "y_offset_s2", "y_offset_origin_s2", "y_offset_s3", "y_angle", "safe_current", "in_use"];
-	
+
 	// Parameters that are displayed for saving
 	this.save_display = ["cell", "type", "set", "str_sect", "logic", "shape", "defined_by", "s1_name", "s1_pos", "s1_pos_from", "s2_name", "s2_pos", "s2_pos_from", "name", "s3_pos", "s3_pos_from", "max_offset", "max_angle", "extra_offset", "x_offset_s1", "x_offset_origin_s1", "x_offset_s2", "x_offset_origin_s2", "x_offset_s3", "x_angle", "y_offset_s1", "y_offset_origin_s1", "y_offset_s2", "y_offset_origin_s2", "y_offset_s3", "y_angle", "safe_current", "in_use"];
 
 	// Mandatory parameters for retrieving
 	this.retrieve_m = ["name", "definition"];
-	
+
 	// All parameters for retrieving
 	this.retrieve = ["ai_id", "aid_id", "ai_status", "name", "definition"];
 
@@ -261,7 +261,7 @@ app.value('InsertionDevice', function(obj) {
 	this.props = {};
 
 	this.updateProps = function() {
-		
+
 		for(i=0; i<this.save_data.length; i++) {
 
  			this.props_raw[this.save_data[i]] = this[this.save_data[i]];
@@ -277,14 +277,14 @@ app.value('InsertionDevice', function(obj) {
  		}
 
  		for(i=0; i<this.all.length; i++) {
- 			
+
  			if(this.all[i] === 's1_pos' || this.all[i] === 's2_pos' || this.all[i] === 's3_pos') {
  				this[this.all[i]] = parseFloat(obj[this.all[i]]);
- 				
+
  			} else {
  				this[this.all[i]] = obj[this.all[i]];
  			}
- 			
+
  		}
 	}
 

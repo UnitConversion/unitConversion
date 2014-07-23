@@ -234,9 +234,9 @@ function drawDataTree(html, data, level){
 			html += "<li>";
 			html += "<b><a href ng-click='showTreeNodeDetails(\"" + data[prop].id + "\")'>" + prop + "</a></b>";
 
-			if (level > 0 && level <= 3) {
-				html += " <a ng-click='addItem(\"" + prop + "\")' href>Add child</a>";
-			}
+			//if (level > 0 && level <= 3) {
+			html += " <a ng-click='addItem(\"" + prop + "\")' href>Add child</a>";
+			//}
 
 			// Find object
 			if($.type(data[prop]) === 'object') {

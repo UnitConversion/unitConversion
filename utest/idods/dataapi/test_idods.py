@@ -735,7 +735,7 @@ class TestIdods(unittest.TestCase):
         prop = self.api.saveInstallRelProperty(rel['id'], 'testprop', 4)
 
         # Try to update install rel property
-        self.assertTrue(self.api.updateInstallRelProperty('test parent', 'test child', 'testprop', value=5))
+        self.assertTrue(self.api.updateInstallRelPropertyByMap('test parent', 'test child', 'testprop', 5))
 
         # Retrieve updated install rel property
         updatedProp = self.api.retrieveInstallRelProperty(rel['id'], 'testprop')

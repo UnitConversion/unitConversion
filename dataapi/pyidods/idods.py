@@ -3408,18 +3408,18 @@ class idods(object):
             self.logger.info('Error when retrieving install rel property from the table:\n%s (%s)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when retrieving install rel property from the table:\n%s (%s)' % (e.args[1], e.args[0]))
 
-    def retrieveInstallRelProperty(self, installRelId, installRelPropertyTypeName=None, value=None):
+    def retrieveInstallRelProperty(self, install_rel_id, install_rel_property_type_name=None, install_rel_property_value=None):
         '''
         Retrieve component type property from the database by name
 
-        :param installRelId: id of the install rel
-        :type installRelId: int
+        :param install_rel_id: id of the install rel
+        :type install_rel_id: int
 
-        :param installRelPropertyTypeName: name of the install rel property type
-        :type installRelPropertyTypeName: str
+        :param install_rel_property_type_name: name of the install rel property type
+        :type install_rel_property_type_name: str
 
-        :param value: value of the property type
-        :type value: str
+        :param install_rel_property_value: value of the property type
+        :type install_rel_property_value: str
 
         :return: a map with structure like:
 
@@ -3440,29 +3440,73 @@ class idods(object):
 
         installRelPropertyTypeId = None
 
-        if installRelPropertyTypeName:
-            retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
+        if install_rel_property_type_name:
+            retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(install_rel_property_type_name)
 
             if len(retrieveInstallRelPropertyType) == 0:
-                raise ValueError("Install rel property type (%s) doesn't exist in the database!" % installRelPropertyTypeName)
 
-            retrieveInstallRelPropertyTypeKeys = retrieveInstallRelPropertyType.keys()
-            installRelPropertyTypeId = retrieveInstallRelPropertyType[retrieveInstallRelPropertyTypeKeys[0]]['id']
+                # System parameters should be added automatically
+                if install_rel_property_type_name.startswith('__') and install_rel_property_type_name.endswith('__'):
+                    res = self.saveInstallRelPropertyType(install_rel_property_type_name, 'System parameter')
+                    installRelPropertyTypeId = res['id']
 
-        return self._retrieveInstallRelProperty(installRelId, installRelPropertyTypeId, value)
+                else:
+                    raise ValueError("Install rel property type (%s) doesn't exist in the database!" % install_rel_property_type_name)
 
-    def saveInstallRelProperty(self, installRelId, installRelPropertyTypeName, value):
+            else:
+                retrieveInstallRelPropertyTypeKeys = retrieveInstallRelPropertyType.keys()
+                installRelPropertyTypeId = retrieveInstallRelPropertyType[retrieveInstallRelPropertyTypeKeys[0]]['id']
+
+        return self._retrieveInstallRelProperty(install_rel_id, installRelPropertyTypeId, install_rel_property_value)
+
+    def saveInstallRelPropertyByMap(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
+        '''
+        Save install rel property by install rel map
+
+        :param install_rel_parent: name of the parent in the install rel
+        :type install_rel_parent: str
+
+        :param install_rel_child: name of the child in the install rel
+        :type install_rel_child: str
+
+        :param install_rel_property_type_name: name of the install rel property type
+        :type install_rel_property_type_name: str
+
+        :param install_rel_property_value: value of the install rel property
+        :type install_rel_property_value: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': new install rel property id}
+        '''
+
+        # Check install rel
+        retrieveInstallRel = self.retrieveInstallRel(None, install_rel_parent, install_rel_child)
+
+        if len(retrieveInstallRel) == 0:
+            raise ValueError("Install rel doesn't exist in the database!")
+
+        retrieveInstallRelKeys = retrieveInstallRel.keys()
+        retrieveInstallRelObject = retrieveInstallRel[retrieveInstallRelKeys[0]]
+
+        relid = retrieveInstallRelObject['id']
+
+        return self.saveInstallRelProperty(relid, install_rel_property_type_name, install_rel_property_value)
+
+    def saveInstallRelProperty(self, install_rel_id, install_rel_property_type_name, install_rel_property_value):
         '''
         Save install rel property into database
 
-        :param installRelId: id of the install rel
-        :type installRelId: int
+        :param install_rel_id: id of the install rel
+        :type install_rel_id: int
 
-        :param installRelPropertyTypeName: name of the install rel property type
-        :type installRelPropertyTypeName: str
+        :param install_rel_property_type_name: name of the install rel property type
+        :type install_rel_property_type_name: str
 
-        :param value: value of the install rel property
-        :type value: str
+        :param install_rel_property_value: value of the install rel property
+        :type install_rel_property_value: str
 
         :return: a map with structure like:
 
@@ -3474,25 +3518,27 @@ class idods(object):
         '''
 
         # Check for previous install rel property
-        retrieveInstallRelProperty = self.retrieveInstallRelProperty(installRelId, installRelPropertyTypeName)
+        retrieveInstallRelProperty = self.retrieveInstallRelProperty(install_rel_id, install_rel_property_type_name)
 
         if len(retrieveInstallRelProperty) != 0:
-            raise ValueError("Install rel property for component type (%s) and property type (%s) already exists in the database!" % (installRelId, installRelPropertyTypeName))
-
-        # Check install rel
-        retrieveInstallRel = self.retrieveInstallRel(installRelId)
-
-        if len(retrieveInstallRel) == 0:
-            raise ValueError("Install rel (%s) doesn't exist in the database!" % installRelId)
+            raise ValueError("Install rel property for component type (%s) and property type (%s) already exists in the database!" % (install_rel_id, install_rel_property_type_name))
 
         # Check install rel property type
-        retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
+        retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(install_rel_property_type_name)
 
         if len(retrieveInstallRelPropertyType) == 0:
-            raise ValueError("Install rel property type (%s) doesn't exist in the database!" % installRelPropertyTypeName)
 
-        retrieveInstallRelPropertyTypeKeys = retrieveInstallRelPropertyType.keys()
-        installRelPropertyTypeId = retrieveInstallRelPropertyType[retrieveInstallRelPropertyTypeKeys[0]]['id']
+            # System parameters should be added automatically
+            if install_rel_property_type_name.startswith('__') and install_rel_property_type_name.endswith('__'):
+                res = self.saveInstallRelPropertyType(install_rel_property_type_name, 'System parameter')
+                installRelPropertyTypeId = res['id']
+
+            else:
+                raise ValueError("Install rel property type (%s) doesn't exist in the database!" % install_rel_property_type_name)
+
+        else:
+            retrieveInstallRelPropertyTypeKeys = retrieveInstallRelPropertyType.keys()
+            installRelPropertyTypeId = retrieveInstallRelPropertyType[retrieveInstallRelPropertyTypeKeys[0]]['id']
 
         # Generate SQL
         sql = '''
@@ -3504,7 +3550,7 @@ class idods(object):
 
         try:
             cur = self.conn.cursor()
-            cur.execute(sql, (installRelId, installRelPropertyTypeId, value))
+            cur.execute(sql, (install_rel_id, installRelPropertyTypeId, install_rel_property_value))
 
             # Get last row id
             propid = cur.lastrowid
@@ -3524,7 +3570,7 @@ class idods(object):
             self.logger.info('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving install rel property:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def updateInstallRelProperty(self, install_rel_parent, install_rel_child, installRelPropertyTypeName, **kws):
+    def updateInstallRelPropertyByMap(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
         '''
         Update install rel property
 
@@ -3534,11 +3580,11 @@ class idods(object):
         :param install_rel_child: name of the child in the install rel
         :type install_rel_child: str
 
-        :param installRelPropertyTypeName: name of the install rel property type
-        :type installRelPropertyTypeName: str
+        :param install_rel_property_type_name: name of the install rel property type
+        :type install_rel_property_type_name: str
 
-        :param value: value of the install rel property
-        :type value: str
+        :param install_rel_property_value: value of the install rel property
+        :type install_rel_property_value: str
 
         :return: True if everything was ok
 
@@ -3561,18 +3607,18 @@ class idods(object):
         whereDict['install_rel_id'] = retrieveInstallRelObject['id']
 
         # Check install rel property type
-        retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(installRelPropertyTypeName)
+        retrieveInstallRelPropertyType = self.retrieveInstallRelPropertyType(install_rel_property_type_name)
 
         if len(retrieveInstallRelPropertyType) == 0:
-            raise ValueError("Install rel property type (%s) doesn't exist in the database!" % installRelPropertyTypeName)
+            raise ValueError("Install rel property type (%s) doesn't exist in the database!" % install_rel_property_type_name)
 
         retrieveInstallRelPropertyTypeKeys = retrieveInstallRelPropertyType.keys()
         installRelPropertyTypeId = retrieveInstallRelPropertyType[retrieveInstallRelPropertyTypeKeys[0]]['id']
         whereDict['install_rel_prop_type_id'] = installRelPropertyTypeId
 
         # Add value parameter into query
-        if 'value' in kws:
-            queryDict['install_rel_prop_value'] = kws['value']
+        if install_rel_property_value:
+            queryDict['install_rel_prop_value'] = install_rel_property_value
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('install_rel_prop', queryDict, None, None, whereDict)
@@ -3636,11 +3682,11 @@ class idods(object):
         '''
         Save install relationship in the database.
 
-        :param parent_install: id of the parent element
-        :type parent_install: int
+        :param parent_install: name of the parent element
+        :type parent_install: str
 
-        :param child_install: id of the child element
-        :type child_install: int
+        :param child_install: name of the child element
+        :type child_install: str
 
         :param description: description of the relationship
         :type description: str
@@ -3843,7 +3889,7 @@ class idods(object):
                     if key in relObj['prop_keys']:
 
                         # Update property
-                        self.updateInstallRelProperty(parent_install, child_install, key, value=value)
+                        self.updateInstallRelPropertyByMap(parent_install, child_install, key, value)
 
                     else:
                         # Save new property
@@ -4003,12 +4049,12 @@ class idods(object):
             FROM install_rel ir
             LEFT JOIN install insp ON(ir.parent_install_id = insp.install_id)
             LEFT JOIN install insc ON(ir.child_install_id = insc.install_id)
-            WHERE ir.parent_install_id != ir.child_install_id
+            WHERE ir.child_install_id != ir.parent_install_id
             '''
         else:
 
             # Check expected property parameter
-            if len(expected_property) > 1:
+            if len(expected_property.keys()) > 1:
                 raise ValueError("Expected property dictionary can contain only one key. Current dictionary contains (%s) keys." % len(expected_property))
 
             expectedPropertyKeys = expected_property.keys()
@@ -4035,7 +4081,7 @@ class idods(object):
 
             # Check if expected property value is not None and append it
             if expected_property[expectedPropertyKeys[0]] is not None:
-                sql = ' AND irp.install_rel_prop_value = %s '
+                sql += ' AND irp.install_rel_prop_value = %s '
                 vals.append(expected_property[expectedPropertyKeys[0]])
 
         # Check install_rel_id parameter
@@ -4125,16 +4171,38 @@ class idods(object):
         :return: install relations in a tree
         '''
 
+        start = False
+
         if tree is None:
             tree = {}
+            start = True
 
-        tree[install_name] = {}
-        tree[install_name]['children'] = {}
-        tree[install_name]['name'] = install_name
-        tree[install_name]['id'] = rel_id
-        newTree = tree[install_name]['children']
+        else:
+            tree[install_name] = {}
+            tree[install_name]['children'] = {}
+            tree[install_name]['name'] = install_name
+            tree[install_name]['id'] = rel_id
 
-        children = self.retrieveInstallRel(None, install_name)
+        if start:
+            rootRel = self.retrieveInstallRel(expected_property={'__node_type__': 'root'})
+
+            # If root element was not found, return empty tree
+            if len(rootRel) == 0:
+                return tree
+
+            rootNode = rootRel[rootRel.keys()[0]]
+
+            # Start making a tree
+            tree[rootNode['parentname']] = {}
+            tree[rootNode['parentname']]['children'] = {}
+            tree[rootNode['parentname']]['name'] = rootNode['parentname']
+            tree[rootNode['parentname']]['id'] = rel_id
+
+            newTree = tree[rootNode['parentname']]['children']
+            children = self.retrieveInstallRel(None, rootNode['parentname'])
+
+        else:
+            children = self.retrieveInstallRel(None, install_name)
 
         for childKey in children.keys():
             child = children[childKey]
@@ -4303,8 +4371,8 @@ class idods(object):
             raise ValueError('Both inventory name and install name should not be None!')
 
         # Create component types
-        if len(self.retrieveComponentType('root').keys()) == 0:
-            raise ValueError('You are saving insertion device for the first time. Please run idodsInstall() and than insert device again.')
+        # if len(self.retrieveComponentType('root').keys()) == 0:
+        #     raise ValueError('You are saving insertion device for the first time. Please run idodsInstall() and than insert device again.')
 
         # Install name is provided, beamline and project name should be defined
         if install_name:
@@ -4313,20 +4381,20 @@ class idods(object):
                 raise ValueError('If install name is defined, project and beamline should also be defined!')
 
             # Save project
-            if len(self.retrieveInstall(project).keys()) == 0:
-                self.saveInstall(project, description='__system__', cmpnt_type='project')
+            # if len(self.retrieveInstall(project).keys()) == 0:
+            #    res = self.saveInstall(project, description='__system__', cmpnt_type='project')
 
             # Save beamline
-            if len(self.retrieveInstall(beamline).keys()) == 0:
-                self.saveInstall(beamline, description='__system__', cmpnt_type='project')
+            # if len(self.retrieveInstall(beamline).keys()) == 0:
+            #     self.saveInstall(beamline, description='__system__', cmpnt_type='project')
 
-            # Save beamline  - project rel
-            if len(self.retrieveInstallRel(None, 'Beamline project', project).keys()) == 0:
-                self.saveInstallRel('Beamline project', project)
+            # # Save beamline  - project rel
+            # if len(self.retrieveInstallRel(None, 'Beamline project', project).keys()) == 0:
+            #     self.saveInstallRel('Beamline project', project)
 
-            # Save project  - beamline rel
-            if len(self.retrieveInstallRel(None, project, beamline).keys()) == 0:
-                self.saveInstallRel(project, beamline, description=beamline_desc)
+            # # Save project  - beamline rel
+            # if len(self.retrieveInstallRel(None, project, beamline).keys()) == 0:
+            #     self.saveInstallRel(project, beamline, description=beamline_desc)
 
         # Component type should not be None
         if type_name is None:
@@ -4367,16 +4435,29 @@ class idods(object):
         if install_name:
 
             # Save install
-            self.saveInstall(
+            res = self.saveInstall(
                 install_name,
                 coordinatecenter=coordinate_center,
                 description=install_desc,
                 cmpnt_type=type_name
             )
 
+            # Create property types if they do not exist and save their values
+            if len(self.retrieveInstallRelPropertyType('project').keys()) == 0:
+                self.saveInstallRelPropertyType('project', 'System parameter')
+
+            self.saveInstallRelProperty(res['rel_id'], 'project', project)
+
+            if len(self.retrieveInstallRelPropertyType('project').keys()) == 0:
+                self.saveInstallRelPropertyType('project', 'System parameter')
+
+            self.saveInstallRelProperty(res['rel_id'], 'beamline', beamline)
+
+            ### Beamline description
+
         # Save beamline  - install rel
-        if len(self.retrieveInstallRel(None, beamline, install_name).keys()) == 0:
-            self.saveInstallRel(beamline, install_name)
+        # if len(self.retrieveInstallRel(None, beamline, install_name).keys()) == 0:
+        #     self.saveInstallRel(beamline, install_name)
 
         # Only install device if inventory name and install name are defined
         if install_name and inventory_name:
@@ -4455,8 +4536,9 @@ class idods(object):
 
         # Save install rel so properties can be saved fot install
         mapid = self.physics.saveInstallRel(invid, invid)
+        self.saveInstallRelProperty(mapid, '__virtual_rel__', 'true')
 
-        return {'id': invid}
+        return {'id': invid, 'rel_id': mapid}
 
     def updateInstall(self, install_id, old_name, name, **kws):
         '''Update insertion device installation using any of the acceptable key words:
@@ -4595,7 +4677,8 @@ class idods(object):
             raise MySQLError('Error when fetching install from the database:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveInstall(self, name, **kws):
-        '''Retrieve insertion device installation using any of the acceptable key words:
+        '''
+        Retrieve insertion device installation using any of the acceptable key words:
 
         :param name: installation name, which is its label on field
         :type name: str
@@ -4619,7 +4702,10 @@ class idods(object):
                         'description':            #string,
                         'cmpnt_type':             #string,
                         'cmpnt_type_description': #string,
-                        'coordinatecenter':       #float
+                        'coordinatecenter':       #float,
+                        'key1':                   #str,
+                        ...
+                        'prop_keys':              ['key1', 'key2']
                     }
                 }
 
@@ -4685,8 +4771,21 @@ class idods(object):
                     'description': r[3],
                     'cmpnt_type': r[5],
                     'coordinatecenter': r[4],
-                    'cmpnt_type_description': r[6]
+                    'cmpnt_type_description': r[6],
+                    'prop_keys': []
                 }
+
+                # Get rel
+                selfRel = self.retrieveInstallRel(None, r[2], r[2], expected_property={'__virtual_rel__': 'true'})
+
+                if len(selfRel) > 0:
+                    relid = selfRel.keys()[0]
+                    props = self.retrieveInstallRelProperty(relid)
+
+                    for p in props:
+                        prop = props[p]
+                        resdict[r[0]][prop['typename']] = prop['value']
+                        resdict[r[0]]['prop_keys'].append(prop['typename'])
 
             total2 = time.time() - startedd2
             total2 = total2*1000
@@ -5307,8 +5406,8 @@ class idods(object):
         '''
 
         # Create component type property type for identifying ID devices
-        if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
-            self.saveComponentTypePropertyType('insertion_device')
+        #if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
+        #    self.saveComponentTypePropertyType('insertion_device')
 
         # Create install property types
         if len(self.retrieveInstallRelPropertyType('__device_category__').keys()) == 0:
@@ -5317,6 +5416,9 @@ class idods(object):
         if len(self.retrieveInstallRelPropertyType('__node_type__').keys()) == 0:
             self.saveInstallRelPropertyType('__node_type__', 'System parameter')
 
+        if len(self.retrieveInstallRelPropertyType('__virtual_rel__').keys()) == 0:
+            self.saveInstallRelPropertyType('__virtual_rel__', 'System parameter')
+
         if len(self.retrieveInstallRelPropertyType('beamline').keys()) == 0:
             self.saveInstallRelPropertyType('beamline', 'Beamline name')
 
@@ -5324,56 +5426,7 @@ class idods(object):
             self.saveInstallRelPropertyType('project', 'Project name')
 
         # Create component types
-        if len(self.retrieveComponentType('root').keys()) == 0:
-            self.saveComponentType('root', '__system__')
-
-        if len(self.retrieveComponentType('branch').keys()) == 0:
-            self.saveComponentType('branch', '__system__')
-
-        if len(self.retrieveComponentType('beamline').keys()) == 0:
-            self.saveComponentType('beamline', '__system__')
-
-        if len(self.retrieveComponentType('project').keys()) == 0:
-            self.saveComponentType('project', '__system__')
-
-        if len(self.retrieveComponentType('cell').keys()) == 0:
-            self.saveComponentType('cell', '__system__')
-
-        if len(self.retrieveComponentType('girder').keys()) == 0:
-            self.saveComponentType('girder', '__system__')
-
-        # Create install elements
-        if len(self.retrieveInstall('Trees', cmpnt_type='root').keys()) == 0:
-            self.saveInstall('Trees', cmpnt_type='root')
-
-        if len(self.retrieveInstall('Device geometric layout', cmpnt_type='branch').keys()) == 0:
-            self.saveInstall('Device geometric layout', cmpnt_type='branch')
-
-        if len(self.retrieveInstall('Beamline project', cmpnt_type='branch').keys()) == 0:
-            self.saveInstall('Beamline project', cmpnt_type='branch')
-
-        # Create install relationship
-        if len(self.retrieveInstallRel(None, 'Trees', 'Device geometric layout').keys()) == 0:
-            self.saveInstallRel('Trees', 'Device geometric layout')
-
-        # Create test relationship
-        if len(self.retrieveInstallRel(None, 'Trees', 'Beamline project').keys()) == 0:
-            self.saveInstallRel('Trees', 'Beamline project')
-
-        # Create test project
-        # if len(self.retrieveInstall('Project1', cmpnt_type='project').keys()) == 0:
-        #    self.saveInstall('Project1', cmpnt_type='project')
-
-        # Create test project relationship
-        # if len(self.retrieveInstallRel(None, 'Installation', 'Project1').keys()) == 0:
-        #     self.saveInstallRel('Installation', 'Project1')
-
-        # Create test beamline
-        # if len(self.retrieveInstall('Beamline1', cmpnt_type='beamline').keys()) == 0:
-        #    self.saveInstall('Beamline1', cmpnt_type='beamline')
-
-        # Create test beamline relationship
-        # if len(self.retrieveInstallRel(None, 'Project1', 'Beamline1').keys()) == 0:
-        #    self.saveInstallRel('Project1', 'Beamline1')
+        if len(self.retrieveComponentType('__virtual_device__').keys()) == 0:
+            self.saveComponentType('__virtual_device__', 'Device is not an actual device but a tree node')
 
         return True

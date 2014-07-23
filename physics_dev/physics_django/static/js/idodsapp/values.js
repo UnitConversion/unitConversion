@@ -488,6 +488,58 @@ app.value('InstallRelInfo', {
  	}
  });
 
+/*
+ * Install rel property object
+ */
+ app.value('InstallRelProp', function(obj){
+
+ 	this.all = ["install_rel_id", "install_rel_parent", "install_rel_child", "install_rel_property_type_name", "install_rel_property_value"];
+
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = this.all;
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = [];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = [];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = this.all;
+
+ 	// Parameters used for save URL
+ 	this.save = this.all;
+
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = [];
+
+ 	// Parameters used as update URL parameters
+ 	this.update = this.all;
+
+ 	this.display = {};
+
+ 	this.install_rel_id = "";
+ 	this.install_rel_parent = "";
+ 	this.install_rel_child = "";
+ 	this.install_rel_property_type_name = "";
+ 	this.install_rel_property_value = "";
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+ 			this[this.all[i]] = obj[this.all[i]];
+ 		}
+ 	};
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
  /*
  * Install rel type info object
  */
@@ -604,7 +656,7 @@ app.value('InstallInfo', {
  	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "cmpnt_type", "description", "coordinatecenter", "node_type", "device_category", "beamline", "project"];
+ 	this.save_show = ["node_type", "name", "cmpnt_type", "description", "coordinatecenter", "device_category", "beamline", "project"];
 
  	// Parameters used as update URL parameters
  	this.update = ["old_name", "name", "cmpnt_type", "description", "coordinatecenter"];
@@ -633,6 +685,9 @@ app.value('InstallInfo', {
  	this.beamline = "";
  	this.project = "";
 
+ 	this.props = {};
+ 	this.prop_keys = [];
+
  	this.set = function(obj) {
 
  		if(obj === undefined) {
@@ -656,6 +711,20 @@ app.value('InstallInfo', {
 
  		} else {
  			this.coordinatecenter = obj.coordinatecenter;
+ 		}
+
+ 		if('props' in obj) {
+ 			this.props = obj.props;
+ 		}
+
+ 		if('prop_keys' in obj) {
+ 			//this.prop_keys = obj.prop_keys;
+
+ 			for(var i = 0; i<obj.prop_keys.length; i++) {
+ 				var key = obj.prop_keys[i];
+
+ 				this.prop_keys.push({'name':key, 'value':obj[key]});
+ 			}
  		}
  	};
 

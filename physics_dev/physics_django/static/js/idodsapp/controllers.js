@@ -1121,7 +1121,7 @@ app.controller('listInstallCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Show details in the right pane
  */
-app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, onlineDataFactory, inventoryFactory, Inventory, OnlineData, offlineDataFactory, OfflineData, cmpntTypeFactory, EntityError){
+app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window, installRelPropFactory, InstallRel, installRelFactory, InstallRelProp, InstallInfo, Install, InventoryToInstall, installFactory, inventoryToInstallFactory, onlineDataFactory, inventoryFactory, Inventory, OnlineData, offlineDataFactory, OfflineData, cmpntTypeFactory, EntityError){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -1152,6 +1152,7 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 		installFactory.retrieveItem($routeParams).then(function(inst_result) {
 			$scope.element = inst_result;
 			$scope.element.old_name = inst_result.name;
+			l(inst_result);
 
 			if ($routeParams.action == "retrieve") {
 				$scope.map = {};
@@ -1189,8 +1190,18 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 		});
 	}
 
+	$scope.changeNodeType = function(currentValue, obj) {
+
+		if (currentValue == 'real') {
+			obj.cmpnt_type = "";
+
+		} else {
+			obj.cmpnt_type = "__virtual_device__";
+			obj.device_category = "";
+		}
+	};
+
 	$scope.toggleTableRows = function(el, type, index) {
-		l(el);
 		toggleTableRows(el.target, type + index);
 	};
 
@@ -1256,6 +1267,35 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 				$scope.alert.success = true;
 				$scope.alert.title = "Success!";
 				$scope.alert.body = "Install item successfully saved!";
+				l(data);
+
+				var nodeType = new InstallRelProp({
+					"install_rel_id": data.rel_id,
+					"install_rel_property_type_name": "__node_type__",
+					"install_rel_property_value": $scope.new.node_type
+				});
+				relPromise = installRelPropFactory.saveItem(nodeType);
+
+				var deviceCategory = new InstallRelProp({
+					"install_rel_id": data.rel_id,
+					"install_rel_property_type_name": "__device_category__",
+					"install_rel_property_value": $scope.new.device_category
+				});
+				relPromise = installRelPropFactory.saveItem(deviceCategory);
+
+				var idProject = new InstallRelProp({
+					"install_rel_id": data.rel_id,
+					"install_rel_property_type_name": "project",
+					"install_rel_property_value": $scope.new.project
+				});
+				relPromise = installRelPropFactory.saveItem(idProject);
+
+				var idBeamline = new InstallRelProp({
+					"install_rel_id": data.rel_id,
+					"install_rel_property_type_name": "beamline",
+					"install_rel_property_value": $scope.new.beamline
+				});
+				relPromise = installRelPropFactory.saveItem(idBeamline);
 
 			}, function(error) {
 				$scope.alert.show = true;

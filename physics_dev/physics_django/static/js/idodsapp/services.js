@@ -58,9 +58,6 @@ function retrieveItem($q, $http, url, obj, Class) {
 	var deffered = $q.defer();
 	var promise = deffered.promise;
 
-	l(query);
-	l(obj);
-
 	$http.get(query).success(function(data){
 		deffered.resolve(new Class(data[obj.id]));
 
@@ -695,6 +692,52 @@ app.factory('installRelFactory', function($http, $q, InstallRel, EntityError) {
 		});
 
 		return promise;
+	};
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the install rel property entity. Install rel prop can be checked, retrieved, saved and updated
+ */
+app.factory('installRelPropFactory', function($http, $q, InstallRelProp, EntityError) {
+	var factory = {};
+	factory.entity = new InstallRelProp();
+	factory.error = new EntityError();
+
+	// Set install rel prop object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	};
+
+	// Check install rel prop before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	};
+
+	// Save new install rel prop
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinstallrelprop", this.entity);
+	};
+
+	// Update install rel prop
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinstallrelprop", this.entity);
 	};
 
 	return factory;
