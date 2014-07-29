@@ -10,10 +10,7 @@
 		{% endverbatim %}
 			{% if user.is_authenticated %}
 			{% verbatim %}
-			<button ng-click="updateItem()" class="item_spacer pull-right btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
-			<button ng-click="deleteItem(element.id)" class="pull-right btn btn-danger"><i class="icon-remove icon-white"></i> {{info.retrieve_delete_button}}</button>
-			<br/>
-			<br/>
+			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
 			{% endverbatim %}
 			{% endif %}
 		{% verbatim %}
@@ -25,7 +22,7 @@
 				<th>Value</th>
 			</tr>
 			<tr ng-repeat="property in element.retrieve">
-				<td>{{element.display[property]}}</td>
+				<td>{{element.display[property] | iff : element.display[property] : property}}</td>
 				<td>{{element[property]}}</td>
 			</tr>
 			<tr ng-repeat="property in element.prop_keys">
@@ -51,16 +48,14 @@
 				<th>Value</th>
 			</tr>
 			<tr ng-repeat="property in new.save_show">
-				<td>{{new.display[property]}} <span ng-if="new.m.indexOf(property) > -1">*</span></td>
+				<td>{{new.display[property] | iff : new.display[property] : property}} <span ng-if="new.m.indexOf(property) > -1">*</span></td>
 				<td>
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<select ng-if="property == 'inv_name'" ng-model="new[property]" ng-options="inventory for inventory in inv"></select>
+							<input ng-if="property != 'inventory_name'" type="text" ng-model="new[property]" />
 
-							<select ng-if="property == 'install_name'" ng-model="new[property]" ng-options="install for install in inst"></select>
-
-							<input ng-if="property != 'inv_name' && property != 'install_name'" type="text" ng-model="new[property]" />
+							<select ng-if="property == 'inventory_name'" ng-model="new[property]" ng-options="inventory for inventory in inv"></select>
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
@@ -92,16 +87,15 @@
 			</tr>
 			<tr ng-repeat="property in element.save_show">
 				<td>
-					{{element.display[property]}} <span ng-if="element.m.indexOf(property) > -1">*</span>
+					{{element.display[property] | iff : element.display[property] : property}} <span ng-if="element.m.indexOf(property) > -1">*</span>
 				</td>
 				<td>
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<select ng-if="property == 'inv_name'" ng-model="element[property]" ng-options="inventory for inventory in inv"></select>
-							<select ng-if="property == 'install_name'" ng-model="element[property]" ng-options="install for install in inst"></select>
+							<input ng-if="property != 'inventory_name'" type="text" ng-model="element[property]" />
 
-							<input ng-if="property != 'inv_name' && property != 'install_name'" type="text" ng-model="element[property]" />
+							<select ng-if="property == 'inventory_name'" ng-model="element[property]" ng-options="inventory for inventory in inv"></select>
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>

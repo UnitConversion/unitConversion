@@ -42,7 +42,9 @@ var dataTypes = {
 		{name:"data_method", value:"Data method"},
 		{name:"offline_data", value:"Offline data"},
 		{name:"offline_data_install", value:"Offline data (install)"},
-		{name:"online_data", value:"Online data"}
+		{name:"online_data", value:"Online data"},
+		{name:"rot_coil_data", value:"Rot coil data"},
+		{name:"hall_probe_data", value:"Hall probe data"}
 	],
 	"hierarchy": [
 		{name:"beamline", value:"Beamline project"},
@@ -62,6 +64,8 @@ var mapMasterTypesToDataTypes = {
 	"offline_data": "others",
 	"offline_data_install": "others",
 	"online_data": "others",
+	"rot_coil_data": "others",
+	"hall_probe_data": "others",
 
 	"install": "device",
 	"inventory": "device",

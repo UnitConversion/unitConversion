@@ -1009,5 +1009,63 @@ class TestIdods(unittest.TestCase):
         # Save inventory and install and install a device
         self.assertTrue(self.api.saveInsertionDevice(beamline='beam', project='proj', type_name='type', install_name='install3', inventory_name='inv3'))
 
+    def testRotCoilData(self):
+        '''
+        Test rot coil data
+        '''
+        cmpnt = self.api.saveComponentType('Magnet')
+        inv = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        rcd = self.api.saveRotCoilData('name2', 'alias')
+        self.assertNotEqual(rcd['id'], 0)
+
+        # Retrieve rot coil data
+        data = self.api.retrieveRotCoilData('name2')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+
+        # Test update
+        self.assertTrue(self.api.updateRotCoilData(rcd['id'], login_name='admin'))
+
+        # Retrieve rot coil data
+        data = self.api.retrieveRotCoilData('name2')
+
+        # # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+        firstKey = data.keys()[0]
+
+        self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
+        self.assertEqual(data[firstKey]['alias'], 'alias')
+        self.assertEqual(data[firstKey]['login_name'], 'admin')
+
+    def testHallProbeData(self):
+        '''
+        Test hall probe data
+        '''
+        cmpnt = self.api.saveComponentType('Magnet')
+        inv = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        hpd = self.api.saveHallProbeData('name2', 'sub device')
+        self.assertNotEqual(hpd['id'], 0)
+
+        # Retrieve hall probe data
+        data = self.api.retrieveHallProbeData('name2')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+
+        # Test update
+        self.assertTrue(self.api.updateHallProbeData(hpd['id'], login_name='admin'))
+
+        # # Retrieve rot coil data
+        data = self.api.retrieveHallProbeData('name2')
+
+        # # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+        firstKey = data.keys()[0]
+
+        self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
+        self.assertEqual(data[firstKey]['sub_device'], 'sub device')
+        self.assertEqual(data[firstKey]['login_name'], 'admin')
+
 if __name__ == '__main__':
     unittest.main()

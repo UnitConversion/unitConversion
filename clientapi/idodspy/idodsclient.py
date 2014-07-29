@@ -2900,6 +2900,728 @@ class IDODSClient(object):
 
         return r.json()
 
+    def retrieveRotCoilData(self, inventory_name):
+        '''
+        Return rotation coil data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        rot_coil_data_id,
+                        inventory_id,
+                        alias,
+                        meas_coil_id,
+                        ref_radius,
+                        magnet_notes,
+                        login_name,
+                        cond_curr,
+                        meas_loc,
+                        run_number,
+                        sub_device,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn_1,
+                        up_dn_2,
+                        up_dn_3,
+                        analysis_number,
+                        integral_xfer_function,
+                        orig_offset_x,
+                        orig_offset_y,
+                        B_ref_int,
+                        Roll_angle,
+                        meas_notes,
+                        meas_date,
+                        author,
+                        a1,
+                        a2,
+                        a3,
+                        b1,
+                        b2,
+                        b3,
+                        a4_21,
+                        b4_21,
+                        data_issues,
+                        data_usage
+                    },
+                    ...
+                }
+
+        :Raises: HTTPError
+        '''
+
+        # Try to retrieve data
+        url = 'rotcoildata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name
+        }
+
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def saveRotCoilData(
+            self, inventory_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, B_ref_int=None, Roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save rotation coil data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias: str
+
+        :param meas_coil_id:
+        :type meas_coil_id: str
+
+        :param ref_radius:
+        :type ref_radius: double
+
+        :param magnet_notes:
+        :type magnet_notes: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param cond_curr:
+        :type cond_curr: double
+
+        :param meas_loc:
+        :type meas_loc: str
+
+        :param run_number:
+        :type run_number: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn_1:
+        :type up_dn_1: str
+
+        :param up_dn_2:
+        :type up_dn_2: str
+
+        :param up_dn_3:
+        :type up_dn_3: str
+
+        :param analysis_number:
+        :type analysis_number: str
+
+        :param integral_xfer_function:
+        :type integral_xfer_function: double
+
+        :param orig_offset_x:
+        :type orig_offset_x: double
+
+        :param orig_offset_y:
+        :type orig_offset_y: double
+
+        :param B_ref_int:
+        :type B_ref_int: double
+
+        :param Roll_angle:
+        :type Roll_angle: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param author:
+        :type author: str
+
+        :param a1:
+        :type a1: double
+
+        :param a2:
+        :type a2: double
+
+        :param a3:
+        :type a3: double
+
+        :param b1:
+        :type b1: double
+
+        :param b2:
+        :type b2: double
+
+        :param b3:
+        :type b3: double
+
+        :param a4_21:
+        :type a4_21: str
+
+        :param b4_21:
+        :type b4_21: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': rot_coil_data_id}
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'saverotcoildata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name,
+            'alias': alias,
+            'meas_coil_id': meas_coil_id,
+            'ref_radius': ref_radius,
+            'magnet_notes': magnet_notes,
+            'login_name': login_name,
+            'cond_curr': cond_curr,
+            'meas_loc': meas_loc,
+            'run_number': run_number,
+            'sub_device': sub_device,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn_1': up_dn_1,
+            'up_dn_2': up_dn_2,
+            'up_dn_3': up_dn_3,
+            'analysis_number': analysis_number,
+            'integral_xfer_function': integral_xfer_function,
+            'orig_offset_x': orig_offset_x,
+            'orig_offset_y': orig_offset_y,
+            'B_ref_int': B_ref_int,
+            'Roll_angle': Roll_angle,
+            'meas_notes': meas_notes,
+            'author': author,
+            'a1': a1,
+            'a2': a2,
+            'a3': a3,
+            'b1': b1,
+            'b2': b2,
+            'b3': b3,
+            'a4_21': a4_21,
+            'b4_21': b4_21,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def updateRotCoilData(
+            self, rot_coil_data_id, inventory_name=None, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, B_ref_int=None, Roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Update rotation coil data
+
+        :param rot_coil_data_id:
+        :type rot_coil_data_id: int
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias:
+
+        :param meas_coil_id:
+        :type meas_coil_id:
+
+        :param ref_radius:
+        :type ref_radius:
+
+        :param magnet_notes:
+        :type magnet_notes:
+
+        :param login_name:
+        :type login_name:
+
+        :param cond_curr:
+        :type cond_curr:
+
+        :param meas_loc:
+        :type meas_loc:
+
+        :param run_number:
+        :type run_number:
+
+        :param sub_device:
+        :type sub_device:
+
+        :param current_1:
+        :type current_1:
+
+        :param current_2:
+        :type current_2:
+
+        :param current_3:
+        :type current_3:
+
+        :param up_dn_1:
+        :type up_dn_1:
+
+        :param up_dn_2:
+        :type up_dn_2:
+
+        :param up_dn_3:
+        :type up_dn_3:
+
+        :param analysis_number:
+        :type analysis_number:
+
+        :param integral_xfer_function:
+        :type integral_xfer_function:
+
+        :param orig_offset_x:
+        :type orig_offset_x:
+
+        :param orig_offset_y:
+        :type orig_offset_y:
+
+        :param B_ref_int:
+        :type B_ref_int:
+
+        :param Roll_angle:
+        :type Roll_angle:
+
+        :param meas_notes:
+        :type meas_notes:
+
+        :param author:
+        :type author:
+
+        :param a1:
+        :type a1:
+
+        :param a2:
+        :type a2:
+
+        :param a3:
+        :type a3:
+
+        :param b1:
+        :type b1:
+
+        :param b2:
+        :type b2:
+
+        :param b3:
+        :type b3:
+
+        :param a4_21:
+        :type a4_21:
+
+        :param b4_21:
+        :type b4_21:
+
+        :param data_issues:
+        :type data_issues:
+
+        :param data_usage:
+        :type data_usage:
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'updaterotcoildata/'
+
+        # Set parameters
+        params = {
+            'rot_coil_data_id': rot_coil_data_id,
+            'inventory_name': inventory_name,
+            'alias': alias,
+            'meas_coil_id': meas_coil_id,
+            'ref_radius': ref_radius,
+            'magnet_notes': magnet_notes,
+            'login_name': login_name,
+            'cond_curr': cond_curr,
+            'meas_loc': meas_loc,
+            'run_number': run_number,
+            'sub_device': sub_device,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn_1': up_dn_1,
+            'up_dn_2': up_dn_2,
+            'up_dn_3': up_dn_3,
+            'analysis_number': analysis_number,
+            'integral_xfer_function': integral_xfer_function,
+            'orig_offset_x': orig_offset_x,
+            'orig_offset_y': orig_offset_y,
+            'B_ref_int': B_ref_int,
+            'Roll_angle': Roll_angle,
+            'meas_notes': meas_notes,
+            'author': author,
+            'a1': a1,
+            'a2': a2,
+            'a3': a3,
+            'b1': b1,
+            'b2': b2,
+            'b3': b3,
+            'a4_21': a4_21,
+            'b4_21': b4_21,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def retrieveHallProbeData(self, inventory_name):
+        '''
+        Return hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        hall_probe_id,
+                        inventory_id,
+                        alias,
+                        meas_date,
+                        measured_at_location,
+                        sub_device,
+                        run_identifier,
+                        login_name,
+                        conditioning_current,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn1,
+                        up_dn2,
+                        up_dn3,
+                        mag_volt_1,
+                        mag_volt_2,
+                        mag_volt_3,
+                        x,
+                        y,
+                        z,
+                        bx_t,
+                        by_t,
+                        bz_t,
+                        meas_notes,
+                        data_issues,
+                        data_usage
+                    },
+                    ...
+                }
+
+        :Raises: HTTPError
+        '''
+
+        # Try to retrieve data
+        url = 'hallprobedata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name
+        }
+
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def saveHallProbeData(
+            self, inventory_name, sub_device, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param measured_at_location:
+        :type measured_at_location: str
+
+        :param run_identifier:
+        :type run_identifier: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param conditioning_current:
+        :type conditioning_current: double
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn1:
+        :type up_dn1: str
+
+        :param up_dn2:
+        :type up_dn2: str
+
+        :param up_dn3:
+        :type up_dn3: str
+
+        :param mag_volt_1:
+        :type mag_volt_1: double
+
+        :param mag_volt_2:
+        :type mag_volt_2: double
+
+        :param mag_volt_3:
+        :type mag_volt_3: double
+
+        :param x:
+        :type x: double
+
+        :param y:
+        :type y: double
+
+        :param z:
+        :type z: double
+
+        :param bx_t:
+        :type bx_t: double
+
+        :param by_t:
+        :type by_t: double
+
+        :param bz_t:
+        :type bz_t: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': hall_probe_data_id}
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'savehallprobedata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name,
+            'sub_device': sub_device,
+            'alias': alias,
+            'measured_at_location': measured_at_location,
+            'run_identifier': run_identifier,
+            'login_name': login_name,
+            'conditioning_current': conditioning_current,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn1': up_dn1,
+            'up_dn2': up_dn2,
+            'up_dn3': up_dn3,
+            'mag_volt_1': mag_volt_1,
+            'mag_volt_2': mag_volt_2,
+            'mag_volt_3': mag_volt_3,
+            'x': x,
+            'y': y,
+            'z': z,
+            'bx_t': bx_t,
+            'by_t': by_t,
+            'bz_t': bz_t,
+            'meas_notes': meas_notes,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def updateHallProbeData(
+            self, hall_probe_id, inventory_name=None, sub_device=None, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Update hall probe data
+
+        :param hall_probe_id: id hall probe
+        :type hall_probe_id: int
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param measured_at_location:
+        :type measured_at_location: str
+
+        :param run_identifier:
+        :type run_identifier: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param conditioning_current:
+        :type conditioning_current: double
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn1:
+        :type up_dn1: str
+
+        :param up_dn2:
+        :type up_dn2: str
+
+        :param up_dn3:
+        :type up_dn3: str
+
+        :param mag_volt_1:
+        :type mag_volt_1: double
+
+        :param mag_volt_2:
+        :type mag_volt_2: double
+
+        :param mag_volt_3:
+        :type mag_volt_3: double
+
+        :param x:
+        :type x: double
+
+        :param y:
+        :type y: double
+
+        :param z:
+        :type z: double
+
+        :param bx_t:
+        :type bx_t: double
+
+        :param by_t:
+        :type by_t: double
+
+        :param bz_t:
+        :type bz_t: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'updatehallprobedata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name,
+            'hall_probe_id': hall_probe_id,
+            'inventory_name': inventory_name,
+            'sub_device': sub_device,
+            'alias': alias,
+            'measured_at_location': measured_at_location,
+            'run_identifier': run_identifier,
+            'login_name': login_name,
+            'conditioning_current': conditioning_current,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn1': up_dn1,
+            'up_dn2': up_dn2,
+            'up_dn3': up_dn3,
+            'mag_volt_1': mag_volt_1,
+            'mag_volt_2': mag_volt_2,
+            'mag_volt_3': mag_volt_3,
+            'x': x,
+            'y': y,
+            'z': z,
+            'bx_t': bx_t,
+            'by_t': by_t,
+            'bz_t': bz_t,
+            'meas_notes': meas_notes,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
     def testAuth(self):
         '''
         Test auth

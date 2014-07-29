@@ -298,6 +298,8 @@ def cleanDB():
     cur = conn.cursor()
 
     sql = [
+        'delete from rot_coil_data;',
+        'delete from hall_probe_data;',
         'delete from cmpnttype__vendor;',
         'delete from id_offline_data;',
         'delete from id_raw_data;',

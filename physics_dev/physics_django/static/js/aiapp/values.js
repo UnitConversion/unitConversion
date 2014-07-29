@@ -31,7 +31,7 @@ app.value('History', function(obj) {
  		for(i=0; i<this.all.length; i++) {
  			this[this.all[i]] = obj[this.all[i]];
  		}
-	}
+	};
 
 	if(obj !== undefined) {
  		this.set(obj);
@@ -148,7 +148,7 @@ app.value('BendingMagnet', function(obj) {
  		}
 
  		this.props = JSON.stringify(this.props_raw);
-	}
+	};
 
 	this.set = function(obj) {
 
@@ -169,7 +169,7 @@ app.value('BendingMagnet', function(obj) {
 
 	 		}
  		}
-	}
+	};
 
 	if(obj !== undefined) {
  		this.set(obj);
@@ -268,7 +268,7 @@ app.value('InsertionDevice', function(obj) {
  		}
 
  		this.props = JSON.stringify(this.props_raw);
-	}
+	};
 
 	this.setObj = function(obj) {
 
@@ -286,7 +286,7 @@ app.value('InsertionDevice', function(obj) {
  			}
 
  		}
-	}
+	};
 
 	if(obj !== undefined) {
  		this.setObj(obj);

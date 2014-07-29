@@ -20,6 +20,8 @@ from physics_django.idods.views import (idodsInstallWS)
 from physics_django.idods.views import (retrieveTreesWS)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
 from physics_django.idods.views import (saveDataMethodOfflineDataWS)
+from physics_django.idods.views import (retrieveRotCoilDataWS, saveRotCoilDataWS, updateRotCoilDataWS)
+from physics_django.idods.views import (retrieveHallProbeDataWS, saveHallProbeDataWS, updateHallProbeDataWS)
 
 urlpatterns = patterns(
     '',
@@ -114,6 +116,16 @@ urlpatterns = patterns(
 
     # Save Insertion device
     url(r'^id/device/saveinsertiondevice/$', saveInsertionDeviceWS),
+
+    # Define rot coil data urls
+    url(r'^id/device/rotcoildata/$', retrieveRotCoilDataWS),
+    url(r'^id/device/saverotcoildata/$', saveRotCoilDataWS),
+    url(r'^id/device/updaterotcoildata/$', updateRotCoilDataWS),
+
+    # Define hall probe data urls
+    url(r'^id/device/hallprobedata/$', retrieveHallProbeDataWS),
+    url(r'^id/device/savehallprobedata/$', saveHallProbeDataWS),
+    url(r'^id/device/updatehallprobedata/$', updateHallProbeDataWS),
 
     url(r'^id/web/$', idodsIndexHtml),
     url(r'^id/web/(.+)', idodsHtmls),

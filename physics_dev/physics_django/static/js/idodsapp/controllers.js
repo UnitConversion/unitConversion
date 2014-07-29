@@ -1573,6 +1573,7 @@ app.controller('showInventoryToInstallCtrl', function($scope, $modal, $routePara
 			$scope.inv.push(item.name);
 		});
 	});
+
 	// Retrieve all Install items
 	installFactory.retrieveItems({'name': '*'}).then(function(result) {
 
@@ -3370,5 +3371,369 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 		var newLocation = createRouteUrl(search, "installation/" + $scope.display, params) + "/list";
 		l(newLocation);
 		$window.location = newLocation;
+	};
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchRotCoilDataCtrl', function($scope, $window, $routeParams, inventoryFactory){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[11];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	$scope.inv = [];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "rot_coil_data", ["inventory_name"]) + "/list";
+		$window.location = newLocation;
+	}
+
+	// Retrieve all Inventory items
+	inventoryFactory.retrieveItems({'name': '*'}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inv.push(item.name);
+		});
+	});
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "rot_coil_data", ["inventory_name"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listRotCoilDataCtrl', function($scope, $routeParams, $http, $window, inventoryFactory, RotCoilDataInfo, RotCoilData, rotCoilDataFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = RotCoilDataInfo;
+	var previousItem;
+	$scope.items = [];
+	$scope.invMap = {};
+
+	rotCoilDataFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new RotCoilData(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+		$scope.items.reverse();
+	});
+
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "rot_coil_data", ["inventory_name"]) + "/id/new/action/save";
+		$window.location = location;
+	};
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.inventory_name = item.inventory_name;
+
+		var location = createRouteUrl($routeParams, "rot_coil_data", ["inventory_name"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showRotCoilDataCtrl', function($scope, $routeParams, $http, $window, RotCoilDataInfo, RotCoilData, rotCoilDataFactory, inventoryFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new RotCoilData();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = RotCoilDataInfo;
+
+	$scope.inv = [];
+
+	// Retrieve all Inventory items
+	inventoryFactory.retrieveItems({'name': '*'}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inv.push(item.name);
+		});
+	});
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+
+		rotCoilDataFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.rot_coil_data_id = result.id;
+			l($scope.element);
+		});
+	}
+
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "rot_coil_data", ["inventory_name"]) + "/id/" + $routeParams.id + "/action/update";
+		$window.location = location;
+	};
+
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new RotCoilData(newItem);
+		var result = rotCoilDataFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+
+			if(action === "update") {
+				promise = rotCoilDataFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = rotCoilDataFactory.saveItem($scope.new);
+			}
+
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Rot coil data item successfully saved!";
+
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
+	};
+});
+
+/*
+ * Controller for the left/search pane
+ */
+app.controller('searchHallProbeDataCtrl', function($scope, $window, $routeParams, inventoryFactory){
+	$scope.search = {};
+	$scope.dataTypes = dataTypes;
+	$scope.masterTypes = masterTypes;
+	$scope.search.type = dataTypes.others[12];
+	$scope.mapTypes = mapMasterTypesToDataTypes;
+	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	$scope.inv = [];
+
+	// Redirect to list
+	if(!$routeParams.search) {
+		var search = {};
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "hall_probe_data", ["inventory_name"]) + "/list";
+		$window.location = newLocation;
+	}
+
+	// Retrieve all Inventory items
+	inventoryFactory.retrieveItems({'name': '*'}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inv.push(item.name);
+		});
+	});
+
+	// Change entity
+	$scope.changeEntity = function() {
+		var newLocation = createRouteUrl(undefined, $scope.search.type.name, []);
+		l(newLocation);
+		$window.location = newLocation;
+	};
+
+	// Item search button click
+	$scope.searchForItem = function(search) {
+		search.search = new Date().getTime();
+		var newLocation = createRouteUrl(search, "hall_probe_data", ["inventory_name"]) + "/list";
+		l(newLocation);
+		$window.location = newLocation;
+	};
+});
+
+/*
+ * List items in the middle pane
+ */
+app.controller('listHallProbeDataCtrl', function($scope, $routeParams, $http, $window, inventoryFactory, HallProbeDataInfo, HallProbeData, hallProbeDataFactory) {
+	// Remove image from the middle pane if there is something to show
+	$scope.style.middle_class = "container-scroll-middle-no-img";
+
+	$scope.id = $routeParams.id;
+	$scope.info = HallProbeDataInfo;
+	var previousItem;
+	$scope.items = [];
+	$scope.invMap = {};
+
+	hallProbeDataFactory.retrieveItems($routeParams).then(function(result) {
+
+		l(result);
+
+		$.each(result, function(i, item){
+
+			// Build customized object
+			var newItem = new HallProbeData(item);
+
+			// Alternate background colors
+			if(i%2 === 0) {
+				newItem.color = "bg_dark";
+
+			} else {
+				newItem.color = "bg_light";
+			}
+
+			$scope.items.push(newItem);
+		});
+		$scope.items.reverse();
+	});
+
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		var location = createRouteUrl($routeParams, "hall_probe_data", ["inventory_name"]) + "/id/new/action/save";
+		$window.location = location;
+	};
+
+	// Show details when user selects item from a list
+	$scope.showDetails = function(item) {
+		$scope.id = undefined;
+
+		// Clear click style from previously selected element
+		if(previousItem !== undefined) {
+			previousItem.click = "";
+		}
+
+		previousItem = item;
+		item.click = "item_click";
+		item.search = $routeParams.search;
+		$routeParams.click = "item_click";
+		$routeParams.inventory_name = item.inventory_name;
+
+		var location = createRouteUrl($routeParams, "hall_probe_data", ["inventory_name"]) + "/id/" + item.id + "/action/retrieve";
+		$window.location = location;
+	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showHallProbeDataCtrl', function($scope, $routeParams, $http, $window, HallProbeDataInfo, HallProbeData, hallProbeDataFactory, inventoryFactory, EntityError){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+	$scope.action = $routeParams.action;
+	$scope.new = new HallProbeData();
+	$scope.error = {};
+	$scope.alert = {};
+	$scope.alert.show = false;
+	$scope.info = HallProbeDataInfo;
+
+	$scope.inv = [];
+
+	// Retrieve all Inventory items
+	inventoryFactory.retrieveItems({'name': '*'}).then(function(result) {
+
+		$.each(result, function(i, item){
+			$scope.inv.push(item.name);
+		});
+	});
+
+	// Get inventory from the factory if updating
+	if($routeParams.action != "save") {
+
+		hallProbeDataFactory.retrieveItem($routeParams).then(function(result) {
+			$scope.element = result;
+			$scope.element.hall_probe_id = result.id;
+			l($scope.element);
+		});
+	}
+
+	// Show update form in the right pane
+	$scope.updateItem = function() {
+		var location = createRouteUrl($routeParams, "hall_probe_data", ["inventory_name"]) + "/id/" + $routeParams.id + "/action/update";
+		$window.location = location;
+	};
+
+	$scope.saveItem = function(newItem, action) {
+		$scope.alert.show = false;
+		var item = new HallProbeData(newItem);
+		var result = hallProbeDataFactory.checkItem(item);
+		l(result);
+
+		if(result !== true) {
+			$scope.error = result.errorDict;
+
+		} else {
+			var propsObject = {};
+
+			delete $scope.error;
+			var promise;
+
+			if(action === "update") {
+				promise = hallProbeDataFactory.updateItem($scope.element);
+
+			} else if(action == "save") {
+				promise = hallProbeDataFactory.saveItem($scope.new);
+			}
+
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Hall probe data item successfully saved!";
+
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+		}
 	};
 });

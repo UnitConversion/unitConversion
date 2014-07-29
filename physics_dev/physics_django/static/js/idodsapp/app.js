@@ -83,6 +83,14 @@ app.config(function($routeSegmentProvider, $routeProvider){
 		when('/installation/offline_data/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/list',					'index.installation2.list').
 		when('/installation/offline_data/search/:search/install_name/:install_name?/inventory_name/:inventory_name?/description/:description?/date/:date?/gap/:gap?/phase1/:phase1?/phase2/:phase2?/phase3/:phase3?/phase4/:phase4?/phasemode/:phasemode?/polarmode/:polarmode?/status/:status?/method_name/:method_name?/id/:id/action/:action',	'index.installation2.list.details').
 
+		when('/rot_coil_data',																								            'index.rot_coil_data').
+		when('/rot_coil_data/search/:search/inventory_name/:inventory_name?/list',														'index.rot_coil_data.list').
+		when('/rot_coil_data/search/:search/inventory_name/:inventory_name?/id/:id/action/:action',										'index.rot_coil_data.list.details').
+
+		when('/hall_probe_data',																								        'index.hall_probe_data').
+		when('/hall_probe_data/search/:search/inventory_name/:inventory_name?/list',													'index.hall_probe_data.list').
+		when('/hall_probe_data/search/:search/inventory_name/:inventory_name?/id/:id/action/:action',									'index.hall_probe_data.list.details').
+
 		segment('index', {
 			templateUrl: 'content.html',
 			controller: 'mainCtrl'
@@ -444,6 +452,48 @@ app.config(function($routeSegmentProvider, $routeProvider){
 					segment('details', {
 						templateUrl: 'details/offline_data_install.html',
 						controller: 'showOfflineDataInstallCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('rot_coil_data', {
+				templateUrl: 'search/rot_coil_data.html',
+				controller: 'searchRotCoilDataCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/rot_coil_data.html',
+					controller: 'listRotCoilDataCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/rot_coil_data.html',
+						controller: 'showRotCoilDataCtrl',
+						dependencies: ['id', 'action']
+					}).
+				up().
+			up().
+		up().
+
+		within().
+			segment('hall_probe_data', {
+				templateUrl: 'search/hall_probe_data.html',
+				controller: 'searchHallProbeDataCtrl'
+			}).
+			within().
+				segment('list', {
+					templateUrl: 'list/hall_probe_data.html',
+					controller: 'listHallProbeDataCtrl',
+					dependencies: ['search']
+				}).
+				within().
+					segment('details', {
+						templateUrl: 'details/hall_probe_data.html',
+						controller: 'showHallProbeDataCtrl',
 						dependencies: ['id', 'action']
 					}).
 				up().

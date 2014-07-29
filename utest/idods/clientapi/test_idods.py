@@ -3,7 +3,8 @@ Created on Feb 17, 2014
 
 @author: dejan.dezman@cosylab.com
 '''
-import os, sys
+import os
+import sys
 
 import unittest
 import logging
@@ -532,6 +533,65 @@ class Test(unittest.TestCase):
 
         # Test file path
         self.assertNotEqual(uploadedFile['path'], '')
+
+    '''
+    Test rot coil data
+    '''
+    def testRotCoilData(self):
+
+        cmpnt = self.client.saveComponentType('Magnet')
+        inv = self.client.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        rcd = self.client.saveRotCoilData('name2', 'alias')
+        self.assertNotEqual(rcd['id'], 0)
+
+        # Retrieve rot coil data
+        data = self.client.retrieveRotCoilData('name2')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+
+        # Test update
+        self.assertTrue(self.client.updateRotCoilData(rcd['id'], login_name='admin'))
+
+        # Retrieve rot coil data
+        data = self.client.retrieveRotCoilData('name2')
+
+        # # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+        firstKey = data.keys()[0]
+
+        self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
+        self.assertEqual(data[firstKey]['alias'], 'alias')
+        self.assertEqual(data[firstKey]['login_name'], 'user')
+
+    '''
+    Test hall probe data
+    '''
+    def testHallProbeData(self):
+        cmpnt = self.client.saveComponentType('Magnet')
+        inv = self.client.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        hpd = self.client.saveHallProbeData('name2', 'sub device')
+        self.assertNotEqual(hpd['id'], 0)
+
+        # Retrieve hall probe data
+        data = self.client.retrieveHallProbeData('name2')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+
+        # Test update
+        self.assertTrue(self.client.updateHallProbeData(hpd['id'], login_name='admin'))
+
+        # # Retrieve rot coil data
+        data = self.client.retrieveHallProbeData('name2')
+
+        # # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+        firstKey = data.keys()[0]
+
+        self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
+        self.assertEqual(data[firstKey]['sub_device'], 'sub device')
+        self.assertEqual(data[firstKey]['login_name'], 'user')
 
 if __name__ == "__main__":
     unittest.main()

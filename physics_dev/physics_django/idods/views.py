@@ -743,6 +743,86 @@ def saveInsertionDeviceWS(request):
     return result
 
 
+@require_http_methods(["GET"])
+def retrieveRotCoilDataWS(request):
+    '''
+    Retrieve rot coil data
+    '''
+    return _retrieveData(request, idodsi.retrieveRotCoilData, ['inventory_name'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveRotCoilDataWS(request):
+    '''
+    Save rot coil data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _saveData(request, idodsi.saveRotCoilData, [
+        'inventory_name', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
+        'meas_loc', 'run_number', 'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2', 'up_dn_3',
+        'analysis_number', 'integral_xfer_function', 'orig_offset_x', 'orig_offset_y', 'b_ref_int', 'roll_angle',
+        'meas_notes', 'author', 'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def updateRotCoilDataWS(request):
+    '''
+    Update rot coil data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _updateData(request, idodsi.updateRotCoilData, [
+        'rot_coil_data_id', 'inventory_name', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
+        'meas_loc', 'run_number', 'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2', 'up_dn_3',
+        'analysis_number', 'integral_xfer_function', 'orig_offset_x', 'orig_offset_y', 'b_ref_int', 'roll_angle',
+        'meas_notes', 'author', 'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["GET"])
+def retrieveHallProbeDataWS(request):
+    '''
+    Retrieve rot coil data
+    '''
+    return _retrieveData(request, idodsi.retrieveHallProbeData, ['inventory_name'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveHallProbeDataWS(request):
+    '''
+    Save rot coil data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _saveData(request, idodsi.saveHallProbeData, [
+        'inventory_name', 'sub_device', 'alias', 'measured_at_location',
+        'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+        'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+        'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def updateHallProbeDataWS(request):
+    '''
+    Update rot coil data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _updateData(request, idodsi.updateHallProbeData, [
+        'hall_probe_id', 'inventory_name', 'sub_device', 'alias', 'measured_at_location',
+        'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+        'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+        'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
+        ])
+
+
 def idodsIndexHtml(request):
     '''
     Load index html file

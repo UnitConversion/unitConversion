@@ -1093,3 +1093,125 @@ app.factory('onlineDataFactory', function($http, $q, OnlineData, EntityError) {
 
 	return factory;
 });
+
+/*
+ * Provide a factory for the rot coil data entity. Rot coil data can be checked, retrieved, saved and updated
+ */
+app.factory('rotCoilDataFactory', function($http, $q, RotCoilData, EntityError) {
+	var factory = {};
+	factory.entity = new RotCoilData();
+	factory.error = new EntityError();
+
+	// Set rot coil data object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	};
+
+	// Check rot coil data before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	};
+
+	// Get rot coil data from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "rotcoildata", this.entity, RotCoilData);
+	};
+
+	// Get rot coil data from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "rotcoildata", this.entity.list, params, this.entity.search_m);
+	};
+
+	// Save new rot coil data
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saverotcoildata", this.entity);
+	};
+
+	// Update rot coil data
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updaterotcoildata", this.entity);
+	};
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the hall probe data entity. Hall probe data can be checked, retrieved, saved and updated
+ */
+app.factory('hallProbeDataFactory', function($http, $q, HallProbeData, EntityError) {
+	var factory = {};
+	factory.entity = new HallProbeData();
+	factory.error = new EntityError();
+
+	// Set rot hall probe object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	};
+
+	// Check rot hall probe before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	};
+
+	// Get rot hall probe from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "hallprobedata", this.entity, HallProbeData);
+	};
+
+	// Get rot hall probe from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "hallprobedata", this.entity.list, params, this.entity.search_m);
+	};
+
+	// Save new rot hall probe
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "savehallprobedata", this.entity);
+	};
+
+	// Update rot hall probe
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updatehallprobedata", this.entity);
+	};
+
+	return factory;
+});

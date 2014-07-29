@@ -4202,6 +4202,7 @@ class idods(object):
             children = self.retrieveInstallRel(None, rootNode['parentname'])
 
         else:
+            newTree = tree[install_name]['children']
             children = self.retrieveInstallRel(None, install_name)
 
         for childKey in children.keys():
@@ -5430,3 +5431,708 @@ class idods(object):
             self.saveComponentType('__virtual_device__', 'Device is not an actual device but a tree node')
 
         return True
+
+    def retrieveRotCoilData(self, inventory_name):
+        '''
+        Return rotation coil data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        rot_coil_data_id,
+                        inventory_id,
+                        alias,
+                        meas_coil_id,
+                        ref_radius,
+                        magnet_notes,
+                        login_name,
+                        cond_curr,
+                        meas_loc,
+                        run_number,
+                        sub_device,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn_1,
+                        up_dn_2,
+                        up_dn_3,
+                        analysis_number,
+                        integral_xfer_function,
+                        orig_offset_x,
+                        orig_offset_y,
+                        b_ref_int,
+                        roll_angle,
+                        meas_notes,
+                        meas_date,
+                        author,
+                        a1,
+                        a2,
+                        a3,
+                        b1,
+                        b2,
+                        b3,
+                        a4_21,
+                        b4_21,
+                        data_issues,
+                        data_usage,
+                        inventory_name
+                    },
+                    ...
+                }
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check inventory
+        inventory = self.retrieveInventory(inventory_name)
+
+        if len(inventory) == 0:
+            raise ValueError("Inventory (%s) does not exist in the database." % (inventory_name))
+
+        inventory_id = inventory.keys()[0]
+
+        resdict = {}
+        res = self.physics.retrieveRotCoilData(inventory_id)
+
+        # Construct return dict
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'inventory_id': r[1],
+                'alias': r[2],
+                'meas_coil_id': r[3],
+                'ref_radius': r[4],
+                'magnet_notes': r[5],
+                'login_name': r[6],
+                'cond_curr': r[7],
+                'meas_loc': r[8],
+                'run_number': r[9],
+                'sub_device': r[10],
+                'current_1': r[11],
+                'current_2': r[12],
+                'current_3': r[13],
+                'up_dn_1': r[14],
+                'up_dn_2': r[15],
+                'up_dn_3': r[16],
+                'analysis_number': r[17],
+                'integral_xfer_function': r[18],
+                'orig_offset_x': r[19],
+                'orig_offset_y': r[20],
+                'b_ref_int': r[21],
+                'roll_angle': r[22],
+                'meas_notes': r[23],
+                'meas_date': r[24].strftime("%Y-%m-%d %H:%M:%S"),
+                'author': r[25],
+                'a1': r[26],
+                'a2': r[27],
+                'a3': r[28],
+                'b1': r[29],
+                'b2': r[30],
+                'b3': r[31],
+                'a4_21': r[32],
+                'b4_21': r[33],
+                'data_issues': r[34],
+                'data_usage': r[35],
+                'inventory_name': r[36]
+            }
+
+        return resdict
+
+    def saveRotCoilData(
+            self, inventory_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save rotation coil data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias: str
+
+        :param meas_coil_id:
+        :type meas_coil_id: str
+
+        :param ref_radius:
+        :type ref_radius: double
+
+        :param magnet_notes:
+        :type magnet_notes: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param cond_curr:
+        :type cond_curr: double
+
+        :param meas_loc:
+        :type meas_loc: str
+
+        :param run_number:
+        :type run_number: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn_1:
+        :type up_dn_1: str
+
+        :param up_dn_2:
+        :type up_dn_2: str
+
+        :param up_dn_3:
+        :type up_dn_3: str
+
+        :param analysis_number:
+        :type analysis_number: str
+
+        :param integral_xfer_function:
+        :type integral_xfer_function: double
+
+        :param orig_offset_x:
+        :type orig_offset_x: double
+
+        :param orig_offset_y:
+        :type orig_offset_y: double
+
+        :param b_ref_int:
+        :type b_ref_int: double
+
+        :param roll_angle:
+        :type roll_angle: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param author:
+        :type author: str
+
+        :param a1:
+        :type a1: double
+
+        :param a2:
+        :type a2: double
+
+        :param a3:
+        :type a3: double
+
+        :param b1:
+        :type b1: double
+
+        :param b2:
+        :type b2: double
+
+        :param b3:
+        :type b3: double
+
+        :param a4_21:
+        :type a4_21: str
+
+        :param b4_21:
+        :type b4_21: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': rot coil data id}
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check inventory
+        inventory = self.retrieveInventory(inventory_name)
+
+        if len(inventory) == 0:
+            raise ValueError("Inventory (%s) does not exist in the database." % (inventory_name))
+
+        inventory_id = inventory.keys()[0]
+
+        result = self.physics.saveRotCoilData(
+            inventory_id, alias, meas_coil_id, ref_radius, magnet_notes, login_name, cond_curr,
+            meas_loc, run_number, sub_device, current_1, current_2, current_3, up_dn_1, up_dn_2, up_dn_3,
+            analysis_number, integral_xfer_function, orig_offset_x, orig_offset_y, b_ref_int, roll_angle,
+            meas_notes, author, a1, a2, a3, b1, b2, b3, a4_21, b4_21, data_issues, data_usage)
+
+        return {'id': result}
+
+    def updateRotCoilData(
+            self, rot_coil_data_id, inventory_name=None, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None):
+        '''
+        Update rotation coil data
+
+        :param rot_coil_data_id:
+        :type rot_coil_data_id: int
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias:
+
+        :param meas_coil_id:
+        :type meas_coil_id:
+
+        :param ref_radius:
+        :type ref_radius:
+
+        :param magnet_notes:
+        :type magnet_notes:
+
+        :param login_name:
+        :type login_name:
+
+        :param cond_curr:
+        :type cond_curr:
+
+        :param meas_loc:
+        :type meas_loc:
+
+        :param run_number:
+        :type run_number:
+
+        :param sub_device:
+        :type sub_device:
+
+        :param current_1:
+        :type current_1:
+
+        :param current_2:
+        :type current_2:
+
+        :param current_3:
+        :type current_3:
+
+        :param up_dn_1:
+        :type up_dn_1:
+
+        :param up_dn_2:
+        :type up_dn_2:
+
+        :param up_dn_3:
+        :type up_dn_3:
+
+        :param analysis_number:
+        :type analysis_number:
+
+        :param integral_xfer_function:
+        :type integral_xfer_function:
+
+        :param orig_offset_x:
+        :type orig_offset_x:
+
+        :param orig_offset_y:
+        :type orig_offset_y:
+
+        :param b_ref_int:
+        :type b_ref_int:
+
+        :param roll_angle:
+        :type roll_angle:
+
+        :param meas_notes:
+        :type meas_notes:
+
+        :param author:
+        :type author:
+
+        :param a1:
+        :type a1:
+
+        :param a2:
+        :type a2:
+
+        :param a3:
+        :type a3:
+
+        :param b1:
+        :type b1:
+
+        :param b2:
+        :type b2:
+
+        :param b3:
+        :type b3:
+
+        :param a4_21:
+        :type a4_21:
+
+        :param b4_21:
+        :type b4_21:
+
+        :param data_issues:
+        :type data_issues:
+
+        :param data_usage:
+        :type data_usage:
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Check id
+        _checkParameter('id', rot_coil_data_id, 'prim')
+
+        inventory_id = None
+
+        if inventory_name:
+            # Check inventory
+            retrieveInventory = self.retrieveInventory(inventory_name)
+
+            if len(retrieveInventory) == 0:
+                raise ValueError("Inventory (%s) doesn't exist in the database!" % oldInventoryName)
+
+            retrieveInventoryKeys = retrieveInventory.keys()
+            inventory_id = retrieveInventory[retrieveInventoryKeys[0]]['id']
+
+        return self.physics.updateRotCoilData(
+            rot_coil_data_id, inventory_id, alias, meas_coil_id, ref_radius, magnet_notes, login_name, cond_curr,
+            meas_loc, run_number, sub_device, current_1, current_2, current_3, up_dn_1, up_dn_2, up_dn_3,
+            analysis_number, integral_xfer_function, orig_offset_x, orig_offset_y, b_ref_int, roll_angle,
+            meas_notes, author, a1, a2, a3, b1, b2, b3, a4_21, b4_21, data_issues, data_usage)
+
+    def retrieveHallProbeData(self, inventory_name):
+        '''
+        Return hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        hall_probe_id,
+                        inventory_id,
+                        alias,
+                        meas_date,
+                        measured_at_location,
+                        sub_device,
+                        run_identifier,
+                        login_name,
+                        conditioning_current,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn1,
+                        up_dn2,
+                        up_dn3,
+                        mag_volt_1,
+                        mag_volt_2,
+                        mag_volt_3,
+                        x,
+                        y,
+                        z,
+                        bx_t,
+                        by_t,
+                        bz_t,
+                        meas_notes,
+                        data_issues,
+                        data_usage,
+                        inventory_name
+                    },
+                    ...
+                }
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check inventory
+        inventory = self.retrieveInventory(inventory_name)
+
+        if len(inventory) == 0:
+            raise ValueError("Inventory (%s) does not exist in the database." % (inventory_name))
+
+        inventory_id = inventory.keys()[0]
+
+        resdict = {}
+        res = self.physics.retrieveHallProbeData(inventory_id)
+
+        # Construct return dict
+        for r in res:
+            resdict[r[0]] = {
+                'id': r[0],
+                'inventory_id': r[1],
+                'alias': r[2],
+                'meas_date': r[3].strftime("%Y-%m-%d %H:%M:%S"),
+                'measured_at_location': r[4],
+                'sub_device': r[5],
+                'run_identifier': r[6],
+                'login_name': r[7],
+                'conditioning_current': r[8],
+                'current_1': r[9],
+                'current_2': r[10],
+                'current_3': r[11],
+                'up_dn1': r[12],
+                'up_dn2': r[13],
+                'up_dn3': r[14],
+                'mag_volt_1': r[15],
+                'mag_volt_2': r[16],
+                'mag_volt_3': r[17],
+                'x': r[18],
+                'y': r[19],
+                'z': r[20],
+                'bx_t': r[21],
+                'by_t': r[22],
+                'bz_t': r[23],
+                'meas_notes': r[24],
+                'data_issues': r[25],
+                'data_usage': r[26],
+                'inventory_name': r[27]
+            }
+
+        return resdict
+
+    def saveHallProbeData(
+            self, inventory_name, sub_device, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param measured_at_location:
+        :type measured_at_location: str
+
+        :param run_identifier:
+        :type run_identifier: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param conditioning_current:
+        :type conditioning_current: double
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn1:
+        :type up_dn1: str
+
+        :param up_dn2:
+        :type up_dn2: str
+
+        :param up_dn3:
+        :type up_dn3: str
+
+        :param mag_volt_1:
+        :type mag_volt_1: double
+
+        :param mag_volt_2:
+        :type mag_volt_2: double
+
+        :param mag_volt_3:
+        :type mag_volt_3: double
+
+        :param x:
+        :type x: double
+
+        :param y:
+        :type y: double
+
+        :param z:
+        :type z: double
+
+        :param bx_t:
+        :type bx_t: double
+
+        :param by_t:
+        :type by_t: double
+
+        :param bz_t:
+        :type bz_t: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': hall probe data id}
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check inventory
+        inventory = self.retrieveInventory(inventory_name)
+
+        if len(inventory) == 0:
+            raise ValueError("Inventory (%s) does not exist in the database." % (inventory_name))
+
+        inventory_id = inventory.keys()[0]
+
+        # Check parameter
+        _checkParameter('sub device', sub_device)
+
+        result = self.physics.saveHallProbeData(
+            inventory_id, sub_device, alias, measured_at_location,
+            run_identifier, login_name, conditioning_current, current_1, current_2,
+            current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
+            x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage)
+
+        return {'id': result}
+
+    def updateHallProbeData(
+            self, hall_probe_id, inventory_name=None, sub_device=None, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None):
+        '''
+        Update hall probe data
+
+        :param hall_probe_id: id hall probe
+        :type hall_probe_id: int
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param measured_at_location:
+        :type measured_at_location: str
+
+        :param run_identifier:
+        :type run_identifier: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param conditioning_current:
+        :type conditioning_current: double
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn1:
+        :type up_dn1: str
+
+        :param up_dn2:
+        :type up_dn2: str
+
+        :param up_dn3:
+        :type up_dn3: str
+
+        :param mag_volt_1:
+        :type mag_volt_1: double
+
+        :param mag_volt_2:
+        :type mag_volt_2: double
+
+        :param mag_volt_3:
+        :type mag_volt_3: double
+
+        :param x:
+        :type x: double
+
+        :param y:
+        :type y: double
+
+        :param z:
+        :type z: double
+
+        :param bx_t:
+        :type bx_t: double
+
+        :param by_t:
+        :type by_t: double
+
+        :param bz_t:
+        :type bz_t: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Check id
+        _checkParameter('id', hall_probe_id, 'prim')
+
+        inventory_id = None
+
+        if inventory_name:
+            # Check inventory
+            retrieveInventory = self.retrieveInventory(inventory_name)
+
+            if len(retrieveInventory) == 0:
+                raise ValueError("Inventory (%s) doesn't exist in the database!" % oldInventoryName)
+
+            retrieveInventoryKeys = retrieveInventory.keys()
+            inventory_id = retrieveInventory[retrieveInventoryKeys[0]]['id']
+
+        return self.physics.updateHallProbeData(
+            hall_probe_id, inventory_id, sub_device, alias, measured_at_location,
+            run_identifier, login_name, conditioning_current, current_1, current_2,
+            current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
+            x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage)

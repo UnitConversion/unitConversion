@@ -1386,3 +1386,949 @@ class physics(object):
 
             self.logger.info('Error when saving inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when saving inventory to install:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def retrieveRotCoilData(self, inventory_id):
+        '''
+        Return rotation coil data
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :return: a tuple with a structure like:
+
+            .. code-block:: python
+
+                (
+                    (
+                        rot_coil_data_id,
+                        inventory_id,
+                        alias,
+                        meas_coil_id,
+                        ref_radius,
+                        magnet_notes,
+                        login_name,
+                        cond_curr,
+                        meas_loc,
+                        run_number,
+                        sub_device,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn_1,
+                        up_dn_2,
+                        up_dn_3,
+                        analysis_number,
+                        integral_xfer_function,
+                        orig_offset_x,
+                        orig_offset_y,
+                        B_ref_int,
+                        Roll_angle,
+                        meas_notes,
+                        meas_date,
+                        author,
+                        a1,
+                        a2,
+                        a3,
+                        b1,
+                        b2,
+                        b3,
+                        a4_21,
+                        b4_21,
+                        data_issues,
+                        data_usage,
+                        name
+                    ),
+                    ...
+                )
+
+        :Raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        SELECT
+            rcd.rot_coil_data_id,
+            rcd.inventory_id,
+            rcd.alias,
+            rcd.meas_coil_id,
+            rcd.ref_radius,
+            rcd.magnet_notes,
+            rcd.login_name,
+            rcd.cond_curr,
+            rcd.meas_loc,
+            rcd.run_number,
+            rcd.sub_device,
+            rcd.current_1,
+            rcd.current_2,
+            rcd.current_3,
+            rcd.up_dn_1,
+            rcd.up_dn_2,
+            rcd.up_dn_3,
+            rcd.analysis_number,
+            rcd.integral_xfer_function,
+            rcd.orig_offset_x,
+            rcd.orig_offset_y,
+            rcd.B_ref_int,
+            rcd.Roll_angle,
+            rcd.meas_notes,
+            rcd.meas_date,
+            rcd.author,
+            rcd.a1,
+            rcd.a2,
+            rcd.a3,
+            rcd.b1,
+            rcd.b2,
+            rcd.b3,
+            rcd.a4_21,
+            rcd.b4_21,
+            rcd.data_issues,
+            rcd.data_usage,
+            inv.name
+        FROM rot_coil_data rcd
+        LEFT JOIN inventory inv ON (rcd.inventory_id = inv.inventory_id)
+        WHERE
+        '''
+
+        vals = []
+
+        # Check primary key
+        sql += ' rcd.inventory_id = %s '
+        vals.append(inventory_id)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            res = cur.fetchall()
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def saveRotCoilData(
+            self, inventory_id, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None):
+        '''
+        Save rotation coil data
+
+        :param inventory_id:
+        :type inventory_id: int
+
+        :param alias:
+        :type alias: str
+
+        :param meas_coil_id:
+        :type meas_coil_id: str
+
+        :param ref_radius:
+        :type ref_radius: double
+
+        :param magnet_notes:
+        :type magnet_notes: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param cond_curr:
+        :type cond_curr: double
+
+        :param meas_loc:
+        :type meas_loc: str
+
+        :param run_number:
+        :type run_number: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn_1:
+        :type up_dn_1: str
+
+        :param up_dn_2:
+        :type up_dn_2: str
+
+        :param up_dn_3:
+        :type up_dn_3: str
+
+        :param analysis_number:
+        :type analysis_number: str
+
+        :param integral_xfer_function:
+        :type integral_xfer_function: double
+
+        :param orig_offset_x:
+        :type orig_offset_x: double
+
+        :param orig_offset_y:
+        :type orig_offset_y: double
+
+        :param b_ref_int:
+        :type b_ref_int: double
+
+        :param roll_angle:
+        :type roll_angle: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param author:
+        :type author: str
+
+        :param a1:
+        :type a1: double
+
+        :param a2:
+        :type a2: double
+
+        :param a3:
+        :type a3: double
+
+        :param b1:
+        :type b1: double
+
+        :param b2:
+        :type b2: double
+
+        :param b3:
+        :type b3: double
+
+        :param a4_21:
+        :type a4_21: str
+
+        :param b4_21:
+        :type b4_21: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: new rot coil data id
+
+        :raise: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO rot_coil_data
+            (inventory_id, alias, meas_coil_id, ref_radius, magnet_notes, login_name, cond_curr,
+            meas_loc, run_number, sub_device, current_1, current_2, current_3, up_dn_1, up_dn_2, up_dn_3,
+            analysis_number, integral_xfer_function, orig_offset_x, orig_offset_y, B_ref_int, Roll_angle,
+            meas_notes, meas_date, author, a1, a2, a3, b1, b2, b3, a4_21, b4_21, data_issues, data_usage)
+        VALUES
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (
+                inventory_id, alias, meas_coil_id, ref_radius, magnet_notes, login_name, cond_curr,
+                meas_loc, run_number, sub_device, current_1, current_2, current_3, up_dn_1, up_dn_2, up_dn_3,
+                analysis_number, integral_xfer_function, orig_offset_x, orig_offset_y, b_ref_int, roll_angle,
+                meas_notes, author, a1, a2, a3, b1, b2, b3, a4_21, b4_21, data_issues, data_usage
+            ))
+
+            # Get last row id
+            rotid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return rotid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def updateRotCoilData(
+            self, rot_coil_data_id, inventory_id=None, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None):
+        '''
+        Update rotation coil data
+
+        :param rot_coil_data_id:
+        :type rot_coil_data_id:
+
+        :param inventory_id:
+        :type inventory_id:
+
+        :param alias:
+        :type alias:
+
+        :param meas_coil_id:
+        :type meas_coil_id:
+
+        :param ref_radius:
+        :type ref_radius:
+
+        :param magnet_notes:
+        :type magnet_notes:
+
+        :param login_name:
+        :type login_name:
+
+        :param cond_curr:
+        :type cond_curr:
+
+        :param meas_loc:
+        :type meas_loc:
+
+        :param run_number:
+        :type run_number:
+
+        :param sub_device:
+        :type sub_device:
+
+        :param current_1:
+        :type current_1:
+
+        :param current_2:
+        :type current_2:
+
+        :param current_3:
+        :type current_3:
+
+        :param up_dn_1:
+        :type up_dn_1:
+
+        :param up_dn_2:
+        :type up_dn_2:
+
+        :param up_dn_3:
+        :type up_dn_3:
+
+        :param analysis_number:
+        :type analysis_number:
+
+        :param integral_xfer_function:
+        :type integral_xfer_function:
+
+        :param orig_offset_x:
+        :type orig_offset_x:
+
+        :param orig_offset_y:
+        :type orig_offset_y:
+
+        :param b_ref_int:
+        :type b_ref_int:
+
+        :param roll_angle:
+        :type roll_angle:
+
+        :param meas_notes:
+        :type meas_notes:
+
+        :param author:
+        :type author:
+
+        :param a1:
+        :type a1:
+
+        :param a2:
+        :type a2:
+
+        :param a3:
+        :type a3:
+
+        :param b1:
+        :type b1:
+
+        :param b2:
+        :type b2:
+
+        :param b3:
+        :type b3:
+
+        :param a4_21:
+        :type a4_21:
+
+        :param b4_21:
+        :type b4_21:
+
+        :param data_issues:
+        :type data_issues:
+
+        :param data_usage:
+        :type data_usage:
+
+        :return: True if everything was ok
+
+        :raise: MySQLError
+        '''
+
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+
+        # Set inventory
+        whereDict['rot_coil_data_id'] = rot_coil_data_id
+
+        # Set parameters
+        if inventory_id:
+            queryDict['inventory_id'] = inventory_id
+
+        if alias:
+            queryDict['alias'] = alias
+
+        if meas_coil_id:
+            queryDict['meas_coil_id'] = meas_coil_id
+
+        if ref_radius:
+            queryDict['ref_radius'] = ref_radius
+
+        if magnet_notes:
+            queryDict['magnet_notes'] = magnet_notes
+
+        if login_name:
+            queryDict['login_name'] = login_name
+
+        if cond_curr:
+            queryDict['cond_curr'] = cond_curr
+
+        if meas_loc:
+            queryDict['meas_loc'] = meas_loc
+
+        if run_number:
+            queryDict['run_number'] = run_number
+
+        if sub_device:
+            queryDict['sub_device'] = sub_device
+
+        if current_1:
+            queryDict['current_1'] = current_1
+
+        if current_2:
+            queryDict['current_2'] = current_2
+
+        if current_3:
+            queryDict['current_3'] = current_3
+
+        if up_dn_1:
+            queryDict['up_dn_1'] = up_dn_1
+
+        if up_dn_2:
+            queryDict['up_dn_2'] = up_dn_2
+
+        if up_dn_3:
+            queryDict['up_dn_3'] = up_dn_3
+
+        if analysis_number:
+            queryDict['analysis_number'] = analysis_number
+
+        if integral_xfer_function:
+            queryDict['integral_xfer_function'] = integral_xfer_function
+
+        if orig_offset_x:
+            queryDict['orig_offset_x'] = orig_offset_x
+
+        if orig_offset_y:
+            queryDict['orig_offset_y'] = orig_offset_y
+
+        if b_ref_int:
+            queryDict['b_ref_int'] = b_ref_int
+
+        if roll_angle:
+            queryDict['roll_angle'] = roll_angle
+
+        if meas_notes:
+            queryDict['meas_notes'] = meas_notes
+
+        queryDict['meas_date'] = 'now'
+
+        if author:
+            queryDict['author'] = author
+
+        if a1:
+            queryDict['a1'] = a1
+
+        if a2:
+            queryDict['a2'] = a2
+
+        if a3:
+            queryDict['a3'] = a3
+
+        if b1:
+            queryDict['b1'] = b1
+
+        if b2:
+            queryDict['b2'] = b2
+
+        if b3:
+            queryDict['b3'] = b3
+
+        if a4_21:
+            queryDict['a4_21'] = a4_21
+
+        if b4_21:
+            queryDict['b4_21'] = b4_21
+
+        if data_issues:
+            queryDict['data_issues'] = data_issues
+
+        if data_usage:
+            queryDict['data_usage'] = data_usage
+
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('rot_coil_data', queryDict, None, None, whereDict)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return True
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def retrieveHallProbeData(self, inventory_id):
+        '''
+        Return hall probe data
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :return: a tuple with a structure like:
+
+            .. code-block:: python
+
+                (
+                    (
+                        hall_probe_id,
+                        inventory_id,
+                        alias,
+                        meas_date,
+                        measured_at_location,
+                        sub_device,
+                        run_identifier,
+                        login_name,
+                        conditioning_current,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn1,
+                        up_dn2,
+                        up_dn3,
+                        mag_volt_1,
+                        mag_volt_2,
+                        mag_volt_3,
+                        x,
+                        y,
+                        z,
+                        bx_t,
+                        by_t,
+                        bz_t,
+                        meas_notes,
+                        data_issues,
+                        data_usage,
+                        name
+                    ),
+                    ...
+                )
+
+        :Raises: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        SELECT
+            hpd.hall_probe_id,
+            hpd.inventory_id,
+            hpd.alias,
+            hpd.meas_date,
+            hpd.measured_at_location,
+            hpd.sub_device,
+            hpd.run_identifier,
+            hpd.login_name,
+            hpd.conditioning_current,
+            hpd.current_1,
+            hpd.current_2,
+            hpd.current_3,
+            hpd.up_dn1,
+            hpd.up_dn2,
+            hpd.up_dn3,
+            hpd.mag_volt_1,
+            hpd.mag_volt_2,
+            hpd.mag_volt_3,
+            hpd.x,
+            hpd.y,
+            hpd.z,
+            hpd.bx_t,
+            hpd.by_t,
+            hpd.bz_t,
+            hpd.meas_notes,
+            hpd.data_issues,
+            hpd.data_usage,
+            inv.name
+        FROM hall_probe_data hpd
+        LEFT JOIN inventory inv ON (hpd.inventory_id = inv.inventory_id)
+        WHERE
+        '''
+
+        vals = []
+
+        # Check primary key
+        sql += ' hpd.inventory_id = %s '
+        vals.append(inventory_id)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+            res = cur.fetchall()
+            return res
+
+        except Exception as e:
+            self.logger.info('Error when fetching hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def saveHallProbeData(
+            self, inventory_id, sub_device, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None):
+        '''
+        Save hall probe data
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :param alias:
+        :type alias: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param measured_at_location:
+        :type measured_at_location: str
+
+        :param run_identifier:
+        :type run_identifier: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param conditioning_current:
+        :type conditioning_current: double
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn1:
+        :type up_dn1: str
+
+        :param up_dn2:
+        :type up_dn2: str
+
+        :param up_dn3:
+        :type up_dn3: str
+
+        :param mag_volt_1:
+        :type mag_volt_1: double
+
+        :param mag_volt_2:
+        :type mag_volt_2: double
+
+        :param mag_volt_3:
+        :type mag_volt_3: double
+
+        :param x:
+        :type x: double
+
+        :param y:
+        :type y: double
+
+        :param z:
+        :type z: double
+
+        :param bx_t:
+        :type bx_t: double
+
+        :param by_t:
+        :type by_t: double
+
+        :param bz_t:
+        :type bz_t: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: new rot coil data id
+
+        :raise: MySQLError
+        '''
+
+        # Generate SQL
+        sql = '''
+        INSERT INTO hall_probe_data(
+            inventory_id, alias, meas_date, measured_at_location, sub_device,
+            run_identifier, login_name, conditioning_current, current_1, current_2,
+            current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
+            x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage
+            )
+        VALUES
+            (%s, %s, NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        '''
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, (
+                inventory_id, alias, measured_at_location, sub_device,
+                run_identifier, login_name, conditioning_current, current_1, current_2,
+                current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
+                x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage
+            ))
+
+            # Get last row id
+            halid = cur.lastrowid
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return halid
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when saving hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when saving hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def updateHallProbeData(
+            self, hall_probe_id, inventory_id=None, sub_device=None, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None):
+        '''
+        Update hall probe data
+
+        :param hall_probe_id: id hall probe
+        :type hall_probe_id: int
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :param alias:
+        :type alias: str
+
+        :param sub_device:
+        :type sub_device: str
+
+        :param measured_at_location:
+        :type measured_at_location: str
+
+        :param run_identifier:
+        :type run_identifier: str
+
+        :param login_name:
+        :type login_name: str
+
+        :param conditioning_current:
+        :type conditioning_current: double
+
+        :param current_1:
+        :type current_1: double
+
+        :param current_2:
+        :type current_2: double
+
+        :param current_3:
+        :type current_3: double
+
+        :param up_dn1:
+        :type up_dn1: str
+
+        :param up_dn2:
+        :type up_dn2: str
+
+        :param up_dn3:
+        :type up_dn3: str
+
+        :param mag_volt_1:
+        :type mag_volt_1: double
+
+        :param mag_volt_2:
+        :type mag_volt_2: double
+
+        :param mag_volt_3:
+        :type mag_volt_3: double
+
+        :param x:
+        :type x: double
+
+        :param y:
+        :type y: double
+
+        :param z:
+        :type z: double
+
+        :param bx_t:
+        :type bx_t: double
+
+        :param by_t:
+        :type by_t: double
+
+        :param bz_t:
+        :type bz_t: double
+
+        :param meas_notes:
+        :type meas_notes: str
+
+        :param data_issues:
+        :type data_issues: str
+
+        :param data_usage:
+        :type data_usage: int
+
+        :return: True if everything was ok
+
+        :raise: MySQLError
+        '''
+
+        # Define query dict
+        queryDict = {}
+        whereDict = {}
+
+        # Set id
+        whereDict['hall_probe_id'] = hall_probe_id
+
+        # Set parameters
+        if inventory_id:
+            queryDict['inventory_id'] = inventory_id
+
+        if sub_device:
+            queryDict['sub_device'] = sub_device
+
+        if alias:
+            queryDict['alias'] = alias
+
+        if measured_at_location:
+            queryDict['measured_at_location'] = measured_at_location
+
+        if run_identifier:
+            queryDict['run_identifier'] = run_identifier
+
+        if login_name:
+            queryDict['login_name'] = login_name
+
+        if conditioning_current:
+            queryDict['conditioning_current'] = conditioning_current
+
+        if current_1:
+            queryDict['current_1'] = current_1
+
+        if current_2:
+            queryDict['current_2'] = current_2
+
+        if current_3:
+            queryDict['current_3'] = current_3
+
+        if up_dn1:
+            queryDict['up_dn1'] = up_dn1
+
+        if up_dn2:
+            queryDict['up_dn2'] = up_dn2
+
+        if up_dn3:
+            queryDict['up_dn3'] = up_dn3
+
+        if mag_volt_1:
+            queryDict['mag_volt_1'] = mag_volt_1
+
+        if mag_volt_2:
+            queryDict['mag_volt_2'] = mag_volt_2
+
+        if mag_volt_3:
+            queryDict['mag_volt_3'] = mag_volt_3
+
+        if x:
+            queryDict['x'] = x
+
+        if y:
+            queryDict['y'] = y
+
+        if z:
+            queryDict['z'] = z
+
+        if bx_t:
+            queryDict['bx_t'] = bx_t
+
+        if by_t:
+            queryDict['by_t'] = by_t
+
+        if bz_t:
+            queryDict['bz_t'] = bz_t
+
+        if meas_notes:
+            queryDict['meas_notes'] = meas_notes
+
+        if data_issues:
+            queryDict['data_issues'] = data_issues
+
+        if data_usage:
+            queryDict['data_usage'] = data_usage
+
+        # Generate SQL
+        sqlVals = _generateUpdateQuery('hall_probe_data', queryDict, None, None, whereDict)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sqlVals[0], sqlVals[1])
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return True
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when updating hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when updating hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))

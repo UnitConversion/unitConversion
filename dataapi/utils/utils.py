@@ -143,7 +143,7 @@ def _generateFilePath():
     return dataPart, dirname
 
 
-def _checkParameter(parameterKey, paramaterValue, parameterTypeWeAreCheckingFor = "string"):
+def _checkParameter(parameterKey, paramaterValue, parameterTypeWeAreCheckingFor="string"):
     '''
     Check different types of input parameters. Parameter should match agreed criteria or exception will be thrown
 
