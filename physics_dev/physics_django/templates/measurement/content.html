@@ -1,0 +1,305 @@
+{% load verbatim %}
+{% verbatim %}
+
+<br />
+
+{% endverbatim %}
+{% if user.is_authenticated %}
+<div ng-class="{'alert_placeholder': view == 'readwrite'}">
+{% else %}
+<div>
+{% endif %}
+{% verbatim %}
+	<div class="alert" ng-class="{'alert-success': alert.success, 'alert-danger': !alert.success}" ng-show="alert.show">
+		<button type="button" class="close" ng-click="closeAlert()">&times;</button>
+		<strong>{{alert.title}}</strong> {{alert.body}}
+	</div>
+</div>
+
+{% endverbatim %}
+{% if user.is_authenticated %}
+	<div ng-if="view == 'readwrite'" class="table-responsive">
+{% else %}
+	<div ng-if="false" class="table-responsive">
+{% endif %}
+{% verbatim %}
+
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th ng-repeat="column in columns">
+			{{column}}
+			</th>
+			<th></th>
+		</tr>
+
+		<tbody>
+		<!-- Show retrieved -->
+		<tr ng-repeat="(row, rowData) in measurementData">
+			<td ng-repeat="column in rawColumns">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(rowData, column, $data)" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>
+				<button ng-click="addRow(rowData)" class="btn btn-default">Copy&Create</button>
+				<!-- <button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button> -->
+			</td>
+		</tr>
+		<tr ng-repeat="bm in bmArr">
+			<td ng-class="{'danger': bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_cell', $data)" class="edit" editable-text="bm.bm_cell">{{bm.bm_cell || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_cell')" ng-if="bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_sequence'] && bm.prop_statuses['bm_sequence'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_sequence', $data)" class="edit" editable-text="bm.bm_sequence">{{bm.bm_sequence || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_sequence')" ng-if="bm.prop_statuses['bm_sequence'] && bm.prop_statuses['bm_sequence'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'name', $data)" class="edit" editable-text="bm.name">{{bm.name || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>{{bm.bm_type || '&nbsp;'}}</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_s'] && bm.prop_statuses['bm_s'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_s', $data)" class="edit" editable-text="bm.bm_s">{{bm.bm_s || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_s')" ng-if="bm.prop_statuses['bm_s'] && bm.prop_statuses['bm_s'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolh', $data)" class="edit" editable-text="bm.bm_aiolh">{{bm.bm_aiolh || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiolh')" ng-if="bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiorh'] && bm.prop_statuses['bm_aiorh'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiorh', $data)" class="edit" editable-text="bm.bm_aiorh">{{bm.bm_aiorh || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiorh')" ng-if="bm.prop_statuses['bm_aiorh'] && bm.prop_statuses['bm_aiorh'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolv', $data)" class="edit" editable-text="bm.bm_aiolv">{{bm.bm_aiolv || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiolv')" ng-if="bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiorv'] && bm.prop_statuses['bm_aiorv'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiorv', $data)" class="edit" editable-text="bm.bm_aiorv">{{bm.bm_aiorv || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiorv')" ng-if="bm.prop_statuses['bm_aiorv'] && bm.prop_statuses['bm_aiorv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_safe_current', $data)" class="edit" editable-text="bm.bm_safe_current">{{bm.bm_safe_current || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_safe_current')" ng-if="bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_in_use'] && bm.prop_statuses['bm_in_use'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_in_use', $data)" class="edit" editable-select="bm.bm_in_use" e-ng-options="use for use in inUse">{{bm.bm_in_use || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_in_use')" ng-if="bm.prop_statuses['bm_in_use'] && bm.prop_statuses['bm_in_use'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
+				<button ng-click="addRow(bm)" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
+
+		<!-- Show new -->
+		<tr ng-repeat="(row, rowData) in measurementData2">
+			<td ng-repeat="column in rawColumns">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(rowData, column, $data)" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>
+				<button ng-click="addRow(rowData)" class="btn btn-default">Copy&Create</button>
+				<!-- <button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button> -->
+			</td>
+		</tr>
+		<tr ng-repeat="bm in bmArr2">
+			<td ng-class="{'danger': bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_cell', $data)" class="edit" editable-text="bm.bm_cell">{{bm.bm_cell || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_cell')" ng-if="bm.prop_statuses['bm_cell'] && bm.prop_statuses['bm_cell'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_sequence'] && bm.prop_statuses['bm_sequence'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_sequence', $data)" class="edit" editable-text="bm.bm_sequence">{{bm.bm_sequence || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_sequence')" ng-if="bm.prop_statuses['bm_sequence'] && bm.prop_statuses['bm_sequence'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'name', $data)" class="edit" editable-text="bm.name">{{bm.name || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>{{bm.bm_type || '&nbsp;'}}</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_s'] && bm.prop_statuses['bm_s'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_s', $data)" class="edit" editable-text="bm.bm_s">{{bm.bm_s || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_s')" ng-if="bm.prop_statuses['bm_s'] && bm.prop_statuses['bm_s'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolh', $data)" class="edit" editable-text="bm.bm_aiolh">{{bm.bm_aiolh || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiolh')" ng-if="bm.prop_statuses['bm_aiolh'] && bm.prop_statuses['bm_aiolh'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiorh'] && bm.prop_statuses['bm_aiorh'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiorh', $data)" class="edit" editable-text="bm.bm_aiorh">{{bm.bm_aiorh || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiorh')" ng-if="bm.prop_statuses['bm_aiorh'] && bm.prop_statuses['bm_aiorh'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItemFixed(bm, 'logic', $data)" class="edit" editable-select="bm.logic" e-ng-options="name for name in logicArr">{{bm.logic || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiolv', $data)" class="edit" editable-text="bm.bm_aiolv">{{bm.bm_aiolv || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiolv')" ng-if="bm.prop_statuses['bm_aiolv'] && bm.prop_statuses['bm_aiolv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_aiorv'] && bm.prop_statuses['bm_aiorv'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_aiorv', $data)" class="edit" editable-text="bm.bm_aiorv">{{bm.bm_aiorv || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_aiorv')" ng-if="bm.prop_statuses['bm_aiorv'] && bm.prop_statuses['bm_aiorv'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_safe_current', $data)" class="edit" editable-text="bm.bm_safe_current">{{bm.bm_safe_current || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_safe_current')" ng-if="bm.prop_statuses['bm_safe_current'] && bm.prop_statuses['bm_safe_current'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td ng-class="{'danger': bm.prop_statuses['bm_in_use'] && bm.prop_statuses['bm_in_use'] == 2}">
+				<span class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(bm, 'bm_in_use', $data)" class="edit" editable-select="bm.bm_in_use" e-ng-options="use for use in inUse">{{bm.bm_in_use || '&nbsp;'}}</a>
+				</span>
+				<button ng-click="approveCell(bm, 'bm_in_use')" ng-if="bm.prop_statuses['bm_in_use'] && bm.prop_statuses['bm_in_use'] == 2" class="btn btn-sm btn-default" style=""><i style="color: #a94442;" class="glyphicon glyphicon-check glyphicon-white"></i></button>
+			</td>
+			<td>
+				<button class="btn" ng-class="{'btn-danger': bm.prop_statuses.num_unapproved > 0, 'btn-default': bm.prop_statuses.num_unapproved == 0}" ng-click="approveRow(bm)">Approve</button>
+				<button ng-click="addRow(bm)" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(bm)" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
+
+		<tr ng-if="newMD">
+			<td class="new_data" ng-repeat="prop in rawColumns">
+				<span class="form-group" ng-class="{'has-error': error[prop]}">
+					<input ng-if="prop != 'logic' && prop != 'bm_in_use'" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
+					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
+					<select ng-if="prop == 'bm_in_use'" ng-options="use for use in inUse" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
+				</span>
+			</td>
+			<!-- <td class="new_data" ng-repeat="prop in newBm.save_display track by $index" ng-class="{'danger': newBm.approvable[prop] == true}">
+				<span class="form-group" ng-class="{'has-error': error[prop]}">
+					<input ng-if="prop != 'logic' && prop != 'bm_in_use'" type="text" ng-model="newBm[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
+					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
+					<select ng-if="prop == 'bm_in_use'" ng-options="use for use in inUse" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
+				</span>
+			</td> -->
+			<td>
+				<button ng-click="saveItem(newMD)" class="btn btn-warning">Add</button>
+				<button ng-click="cancel()" class="btn btn-default">Cancel</button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="{{columns.length + 1}}"><button ng-click="addRow()" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+{% endverbatim %}
+{% if user.is_authenticated %}
+<div ng-if="view == 'readonly'" class="table-responsive">
+{% else %}
+<div ng-if="true" class="table-responsive">
+{% endif %}
+{% verbatim %}
+
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th colspan="2">Cell</th>
+			<th rowspan="2">Element Name</th>
+			<th rowspan="2">Element Type</th>
+			<th rowspan="2">s</th>
+			<th rowspan="2">BPM-SR</th>
+			<th rowspan="2">AI Offset Limit Hor. (AIOLH)</th>
+			<th rowspan="2">AI Offset Origin Hor. (AIORH)</th>
+			<th rowspan="2">BPM-SR</th>
+			<th rowspan="2">AI Offset Limit Ver. (AIOLV)</th>
+			<th rowspan="2">AI Offset Origin Ver. (AIORV)</th>
+			<th rowspan="2">Safe current</th>
+			<th rowspan="2">In use</th>
+		</tr>
+		<tr>
+			<th></th>
+			<th>Sequence</th>
+		</tr>
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>mm</th>
+			<th>mm</th>
+			<th></th>
+			<th>mm</th>
+			<th>mm</th>
+			<th>mA</th>
+			<th></th>
+		</tr>
+		<tbody>
+		<tr ng-repeat="bm in bmArr">
+			<td>{{bm.bm_cell || '&nbsp;'}}</td>
+			<td>{{bm.bm_sequence || '&nbsp;'}}</td>
+			<td>{{bm.name || '&nbsp;'}}</td>
+			<td>{{bm.bm_type || '&nbsp;'}}</td>
+			<td>{{bm.bm_s || '&nbsp;'}}</td>
+			<td>{{bm.logic || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiolh || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiorh || '&nbsp;'}}</td>
+			<td>{{bm.logic || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiolv || '&nbsp;'}}</td>
+			<td>{{bm.bm_aiorv || '&nbsp;'}}</td>
+			<td>{{bm.bm_safe_current || '&nbsp;'}}</td>
+			<td>{{bm.bm_in_use || '&nbsp;'}}</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+{% endverbatim %}

@@ -340,6 +340,7 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 		if(item !== undefined) {
 			this.setItem(item);
 		}
+		l(this.entity);
 
 		return checkItem(this.entity, this.error);
 	};

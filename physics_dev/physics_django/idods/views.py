@@ -835,3 +835,17 @@ def idodsHtmls(request, url):
     Load html files
     '''
     return render_to_response("idods/" + url, context_instance=RequestContext(request))
+
+
+def measurementIndexHtml(request):
+    '''
+    Load index html file
+    '''
+    return render_to_response("measurement/index.html", context_instance=RequestContext(request))
+
+
+def measurementHtmls(request, url):
+    '''
+    Load html files
+    '''
+    return render_to_response("measurement/" + url, context_instance=RequestContext(request))

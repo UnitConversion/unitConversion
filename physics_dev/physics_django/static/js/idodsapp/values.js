@@ -196,6 +196,7 @@ app.value('CmpntTypeTypeInfo', {
 app.value('InventoryInfo', {
 	'save_title': 'Save new Inventory',
 	'save_button': 'Save Inventory',
+	'save_button_measurement_data_settings': 'Save Measurement Data Settings',
 	'retrieve_title': 'Inventory',
 	'retrieve_update_button': 'Update Inventory',
 	'update_title': 'Update Inventory',
@@ -210,7 +211,7 @@ app.value('InventoryInfo', {
  app.value('Inventory', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name", "cmpnt_type"];
+ 	this.m = ["name", "cmpnt_type", "__device_category__"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["name"];
@@ -231,7 +232,7 @@ app.value('InventoryInfo', {
  	this.save = ["name", "cmpnt_type", "vendor", "alias", "serialno", "props"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "cmpnt_type", "vendor", "alias", "serialno"];
+ 	this.save_show = ["name", "cmpnt_type", "vendor", "alias", "serialno", "__device_category__"];
 
  	// Parameters used as update URL parameters
  	this.update = ["old_name", "name", "cmpnt_type", "vendor", "alias", "serialno", "props"];
@@ -242,6 +243,7 @@ app.value('InventoryInfo', {
  		"vendor": "Vendor",
  		"name": "Name",
  		"cmpnt_type": "Component type",
+ 		"__device_category__": "Device category",
  		"id": "Id"
  	};
 
@@ -252,6 +254,9 @@ app.value('InventoryInfo', {
  	this.vendor = undefined;
  	this.alias = "";
  	this.serialno = "";
+
+ 	this.__device_category__ = "";
+ 	this.__measurement_data_settings__ = undefined;
 
  	this.props = {};
  	this.prop_keys = [];
@@ -283,13 +288,39 @@ app.value('InventoryInfo', {
  				var key = obj.prop_keys[i];
 
  				this.prop_keys.push({'name':key, 'value':obj[key]});
+
+ 				// Set local var
+ 				if (key in this){
+ 					this[key] = obj[key];
+ 				}
  			}
  		}
 
  		this.cmpnt_type = obj.cmpnt_type;
  		this.vendor = obj.vendor;
+
+ 		// Correct vendor
+ 		if(this.vendor === "" || this.vendor === null) {
+ 			this.vendor = undefined;
+ 		}
+
  		this.alias = obj.alias;
  		this.serialno = obj.serialno;
+
+ 		if('__device_category__' in obj) {
+ 			this.__device_category__ = obj.__device_category__;
+ 		}
+
+ 		if('__measurement_data_settings__' in obj) {
+ 			l(typeof obj.__measurement_data_settings__);
+
+ 			if ((typeof obj.__measurement_data_settings__) === 'string') {
+ 				this.__measurement_data_settings__ = JSON.parse(obj.__measurement_data_settings__);
+
+			} else {
+ 				this.__measurement_data_settings__ = obj.__measurement_data_settings__;
+			}
+ 		}
  	};
 
  	if(obj !== undefined) {
@@ -656,7 +687,7 @@ app.value('InstallInfo', {
  	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["node_type", "name", "cmpnt_type", "description", "coordinatecenter", "device_category", "beamline", "project"];
+ 	this.save_show = ["node_type", "name", "cmpnt_type", "description", "coordinatecenter", "beamline", "project"];
 
  	// Parameters used as update URL parameters
  	this.update = ["old_name", "name", "cmpnt_type", "description", "coordinatecenter"];
@@ -667,7 +698,6 @@ app.value('InstallInfo', {
  		"cmpnt_type": "Component type",
  		"description": "Description",
  		"coordinatecenter": "Coordinate center",
- 		"device_category": "Device category",
  		"node_type": "Node type",
  		"beamline": "Beamline name",
  		"project": "Project name"
@@ -680,7 +710,6 @@ app.value('InstallInfo', {
  	this.coordinatecenter = undefined;
 
  	// Properties
- 	this.device_category = "";
  	this.node_type = "";
  	this.beamline = "";
  	this.project = "";
@@ -1453,7 +1482,7 @@ app.value('HallProbeDataInfo', {
  	this.list = ["inventory_name"];
 
  	// Parameters used for save URL
- 	this.save = ['inventory_name', 'sub_device', 'alias', 'meas_date', 'measured_at_location',
+ 	this.save = ['inventory_name', 'sub_device', 'alias', 'measured_at_location',
     'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
     'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];

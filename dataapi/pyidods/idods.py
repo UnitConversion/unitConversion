@@ -517,10 +517,18 @@ class idods(object):
         retrieveInventoryPropertyTemplate = self.retrieveInventoryPropertyTemplate(inventoryPropertyTemplateName, cmpnt_type)
 
         if len(retrieveInventoryPropertyTemplate) == 0:
-            raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName)
 
-        retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
-        inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
+            # System parameters should be added automatically
+            if inventoryPropertyTemplateName.startswith('__') and inventoryPropertyTemplateName.endswith('__'):
+                res = self.saveInventoryPropertyTemplate(cmpnt_type, inventoryPropertyTemplateName, 'System parameter')
+                inventoryPropertyTemplateId = res['id']
+
+            else:
+                raise ValueError("Inventory property template (%s) doesn't exist in the database!" % inventoryPropertyTemplateName)
+
+        else:
+            retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
+            inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
 
         result = self.physics.saveInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
 
@@ -561,7 +569,7 @@ class idods(object):
 
         retrieveInventoryPropertyTemplateKeys = retrieveInventoryPropertyTemplate.keys()
         inventoryPropertyTemplateId = retrieveInventoryPropertyTemplate[retrieveInventoryPropertyTemplateKeys[0]]['id']
-
+        self.logger.info(inventoryPropertyTemplateId)
         return self.physics.updateInventoryProperty(inventoryId, inventoryPropertyTemplateId, value)
 
     def saveInventory(self, name, **kws):
@@ -696,6 +704,10 @@ class idods(object):
             for key in props:
                 value = props[key]
 
+                # Dump value if it is dictionary
+                if isinstance(value, (dict)):
+                    value = json.dumps(value)
+
                 # Save it into database
                 self.saveInventoryProperty(name, key, value, cmpnt_type=cmpnt_type_name)
 
@@ -788,6 +800,8 @@ class idods(object):
         _checkParameter('name', name)
         queryDict['name'] = name
 
+        compnttypename = None
+
         # Check device type parameter
         if 'cmpnt_type' in kws and kws['cmpnt_type'] is not None:
 
@@ -803,7 +817,12 @@ class idods(object):
             else:
                 compnttypeid = res[reskeys[0]]['id']
 
+            compnttypename = kws['cmpnt_type']
             queryDict['cmpnt_type_id'] = compnttypeid
+
+        # Check for component type
+        if compnttypename is None:
+            raise ValueError("Component type has to be set when updating!")
 
         # Check alias parameter
         if 'alias' in kws:
@@ -847,7 +866,7 @@ class idods(object):
                 if isinstance(props, (dict)) is False:
                     props = json.loads(props)
 
-                currentTemplates = self.retrieveInventoryProperty(name)
+                currentTemplates = self.retrieveInventoryProperty(name, cmpnt_type=compnttypename)
                 currentTemplatesDict = {}
 
                 # Map current properties
@@ -858,14 +877,18 @@ class idods(object):
                 for key in props:
                     value = props[key]
 
+                    # Dump value if it is dictionary
+                    if isinstance(value, (dict)):
+                        value = json.dumps(value)
+
                     if key in currentTemplatesDict:
 
                         # Update property
-                        self.updateInventoryProperty(name, key, value)
+                        self.updateInventoryProperty(name, key, value, cmpnt_type=compnttypename)
 
                     else:
                         # Save property
-                        self.saveInventoryProperty(name, key, value)
+                        self.saveInventoryProperty(name, key, value, cmpnt_type=compnttypename)
 
             return True
 
@@ -3217,9 +3240,14 @@ class idods(object):
         '''
         Insert new install relationship property type into database
 
-        - name: name of the install relationship property type M
-        - description: description of the install relationship property type O
-        - unit: unit used for this property type O
+        :param name: name of the install relationship property type M
+        :type name: str
+
+        :param description: description of the install relationship property type O
+        :type description: str
+
+        :param unit: unit used for this property type O
+        :type unit: str
 
         :return: a map with structure like:
 
@@ -5407,7 +5435,7 @@ class idods(object):
         '''
 
         # Create component type property type for identifying ID devices
-        #if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
+        # if len(self.retrieveComponentTypePropertyType('insertion_device').keys()) == 0:
         #    self.saveComponentTypePropertyType('insertion_device')
 
         # Create install property types

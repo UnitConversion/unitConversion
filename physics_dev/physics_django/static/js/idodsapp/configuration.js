@@ -99,3 +99,9 @@ var deviceCatagoryList = [
 	{name:"magnet", value:"Magnet"},
 	{name:"other", value:"Other"}
 ];
+
+// Measurement data location
+var measurementDataLocationList = [
+	{name:"rot_coil_data", value:"Rot Coil Data"},
+	{name:"hall_probe_data", value:"Hall Probe Data"}
+];

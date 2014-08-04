@@ -97,7 +97,7 @@
 			</tr>
 		</table>
 
-		<div ng-if="element.__device_category__ == 'id'">
+		<div>
 			<h3>Online data</h3>
 
 			<span ng-if="onlinedata.length == 0">No online data</span>
@@ -207,11 +207,9 @@
 
 							<select title="Available only for real devices" ng-disabled="new.node_type != 'real'" ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
 
-							<input ng-if="property != 'cmpnt_type' && property != 'device_category' && property != 'node_type' && property != 'beamline' && property != 'project'" type="text" ng-model="new[property]" />
+							<input ng-if="property != 'cmpnt_type' && property != 'node_type' && property != 'beamline' && property != 'project'" type="text" ng-model="new[property]" />
 
-							<input title="Available only for insertion devices" ng-disabled="new.device_category != 'id'" ng-if="property == 'beamline' || property == 'project'" type="text" ng-model="new[property]" />
-
-							<select title="Available only for real devices" ng-disabled="new.node_type != 'real'" ng-if="property == 'device_category'" ng-model="new[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
+							<input title="Available only for insertion devices" ng-disabled="new.node_type != 'real'" ng-if="property == 'beamline' || property == 'project'" type="text" ng-model="new[property]" />
 
 							<select ng-change="changeNodeType(new[property], new)" ng-if="property == 'node_type'" ng-model="new[property]" ng-options="s.name as s.value for s in nodeTypeList"></select>
 

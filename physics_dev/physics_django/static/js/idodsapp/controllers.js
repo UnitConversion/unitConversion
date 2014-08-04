@@ -645,8 +645,6 @@ app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $windo
 
 	inventoryFactory.retrieveItems($routeParams).then(function(result) {
 
-		l(result);
-
 		$.each(result, function(i, item){
 
 			// Build customized object
@@ -694,7 +692,7 @@ app.controller('listInventoryCtrl', function($scope, $routeParams, $http, $windo
 /*
  * Show details in the right pane
  */
-app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $window, InventoryInfo, CmpntType, Inventory, cmpntTypeFactory, offlineDataFactory, OfflineData, inventoryTypeFactory, inventoryFactory, vendorFactory, EntityError){
+app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $window, InventoryInfo, CmpntType, Inventory, cmpntTypeFactory, offlineDataFactory, OfflineData, inventoryTypeFactory, inventoryFactory, vendorFactory, EntityError, RotCoilData, rotCoilDataFactory, HallProbeData, hallProbeDataFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -703,6 +701,8 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = InventoryInfo;
+	$scope.deviceCatagoryList = deviceCatagoryList;
+	$scope.measurementDataLocationList = measurementDataLocationList;
 
 	$scope.types = [];
 	$scope.props = [];
@@ -710,6 +710,13 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 	$scope.new.prop_keys = [];
 	$scope.offlinedata = [];
 	$scope.statusMap = statusArrMap;
+	$scope.measurementDataData = {};
+
+	$scope.measurementData = {
+		'location': measurementDataLocationList,
+		'rot_coil_data': new RotCoilData(),
+		'hall_probe_data': new HallProbeData()
+	};
 
 	// Retrieve all Component types
 	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
@@ -774,6 +781,33 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 
 					l($scope.offlinedata);
 				});
+
+				if(result.__device_category__ && result.__device_category__ === 'magnet' && result.__measurement_data_settings__) {
+					var measDataPromise;
+
+					if(result.__measurement_data_settings__.source === 'rot_coil_data') {
+						measDataPromise = rotCoilDataFactory.retrieveItems({'inventory_name': result.name});
+
+					} else {
+						measDataPromise = hallProbeDataFactory.retrieveItems({'inventory_name': result.name});
+					}
+
+					measDataPromise.then(function(measurement) {
+
+						$.each(measurement, function(id, meas) {
+
+							$.each(meas, function(key, value) {
+
+								if($scope.measurementDataData[key]) {
+									$scope.measurementDataData[key].push(value);
+
+								} else {
+									$scope.measurementDataData[key] = [value];
+								}
+							});
+						});
+					});
+				}
 			}
 		});
 	}
@@ -784,8 +818,27 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 		$window.location = location;
 	};
 
+	$scope.cleanMeasurementDataSettingsColumns = function(item) {
+		item.columns = {};
+
+		l(item.source);
+
+		var columnList = $scope.measurementData[item.source].retrieve;
+
+		$.each(columnList, function(i, column) {
+
+			if(column === 'inventory_name' || column === 'sub_device') {
+				item.columns[column] = {'display_name': '', 'displayed': true};
+
+			} else {
+				item.columns[column] = {'display_name': '', 'displayed': false};
+			}
+		});
+	};
+
 	$scope.saveItem = function(newItem, action) {
 		$scope.alert.show = false;
+		l(newItem);
 		var item = new Inventory(newItem);
 		var result = inventoryFactory.checkItem(item);
 		l(result);
@@ -800,6 +853,8 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 			var promise;
 
 			if(action === "update") {
+				$scope.element.prop_keys.push({'name': '__device_category__', 'value': $scope.element.__device_category__});
+				$scope.element.prop_keys.push({'name': '__measurement_data_settings__', 'value': $scope.element.__measurement_data_settings__});
 
 				$.each($scope.element.prop_keys, function(i, prop) {
 					propsObject[prop.name] = prop.value;
@@ -810,6 +865,8 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 				promise = inventoryFactory.updateItem($scope.element);
 
 			} else if(action == "save") {
+				$scope.new.prop_keys.push({'name': '__device_category__', 'value': $scope.new.__device_category__});
+				$scope.new.prop_keys.push({'name': '__measurement_data_settings__', 'value': $scope.new.__measurement_data_settings__});
 
 				$.each($scope.new.prop_keys, function(i, prop) {
 					propsObject[prop.name] = prop.value;
@@ -1130,13 +1187,13 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 	$scope.alert = {};
 	$scope.alert.show = false;
 	$scope.info = InstallInfo;
+	l($scope.new);
 
 	$scope.types = [];
 	$scope.onlinedata = [];
 	$scope.offlinedata = [];
 	$scope.statusMap = statusArrMap;
 	$scope.nodeTypeList = nodeTypeList;
-	$scope.deviceCatagoryList = deviceCatagoryList;
 
 	// Retrieve all Component types
 	cmpntTypeFactory.retrieveCompntTypes({}).then(function(result) {
@@ -1276,12 +1333,12 @@ app.controller('showInstallCtrl', function($scope, $routeParams, $http, $window,
 				});
 				relPromise = installRelPropFactory.saveItem(nodeType);
 
-				var deviceCategory = new InstallRelProp({
-					"install_rel_id": data.rel_id,
-					"install_rel_property_type_name": "__device_category__",
-					"install_rel_property_value": $scope.new.device_category
-				});
-				relPromise = installRelPropFactory.saveItem(deviceCategory);
+				// var deviceCategory = new InstallRelProp({
+				// 	"install_rel_id": data.rel_id,
+				// 	"install_rel_property_type_name": "__device_category__",
+				// 	"install_rel_property_value": $scope.new.device_category
+				// });
+				// relPromise = installRelPropFactory.saveItem(deviceCategory);
 
 				var idProject = new InstallRelProp({
 					"install_rel_id": data.rel_id,

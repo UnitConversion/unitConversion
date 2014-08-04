@@ -920,6 +920,8 @@ class physics(object):
 
         # Set value parameter
         queryDict['inventory_prop_value'] = value
+        self.logger.info(queryDict)
+        self.logger.info(whereDict)
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('inventory_prop', queryDict, None, None, whereDict)

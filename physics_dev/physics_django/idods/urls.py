@@ -18,10 +18,11 @@ from physics_django.idods.views import (retrieveOnlineDataWS, saveOnlineDataWS, 
 from physics_django.idods.views import (testAuth, testCall, saveInsertionDeviceWS)
 from physics_django.idods.views import (idodsInstallWS)
 from physics_django.idods.views import (retrieveTreesWS)
-from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
 from physics_django.idods.views import (saveDataMethodOfflineDataWS)
 from physics_django.idods.views import (retrieveRotCoilDataWS, saveRotCoilDataWS, updateRotCoilDataWS)
 from physics_django.idods.views import (retrieveHallProbeDataWS, saveHallProbeDataWS, updateHallProbeDataWS)
+from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
+from physics_django.idods.views import (measurementIndexHtml, measurementHtmls)
 
 urlpatterns = patterns(
     '',
@@ -129,4 +130,7 @@ urlpatterns = patterns(
 
     url(r'^id/web/$', idodsIndexHtml),
     url(r'^id/web/(.+)', idodsHtmls),
+
+    url(r'^id/measurement/$', measurementIndexHtml),
+    url(r'^id/measurement/(.+)', measurementHtmls),
 )

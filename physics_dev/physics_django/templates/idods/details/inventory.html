@@ -36,7 +36,7 @@
 							<td>{{element[property]}}</td>
 						</tr>
 						<tr ng-repeat="property in element.prop_keys">
-							<td>{{property.name}}</td>
+							<td>{{element.display[property.name] |iff : element.display[property.name] : property.name}}</td>
 							<td>{{property.value}}</td>
 						</tr>
 					</table>
@@ -44,50 +44,107 @@
 			</tr>
 		</table>
 
-		<h3>Offline data</h3>
+		<div ng-if="element.__device_category__ == 'magnet'">
+			<h3>Measurement data settings</h3>
 
-		<span ng-if="offlinedata.length == 0">No offline data</span>
+			<div class="control-group">
+				<label class="control-label" for="settingsDropdown">Settings location</label>
+				<div class="controls">
+					<select id="settingsDropdown" ng-disabled="true" ng-model="element.__measurement_data_settings__.source" ng-options="s.name as s.value for s in measurementData.location"></select>
+				</div>
+			</div>
 
-		<table ng-if="offlinedata.length != 0" class="table table-bordered offline_data">
-			<thead>
-				<tr>
-					<th>Id</th>
-					<th>data status</th>
-					<th>Show additional data</th>
-				</tr>
-			</thead>
-			<tbody ng-repeat="offline in offlinedata">
-				<tr>
-					<td ng-repeat="property in offline.retrieve_show">
-						<span ng-if="property == 'status'">{{statusMap[offline[property]]}}</span>
-						<span ng-if="property != 'status'">{{offline[property]}}</span>
-					</td>
+			<table class="table table-bordered offline_data">
+				<thead>
+					<tr>
+						<th>Column name</th>
+						<th>Display name</th>
+						<th>Displayed</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="column in measurementData[element.__measurement_data_settings__.source].retrieve">
+						<td>
+							<span>{{column}}</span>
+						</td>
+						<td>
+							<input type="text" ng-disabled="true" ng-model="element.__measurement_data_settings__.columns[column].display_name"/>
+						</td>
+						<td>
+							<input type="checkbox" ng-disabled="true" ng-model="element.__measurement_data_settings__.columns[column].displayed" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
 
-					<td>
-						<button ng-click="toggleTableRows($event, 'offline_data_', $index)" class="btn btn-info">Show</button>
-					</td>
-				</tr>
-				<tr class="info offline_data_{{$index}}" style="display: none;">
-					<td colspan="3">
-						<table class="table table-bordered">
-							<tr ng-repeat="property in offline.retrieve_hide">
-								<td>{{offline.display[property] | iff : offline.display[property] : property | firstLetterUppercase}}</td>
+			<h3>Measurement data</h3>
 
-								<td ng-if="property != 'script_name' && property != 'data_file_name'">{{offline[property]}}</td>
+			<table class="table table-bordered offline_data">
+				<thead>
+					<tr>
+						<th>Key</th>
+						<th>Value</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="(column, value) in measurementDataData" ng-if="element.__measurement_data_settings__.columns[column].displayed">
+						<td>
+							<span>{{column}}</span>
+						</td>
+						<td>
+							<span>{{value}}</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-								<td ng-if="property == 'script_name'"><span ng-if="!offline.script">Script was not saved!</span><button ng-if="offline.script" class="btn btn-info" ng-click="downloadScript(offline)">Download script file</button></td>
+		<div ng-if="element.__device_category__ == 'id'">
+			<h3>Offline data</h3>
 
-								<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(offline)" class="btn btn-info">Download raw file</button></td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</tbody>
-			<!--<tr>
-				<td>Offline data details</td>
-				<td><button ng-click="goToOfflineData(offline.inventory_name, offline.id)" class="btn btn-info">Show</button></td>
-			</tr>-->
-		</table>
+			<span ng-if="offlinedata.length == 0">No offline data</span>
+
+			<table ng-if="offlinedata.length != 0" class="table table-bordered offline_data">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>data status</th>
+						<th>Show additional data</th>
+					</tr>
+				</thead>
+				<tbody ng-repeat="offline in offlinedata">
+					<tr>
+						<td ng-repeat="property in offline.retrieve_show">
+							<span ng-if="property == 'status'">{{statusMap[offline[property]]}}</span>
+							<span ng-if="property != 'status'">{{offline[property]}}</span>
+						</td>
+
+						<td>
+							<button ng-click="toggleTableRows($event, 'offline_data_', $index)" class="btn btn-info">Show</button>
+						</td>
+					</tr>
+					<tr class="info offline_data_{{$index}}" style="display: none;">
+						<td colspan="3">
+							<table class="table table-bordered">
+								<tr ng-repeat="property in offline.retrieve_hide">
+									<td>{{offline.display[property] | iff : offline.display[property] : property | firstLetterUppercase}}</td>
+
+									<td ng-if="property != 'script_name' && property != 'data_file_name'">{{offline[property]}}</td>
+
+									<td ng-if="property == 'script_name'"><span ng-if="!offline.script">Script was not saved!</span><button ng-if="offline.script" class="btn btn-info" ng-click="downloadScript(offline)">Download script file</button></td>
+
+									<td ng-if="property == 'data_file_name'"><button ng-click="downloadRawData(offline)" class="btn btn-info">Download raw file</button></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+				<!--<tr>
+					<td>Offline data details</td>
+					<td><button ng-click="goToOfflineData(offline.inventory_name, offline.id)" class="btn btn-info">Show</button></td>
+				</tr>-->
+			</table>
+		</div>
 	</div>
 </div>
 
@@ -114,14 +171,16 @@
 
 							<select ng-if="property == 'vendor'" ng-model="new[property]" ng-options="vendor for vendor in vendors"></select>
 
-							<input ng-if="property != 'cmpnt_type' && property != 'vendor'" type="text" ng-model="new[property]" />
+							<input ng-if="property != 'cmpnt_type' && property != 'vendor' && property != '__device_category__'" type="text" ng-model="new[property]" />
+
+							<select ng-if="property == '__device_category__'" ng-model="new[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
 					</span>
 				</td>
 			</tr>
-			<tr ng-repeat="prop in new.prop_keys">
+			<tr ng-repeat="prop in new.prop_keys" ng-if="prop.name != '__device_category__'">
 				<td>
 					<span class="control-group">
 						<span class="controls">
@@ -142,6 +201,40 @@
 				<td colspan="2"><button ng-click="appendProperty()" class="btn"><i class="icon-plus"></i> Add property</button></td>
 			</tr>
 		</table>
+
+		<div ng-if="new.__device_category__ == 'magnet'">
+			<h3>Measurement data settings</h3>
+
+			<div class="control-group">
+				<label class="control-label" for="settingsDropdown">Settings location</label>
+				<div class="controls">
+					<select id="settingsDropdown" ng-change="cleanMeasurementDataSettingsColumns(new.__measurement_data_settings__)" ng-model="new.__measurement_data_settings__.source" ng-options="s.name as s.value for s in measurementData.location"></select>
+				</div>
+			</div>
+
+			<table class="table table-bordered offline_data">
+				<thead>
+					<tr>
+						<th>Column name</th>
+						<th>Display name</th>
+						<th>Displayed</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="column in measurementData[new.__measurement_data_settings__.source].retrieve">
+						<td>
+							<span>{{column}}</span>
+						</td>
+						<td>
+							<input type="text" ng-model="new.__measurement_data_settings__.columns[column].display_name" ng-init="new.__measurement_data_settings__.columns[column] = {'display_name': new.__measurement_data_settings__.columns[column].display_name, 'displayed': new.__measurement_data_settings__.columns[column].displayed}" />
+						</td>
+						<td>
+							<input type="checkbox" ng-model="new.__measurement_data_settings__.columns[column].displayed" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
 		<br/>
 		<button ng-click="saveItem(new, 'save')" class="btn btn-success">{{info.save_button}}</button>
@@ -177,14 +270,16 @@
 
 							<select ng-if="property == 'vendor'" ng-model="element[property]" ng-options="vendor for vendor in vendors"></select>
 
-							<input ng-if="property != 'cmpnt_type' && property != 'vendor'" type="text" ng-model="element[property]" />
+							<input ng-if="property != 'cmpnt_type' && property != 'vendor' && property != '__device_category__'" type="text" ng-model="element[property]" />
+
+							<select ng-if="property == '__device_category__'" ng-model="element[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
 					</span>
 				</td>
 			</tr>
-			<tr ng-repeat="prop in element.prop_keys">
+			<tr ng-repeat="prop in element.prop_keys" ng-if="prop.name != '__device_category__' && prop.name != '__measurement_data_settings__'">
 				<td>
 					<span class="control-group">
 						<span class="controls">
@@ -205,6 +300,43 @@
 				<td colspan="2"><button ng-click="appendProperty()" class="btn"><i class="icon-plus"></i> Add property</button></td>
 			</tr>
 		</table>
+
+		<div ng-if="element.__device_category__ == 'magnet'">
+			<h3>Measurement data settings</h3>
+
+			<div class="control-group">
+				<label class="control-label" for="settingsDropdown">Settings location</label>
+				<div class="controls">
+					<select id="settingsDropdown" ng-change="cleanMeasurementDataSettingsColumns(element.__measurement_data_settings__)" ng-model="element.__measurement_data_settings__.source" ng-options="s.name as s.value for s in measurementData.location"></select>
+				</div>
+			</div>
+
+			<table class="table table-bordered offline_data">
+				<thead>
+					<tr>
+						<th>Column name</th>
+						<th>Display name</th>
+						<th>Displayed</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="column in measurementData[element.__measurement_data_settings__.source].retrieve">
+						<td>
+							<span>{{column}}</span>
+						</td>
+						<td>
+							<input type="text" ng-model="element.__measurement_data_settings__.columns[column].display_name" ng-init="element.__measurement_data_settings__.columns[column] = {'display_name': element.__measurement_data_settings__.columns[column].display_name, 'displayed': element.__measurement_data_settings__.columns[column].displayed}" />
+						</td>
+						<td>
+							<input ng-if="column == 'inventory_name' || column == 'sub_device'" ng-disabled="true" type="checkbox" ng-model="element.__measurement_data_settings__.columns[column].displayed" />
+
+							<input ng-if="column != 'inventory_name' && column != 'sub_device'" type="checkbox" ng-model="element.__measurement_data_settings__.columns[column].displayed" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
 		<br/>
 		<button ng-click="saveItem(element, 'update')" class="btn btn-success">{{info.update_button}}</button>
 		<br/>

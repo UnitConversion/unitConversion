@@ -121,6 +121,7 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 
 			$scope.devices.push(newItem);
 		});
+		l($scope.devices);
 	});
 
 	// Show details when user selects the device from a list
