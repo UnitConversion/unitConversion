@@ -36,7 +36,10 @@
 		<!-- Show retrieved -->
 		<tr ng-repeat="(row, rowData) in measurementData">
 			<td ng-repeat="column in rawColumns">
-				<span class="edit-wrapper">
+				<span ng-if="column == 'inventory_name'" class="edit-wrapper">
+					{{rowData[column] || '&nbsp;'}}
+				</span>
+				<span ng-if="column != 'inventory_name'" class="edit-wrapper">
 					<a href="#" onbeforesave="updateItem(rowData, column, $data)" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
 				</span>
 			</td>
@@ -213,23 +216,14 @@
 			</td>
 		</tr>
 
-		<tr ng-if="newMD">
+		<tr ng-repeat="(time, newMD) in newMDs">
 			<td class="new_data" ng-repeat="prop in rawColumns">
 				<span class="form-group" ng-class="{'has-error': error[prop]}">
-					<input ng-if="prop != 'logic' && prop != 'bm_in_use'" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
-					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
-					<select ng-if="prop == 'bm_in_use'" ng-options="use for use in inUse" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
+					<input ng-paste="paste(time, prop, $index, $event)" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'inventory_name'" class="form-control input-sm" />
 				</span>
 			</td>
-			<!-- <td class="new_data" ng-repeat="prop in newBm.save_display track by $index" ng-class="{'danger': newBm.approvable[prop] == true}">
-				<span class="form-group" ng-class="{'has-error': error[prop]}">
-					<input ng-if="prop != 'logic' && prop != 'bm_in_use'" type="text" ng-model="newBm[prop]" ng-disabled="prop == 'bm_type'" class="form-control input-sm" />
-					<select ng-if="prop == 'logic'" ng-options="name for name in logicArr" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
-					<select ng-if="prop == 'bm_in_use'" ng-options="use for use in inUse" type="text" ng-model="newBm[prop]" class="form-control input-sm"></select>
-				</span>
-			</td> -->
-			<td>
-				<button ng-click="saveItem(newMD)" class="btn btn-warning">Add</button>
+			<td ng-if="$first" rowspan="{{numMDs}}">
+				<button ng-click="saveItems()" class="btn btn-warning">Add</button>
 				<button ng-click="cancel()" class="btn btn-default">Cancel</button>
 			</td>
 		</tr>

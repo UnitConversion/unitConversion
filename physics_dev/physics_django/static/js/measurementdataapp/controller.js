@@ -18,16 +18,23 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 	$scope.logicArr = [];
 	$scope.alert = {};
 	$scope.view = $routeParams.view;
+	$scope.inventory_name = $routeParams.inventory_name;
 	$scope.inv = new Inventory();
 	$scope.columns = [];
 	$scope.rawColumns = [];
 	$scope.measurementData = {};
 	$scope.measurementData2 = {};
 
-	$scope.newMD = undefined;
+	// Return if there is no inventory name in the URL
+	if(!$scope.inventory_name) {
+		return;
+	}
+
+	$scope.newMDs = {};
+	$scope.numMDs = 0;
 
 	// Retrieve all Inventory items
-	inventoryFactory.retrieveItems({'name': 'inv2'}).then(function(result) {
+	inventoryFactory.retrieveItems({'name': $scope.inventory_name}).then(function(result) {
 		var ids = Object.keys(result);
 		$scope.inv = new Inventory(result[ids[0]]);
 		l($scope.inv);
@@ -66,21 +73,63 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		$scope.alert.show = false;
 	};
 
+	$scope.paste = function(mdIndex, prop, index, event) {
+		var pastedData = event.originalEvent.clipboardData.getData('text/plain').split('\n');
+		event.preventDefault();
+		var rowKeys = Object.keys($scope.newMDs);
+		var rowIndex = $.inArray(rowKeys);
+
+		if(pastedData.length > 0) {
+
+			for(var j=0; j<pastedData.length; j++) {
+				row = pastedData[j].split('\t');
+				l(row);
+				var columnIndex = 0;
+
+				// Skip empty pasted rows
+				if(row.length <= 1 && row[0] !== undefined && row[0] === "") {
+					rowIndex ++;
+					continue;
+				}
+
+				// Create new row if it does not exist
+				if(!$scope.newMDs[rowKeys[rowIndex]]) {
+					$scope.addRow();
+				}
+
+				for(var i=index; i<$scope.rawColumns.length; i++) {
+
+					if(row[columnIndex] !== undefined) {
+						$scope.newMDs[rowKeys[rowIndex]][$scope.rawColumns[i]] = row[columnIndex];
+					}
+					columnIndex ++;
+				}
+
+				rowIndex ++;
+			}
+		}
+	};
+
 	$scope.addRow = function(item) {
 		$scope.alert.show = false;
-
+		var md;
 
 		if($scope.inv.__measurement_data_settings__.source === 'rot_coil_data') {
-			$scope.newMD = new RotCoilData();
+			md = new RotCoilData();
 
 		} else {
-			$scope.newMD = new HallProbeData();
+			md = new HallProbeData();
 		}
 
 		// Set properties if Copy&Create action
 		if (item !== undefined) {
-			$scope.newMD.set(item);
+			md.set(item);
 		}
+
+		// Set inventory name
+		md.inventory_name = $scope.inventory_name;
+		$scope.newMDs[$.now()] = md;
+		$scope.numMDs ++;
 
 		$('html, body').animate({ scrollTop: $(document).height() }, "fast");
 	};
@@ -191,7 +240,14 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		});
 	};
 
-	$scope.saveItem = function(newItem) {
+	$scope.saveItems = function() {
+
+		$.each($scope.newMDs, function(i, newItem) {
+			$scope.saveItem(i, newItem);
+		});
+	};
+
+	$scope.saveItem = function(newItemIndex, newItem) {
 		$scope.alert.show = false;
 		$scope.error = {};
 
@@ -253,6 +309,9 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				$scope.alert.title = "Error!";
 				$scope.alert.body = error;
 			});
+
+			delete $scope.newMDs[newItemIndex];
+			$scope.numMDs --;
 
 		} else {
 			$scope.alert.show = true;
