@@ -76,7 +76,7 @@ app.directive('resultsTable', function() {
 					<th>Initial unit</th>\n\
 					<th>Converted value</th>\n\
 					<th>Converted unit</th>\n\
-					<th>Show</th>\n\
+					<th>Show on a plot</th>\n\
 				</tr>\n\
 				<tr ng-repeat="(index, result) in results">\n\
 					<td>{{result.from}}2{{result.to}}</td>\n\

@@ -199,6 +199,7 @@ app.value('InventoryInfo', {
 	'save_button_measurement_data_settings': 'Save Measurement Data Settings',
 	'retrieve_title': 'Inventory',
 	'retrieve_update_button': 'Update Inventory',
+	'retrieve_update_measurement_data_button': 'Update Measurement Data',
 	'update_title': 'Update Inventory',
 	'update_button': 'Update Inventory',
 	'search_button': 'Add Inventory',
@@ -244,6 +245,7 @@ app.value('InventoryInfo', {
  		"name": "Name",
  		"cmpnt_type": "Component type",
  		"__device_category__": "Device category",
+ 		"__measurement_data_settings__": "Measurement data settings",
  		"id": "Id"
  	};
 

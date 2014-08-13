@@ -1038,6 +1038,12 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(data[firstKey]['alias'], 'alias')
         self.assertEqual(data[firstKey]['login_name'], 'admin')
 
+        # Test deleting with an error in function call
+        self.assertRaises(self.api.deleteRotCoilData, None)
+
+        # Test deleting
+        self.assertTrue(self.api.deleteRotCoilData('name2', data[firstKey]['id']))
+
     def testHallProbeData(self):
         '''
         Test hall probe data
@@ -1066,6 +1072,12 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
         self.assertEqual(data[firstKey]['sub_device'], 'sub device')
         self.assertEqual(data[firstKey]['login_name'], 'admin')
+
+        # Test deleting with an error in function call
+        self.assertRaises(self.api.deleteHallProbeData, None)
+
+        # Test deleting
+        self.assertTrue(self.api.deleteHallProbeData('name2', data[firstKey]['id']))
 
 if __name__ == '__main__':
     unittest.main()

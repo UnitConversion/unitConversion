@@ -10,7 +10,10 @@
 		{% endverbatim %}
 			{% if user.is_authenticated %}
 			{% verbatim %}
-			<button ng-click="updateItem()" class="item_update btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
+			<button ng-click="updateItem()" class="item_spacer pull-right btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_button}}</button>
+			<button ng-if="element.__device_category__ == 'magnet'" ng-click="updateMeasurementData()" class="pull-right btn btn-success"><i class="icon-edit icon-white"></i> {{info.retrieve_update_measurement_data_button}}</button>
+			<br/>
+			<br/>
 			{% endverbatim %}
 			{% endif %}
 		{% verbatim %}
@@ -79,6 +82,10 @@
 
 			<h3>Measurement data</h3>
 
+			<button ng-click="expandToVectorView()" class="btn btn-info">Expand to vector view</button>
+			<br/>
+			<br/>
+
 			<table class="table table-bordered offline_data">
 				<thead>
 					<tr>
@@ -139,10 +146,6 @@
 						</td>
 					</tr>
 				</tbody>
-				<!--<tr>
-					<td>Offline data details</td>
-					<td><button ng-click="goToOfflineData(offline.inventory_name, offline.id)" class="btn btn-info">Show</button></td>
-				</tr>-->
 			</table>
 		</div>
 	</div>

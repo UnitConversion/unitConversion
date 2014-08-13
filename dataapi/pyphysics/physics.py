@@ -1912,6 +1912,45 @@ class physics(object):
             self.logger.info('Error when updating rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
 
+    def deleteRotCoilData(self, inventory_id, rot_coil_data_id=None):
+        '''
+        Delete one or more rot coil data
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :param rot_coil_data_id: id of data in the table
+        :type rot_coil_data_id: int
+        '''
+
+        # Generate SQL
+        sql = "DELETE FROM rot_coil_data WHERE inventory_id = %s"
+        vals = [inventory_id]
+
+        # Set id if it exists
+        if rot_coil_data_id:
+            sql += " AND rot_coil_data_id = %s "
+            vals.append(rot_coil_data_id)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return True
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when deleting rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting rot coil data:\n%s (%d)' % (e.args[1], e.args[0]))
+
     def retrieveHallProbeData(self, inventory_id):
         '''
         Return hall probe data
@@ -2334,3 +2373,42 @@ class physics(object):
 
             self.logger.info('Error when updating hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when updating hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+
+    def deleteHallProbeData(self, inventory_id, hall_probe_id=None):
+        '''
+        Delete one or more hall probe data
+
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
+
+        :param hall_probe_id: id of data in the table
+        :type hall_probe_id: int
+        '''
+
+        # Generate SQL
+        sql = "DELETE FROM hall_probe_data WHERE inventory_id = %s"
+        vals = [inventory_id]
+
+        # Set id if it exists
+        if hall_probe_id:
+            sql += " AND hall_probe_id = %s "
+            vals.append(hall_probe_id)
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(sql, vals)
+
+            # Create transaction
+            if self.transaction is None:
+                self.conn.commit()
+
+            return True
+
+        except Exception as e:
+
+            # Rollback changes
+            if self.transaction is None:
+                self.conn.rollback()
+
+            self.logger.info('Error when deleting hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))
+            raise MySQLError('Error when deleting hall probe data:\n%s (%d)' % (e.args[1], e.args[0]))

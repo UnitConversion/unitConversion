@@ -818,6 +818,18 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 		$window.location = location;
 	};
 
+	$scope.updateMeasurementData = function() {
+		var newWindowUrl = serviceurlraw + "id/measurement/#/" + "inventory_name/" + $routeParams.name + "/" + "view/readwrite";
+
+		$window.open(newWindowUrl);
+	};
+
+	$scope.expandToVectorView = function() {
+		var newWindowUrl = serviceurlraw + "id/measurement/#/" + "inventory_name/" + $routeParams.name + "/" + "view/readonly";
+
+		$window.open(newWindowUrl);
+	};
+
 	$scope.cleanMeasurementDataSettingsColumns = function(item) {
 		item.columns = {};
 

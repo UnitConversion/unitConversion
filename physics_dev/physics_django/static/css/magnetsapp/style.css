@@ -354,3 +354,21 @@ html, body {
 #direction_list {
 	list-style-type: none;
 }
+
+/*
+ * LOGIN start
+ */
+.user_dropdown_menu {
+	padding: 10px;
+}
+
+.login_error {
+	color: #b94a48;
+}
+
+#top_container {
+	display: block;
+}
+/*
+ * LOGIN end
+ */

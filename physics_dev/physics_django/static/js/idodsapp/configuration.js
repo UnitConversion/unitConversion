@@ -102,6 +102,6 @@ var deviceCatagoryList = [
 
 // Measurement data location
 var measurementDataLocationList = [
-	{name:"rot_coil_data", value:"Rot Coil Data"},
+	{name:"rot_coil_data", value:"Rotation Coil Data"},
 	{name:"hall_probe_data", value:"Hall Probe Data"}
 ];

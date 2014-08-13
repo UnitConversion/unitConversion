@@ -8,6 +8,44 @@
 
 			<a class="brand" href="index.html">Unit Conversion <span class="version">{{version}}</span></a>
 
+			<div id="top_container" class="pull-right btn-group">
+
+				{% endverbatim %}
+				{% if user.is_authenticated %}
+					<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user icon-white"></i>
+						{{user.username}}
+						<strong class="caret"></strong>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a ng-click="logout()">Sign out</a></li>
+					</ul>
+				{% else %}
+					<a id="user_login_dropdown" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user icon-white"></i>
+						Guest
+						<strong class="caret"></strong>
+					</a>
+
+					<div class="dropdown-menu user_dropdown_menu">
+						<form>
+							<fieldset>
+								<legend>Sign in</legend>
+								<label>Username</label>
+								<input type="text" ng-model="session.username" name="username" id="user_username" placeholder="Enter username ..."><br/>
+
+								<label>Password</label>
+								<input type="password" ng-model="session.password" name="password" placeholder="Enter password ..."><br />
+								<button class="btn btn-primary" ng-click="login()">Sign in</button>
+							</fieldset>
+
+							<span class="login_error" ng-show="authenticated.error" class="login_error"><br/>The username or password is incorrect!</span>
+						</form>
+					</div>
+				{% endif %}
+				{% verbatim %}
+			</div>
+
 		</div>
 	</div>
 </div>

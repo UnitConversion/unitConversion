@@ -5584,103 +5584,103 @@ class idods(object):
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
+        :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id:
+        :param meas_coil_id: ID number of device used for this measurement
         :type meas_coil_id: str
 
-        :param ref_radius:
+        :param ref_radius: reference radius
         :type ref_radius: double
 
-        :param magnet_notes:
+        :param magnet_notes: comment for this magnet measurement data set
         :type magnet_notes: str
 
-        :param login_name:
+        :param login_name: user who generated this data set
         :type login_name: str
 
-        :param cond_curr:
+        :param cond_curr: condition current
         :type cond_curr: double
 
-        :param meas_loc:
+        :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number:
+        :param run_number: in which run this data was produced
         :type run_number: str
 
-        :param sub_device:
+        :param sub_device: name of the sub device
         :type sub_device: str
 
-        :param current_1:
+        :param current_1: 1 st measurement current
         :type current_1: double
 
-        :param current_2:
+        :param current_2: 2 nd measurement current
         :type current_2: double
 
-        :param current_3:
+        :param current_3: 3 rd measurement current
         :type current_3: double
 
-        :param up_dn_1:
+        :param up_dn_1: direction of 1 st current
         :type up_dn_1: str
 
-        :param up_dn_2:
+        :param up_dn_2: direction of 2 nd current
         :type up_dn_2: str
 
-        :param up_dn_3:
+        :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number:
+        :param analysis_number: in which analysis does this data belongs
         :type analysis_number: str
 
-        :param integral_xfer_function:
+        :param integral_xfer_function: integral transfer function
         :type integral_xfer_function: double
 
-        :param orig_offset_x:
+        :param orig_offset_x: horizontal origin offset
         :type orig_offset_x: double
 
-        :param orig_offset_y:
+        :param orig_offset_y: vertical origin offset
         :type orig_offset_y: double
 
-        :param b_ref_int:
+        :param b_ref_int: integrated reference field
         :type b_ref_int: double
 
-        :param roll_angle:
+        :param roll_angle: rolling angle
         :type roll_angle: double
 
-        :param meas_notes:
+        :param meas_notes: comments for each measuring data point
         :type meas_notes: str
 
-        :param author:
+        :param author: who measured it
         :type author: str
 
-        :param a1:
+        :param a1: magnetic field (a1)
         :type a1: double
 
-        :param a2:
+        :param a2: magnetic field (a2)
         :type a2: double
 
-        :param a3:
+        :param a3: magnetic field (a3)
         :type a3: double
 
-        :param b1:
+        :param b1: magnetic field (b1)
         :type b1: double
 
-        :param b2:
+        :param b2: magnetic field (b2)
         :type b2: double
 
-        :param b3:
+        :param b3: magnetic field (b3)
         :type b3: double
 
-        :param a4_21:
+        :param a4_21: high order magnetic field (a4 to a21)
         :type a4_21: str
 
-        :param b4_21:
+        :param b4_21: high order magnetic field (b4 to b21)
         :type b4_21: str
 
-        :param data_issues:
+        :param data_issues: Reserved: special field to note each measure point
         :type data_issues: str
 
-        :param data_usage:
+        :param data_usage: Reserved
         :type data_usage: int
 
         :return: a map with structure like:
@@ -5847,6 +5847,32 @@ class idods(object):
             analysis_number, integral_xfer_function, orig_offset_x, orig_offset_y, b_ref_int, roll_angle,
             meas_notes, author, a1, a2, a3, b1, b2, b3, a4_21, b4_21, data_issues, data_usage)
 
+    def deleteRotCoilData(self, inventory_name, rot_coil_data_id=None):
+        '''
+        Delete one or more rot coil data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param rot_coil_data_id: id of data in the table
+        :type rot_coil_data_id: int
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Get existing inventory
+        inv = self.retrieveInventory(inventory_name)
+
+        if len(inv) == 0:
+            raise ValueError("Inventory (%s) doesn't exist in the database!" % inventory_name)
+
+        retrieveInventoryKeys = inv.keys()
+        inventory_id = inv[retrieveInventoryKeys[0]]['id']
+
+        return self.physics.deleteRotCoilData(inventory_id, rot_coil_data_id)
+
     def retrieveHallProbeData(self, inventory_name):
         '''
         Return hall probe data
@@ -5953,76 +5979,76 @@ class idods(object):
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
+        :param alias: alias name
         :type alias: str
 
-        :param sub_device:
+        :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location:
+        :param measured_at_location: where was it measured
         :type measured_at_location: str
 
-        :param run_identifier:
+        :param run_identifier:  in which run this data was produced
         :type run_identifier: str
 
-        :param login_name:
+        :param login_name: who generated this data set
         :type login_name: str
 
-        :param conditioning_current:
+        :param conditioning_current: condition current
         :type conditioning_current: double
 
-        :param current_1:
+        :param current_1: 1 st measurement current
         :type current_1: double
 
-        :param current_2:
+        :param current_2: 2 nd measurement current
         :type current_2: double
 
-        :param current_3:
+        :param current_3: 3 rd measurement current
         :type current_3: double
 
-        :param up_dn1:
+        :param up_dn1: direction of 1 st current
         :type up_dn1: str
 
-        :param up_dn2:
+        :param up_dn2: direction of 2 nd current
         :type up_dn2: str
 
-        :param up_dn3:
+        :param up_dn3: direction of 3 rd current
         :type up_dn3: str
 
-        :param mag_volt_1:
+        :param mag_volt_1: voltage at 1 st current given to magnet
         :type mag_volt_1: double
 
-        :param mag_volt_2:
+        :param mag_volt_2: voltage at 2 nd current given to magnet
         :type mag_volt_2: double
 
-        :param mag_volt_3:
+        :param mag_volt_3: voltage at 3 rd current given to magnet
         :type mag_volt_3: double
 
-        :param x:
+        :param x: x position
         :type x: double
 
-        :param y:
+        :param y: y position
         :type y: double
 
-        :param z:
+        :param z: z position
         :type z: double
 
-        :param bx_t:
+        :param bx_t: magnetic field along x axis
         :type bx_t: double
 
-        :param by_t:
+        :param by_t: magnetic field along y axis
         :type by_t: double
 
-        :param bz_t:
+        :param bz_t: magnetic field along z axis
         :type bz_t: double
 
-        :param meas_notes:
+        :param meas_notes: comments for each measuring data point
         :type meas_notes: str
 
-        :param data_issues:
+        :param data_issues: reserved
         :type data_issues: str
 
-        :param data_usage:
+        :param data_usage: reserved
         :type data_usage: int
 
         :return: a map with structure like:
@@ -6164,3 +6190,29 @@ class idods(object):
             run_identifier, login_name, conditioning_current, current_1, current_2,
             current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
             x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage)
+
+    def deleteHallProbeData(self, inventory_name, hall_probe_id=None):
+        '''
+        Delete one or more hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param hall_probe_id: id of data in the table
+        :type hall_probe_id: int
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Get existing inventory
+        inv = self.retrieveInventory(inventory_name)
+
+        if len(inv) == 0:
+            raise ValueError("Inventory (%s) doesn't exist in the database!" % inventory_name)
+
+        retrieveInventoryKeys = inv.keys()
+        inventory_id = inv[retrieveInventoryKeys[0]]['id']
+
+        return self.physics.deleteHallProbeData(inventory_id, hall_probe_id)

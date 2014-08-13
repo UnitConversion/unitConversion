@@ -56,6 +56,28 @@ app.filter('precision', function() {
 });
 
 /*
+ * Order by object key. Usage example:
+ * ng-repeat="item in items | orderObjectBy:'position'"
+ */
+app.filter('orderObjectBy', function(){
+ return function(input, attribute) {
+    if (!angular.isObject(input)) return input;
+
+    var array = [];
+    for(var objectKey in input) {
+        array.push(input[objectKey]);
+    }
+
+    array.sort(function(a, b){
+        a = parseInt(a[attribute]);
+        b = parseInt(b[attribute]);
+        return a - b;
+    });
+    return array;
+ };
+});
+
+/*
  * Inline if. Example of usage: {{foo == "bar" | iif : "it's true" : "no, it's not"}}
  * found at: http://stackoverflow.com/questions/14164371/inline-conditionals-in-angular-js
  */

@@ -1,0 +1,141 @@
+/*
+ * Common styles used in all files
+ *
+ * @author: Dejan Dežman <dejan.dezman@cosylab.com>
+ * @created: Mar 10, 2014;
+ */
+
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+}
+
+.jumbotron {
+	text-align: center;
+	background-color: transparent;
+}
+
+.content {
+    padding: 5px;
+}
+
+#contents {
+	padding: 5px;
+}
+
+.header {
+    font-weight: bold;
+}
+
+.float-left {
+    float: left;
+}
+
+.btn-space {
+	margin-left: 5px;
+}
+
+.version {
+	font-size: 10px;
+	margin: 0;
+	padding: 0;
+}
+
+.edit {
+	/*display:block;*/
+	border-bottom: none !important;
+}
+
+.edit-wrapper a{
+    /* make the link always show up */
+    display: block !important;
+}
+
+.edit-wrapper{
+    /* make absolutely positioned children constrained to this box*/
+    position: relative;
+}
+
+.edit-wrapper form {
+    background: #FFF;
+    border: 1px solid #AAA;
+    border-radius: 5px;
+    display: inline-block;
+    left: 50%;
+
+    /* half the width */
+    margin-left: 1px;
+    padding: 7px;
+    position: absolute;
+    top: -75px;
+    width: 250px;
+    z-index: 101;
+}
+
+.edit-wrapper form div input {
+	width: 154px !important;
+}
+
+.edit-wrapper form div select {
+	width: 154px !important;
+}
+
+.edit-wrapper form:before{
+    content:"";
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #AAA;
+    position:absolute;
+    bottom:-10px;
+    left:10px;
+}
+
+.edit-wrapper form:after{
+    content:"";
+    width:0;
+    height:0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 9px solid #FFF;
+    position:absolute;
+    bottom:-9px;
+    left:11px;
+}
+
+.id-table {
+    overflow: auto;
+}
+
+.select {
+    min-width: 100px;
+}
+
+.user_dropdown_menu {
+    padding: 10px;
+}
+
+.login_error {
+    color: #b94a48;
+}
+
+.sort_button {
+    color: #39b3d7;
+    cursor: pointer;
+}
+
+.sort_button_active {
+    color: #d2322d;
+    cursor: pointer;
+}
+
+.alert_placeholder {
+    height: 72px;
+}
+
+.description_container {
+    padding: 5px;
+}

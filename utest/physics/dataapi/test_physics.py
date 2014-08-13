@@ -59,6 +59,9 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(data[0][2], 'alias2')
         self.assertEqual(data[0][5], 'magnet notes')
 
+        # Test delete
+        self.assertTrue(self.api.deleteRotCoilData(inv, data[0][0]))
+
     def testHallProbeData(self):
         '''
         Test hall probe data
@@ -85,6 +88,9 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(data[0][1], inv)
         self.assertEqual(data[0][5], 'sub device')
         self.assertEqual(data[0][7], 'admin')
+
+        # Test delete
+        self.assertTrue(self.api.deleteHallProbeData(inv, data[0][0]))
 
 if __name__ == '__main__':
     unittest.main()

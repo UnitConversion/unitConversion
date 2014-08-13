@@ -34,11 +34,46 @@ app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope){
+app.controller('mainCtrl', function($scope, $window){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
+	setUpLoginForm();
+
+	$scope.session = {};
+	$scope.authenticated = {};
+	$scope.authenticated.error = false;
+
+	$scope.login = function() {
+
+		$.ajax({
+			url: serviceurl + "user/login/",
+			method: "POST",
+			data: "username=" + $scope.session.username + "&password=" + $scope.session.password
+		}).success(function(data, status, headers, config) {
+			$scope.authenticated.error = false;
+			$scope.$apply();
+			$window.location.reload();
+
+		}).error(function(data, status, headers, config) {
+			$scope.authenticated.error = true;
+			$scope.$apply();
+		});
+	};
+
+	$scope.logout = function() {
+
+		$.ajax({
+			url: serviceurl + "user/logout/",
+			method: "POST"
+		}).success(function(data, status, headers, config) {
+			$window.location.reload();
+
+		}).error(function(data, status, headers, config) {
+
+		});
+	};
 });
 
 /*

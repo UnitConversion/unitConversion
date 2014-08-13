@@ -1153,6 +1153,30 @@ app.factory('rotCoilDataFactory', function($http, $q, RotCoilData, EntityError) 
 		return updateItem($q, $http, "updaterotcoildata", this.entity);
 	};
 
+	// Delete rot coil data
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deleterotcoildata/";
+		l(this.entity);
+		var params = prepareUrlParameters(["inventory_name", "rot_coil_data_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	};
+
 	return factory;
 });
 
@@ -1210,8 +1234,34 @@ app.factory('hallProbeDataFactory', function($http, $q, HallProbeData, EntityErr
 		if(item !== undefined) {
 			this.setItem(item);
 		}
+		l(item);
+		l(this.entity);
 
 		return updateItem($q, $http, "updatehallprobedata", this.entity);
+	};
+
+	// Delete hall probe data
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deletehallprobedata/";
+		l(this.entity);
+		var params = prepareUrlParameters(["inventory_name", "hall_probe_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
 	};
 
 	return factory;

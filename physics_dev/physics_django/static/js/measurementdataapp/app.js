@@ -23,7 +23,7 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/data/inventory_name/:inventory_name?/view/:view', 'data').
+		when('/inventory_name/:inventory_name?/view/:view', 'data').
 
 		segment('data', {
 			templateUrl: 'content.html',
@@ -31,5 +31,5 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 			dependencies: ['view', 'inventory_name']
 		});
 
-		$routeProvider.otherwise({redirectTo: '/data/inventory_name//view/readwrite'});
+		$routeProvider.otherwise({redirectTo: '/inventory_name//view/readwrite'});
 });

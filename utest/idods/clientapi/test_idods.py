@@ -564,6 +564,12 @@ class Test(unittest.TestCase):
         self.assertEqual(data[firstKey]['alias'], 'alias')
         self.assertEqual(data[firstKey]['login_name'], 'user')
 
+        # Test deleting with an error in function call
+        self.assertRaises(self.client.deleteRotCoilData, None)
+
+        # Test deleting
+        self.assertTrue(self.client.deleteRotCoilData('name2', data[firstKey]['id']))
+
     '''
     Test hall probe data
     '''
@@ -592,6 +598,12 @@ class Test(unittest.TestCase):
         self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
         self.assertEqual(data[firstKey]['sub_device'], 'sub device')
         self.assertEqual(data[firstKey]['login_name'], 'user')
+
+        # Test deleting with an error in function call
+        self.assertRaises(self.client.deleteHallProbeData, None)
+
+        # Test deleting
+        self.assertTrue(self.client.deleteHallProbeData('name2', data[firstKey]['id']))
 
 if __name__ == "__main__":
     unittest.main()

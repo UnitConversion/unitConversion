@@ -18,6 +18,26 @@ function l(input) {
 	}
 }
 
+/*
+ * Prepare form for login. Form is a part on a dropdown so some mesures should
+ * be taken to change the dropdown functionality.
+ */
+function setUpLoginForm() {
+	// Setup drop down menu
+	$('.dropdown-toggle').dropdown();
+
+	// Fix input element click problem
+	$('.dropdown-menu').click(function(e) {
+		e.stopPropagation();
+	});
+
+	$('#user_login_dropdown').click(function(){
+		$('.user_dropdown_menu').ready(function(){
+			$('#user_username').focus();
+		});
+	});
+}
+
 /**
  * Trim spaces from the start and the end of the string
  * @param {type} str input string

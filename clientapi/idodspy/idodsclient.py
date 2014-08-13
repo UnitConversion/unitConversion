@@ -3301,6 +3301,35 @@ class IDODSClient(object):
 
         return r.json()
 
+    def deleteRotCoilData(self, inventory_name, rot_coil_data_id=None):
+        '''
+        Delete one or more rot coil data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param rot_coil_data_id: id of data in the table
+        :type rot_coil_data_id: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'deleterotcoildata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name,
+            'rot_coil_data_id': rot_coil_data_id
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
     def retrieveHallProbeData(self, inventory_name):
         '''
         Return hall probe data
@@ -3615,6 +3644,35 @@ class IDODSClient(object):
             'meas_notes': meas_notes,
             'data_issues': data_issues,
             'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def deleteHallProbeData(self, inventory_name, hall_probe_id=None):
+        '''
+        Delete one or more hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param hall_probe_id: id of data in the table
+        :type hall_probe_id: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'deletehallprobedata/'
+
+        # Set parameters
+        params = {
+            'inventory_name': inventory_name,
+            'hall_probe_id': hall_probe_id
         }
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)

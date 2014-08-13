@@ -783,10 +783,19 @@ def updateRotCoilDataWS(request):
         ])
 
 
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteRotCoilDataWS(request):
+    '''
+    Delete rot coil data
+    '''
+    return _updateData(request, idodsi.deleteRotCoilData, ['inventory_name', 'rot_coil_data_id'])
+
+
 @require_http_methods(["GET"])
 def retrieveHallProbeDataWS(request):
     '''
-    Retrieve rot coil data
+    Retrieve hall probe data
     '''
     return _retrieveData(request, idodsi.retrieveHallProbeData, ['inventory_name'])
 
@@ -795,7 +804,7 @@ def retrieveHallProbeDataWS(request):
 @has_perm_or_basicauth('id.can_modify_id')
 def saveHallProbeDataWS(request):
     '''
-    Save rot coil data
+    Save hall probe data
     '''
     request.POST = request.POST.copy()
     request.POST['login_name'] = request.user.username
@@ -811,7 +820,7 @@ def saveHallProbeDataWS(request):
 @has_perm_or_basicauth('id.can_modify_id')
 def updateHallProbeDataWS(request):
     '''
-    Update rot coil data
+    Update hall probe data
     '''
     request.POST = request.POST.copy()
     request.POST['login_name'] = request.user.username
@@ -821,6 +830,15 @@ def updateHallProbeDataWS(request):
         'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
         'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
         ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteHallProbeDataWS(request):
+    '''
+    Delete hall probe data
+    '''
+    return _updateData(request, idodsi.deleteHallProbeData, ['inventory_name', 'hall_probe_id'])
 
 
 def idodsIndexHtml(request):
