@@ -4183,7 +4183,7 @@ class idods(object):
             self.logger.info('Error when fetching install rel:\n%s (%d)' % (e.args[1], e.args[0]))
             raise MySQLError('Error when fetching install rel:\n%s (%d)' % (e.args[1], e.args[0]))
 
-    def retrieveTrees(self, install_name, rel_id=None, tree=None):
+    def retrieveTrees(self, install_name, rel=None, tree=None, parent_install=None):
         '''
         Retrieve installation relation as a tree
 
@@ -4207,12 +4207,26 @@ class idods(object):
 
         else:
             tree[install_name] = {}
-            tree[install_name]['children'] = {}
+            tree[install_name]['children'] = []
             tree[install_name]['name'] = install_name
-            tree[install_name]['id'] = rel_id
+            tree[install_name]['id'] = rel['id']
+            tree[install_name]['obj'] = rel
+            tree[install_name]['parent'] = parent_install
+
+            # Get self map
+            selfRel = self.retrieveInstallRel(child_install=install_name, parent_install=install_name, expected_property={'__virtual_rel__': 'true'})
+
+            # Append self map
+            if len(selfRel) != 0:
+                tree[install_name]['data'] = selfRel[selfRel.keys()[0]]
 
         if start:
-            rootRel = self.retrieveInstallRel(expected_property={'__node_type__': 'root'})
+
+            if install_name == "root":
+                rootRel = self.retrieveInstallRel(expected_property={'__node_type__': 'root'})
+
+            else:
+                rootRel = self.retrieveInstallRel(parent_install=install_name)
 
             # If root element was not found, return empty tree
             if len(rootRel) == 0:
@@ -4220,24 +4234,108 @@ class idods(object):
 
             rootNode = rootRel[rootRel.keys()[0]]
 
+            # Add link to root
+            if install_name == "root":
+                tree["/"] = {}
+                tree["/"]['name'] = "/"
+                tree["/"]['children'] = [rootNode['parentname']]
+
+            install_name = rootNode['parentname']
+
+            # Get self map
+            selfRel = self.retrieveInstallRel(child_install=install_name, parent_install=install_name, expected_property={'__virtual_rel__': 'true'})
+
             # Start making a tree
-            tree[rootNode['parentname']] = {}
-            tree[rootNode['parentname']]['children'] = {}
-            tree[rootNode['parentname']]['name'] = rootNode['parentname']
-            tree[rootNode['parentname']]['id'] = rel_id
+            tree[install_name] = {}
+            tree[install_name]['children'] = []
+            tree[install_name]['name'] = install_name
+            tree[install_name]['id'] = rootNode['id']
+            tree[install_name]['obj'] = rootNode
+            tree[install_name]['parent'] = "/"
 
-            newTree = tree[rootNode['parentname']]['children']
-            children = self.retrieveInstallRel(None, rootNode['parentname'])
+            # Append self map
+            if len(selfRel) != 0:
+                tree[install_name]['data'] = selfRel[selfRel.keys()[0]]
 
-        else:
-            newTree = tree[install_name]['children']
             children = self.retrieveInstallRel(None, install_name)
 
+        else:
+            children = self.retrieveInstallRel(None, install_name)
+
+        # Go through children
         for childKey in children.keys():
             child = children[childKey]
-            self.retrieveTrees(child['childname'], child['id'], newTree)
+            tree[install_name]['children'].append(child['childname'])
+            self.retrieveTrees(child['childname'], child, tree, install_name)
 
         return tree
+
+        # start = False
+
+        # if tree is None:
+        #     tree = {}
+        #     start = True
+
+        # else:
+        #     tree[install_name] = {}
+        #     tree[install_name]['children'] = {}
+        #     tree[install_name]['name'] = install_name
+        #     tree[install_name]['id'] = rel_id
+        #     tree[install_name]['parent'] = parent_install
+
+        #     # Get self map
+        #     selfRel = self.retrieveInstallRel(child_install=install_name, parent_install=install_name, expected_property={'__virtual_rel__': 'true'})
+
+        #     # Append self map
+        #     if len(selfRel) != 0:
+        #         tree[install_name]['data'] = selfRel[selfRel.keys()[0]]
+
+        # if start:
+
+        #     if install_name == "root":
+        #         rootRel = self.retrieveInstallRel(expected_property={'__node_type__': 'root'})
+
+        #     else:
+        #         rootRel = self.retrieveInstallRel(parent_install=install_name)
+
+        #     # If root element was not found, return empty tree
+        #     if len(rootRel) == 0:
+        #         return tree
+
+        #     rootNode = rootRel[rootRel.keys()[0]]
+        #     install_name = rootNode['parentname']
+
+        #     # Get self map
+        #     selfRel = self.retrieveInstallRel(child_install=install_name, parent_install=install_name, expected_property={'__virtual_rel__': 'true'})
+
+        #     # Start making a tree
+        #     tree[install_name] = {}
+        #     tree[install_name]['children'] = {}
+        #     tree[install_name]['name'] = install_name
+        #     tree[install_name]['id'] = rootNode['id']
+        #     tree[install_name]['parent'] = ["/"]
+
+        #     # Append self map
+        #     if len(selfRel) != 0:
+        #         tree[install_name]['data'] = selfRel[selfRel.keys()[0]]
+
+        #     newTree = tree[install_name]['children']
+        #     children = self.retrieveInstallRel(None, install_name)
+
+        # else:
+        #     newTree = tree[install_name]['children']
+        #     children = self.retrieveInstallRel(None, install_name)
+
+        # currentParent = tree[install_name]['parent']
+
+        # # Go through children
+        # for childKey in children.keys():
+        #     child = children[childKey]
+        #     nextParent = currentParent
+        #     nextParent.append(install_name)
+        #     self.retrieveTrees(child['childname'], child['id'], newTree, nextParent)
+
+        # return tree
 
     def idStatusHelper(self, inputStr):
         '''

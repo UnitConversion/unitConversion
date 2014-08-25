@@ -1,14 +1,6 @@
 {% load verbatim %} {% verbatim %}
 <div class="form_search" id="form-search">
 	<input type="text" placeholder="{{info.search_filter}}" id="search-query" ng-model="search_filter" class="search_input">
-	
-	{% endverbatim %}
-		{% if user.is_authenticated %}
-		{% verbatim %}
-		<button class="btn add_btn" ng-click="addItem()"><i class="icon-plus"></i> {{info.search_button}}</button>
-		{% endverbatim %}
-		{% endif %}
-	{% verbatim %}
 </div>
 <div ng-repeat="item in items | filter:search_filter" class="item {{item.click}} {{item.color}}">
 

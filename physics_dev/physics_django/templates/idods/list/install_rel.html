@@ -1,15 +1,6 @@
 {% load verbatim %} {% verbatim %}
 <div ng-if="!showTree" class="form_search" id="form-search">
 	<input type="text" placeholder="{{info.search_filter}}" id="search-query" ng-model="search_filter" class="search_input">
-	
-	{% endverbatim %}
-		{% if user.is_authenticated %}
-		{% verbatim %}
-		<button class="btn add_btn" ng-click="addItem()"><i class="icon-plus"></i> {{info.search_button}}</button>
-		{% endverbatim %}
-		{% endif %}
-	{% verbatim %}
-
 </div>
 <div ng-if="!showTree" ng-repeat="item in items | filter:search_filter" class="item {{item.click}} {{item.color}}">
 
@@ -28,8 +19,16 @@
 		</tr>
 	</table>
 </div>
-<div ng-if="showTree" >
+<div ng-if="showTree">
 	<br />
+	<ul class="breadcrumb custom_breadcrumb">
+		<li ng-repeat="breadcrumb in breadcrumbs track by $index">
+			<span ng-if="!$first">&nbsp;<span class="icon-chevron-right"></span></span>&nbsp;<a href ng-click="walkThroughTree(breadcrumb)">{{breadcrumb}}</a>
+		</li>
+		<!-- <li><span class="divider icon-chevron-right"></span><a href="#">Home</a> <span class="divider icon-chevron-right"></span></li>
+		<li><a href="#">Library</a> <span class="divider icon-chevron-right"></span></li>
+		<li class="active">Data</li> -->
+	</ul>
 	<div id="tree" compile="tree"></div>
 </div>
 {% endverbatim %}

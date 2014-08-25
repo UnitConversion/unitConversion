@@ -6,9 +6,99 @@
 	<div class="navbar-inner">
 		<div class="container">
 
-			<a class="brand" href="index.html">IDODS <span class="version">{{version}}</span></a>
+			<a class="brand" href="index.html">Manager & IDODS viewer <span class="version">{{version}}</span></a>
 
-			<div id="top_container" class="pull-right btn-group">
+			<div class="nav-collapse collapse navbar-responsive-collapse">
+				<!-- view selector START -->
+				<ul class="nav">
+					<li class="divider-vertical"></li>
+					<li id="view_dropdown" class="dropdown">
+                    	<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{currentNav.value}} <b class="caret"></b></a>
+                		<ul class="dropdown-menu">
+                        	<li class="nav-header">Device</li>
+                        	<li ng-repeat="item in nav.dataTypes['device']"><a href ng-click="changeEntity(item.name)">{{item.value}}</a></li>
+                        	<li class="divider"></li>
+
+                        	<li class="nav-header">Others</li>
+                        	<li ng-repeat="item in nav.dataTypes['others']"><a href ng-click="changeEntity(item.name)">{{item.value}}</a></li>
+                        	<!-- <li class="divider"></li> -->
+
+                        	<!-- <li class="nav-header">Hierarchy</li>
+                        	<li ng-repeat="item in nav.dataTypes['hierarchy']"><a href ng-click="changeEntity(item.name)">{{item.value}}</a></li> -->
+                    	</ul>
+                	</li>
+				</ul>
+				<form class="navbar-search pull-left" action="">
+                	<div class="input-append" app-view-segment="1"></div>
+                </form>
+                <!-- view selector END -->
+
+                <ul class="nav">
+					<li class="divider-vertical"></li>
+				</ul>
+
+				{% endverbatim %}
+					{% if user.is_authenticated %}
+					{% verbatim %}
+			            <div class="pull-left">
+			            	<a title="Add new {{currentNav.value}}" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href ng-click="addItem()">
+								<i class="icon-plus icon-white"></i>
+								{{currentNav.value}}
+							</a>
+			            </div>
+					{% endverbatim %}
+					{% endif %}
+				{% verbatim %}
+
+			</div>
+
+			<div>
+				<!-- user login START -->
+				{% endverbatim %}
+				{% if user.is_authenticated %}
+					<ul class="nav pull-right">
+						<li class="dropdown">
+						    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+						    	<i class="icon-user icon-white"></i>
+								{{user.username}}
+								<strong class="caret"></strong>
+						    </a>
+						    <ul class="dropdown-menu">
+						    	<li><a ng-click="logout()">Sign out</a></li>
+						    </ul>
+						</li>
+					</ul>
+				{% else %}
+					<ul class="nav pull-right">
+						<li class="dropdown">
+		                	<a id="user_login_dropdown" class="dropdown-toggle" href>
+								<i class="icon-user icon-white"></i>
+								Guest
+								<strong class="caret"></strong>
+							</a>
+		            	</li>
+					</ul>
+					<div role="menu" class="dropdown-menu user_dropdown_menu">
+						<form>
+							<fieldset>
+								<legend>Sign in</legend>
+								<label>Username</label>
+								<input type="text" ng-model="session.username" name="username" id="user_username" placeholder="Enter username ..."><br/>
+
+								<label>Password</label>
+								<input type="password" ng-model="session.password" name="password" placeholder="Enter password ..."><br />
+								<button class="btn btn-primary" ng-click="login()">Sign in</button>
+							</fieldset>
+
+							<span class="login_error" ng-show="authenticated.error" class="login_error"><br/>The username or password is incorrect!</span>
+						</form>
+					</div>
+           		{% endif %}
+				{% verbatim %}
+	            <!-- user login END -->
+            </div>
+
+			<!-- <div id="top_container" class="pull-right btn-group">
 
 				{% endverbatim %}
 				{% if user.is_authenticated %}
@@ -44,7 +134,7 @@
 					</div>
 				{% endif %}
 				{% verbatim %}
-			</div>
+			</div> -->
 
 		</div>
 	</div>
@@ -52,7 +142,7 @@
 
 <div>
 	<!-- Left search pane -->
-	<div class="container-left">
+	<!-- <div class="container-left">
 		<div class="well container-scroll">
 			<div app-view-segment="1"></div>
 		</div>
@@ -60,7 +150,7 @@
 
 	<div class="container-resize">
 		<div id="container-resize" resize-left=""></div>
-	</div>
+	</div> -->
 
 	<!-- List of Items -->
 	<a name="#top"></a>

@@ -5,6 +5,10 @@
  * @created: Feb 26, 2014
  */
 
+app.controller('searchCtrl', function($scope) {
+	setUpSearchForm();
+});
+
 app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 
 	$scope.top = function() {
@@ -31,12 +35,31 @@ app.controller('indexCtrl', function($scope, $location, $anchorScroll) {
 /*
  * Main controller when we load the main page
  */
-app.controller('mainCtrl', function($scope, $window, $modal){
+app.controller('mainCtrl', function($scope, $window, $modal, $routeParams, navigationFactory){
 	$scope.version = version;
 	$scope.style = {};
 	$scope.style.middle_class = "container-scroll-middle";
 	$scope.style.right_class = "container-scroll-last-one";
+	$scope.currentNav = {};
 	setUpLoginForm();
+	$scope.nav = navigationFactory.nav;
+
+	$scope.$on('handleBroadcast', function() {
+		$scope.currentNav = navigationFactory.view;
+	});
+
+	$scope.changeEntity = function(entityName) {
+		$('#view_dropdown').dropdown('toggle');
+		var newLocation = createRouteUrl(undefined, entityName, []);
+		$window.location = newLocation;
+	};
+
+	// Show add form in the right pane
+	$scope.addItem = function() {
+		l($scope.currentNav.name);
+		var location = createRouteUrl($routeParams, $scope.currentNav.name, entityParameters[$scope.currentNav.name]) + "/id/new/action/save";
+		$window.location = location;
+	};
 
 	$scope.session = {};
 	$scope.authenticated = {};
@@ -76,13 +99,14 @@ app.controller('mainCtrl', function($scope, $window, $modal){
 /*
  * Controller for the left/search pane
  */
-app.controller('searchVendorCtrl', function($scope, $window, $routeParams){
+app.controller('searchVendorCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[0];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -100,6 +124,9 @@ app.controller('searchVendorCtrl', function($scope, $window, $routeParams){
 
 	// Vendor search button click
 	$scope.searchForItem = function(search) {
+		// var newDisplayString = generateSearchQuery(search);
+		// l(newDisplayString);
+		// search.display = newDisplayString[0];
 		search.search = new Date().getTime();
 		var newLocation = createRouteUrl(search, "vendor", ["name", "description"]) + "/list";
 		$window.location = newLocation;
@@ -234,13 +261,14 @@ app.controller('showVendorCtrl', function($scope, $routeParams, $http, $window, 
 /*
  * Controller for the left/search pane
  */
-app.controller('searchCmpntTypeCtrl', function($scope, $window, $routeParams){
+app.controller('searchCmpntTypeCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[1];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -438,13 +466,14 @@ app.controller('showCmpntTypeCtrl', function($scope, $routeParams, $http, $windo
 /*
  * Controller for the left/search pane
  */
-app.controller('searchCmpntTypeTypeCtrl', function($scope, $window, $routeParams){
+app.controller('searchCmpntTypeTypeCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[2];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -599,13 +628,14 @@ app.controller('showCmpntTypeTypeCtrl', function($scope, $routeParams, $http, $w
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInventoryCtrl', function($scope, $window, $routeParams){
+app.controller('searchInventoryCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.device[1];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -908,13 +938,14 @@ app.controller('showInventoryCtrl', function($scope, $routeParams, $http, $windo
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInventoryTypeCtrl', function($scope, $window, $routeParams){
+app.controller('searchInventoryTypeCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[3];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1080,13 +1111,14 @@ app.controller('showInventoryTypeCtrl', function($scope, $routeParams, $http, $w
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInstallCtrl', function($scope, $window, $routeParams){
+app.controller('searchInstallCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.device[0];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	$scope.changeMaster = function(type) {
 		l(type);
@@ -1526,13 +1558,14 @@ app.controller('showInsertionDeviceCtrl', function($scope, $routeParams, $http, 
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInventoryToInstallCtrl', function($scope, $window, $routeParams){
+app.controller('searchInventoryToInstallCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[4];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1770,13 +1803,14 @@ app.controller('deleteInventoryToInstallCtrl', function($scope, $routeParams, $m
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams){
+app.controller('searchInstallRelCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[5];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -1828,26 +1862,35 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 	$scope.info = InstallRelInfo;
 	var previousItem;
 	$scope.items = [];
+	$scope.breadcrumbs = [];
+	$scope.currentItem = $routeParams.parent_install;
 
 	$scope.tree = {};
+	$scope.treeRaw = {};
 	$scope.showTree = false;
+	$scope.currentNode = "/";
 
 	if ($routeParams.description === undefined) {
 		$scope.showTree = true;
 
-		installRelFactory.retrieveTree({'install_name': 'Trees'}).then(function(result) {
+		var installName = $routeParams.parent_install;
 
-			l(result);
-			//$scope.tree = $sce.trustAsHtml(drawDataTree("", result, 0));
-			$scope.tree = drawDataTree("", result, 0);
-			//$("#tree").html(drawDataTree("", result, 0));
+		if(installName === undefined) {
+			installName = "root";
+		}
+
+		installRelFactory.retrieveTree({'install_name': 'root'}).then(function(result) {
+
+			$scope.breadcrumbs.push($scope.currentNode);
+			l($scope.breadcrumbs);
+			$scope.treeRaw = result;
+
+			$scope.tree = drawDataTree("", result, result[$scope.currentNode], 0);
 		});
 
 	} else {
 
 		installRelFactory.retrieveItems($routeParams).then(function(result) {
-
-			l(result);
 
 			$.each(result, function(i, item){
 
@@ -1882,9 +1925,14 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 		$window.location = location;
 	};
 
+	$scope.showDetailsRaw = function(itemName) {
+		$scope.showDetails($scope.treeRaw[itemName].obj);
+	};
+
 	// Show details when user selects item from a list
 	$scope.showDetails = function(item) {
 		$scope.id = undefined;
+		l(item);
 
 		// Clear click style from previously selected element
 		if(previousItem !== undefined) {
@@ -1899,6 +1947,23 @@ app.controller('listInstallRelCtrl', function($scope, $routeParams, $http, $wind
 
 		var location = createRouteUrl($routeParams, "install_rel", ["description", "parent_install"]) + "/id/" + item.id + "/action/retrieve";
 		$window.location = location;
+	};
+
+	$scope.walkThroughTree = function(parent) {
+		var parentNodeName = parent;
+		$scope.breadcrumbs = [];
+
+		while($scope.treeRaw[parentNodeName].parent !== undefined) {
+			$scope.breadcrumbs.push($scope.treeRaw[parentNodeName].name);
+			parentNodeName = $scope.treeRaw[parentNodeName].parent;
+		}
+		$scope.breadcrumbs.push("/");
+
+		// Reverse array
+		$scope.breadcrumbs = $scope.breadcrumbs.reverse();
+
+		$scope.currentNode = parent;
+		$scope.tree = drawDataTree("", $scope.treeRaw, $scope.treeRaw[$scope.currentNode], 0);
 	};
 
 	// Show details when user selects item from a list
@@ -2106,13 +2171,14 @@ app.controller('deleteInstallRelCtrl', function($scope, $routeParams, $modalInst
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParams){
+app.controller('searchInstallRelTypeCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[6];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -2268,13 +2334,14 @@ app.controller('showInstallRelTypeCtrl', function($scope, $routeParams, $http, $
 /*
  * Controller for the left/search pane
  */
-app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams){
+app.controller('searchDataMethodCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
 	$scope.search.type = dataTypes.others[7];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -2431,7 +2498,7 @@ app.controller('showDataMethodCtrl', function($scope, $routeParams, $http, $wind
 /*
  * Controller for the left/search pane
  */
-app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
+app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
@@ -2441,6 +2508,7 @@ app.controller('searchOfflineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search.type = dataTypes.others[8];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -2722,7 +2790,7 @@ app.controller('deleteOfflineDataCtrl', function($scope, $routeParams, $modalIns
 /*
  * Controller for the left/search pane
  */
-app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeParams){
+app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
@@ -2732,6 +2800,7 @@ app.controller('searchOfflineDataInstallCtrl', function($scope, $window, $routeP
 	$scope.search.type = dataTypes.others[9];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -3030,7 +3099,7 @@ app.controller('deleteOfflineDataInstallCtrl', function($scope, $routeParams, $m
 /*
  * Controller for the left/search pane
  */
-app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
+app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
@@ -3040,6 +3109,7 @@ app.controller('searchOnlineDataCtrl', function($scope, $window, $routeParams){
 	$scope.search.type = dataTypes.others[10];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -3328,7 +3398,7 @@ app.controller('deleteOnlineDataCtrl', function($scope, $routeParams, $modalInst
 /*
  * Controller for the left/search pane
  */
-app.controller('searchBeamlineCtrl', function($scope, $location, $window, $routeParams, installRelFactory){
+app.controller('searchBeamlineCtrl', function($scope, $location, $window, $routeParams, installRelFactory, navigationFactory){
 	$scope.style.middle_class = "container-scroll-middle";
 
 	$scope.search = {};
@@ -3339,6 +3409,7 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 	$scope.search.type = dataTypes.hierarchy[0];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	var pathParts = $location.path().split('/');
 
@@ -3387,7 +3458,7 @@ app.controller('searchBeamlineCtrl', function($scope, $location, $window, $route
 /*
  * Controller for the left/search pane
  */
-app.controller('searchInstallationCtrl', function($scope, $location, $window, $routeParams, installRelFactory){
+app.controller('searchInstallationCtrl', function($scope, $location, $window, $routeParams, installRelFactory, navigationFactory){
 	$scope.style.middle_class = "container-scroll-middle";
 
 	$scope.search = {};
@@ -3398,6 +3469,7 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 	$scope.search.type = dataTypes.hierarchy[1];
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
+	navigationFactory.setView($scope.search.type);
 
 	var pathParts = $location.path().split('/');
 
@@ -3446,7 +3518,7 @@ app.controller('searchInstallationCtrl', function($scope, $location, $window, $r
 /*
  * Controller for the left/search pane
  */
-app.controller('searchRotCoilDataCtrl', function($scope, $window, $routeParams, inventoryFactory){
+app.controller('searchRotCoilDataCtrl', function($scope, $window, $routeParams, inventoryFactory, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
@@ -3454,6 +3526,7 @@ app.controller('searchRotCoilDataCtrl', function($scope, $window, $routeParams, 
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 	$scope.inv = [];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {
@@ -3628,7 +3701,7 @@ app.controller('showRotCoilDataCtrl', function($scope, $routeParams, $http, $win
 /*
  * Controller for the left/search pane
  */
-app.controller('searchHallProbeDataCtrl', function($scope, $window, $routeParams, inventoryFactory){
+app.controller('searchHallProbeDataCtrl', function($scope, $window, $routeParams, inventoryFactory, navigationFactory){
 	$scope.search = {};
 	$scope.dataTypes = dataTypes;
 	$scope.masterTypes = masterTypes;
@@ -3636,6 +3709,7 @@ app.controller('searchHallProbeDataCtrl', function($scope, $window, $routeParams
 	$scope.mapTypes = mapMasterTypesToDataTypes;
 	$scope.group = mapMasterTypesToDataTypes[$scope.search.type.name];
 	$scope.inv = [];
+	navigationFactory.setView($scope.search.type);
 
 	// Redirect to list
 	if(!$routeParams.search) {

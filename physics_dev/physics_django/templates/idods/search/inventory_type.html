@@ -1,32 +1,26 @@
 {% load verbatim %} {% verbatim %}
-<div class="clear"></div>
-<div id="search_form">
-	<div class="">
-		<h5>Select view</h5>
+
+<input ng-enter="searchForItem(search)" ng-model="search.name" class="top_search_input close_dropdown" type="text">
+
+<div class="btn-group">
+	<div role="menu" class="dropdown-menu search_dropdown_menu">
+		<div>
+			Name:
+			<br />
+			<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.name" name="name" />
+			<br />
+			<br />
+		</div>
+		<div>
+			<button id="search_dropdown_menu_button2" ng-click="searchForItem(search)" class="search_dropdown_menu_button btn"><i class="icon-search"></i></button>
+		</div>
 	</div>
-	<div ng-repeat="type in masterTypes">
-		<label class="radio">
-			<input type="radio" name="master" ng-value="type.name" ng-model="$parent.group"> {{type.value}}
-		</label>
-	</div>
-	<br/>
-	<div>
-		<select ng-model="search.type" ng-options="s.value for s in dataTypes[group]" ng-change="changeEntity()"></select>
-		<br />
-		<br />
-	</div>
-	<div class="">
-		<h5>Search</h5>
-	</div>
-	<div class="">
-		Name:
-		<br />
-		<input class="search_field" ng-enter="searchForItem(search)" type="text" ng-model="search.name" name="name" />
-		<br />
-		<br />
-	</div>
-	<div class="">
-		<button ng-click="searchForItem(search)" class="btn">Search</button>
-	</div>
+	<button class="btn search_dropdown_menu_button" tabindex="-1">
+		<span class="caret"></span>
+	</button>
+	<button ng-click="searchForItem(search)" class="btn close_dropdown" type="button" tabindex="-1"><i class="icon-search"></i></button>
 </div>
+
+<div ng-controller="searchCtrl"></div>
+
 {% endverbatim %}

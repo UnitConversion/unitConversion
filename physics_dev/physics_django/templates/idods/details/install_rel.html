@@ -6,7 +6,7 @@
 <div ng-if="action == 'retrieve'">
 	<div class="details_data">
 		<h3>{{info.retrieve_title}}</h3>
-		
+
 		{% endverbatim %}
 			{% if user.is_authenticated %}
 			{% verbatim %}
@@ -39,7 +39,7 @@
 <div ng-if="action == 'save'">
 	<div class="details_data">
 		<h3>{{info.save_title}}</h3>
-		
+
 		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
@@ -55,12 +55,13 @@
 				<td>
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
-							
-							<select ng-if="property == 'child_install'" ng-model="new[property]" ng-options="install for install in installs"></select>
-							<select ng-disabled="parentDisabled" ng-if="property == 'parent_install'" ng-model="new[property]" ng-options="install for install in installs"></select>
-							
+
+							<input type="text" ng-if="property == 'child_install'" ng-model="new[property]" typeahead="install for install in installs | filter:$viewValue | limitTo:8" />
+
+							<input type="text" ng-disabled="parentDisabled" ng-if="property == 'parent_install'" ng-model="new[property]" typeahead="install for install in installs | filter:$viewValue | limitTo:8" />
+
 							<input ng-if="property != 'child_install' && property != 'parent_install'" type="text" ng-model="new[property]" />
-							
+
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
 					</span>
@@ -99,12 +100,12 @@
 <div ng-if="action == 'update'">
 	<div class="details_data">
 		<h3>{{info.update_title}}</h3>
-		
+
 		<div class="alert" ng-class="{'alert-success': alert.success, 'alert-error': !alert.success}" ng-show="alert.show">
 			<button type="button" class="close" ng-click="closeAlert()">&times;</button>
 			<strong>{{alert.title}}</strong> {{alert.body}}
 		</div>
-		
+
 		<table class="table table-bordered">
 			<tr>
 				<th>Key</th>
@@ -119,7 +120,7 @@
 						<span class="controls">
 
 							<select ng-if="property == 'cmpnt_type'" ng-model="element[property]" ng-options="type for type in types"></select>
-							
+
 							<input ng-if="property != 'cmpnt_type'" type="text" ng-model="element[property]" />
 
 							<span class="help-inline">{{error[property]}}</span>

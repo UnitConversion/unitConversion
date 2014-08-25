@@ -1,5 +1,5 @@
 {% load verbatim %} {% verbatim %}
-<div class="clear"></div>
+<!-- <div class="clear"></div>
 <div id="search_form">
 	<div class="">
 		<h5>Select view</h5>
@@ -30,5 +30,31 @@
 	<div class="">
 		<button ng-click="searchForItem(search)" class="btn">Search</button>
 	</div>
+</div> -->
+
+<input ng-enter="searchForItem(search)" ng-model="search.inventory_name" class="top_search_input close_dropdown" type="text">
+
+<div class="btn-group">
+	<div role="menu" class="dropdown-menu search_dropdown_menu">
+		<div class="">
+			Inventory name:
+			<br />
+
+			<select ng-model="search.inventory_name" ng-enter="searchForItem(search)" ng-options="inventory for inventory in inv"></select>
+
+			<br />
+			<br />
+		</div>
+		<div>
+			<button id="search_dropdown_menu_button2" ng-click="searchForItem(search)" class="search_dropdown_menu_button btn"><i class="icon-search"></i></button>
+		</div>
+	</div>
+	<button class="btn search_dropdown_menu_button" tabindex="-1">
+		<span class="caret"></span>
+	</button>
+	<button ng-click="searchForItem(search)" class="btn close_dropdown" type="button"><i class="icon-search"></i></button>
 </div>
+
+<div ng-controller="searchCtrl"></div>
+
 {% endverbatim %}

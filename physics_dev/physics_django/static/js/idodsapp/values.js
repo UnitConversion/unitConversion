@@ -5,6 +5,60 @@
  * @created: Feb 28, 2014
  */
 
+app.constant('masterTypes', [
+	{name: "device", value:"Device"},
+	{name: "hierarchy", value:"Device hierarchy"},
+	{name: "others", value: "Others"}
+]);
+
+app.constant('dataTypes', {
+	"device": [
+		{name:"install", value:"Install"},
+		{name:"inventory", value:"Inventory"}
+	],
+	"others": [
+		{name:"vendor", value:"Vendor"},
+		{name:"cmpnt_type", value:"Component type"},
+		{name:"cmpnt_type_type", value:"Component type property type"},
+		{name:"inventory_type", value:"Inventory property type"},
+		{name:"inventory_to_install", value:"Inventory to Install"},
+		{name:"install_rel", value:"Install relationship"},
+		{name:"install_rel_type", value:"Install relationship property type"},
+		{name:"data_method", value:"Data method"},
+		{name:"offline_data", value:"Offline data"},
+		{name:"offline_data_install", value:"Offline data (install)"},
+		{name:"online_data", value:"Online data"},
+		{name:"rot_coil_data", value:"Rot coil data"},
+		{name:"hall_probe_data", value:"Hall probe data"}
+	],
+	"hierarchy": [
+		{name:"beamline", value:"Beamline project"},
+		{name:"installation", value:"Device geometric layout"}
+	]
+});
+
+app.constant('mapMasterTypesToDataTypes', {
+	"vendor": "others",
+	"cmpnt_type": "others",
+	"cmpnt_type_type": "others",
+	"inventory_type": "others",
+	"inventory_to_install": "others",
+	"install_rel": "others",
+	"install_rel_type": "others",
+	"data_method": "others",
+	"offline_data": "others",
+	"offline_data_install": "others",
+	"online_data": "others",
+	"rot_coil_data": "others",
+	"hall_probe_data": "others",
+
+	"install": "device",
+	"inventory": "device",
+
+	"beamline": "hierarchy",
+	"installation": "hierarchy"
+});
+
 app.value('EntityError', function(key, value){
 	this.errorDict = {};
 	this.num = 0;

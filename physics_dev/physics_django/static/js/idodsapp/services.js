@@ -23,6 +23,28 @@ app.factory('modelCodeInfoService', function($resource){
 });
 
 /*
+ * Provide a navigation factory to switch between views
+ */
+app.factory('navigationFactory', function($rootScope, masterTypes, dataTypes, mapMasterTypesToDataTypes) {
+	var factory = {};
+	factory.view = "";
+	factory.nav = {};
+	factory.nav.masterTypes = masterTypes;
+	factory.nav.dataTypes = dataTypes;
+
+	factory.setView = function(view) {
+		this.view = view;
+		this.broadcast();
+	};
+
+	factory.broadcast = function() {
+		$rootScope.$broadcast('handleBroadcast');
+	};
+
+	return factory;
+});
+
+/*
  * Check if object has all mandatory properties set
  * @param item item we are checking
  * @param error error is filled in if mandatory property is not set

@@ -50,6 +50,79 @@ jQuery.fn.doesExist = function(){
 };
 
 /**
+ * Start parsing search input value from left to right and return type and search
+ * value.
+ * @param {type} value unparsed string part
+ * @returns {Array} array that consists of search type, search value and remainder
+ */
+function parseSearchLanguageRec(value){
+
+	var searchString = "";
+	var filterType = "";
+	var remainder = "";
+
+	var re = new RegExp("(name:|description:|^)(.*?)(name:.*|description:.*|$)", "i");
+	var searchParts = re.exec(value);
+
+	if(searchParts === null) {
+		searchString = value;
+
+	} else {
+		filterType = searchParts[1];
+		searchString = searchParts[2];
+		remainder = searchParts[3];
+	}
+
+	return [filterType, searchString, remainder];
+}
+
+/**
+ * Build search query from search input
+ * @returns {String} prepared search query
+ */
+function parseSearchLanguage(searchQuery){
+
+	var value = searchQuery;
+	var query = "";
+	var langDict = {};
+
+	var parsedStringParts = parseSearchLanguageRec(value);
+
+	// Get custom part of search value
+	if(parsedStringParts[0] === "") {
+
+		// Prepend and append a star
+		if(trim(parsedStringParts[1]) !== "") {
+			query += trim(parsedStringParts[1]) + " ";
+			langDict.display = trim(parsedStringParts[1]);
+		}
+
+	} else {
+
+		if(parsedStringParts[0] !== undefined) {
+			query += parsedStringParts[0] + trim(parsedStringParts[1]) + " ";
+			langDict[parsedStringParts[0]] = trim(parsedStringParts[1]);
+		}
+	}
+
+	// Get fields that are present in search input
+	while (parsedStringParts[2] !== "") {
+		parsedStringParts = parseSearchLanguageRec(parsedStringParts[2]);
+
+		if(parsedStringParts[0] !== undefined) {
+			query += parsedStringParts[0] + trim(parsedStringParts[1]) + " ";
+			langDict[parsedStringParts[0]] = trim(parsedStringParts[1]);
+		}
+	}
+	return [query, langDict];
+}
+
+function generateSearchQuery(search, type, paramList) {
+	var newDisplayString = parseSearchLanguage(search.display);
+	return newDisplayString;
+}
+
+/**
  * Create routing url
  * @param search search or $routeParams object
  * @param type name of the item we are dealing with e.g. vendor, cmpnt_type
@@ -74,7 +147,7 @@ function createRouteUrl(search, type, paramList) {
 	$.each(paramList, function(i, param) {
 
 		// Add param
-		if(search[param] !== undefined) {
+		if(search[param] !== undefined && search[param] !== null) {
 			url += "/" + param + "/" + search[param];
 
 		} else {
@@ -220,35 +293,47 @@ function decode64(input) {
  * @param {type} data json data object
  * @returns {String} html with tree content
  */
-function drawDataTree(html, data, level){
+function drawDataTree(html, data, currentNode, level){
 
-	if(data === undefined) {
-		return "";
+	// Hide all but the top level
+	var display = "  style='display:none;'  ";
 
-	} else {
-		html += "<ul>";
-
-		for(var prop in data) {
-			l(prop);
-			l(data);
-			html += "<li>";
-			html += "<b><a href ng-click='showTreeNodeDetails(\"" + data[prop].id + "\")'>" + prop + "</a></b>";
-
-			//if (level > 0 && level <= 3) {
-			html += " <a ng-click='addItem(\"" + prop + "\")' href>Add child</a>";
-			//}
-
-			// Find object
-			if($.type(data[prop]) === 'object') {
-				html = drawDataTree(html, data[prop].children, level+1);
-
-			} else {
-				html += ': ' + data[prop];
-			}
-			html += "</li>";
-		}
-		html += "</ul>";
+	if(level === 0) {
+		display = " style='display:block;' ";
 	}
+
+	html += "<ul " + display + " class='none-style'>";
+
+	for(var childName in currentNode.children) {
+		var child = data[currentNode.children[childName]];
+		l(child);
+
+		html += "<li>";
+
+		// Show expand/collapse icons only if element is not a leaf element
+		if (child.data && child.data.__node_type__ && child.data.__node_type__ !== "real") {
+			html += "<span onclick='toggleChildren(this)'><i class='icon-chevron-right'></i></span> ";
+		}
+
+		//html += "<b><a href ng-click='showTreeNodeDetails(\"" + data[prop].id + "\")'>" + prop + "</a></b>";
+		html += "<b><a href ng-click='walkThroughTree(\"" + child.name + "\")'>" + child.name + "</a></b>";
+
+		// Show rel button
+		html += " <a title='view relation' ng-click='showDetailsRaw(\"" + child.name + "\")' href><i class='icon-pencil'></i></a>";
+
+		// Show add child only if element is not a leaf element
+		if (child.data && child.data.__node_type__ && child.data.__node_type__ !== "real") {
+			html += " <a title='add child' ng-click='addItem(\"" + child.name + "\")' href><i class='icon-plus'></i></a>";
+		}
+
+		// Find object
+		if(child.children.length > 0) {
+			html = drawDataTree(html, data, child, level+1);
+		}
+
+		html += "</li>";
+	}
+	html += "</ul>";
 
 	return html;
 }
@@ -271,6 +356,12 @@ function toggleChildren(el) {
 	}
 
 	var block = $(el).next().next();
+
+	// Maybe UL is the next element
+	while(!block.is("ul")) {
+		block = block.next();
+	}
+
 	block.toggle();
 }
 
@@ -365,17 +456,44 @@ function drawDataTree2(html, data, level){
  */
 function setUpLoginForm() {
 	// Setup drop down menu
-	$('.dropdown-toggle').dropdown();
+	// $('.dropdown-toggle').dropdown();
 
-	// Fix input element click problem
-	$('.dropdown-menu').click(function(e) {
-		e.stopPropagation();
+	// // Fix input element click problem
+	// $('.dropdown-menu').click(function(e) {
+	// 	e.stopPropagation();
+	// });
+
+	// $('#user_login_dropdown').click(function(){
+	// 	$('.user_dropdown_menu').ready(function(){
+	// 		$('#user_username').focus();
+	// 	});
+	// });
+
+	$('#user_login_dropdown').click(function(e) {
+		$('.user_dropdown_menu').toggle();
+	});
+}
+
+/*
+ * Prepare form for search. Form is a part on a dropdown so some messures should
+ * be taken to change the dropdown functionality.
+ */
+function setUpSearchForm() {
+	// Setup drop down menu
+
+	$('.search_dropdown_menu_button').click(function(e) {
+		$('.search_dropdown_menu').toggle();
 	});
 
-	$('#user_login_dropdown').click(function(){
-		$('.user_dropdown_menu').ready(function(){
-			$('#user_username').focus();
-		});
+	$('.close_dropdown').click(function(e) {
+		$('.search_dropdown_menu').hide();
+	});
+
+	$('.search_dropdown_menu').bind("keydown keypress", function(event) {
+
+		if(event.which === 13) {
+			$('.search_dropdown_menu').toggle();
+		}
 	});
 }
 

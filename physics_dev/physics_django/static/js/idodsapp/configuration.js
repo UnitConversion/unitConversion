@@ -105,3 +105,22 @@ var measurementDataLocationList = [
 	{name:"rot_coil_data", value:"Rotation Coil Data"},
 	{name:"hall_probe_data", value:"Hall Probe Data"}
 ];
+
+// Entity parameters used when navigating from place to place
+var entityParameters = {
+	"vendor": ["name", "description"],
+	"cmpnt_type": ["name", "description"],
+	"cmpnt_type_type": ["name", "description"],
+	"inventory": ["name"],
+	"inventory_type": ["name"],
+	"install": ["name", "cmpnt_type", "description", "coordinatecenter"],
+	"online_data": ["install_name", "description", "date", "status"],
+	"offline_data": ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"],
+	"inventory_to_install": ["inv_name", "install_name"],
+	"install_rel": ["description", "parent_install"],
+	"install_rel_type": ["name"],
+	"data_method": ["name", "description"],
+	"offline_data_install": ["install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"],
+	"rot_coil_data": ["inventory_name"],
+	"hall_probe_data": ["inventory_name"]
+};
