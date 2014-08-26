@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_6
--- Created on: 3/21/2014 11:50:42 AM
--- Diagram Version: 532
+-- Created on: 8/26/2014 9:57:25 AM
+-- Diagram Version: 534
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -395,7 +395,7 @@ DROP TABLE IF EXISTS `id_offline_data`;
 CREATE TABLE `id_offline_data` (
   `id_offline_data_id` int(11) NOT NULL AUTO_INCREMENT,
   `inventory_id` int(11) NOT NULL,
-  `id_data_method_id` int(11) NOT NULL,
+  `id_data_method_id` int(11),
   `id_raw_data_id` int(11) NOT NULL DEFAULT '0',
   `login_name` varchar(255),
   `description` varchar(4096),
@@ -499,7 +499,9 @@ CREATE TABLE `id_online_data` (
   `install_id` int(11) NOT NULL DEFAULT '0',
   `login_name` varchar(255),
   `description` varchar(1024),
-  `data_url` varchar(50),
+  `rawdata_path` varchar(255),
+  `feedforward_file_name` varchar(255),
+  `feedforward_data` mediumblob,
   `meas_time` varchar(50),
   `date` datetime,
   `status` tinyint(4) NOT NULL DEFAULT '1',
