@@ -916,6 +916,21 @@ class TestIdods(unittest.TestCase):
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
 
+        # Prepare raw data
+        with open('download_4', 'rb') as f:
+            savedData = self.api.saveRawData(f.read())
+
+        # Save online data
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1, feedforward_table_id=savedData['id'])
+
+        # Retrieve online data
+        retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
+        retrievedOnlineDataKeys = retrievedOnlineData.keys()
+        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
+
+        # Test feedforward table id
+        self.assertEqual(retrievedOnlineDataObject['feedforward_table_id'], savedData['id'])
+
     '''
     Test update online data
     '''
@@ -946,6 +961,21 @@ class TestIdods(unittest.TestCase):
 
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
+
+        # Prepare raw data
+        with open('download_4', 'rb') as f:
+            savedData = self.api.saveRawData(f.read())
+
+        # Update online data with new feedforward table
+        self.assertTrue(self.api.updateOnlineData(onlineid['id'], feedforward_table_id=savedData['id']))
+
+        # Retrieve online data
+        retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
+        retrievedOnlineDataKeys = retrievedOnlineData.keys()
+        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
+
+        # Test username
+        self.assertEqual(retrievedOnlineDataObject['feedforward_table_id'], savedData['id'])
 
     def testOnlineData(self):
 

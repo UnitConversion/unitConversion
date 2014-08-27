@@ -645,7 +645,7 @@ def saveOnlineDataWS(request):
     '''
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
-    return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'url', 'status'])
+    return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'url', 'status', 'feedforward_table_id'])
 
 
 @require_http_methods(["POST"])
@@ -656,7 +656,7 @@ def updateOnlineDataWS(request):
     '''
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
-    return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status'])
+    return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'url', 'status', 'feedforward_table_id'])
 
 
 @require_http_methods(["POST"])

@@ -3159,8 +3159,6 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 
 	onlineDataFactory.retrieveItems($routeParams).then(function(result) {
 
-		l(result);
-
 		$.each(result, function(i, item){
 
 			// Build customized object
@@ -3209,7 +3207,7 @@ app.controller('listOnlineDataCtrl', function($scope, $location, $routeParams, $
 /*
  * Show details in the right pane
  */
-app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $http, $window, $location, OnlineDataInfo, Install, OnlineData, onlineDataFactory, EntityError, installFactory){
+app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $http, $window, $location, OnlineDataInfo, Install, OnlineData, onlineDataFactory, EntityError, installFactory, offlineDataFactory){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	$scope.action = $routeParams.action;
@@ -3223,6 +3221,9 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 
 	$scope.installs = [];
 	$scope.installMap = {};
+	$scope.uploadData = undefined;
+	$scope.files = [];
+	$scope.uploadDoneCounter = 0;
 
 	var pathParts = $location.path().split('/');
 	var type = pathParts[1];
@@ -3251,9 +3252,34 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 		onlineDataFactory.retrieveItem($routeParams).then(function(result) {
 			$scope.element = result;
 			$scope.element.online_data_id = result.id;
-			l($scope.element);
 		});
 	}
+
+	// Append new file to the array of uploaded files
+	$scope.appendFile = function(file) {
+		var fileOnThisSpotAlreadyExists = false;
+
+		if($scope.files.length === 0) {
+			$scope.files.push(file);
+
+		} else {
+
+			$.each($scope.files, function(i, existingFile) {
+
+				// Replace file
+				if(file.fileId === existingFile.fileId) {
+					$scope.files[i] = file;
+					fileOnThisSpotAlreadyExists = true;
+				}
+			});
+
+			// Append file
+			if(!fileOnThisSpotAlreadyExists) {
+				$scope.files.push(file);
+			}
+		}
+
+	};
 
 	$scope.options = {
 		url: serviceurl + "/file/",
@@ -3262,27 +3288,67 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	};
 
 	$scope.$on('fileuploadadd', function(e, data) {
-		l("add");
 		var id = data.fileInput.context.id;
-		$scope.uploadFileName = data.files[0].name;
+		l(id);
+		l(data);
 
-		uploadData = data;
-		delete $scope.error.url;
+		if($scope.uploadData === undefined) {
+			$scope.uploadData = {};
+		}
+
+		if(id === "rawFile") {
+			$scope.uploadFileName = data.files[0].name;
+			data.fileId = "rawFile";
+			data.files[0].fileId = "rawFile";
+			$scope.uploadData.rawFile = data;
+			delete $scope.error.url;
+
+		} else {
+			$scope.uploadFileName2 = data.files[0].name;
+			data.fileId = "rawFile2";
+			data.files[0].fileId = "rawFile2";
+			data.url = serviceurl + "/saverawdata/";
+			$scope.uploadData.rawFile2 = data;
+			//delete $scope.error.feedforward;
+		}
+
+		l($scope.uploadData);
 	});
 
 	$scope.$on('fileuploaddone', function(e, data) {
 		l(data.jqXHR.responseText);
 		var response = data.jqXHR.responseText;
 		l(e);
+		l(data);
+		$scope.uploadDoneCounter ++;
 
-		if($scope.action === "update") {
-			$scope.element.url = JSON.parse(response).path;
+		// Get upload path
+		if(data.fileId === "rawFile") {
 
-		} else if($scope.action == "save") {
-			$scope.new.url = JSON.parse(response).path;
+			if($scope.action === "update") {
+				$scope.element.url = JSON.parse(response).path;
+
+			} else if($scope.action == "save") {
+				$scope.new.url = JSON.parse(response).path;
+			}
+
+		// Get raw data id
+		} else {
+
+			if($scope.action === "update") {
+				$scope.element.feedforward_table_id = JSON.parse(response).id;
+
+			} else if($scope.action == "save") {
+				$scope.new.feedforward_table_id = JSON.parse(response).id;
+			}
 		}
 
-		saveData($scope, onlineDataFactory);
+		// If all data was successfully uploaded you can save the data
+		if($scope.uploadDoneCounter === Object.keys($scope.uploadData).length) {
+			l("asd");
+			l($scope.items);
+			saveData($scope, onlineDataFactory);
+		}
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
@@ -3324,24 +3390,34 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 			result = onlineDataFactory.checkItem($scope.new);
 		}
 
-		l(result);
-
 		if(result !== true) {
 			$scope.error = result.errorDict;
 
 		} else {
 
-			if (uploadData === undefined && action === "save") {
+			if ($scope.uploadData === undefined && action === "save") {
 				$scope.error.url = "Data file field is mandatory!";
 
-			} else if (uploadData === undefined && action !== "save") {
+			} else if ($scope.uploadData === undefined && action !== "save") {
+				l("asd");
+				l($scope.items);
 				saveData($scope, onlineDataFactory);
 
 			} else {
-				l(uploadData);
-				uploadData.submit();
+
+				$.each($scope.uploadData, function(fileId, file) {
+					file.submit();
+				});
 			}
 		}
+	};
+
+	$scope.downloadRawData = function(element) {
+		// Retrieve raw file
+		offlineDataFactory.retrieveRawFile(element.feedforward_table_id).then(function(result) {
+			l(result);
+			download("feedforward_data", result[element.feedforward_table_id].data, result[element.feedforward_table_id].is_ascii);
+		});
 	};
 });
 

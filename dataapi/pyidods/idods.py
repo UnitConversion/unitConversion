@@ -4975,6 +4975,9 @@ class idods(object):
         :param status: status of this data set
         :type status: int
 
+        :param feedforward_table_id: id of the raw data
+        :type feedforward_table_id: str
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -5019,6 +5022,12 @@ class idods(object):
         if 'status' in kws and kws['status'] is not None:
             status = kws['status']
 
+        # Check feedforward table id
+        feedforward_table_id = None
+
+        if 'feedforward_table_id' in kws and kws['feedforward_table_id'] is not None:
+            feedforward_table_id = kws['feedforward_table_id']
+
         # Generate SQL
         sql = '''
         INSERT INTO id_online_data (
@@ -5027,16 +5036,24 @@ class idods(object):
             description,
             data_url,
             date,
-            status
+            status,
+            feedforward_table
         ) VALUES (
-            %s, %s, %s, %s, NOW(), %s
+            %s, %s, %s, %s, NOW(), %s, %s
         )
         '''
 
         try:
             # Insert data into database
             cur = self.conn.cursor()
-            cur.execute(sql, (installid, username, description, url, status))
+            cur.execute(sql, (
+                installid,
+                username,
+                description,
+                url,
+                status,
+                feedforward_table_id
+            ))
 
             # Get last row id
             onlinedataid = cur.lastrowid
@@ -5082,14 +5099,15 @@ class idods(object):
             .. code-block:: python
 
                 {'id': {
-                        'id':,            #int
-                        'installid':,     #int
-                        'install_name':,  #string
-                        'username':,      #string
-                        'description':,   #string
-                        'url':,           #url
-                        'date':,          #date
-                        'status':,        #int
+                        'id':,                      #int
+                        'installid':,               #int
+                        'install_name':,            #string
+                        'username':,                #string
+                        'description':,             #string
+                        'url':,                     #url
+                        'date':,                    #date
+                        'status':,                  #int
+                        'feedforward_table_id':,    #int
                     }
                 }
 
@@ -5106,7 +5124,8 @@ class idods(object):
             iod.data_url,
             iod.date,
             iod.status,
-            inst.field_name
+            inst.field_name,
+            iod.feedforward_table
         FROM id_online_data iod
         LEFT JOIN install inst ON(iod.install_id = inst.install_id)
         WHERE 1=1
@@ -5168,7 +5187,8 @@ class idods(object):
                     'description': r[3],
                     'url': r[4],
                     'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
-                    'status': r[6]
+                    'status': r[6],
+                    'feedforward_table_id': r[8]
                 }
 
             return resdict
@@ -5198,6 +5218,9 @@ class idods(object):
 
         :param status: status of this data set
         :type status: int
+
+        :param feedforward_table_id: id of the raw data
+        :type feedforward_table_id: str
 
         :return: True if everything is ok
 
@@ -5240,6 +5263,10 @@ class idods(object):
         # Check status
         if 'status' in kws:
             queryDict['status'] = kws['status']
+
+        # Check feedforward table id
+        if 'feedforward_table_id' in kws:
+            queryDict['feedforward_table'] = kws['feedforward_table_id']
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)
@@ -5314,6 +5341,9 @@ class idods(object):
             # Create transaction
             if self.transaction is None:
                 self.conn.commit()
+
+            # Delete raw data
+            self.deleteRawData(onlineDataObj['feedforward_table_id'])
 
             return True
 

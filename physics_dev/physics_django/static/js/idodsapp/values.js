@@ -1327,22 +1327,24 @@ app.value('OnlineDataInfo', {
  	this.retrieve_show = ["id", "status"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["install_name", "description", "username", "url", "date"];
+ 	this.retrieve_hide = ["install_name", "description", "username", "url", "date", "feedforward_table_id"];
 
  	// Parameters that are checked before saving or updating
  	this.list = ["install_name", "description", "date", "status"];
 
  	// Parameters used for save URL
- 	this.save = ["install_name", "description", "status", "url"];
+ 	this.save = ["install_name", "description", "status", "url", "feedforward_table_id"];
 
  	// Parameters that are displayed when saving new item
  	this.save_show = ["install_name", "description", "status"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["online_data_id", "install_name", "description", "status", "url"];
+ 	this.update = ["online_data_id", "install_name", "description", "status", "url", "feedforward_table_id"];
 
  	// Parameters that are displayed in install details pane
  	this.install_display = ["date", "description", "status"];
+
+ 	this.all = ["online_data_id", "id", "install_name", "description", "username", "date", "status", "url", "file_name", "feedforward_table_id"];
 
  	this.display = {
  		"id": "Id",
@@ -1355,6 +1357,7 @@ app.value('OnlineDataInfo', {
  	};
 
  	this.id = "";
+ 	this.online_data_id = "";
  	this.install_name = "";
  	this.description = "";
  	this.username = "";
@@ -1362,6 +1365,7 @@ app.value('OnlineDataInfo', {
  	this.status = "";
  	this.url = "";
  	this.file_name = "";
+ 	this.feedforward_table_id = undefined;
 
  	this.set = function(obj) {
 
@@ -1369,20 +1373,16 @@ app.value('OnlineDataInfo', {
  			return undefined;
  		}
 
- 		if('id' in obj) {
- 			this.id = obj.id;
- 		}
+ 		for(i=0; i<this.all.length; i++) {
 
- 		if('online_data_id' in obj) {
- 			this.online_data_id = obj.online_data_id;
- 		}
+ 			if(obj[this.all[i]] === null) {
+ 				this[this.all[i]] = undefined;
 
- 		this.install_name = obj.install_name;
- 		this.description = obj.description;
- 		this.username = obj.username;
- 		this.date = obj.date;
- 		this.status = obj.status;
- 		this.url = obj.url;
+ 			} else {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+
+  		}
 
  		if(this.url !== undefined && this.url !== "") {
 

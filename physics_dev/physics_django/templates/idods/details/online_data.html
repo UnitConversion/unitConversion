@@ -43,7 +43,9 @@
 
 							<td ng-if="property == 'url'"><button ng-click="download(element[property])" class="btn btn-info">Download file</button></td>
 
-							<td ng-if="property != 'url'">{{element[property]}}</td>
+							<td ng-if="property == 'feedforward_table_id'"><span ng-if="!element.feedforward_table_id">Feedforward table was not uploaded!</span><button ng-if="element.feedforward_table_id" class="btn btn-info" ng-click="downloadRawData(element)">Download feedforwad table file</button></td>
+
+							<td ng-if="property != 'url' && property != 'feedforward_table_id'">{{element[property]}}</td>
 						</tr>
 					</table>
 				</td>
@@ -144,6 +146,21 @@
 						</div>
 					</td>
 				</tr>
+				<tr>
+					<td>
+						Feedforward table
+					</td>
+					<td>
+						<div class="control-group" ng-class="{'error': error.feedforward}">
+							<span class="btn btn-success fileinput-button">
+								<i class="icon-file icon-white"></i>
+								<input id="rawFile2" type="file" name="file">
+							</span>
+							{{uploadFileName2}}
+							<span class="help-inline">{{error.feedforward}}</span>
+						</div>
+					</td>
+				</tr>
 			</table>
 
 		</form>
@@ -219,8 +236,22 @@
 						</div>
 					</td>
 				</tr>
+				<tr>
+					<td>
+						Feedforward table
+					</td>
+					<td>
+						<div class="control-group" ng-class="{'error': error.feedforward}">
+							<span class="btn btn-success fileinput-button">
+								<i class="icon-file icon-white"></i>
+								<input id="rawFile2" type="file" name="file">
+							</span>
+							{{uploadFileName2}}
+							<span class="help-inline">{{error.feedforward}}</span>
+						</div>
+					</td>
+				</tr>
 			</table>
-
 		</form>
 
 		<br/>

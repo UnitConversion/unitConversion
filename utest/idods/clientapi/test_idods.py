@@ -526,6 +526,17 @@ class Test(unittest.TestCase):
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
 
+        # Save online data with feedforward table
+        onlineid = self.client.saveOnlineData('test parent', username='username', description='desc1234', data='../dataapi/download_128', data_file_name='datafile', feedforward_table='../dataapi/download_128', status=1)
+
+        # Retrieve online data
+        retrievedOnlineData = self.client.retrieveOnlineData(onlineid=onlineid['id'], with_data=True, data_path="downloadedfile2", callback=self.callback)
+        retrievedOnlineDataKeys = retrievedOnlineData.keys()
+        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
+
+        # Check data
+        self.assertNotEqual(retrievedOnlineDataObject['feedforward_table'], '')
+
     def testUploadingLargeFile(self):
 
         # Upload a file
