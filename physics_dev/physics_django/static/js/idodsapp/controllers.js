@@ -3282,7 +3282,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	};
 
 	$scope.options = {
-		url: serviceurl + "/file/",
+		url: serviceurl + "/saveonlinedata/",
 		maxFileSize: 5000000,
 		acceptFileTypes: /(\.|\/)(gif|jpe?g|png|txt)$/i
 	};
@@ -3296,20 +3296,28 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 			$scope.uploadData = {};
 		}
 
+		if($scope.action === "update") {
+			data.url = serviceurl + "/updateonlinedata/";
+		}
+
 		if(id === "rawFile") {
 			$scope.uploadFileName = data.files[0].name;
 			data.fileId = "rawFile";
 			data.files[0].fileId = "rawFile";
 			$scope.uploadData.rawFile = data;
-			delete $scope.error.url;
+
+			if($scope.action === "update") {
+				$scope.element.feedforward_file_name = $scope.uploadFileName;
+
+			} else if($scope.action == "save") {
+				$scope.new.feedforward_file_name = $scope.uploadFileName;
+			}
 
 		} else {
 			$scope.uploadFileName2 = data.files[0].name;
 			data.fileId = "rawFile2";
 			data.files[0].fileId = "rawFile2";
-			data.url = serviceurl + "/saverawdata/";
 			$scope.uploadData.rawFile2 = data;
-			//delete $scope.error.feedforward;
 		}
 
 		l($scope.uploadData);
@@ -3320,39 +3328,19 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 		var response = data.jqXHR.responseText;
 		l(e);
 		l(data);
-		$scope.uploadDoneCounter ++;
 
-		// Get upload path
-		if(data.fileId === "rawFile") {
-
-			if($scope.action === "update") {
-				$scope.element.url = JSON.parse(response).path;
-
-			} else if($scope.action == "save") {
-				$scope.new.url = JSON.parse(response).path;
-			}
-
-		// Get raw data id
-		} else {
-
-			if($scope.action === "update") {
-				$scope.element.feedforward_table_id = JSON.parse(response).id;
-
-			} else if($scope.action == "save") {
-				$scope.new.feedforward_table_id = JSON.parse(response).id;
-			}
-		}
-
-		// If all data was successfully uploaded you can save the data
-		if($scope.uploadDoneCounter === Object.keys($scope.uploadData).length) {
-			l("asd");
-			l($scope.items);
-			saveData($scope, onlineDataFactory);
-		}
+		$scope.alert.show = true;
+		$scope.alert.success = true;
+		$scope.alert.title = "Success!";
+		$scope.alert.body = "Data successfully saved!";
 	});
 
 	$scope.$on('fileuploadfail', function(e, data) {
 		l(data);
+		$scope.alert.show = true;
+		$scope.alert.success = false;
+		$scope.alert.title = "Error!";
+		$scope.alert.body = data;
 	});
 
 	$scope.download = function(url) {
@@ -3388,6 +3376,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 		} else if($scope.action == "save") {
 			l($scope.new);
 			result = onlineDataFactory.checkItem($scope.new);
+			l(result);
 		}
 
 		if(result !== true) {
@@ -3396,7 +3385,9 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 		} else {
 
 			if ($scope.uploadData === undefined && action === "save") {
-				$scope.error.url = "Data file field is mandatory!";
+				l("save");
+				l($scope.items);
+				saveData($scope, onlineDataFactory);
 
 			} else if ($scope.uploadData === undefined && action !== "save") {
 				l("asd");
@@ -3413,11 +3404,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	};
 
 	$scope.downloadRawData = function(element) {
-		// Retrieve raw file
-		offlineDataFactory.retrieveRawFile(element.feedforward_table_id).then(function(result) {
-			l(result);
-			download("feedforward_data", result[element.feedforward_table_id].data, result[element.feedforward_table_id].is_ascii);
-		});
+		download(element.feedforward_file_name, element.feedforward_data, false);
 	};
 });
 

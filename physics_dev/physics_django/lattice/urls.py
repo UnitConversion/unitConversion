@@ -12,11 +12,11 @@ urlpatterns = patterns(
     url(r'^lattice/$',
         lattices,
         name='lattices'),
-    
+
     url(r'^lattice/savelatticeinfo/$',
         saveLatticeInfo,
         name='saveLatticeInfo'),
-    
+
     url(r'^lattice/savelattice$',
         saveLattice,
         name='saveLattice'),
@@ -24,7 +24,7 @@ urlpatterns = patterns(
     url(r'^lattice/savemodel$',
         saveModel,
         name='saveModel'),
-                       
+
     url(r'^lattice/web/$',
         lattice_home,
         name='lattice_home'),
@@ -49,7 +49,7 @@ urlpatterns = patterns(
     url(r'^lattice/web/model_details.html$',
         lattice_content_model_details,
         name='lattice_content_model_details'),
-    
+
     url(r'^lattice/web/modal/',
         lattice_modal,
         name='lattice_modal'),
@@ -57,7 +57,7 @@ urlpatterns = patterns(
     url(r'^lattice/savelatticetype$',
         saveLatticeTypeHelper,
         name='saveLatticTypeeHelper'),
-    
+
     url(r'^lattice/upload$',
         saveLatticeHelper,
         name='saveLatticeHelper'),

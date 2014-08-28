@@ -1050,14 +1050,16 @@ class idods(object):
         '''
         Save raw data into database
 
-        params:
-            - data: data we want to save in a blob
+        :param data: data we want to save in a blob
+        :type data: blob
 
-        raises:
-            MySQLError
+        :raises: MySQLError
 
-        returns:
-            {'id': new raw data id}
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': new raw data id}
 
         '''
 
@@ -4955,10 +4957,8 @@ class idods(object):
             raise IOError('Error when writing to a file:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveOnlineData(self, install_name, **kws):
-        '''Save insertion device online data.
-
-        The data itself is stored on server's harddisk because its size might blow up to GB level.
-        Ths file url is stored in the database.
+        '''
+        Save insertion device online data.
 
         :param install_name: device name that the data belongs to
         :type install_name: str
@@ -4969,14 +4969,17 @@ class idods(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param url: external url of the data file is stored
-        :type url: str
+        :param rawdata_path: file path to the common location where the data file is stored
+        :type rawdata_path: str
 
         :param status: status of this data set
         :type status: int
 
-        :param feedforward_table_id: id of the raw data
-        :type feedforward_table_id: str
+        :param feedforward_file_name: feedforward file name
+        :type feedforward_file_name: str
+
+        :param feedforward_data: feedforward data
+        :type feedforward_data: blob
 
         :return: a map with structure like:
 
@@ -5010,11 +5013,11 @@ class idods(object):
         if 'description' in kws and kws['description'] is not None:
             description = kws['description']
 
-        # Check url
-        url = None
+        # Check rawdata path
+        rawdata_path = None
 
-        if 'url' in kws and kws['url'] is not None:
-            url = kws['url']
+        if 'rawdata_path' in kws and kws['rawdata_path'] is not None:
+            rawdata_path = kws['rawdata_path']
 
         # Check status
         status = None
@@ -5022,11 +5025,17 @@ class idods(object):
         if 'status' in kws and kws['status'] is not None:
             status = kws['status']
 
-        # Check feedforward table id
-        feedforward_table_id = None
+        # Check feedforward file name
+        feedforward_file_name = None
 
-        if 'feedforward_table_id' in kws and kws['feedforward_table_id'] is not None:
-            feedforward_table_id = kws['feedforward_table_id']
+        if 'feedforward_file_name' in kws and kws['feedforward_file_name'] is not None:
+            feedforward_file_name = kws['feedforward_file_name']
+
+        # Check feedforward data
+        feedforward_data = None
+
+        if 'feedforward_data' in kws and kws['feedforward_data'] is not None:
+            feedforward_data = kws['feedforward_data']
 
         # Generate SQL
         sql = '''
@@ -5034,12 +5043,13 @@ class idods(object):
             install_id,
             login_name,
             description,
-            data_url,
+            rawdata_path,
             date,
             status,
-            feedforward_table
+            feedforward_file_name,
+            feedforward_data
         ) VALUES (
-            %s, %s, %s, %s, NOW(), %s, %s
+            %s, %s, %s, %s, NOW(), %s, %s, %s
         )
         '''
 
@@ -5050,9 +5060,10 @@ class idods(object):
                 installid,
                 username,
                 description,
-                url,
+                rawdata_path,
                 status,
-                feedforward_table_id
+                feedforward_file_name,
+                feedforward_data
             ))
 
             # Get last row id
@@ -5088,9 +5099,6 @@ class idods(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param url: external url of the data file is stored
-        :type url: str
-
         :param status: status of this data set
         :type status: int
 
@@ -5104,10 +5112,12 @@ class idods(object):
                         'install_name':,            #string
                         'username':,                #string
                         'description':,             #string
-                        'url':,                     #url
+                        'rawdata_path':,            #string
                         'date':,                    #date
                         'status':,                  #int
-                        'feedforward_table_id':,    #int
+                        'feedforward_file_name':,   #int
+                        'feedforward_data':,        #base64 string
+                        'is_ascii':,                #boolean
                     }
                 }
 
@@ -5121,11 +5131,12 @@ class idods(object):
             iod.install_id,
             iod.login_name,
             iod.description,
-            iod.data_url,
+            iod.rawdata_path,
             iod.date,
             iod.status,
             inst.field_name,
-            iod.feedforward_table
+            iod.feedforward_file_name,
+            iod.feedforward_data
         FROM id_online_data iod
         LEFT JOIN install inst ON(iod.install_id = inst.install_id)
         WHERE 1=1
@@ -5151,12 +5162,6 @@ class idods(object):
             sql = sqlVals[0]
             vals = sqlVals[1]
 
-        # Append url
-        if 'url' in kws and kws['url'] is not None:
-            sqlVals = _checkWildcardAndAppend('iod.data_url', kws['url'], sql, vals, 'AND')
-            sql = sqlVals[0]
-            vals = sqlVals[1]
-
         # Append status
         if 'status' in kws and kws['status'] is not None:
             sqlVals = _checkRangeAndAppend('iod.status', kws['status'], sql, vals, 'AND')
@@ -5179,17 +5184,34 @@ class idods(object):
             resdict = {}
 
             for r in res:
+                is_ascii = True
+
+                # Try to decode ascii
+                try:
+                    r[9].decode('ascii')
+
+                except:
+                    is_ascii = False
+
                 resdict[r[0]] = {
                     'id': r[0],
                     'installid': r[1],
                     'install_name': r[7],
                     'username': r[2],
                     'description': r[3],
-                    'url': r[4],
+                    'rawdata_path': r[4],
                     'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
                     'status': r[6],
-                    'feedforward_table_id': r[8]
+                    'feedforward_file_name': r[8],
+                    'is_ascii': is_ascii
                 }
+
+                # Only encode if available
+                if r[9]:
+                    resdict[r[0]]['feedforward_data'] = base64.b64encode(r[9])
+
+                else:
+                    resdict[r[0]]['feedforward_data'] = None
 
             return resdict
 
@@ -5213,14 +5235,17 @@ class idods(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param url: external url of the data file is stored
-        :type url: str
+        :param rawdata_path: file path to the common location where the data file is stored
+        :type rawdata_path: str
 
         :param status: status of this data set
         :type status: int
 
-        :param feedforward_table_id: id of the raw data
-        :type feedforward_table_id: str
+        :param feedforward_file_name: feedforward file name
+        :type feedforward_file_name: str
+
+        :param feedforward_data: feedforward data
+        :type feedforward_data: blob
 
         :return: True if everything is ok
 
@@ -5256,17 +5281,21 @@ class idods(object):
         if 'description' in kws:
             queryDict['description'] = kws['description']
 
-        # Check url
-        if 'url' in kws:
-            queryDict['data_url'] = kws['url']
+        # Check rawdata path
+        if 'rawdata_path' in kws and kws['rawdata_path'] is not None:
+            queryDict['rawdata_path'] = kws['rawdata_path']
 
         # Check status
         if 'status' in kws:
             queryDict['status'] = kws['status']
 
-        # Check feedforward table id
-        if 'feedforward_table_id' in kws:
-            queryDict['feedforward_table'] = kws['feedforward_table_id']
+        # Check feedforward file name
+        if 'feedforward_file_name' in kws:
+            queryDict['feedforward_file_name'] = kws['feedforward_file_name']
+
+        # Check feedforward file name
+        if 'feedforward_data' in kws:
+            queryDict['feedforward_data'] = kws['feedforward_data']
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)
@@ -5303,33 +5332,6 @@ class idods(object):
         :Raises: ValueError, MySQLError
         '''
 
-        # Retrieve offline data
-        onlineData = self.retrieveOnlineData(onlineid=online_data_id)
-
-        if len(onlineData) == 0:
-            raise ValueError("Online data doesn't exist in the database!")
-
-        onlineDataKey = onlineData.keys()[0]
-        onlineDataObj = onlineData[onlineDataKey]
-
-        if onlineDataObj['url'] == '':
-            raise ValueError("Online data url is broken!")
-
-        # Generate path and remove file
-        ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
-        savePath = os.path.split(ROOT_PATH)
-        savePath = os.path.split(savePath[0])
-        savePath = os.path.join(savePath[0], 'physics_dev', 'physics_django')
-
-        if onlineDataObj['url'] is not None:
-            filePath = os.path.join(savePath, onlineDataObj['url'])
-
-            try:
-                os.remove(filePath)
-
-            except:
-                raise IOError("File (%s) cannot be deleted!" % filePath)
-
         # Generate SQL
         sql = "DELETE FROM id_online_data WHERE id_online_data_id = %s"
         vals = [online_data_id]
@@ -5341,9 +5343,6 @@ class idods(object):
             # Create transaction
             if self.transaction is None:
                 self.conn.commit()
-
-            # Delete raw data
-            self.deleteRawData(onlineDataObj['feedforward_table_id'])
 
             return True
 

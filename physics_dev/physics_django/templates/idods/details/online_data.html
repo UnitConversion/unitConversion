@@ -41,11 +41,9 @@
 						<tr ng-repeat="property in element.retrieve_hide">
 							<td>{{element.display[property] | iff : element.display[property] : property | firstLetterUppercase}}</td>
 
-							<td ng-if="property == 'url'"><button ng-click="download(element[property])" class="btn btn-info">Download file</button></td>
+							<td ng-if="property == 'feedforward_data'"><span ng-if="!element.feedforward_data">Feedforward data was not uploaded!</span><button ng-if="element.feedforward_data" class="btn btn-info" ng-click="downloadRawData(element)">Download feedforwad data</button></td>
 
-							<td ng-if="property == 'feedforward_table_id'"><span ng-if="!element.feedforward_table_id">Feedforward table was not uploaded!</span><button ng-if="element.feedforward_table_id" class="btn btn-info" ng-click="downloadRawData(element)">Download feedforwad table file</button></td>
-
-							<td ng-if="property != 'url' && property != 'feedforward_table_id'">{{element[property]}}</td>
+							<td ng-if="property != 'feedforward_data'">{{element[property]}}</td>
 						</tr>
 					</table>
 				</td>
@@ -109,9 +107,13 @@
 
 								<select ng-if="property == 'install_name'" ng-model="new[property]" ng-options="inst for inst in installs"></select>
 
-								<input ng-if="property != 'install_name' && property != 'status'" type="text" ng-model="new[property]" />
+								<input ng-if="property == 'install_name'" type="hidden" name="install_name" value="{{new['install_name']}}" />
+
+								<input name="{{property}}" ng-if="property != 'install_name' && property != 'status'" type="text" ng-model="new[property]" />
 
 								<select ng-if="property == 'status'" ng-model="new[property]" ng-options="s.name as s.value for s in statusArr"></select>
+
+								<input ng-if="property == 'status'" type="hidden" name="status" value="{{new['status']}}" />
 
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
@@ -119,45 +121,19 @@
 					</td>
 				</tr>
 				<tr>
-					<td>Data file name *</td>
 					<td>
-						<span class="control-group" ng-class="{'error': error['file_name']}">
-							<span class="controls">
-
-								<input type="text" name="file_name" ng-model="new['file_name']" />
-
-								<span class="help-inline">{{error['file_name']}}</span>
-							</span>
-						</span>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Data file *
-					</td>
-					<td>
-						<div class="control-group" ng-class="{'error': error.url}">
-							<span class="btn btn-success fileinput-button">
-								<i class="icon-file icon-white"></i>
-								<input id="rawFile" type="file" name="file">
-							</span>
-							{{uploadFileName}}
-							<span class="help-inline">{{error.url}}</span>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Feedforward table
+						Feedforward data
 					</td>
 					<td>
 						<div class="control-group" ng-class="{'error': error.feedforward}">
 							<span class="btn btn-success fileinput-button">
 								<i class="icon-file icon-white"></i>
-								<input id="rawFile2" type="file" name="file">
+								<input id="rawFile" type="file" name="file">
 							</span>
-							{{uploadFileName2}}
+							{{uploadFileName}}
 							<span class="help-inline">{{error.feedforward}}</span>
+
+							<input type="hidden" name="feedforward_file_name" value="{{uploadFileName}}" />
 						</div>
 					</td>
 				</tr>
@@ -199,9 +175,15 @@
 
 								<select ng-if="property == 'install_name'" ng-model="element[property]" ng-options="inst for inst in installs"></select>
 
+								<input ng-if="property == 'install_name'" type="hidden" name="install_name" value="{{element['install_name']}}" />
+
+								<input ng-if="property == 'install_name'" type="hidden" name="online_data_id" value="{{element['online_data_id']}}" />
+
 								<input ng-if="property != 'status' && property != 'install_name'" type="text" ng-model="element[property]" />
 
 								<select ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select>
+
+								<input ng-if="property == 'status'" type="hidden" name="status" value="{{element['status']}}" />
 
 								<span class="help-inline">{{error[property]}}</span>
 							</span>
@@ -209,45 +191,19 @@
 					</td>
 				</tr>
 				<tr>
-					<td>Data file name *</td>
 					<td>
-						<span class="control-group" ng-class="{'error': error['file_name']}">
-							<span class="controls">
-
-								<input type="text" name="file_name" ng-model="element['file_name']" />
-
-								<span class="help-inline">{{error['file_name']}}</span>
-							</span>
-						</span>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Data file *
-					</td>
-					<td>
-						<div class="control-group" ng-class="{'error': error.url}">
-							<span class="btn btn-success fileinput-button">
-								<i class="icon-file icon-white"></i>
-								<input id="rawFile" type="file" name="file">
-							</span>
-							{{uploadFileName}}
-							<span class="help-inline">{{error.url}}</span>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						Feedforward table
+						Feedforward data
 					</td>
 					<td>
 						<div class="control-group" ng-class="{'error': error.feedforward}">
 							<span class="btn btn-success fileinput-button">
 								<i class="icon-file icon-white"></i>
-								<input id="rawFile2" type="file" name="file">
+								<input id="rawFile" type="file" name="file">
 							</span>
-							{{uploadFileName2}}
+							{{uploadFileName}}
 							<span class="help-inline">{{error.feedforward}}</span>
+
+							<input type="hidden" name="feedforward_file_name" value="{{uploadFileName}}" />
 						</div>
 					</td>
 				</tr>

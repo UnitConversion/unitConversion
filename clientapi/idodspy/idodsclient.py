@@ -2560,17 +2560,8 @@ class IDODSClient(object):
         return r.json()
 
     def retrieveOnlineData(self, **kws):
-        '''Retrieve insertion device online data using any of the acceptable key words:
-
-        - onlineid
-        - install_name
-        - username
-        - description
-        - url
-        - status
-        - with_data
-        - data_path
-        - callback
+        '''
+        Retrieve insertion device online data using any of the acceptable key words:
 
         :param onlineid: id of the online data we want to update by
         :type onlineid: int
@@ -2584,42 +2575,25 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param url: external url of the data file is stored
-        :type url: str
-
         :param status: status of this data set
         :type status: int
-
-        :param with_data: should data be downloaded from the server or not
-        :type with_data: boolean
-
-        :param data_path: path to the local file in which downloaded file will be put to
-        :type data_path: string
-
-        :param callback: reference to a local method that will receive info about a file that is being downloaded. This parameter, if present, is a hook function that will be called once on establishment of the network connection and once after each
-                        block read thereafter. The hook will be passed three arguments; a count of blocks transferred so far, a block size in bytes, and the total size of the file. The third argument may be -1 in some cases.
-
-            Example of the callback method
-
-            def callback(block_number, block_size, total_size):
-                print block_number, block_size, total_size
-
-        :type callback: function
 
         :return: a map with structure like:
 
             .. code-block:: python
 
                 {'id': {
-                        'id':,                  #int
-                        'installid':,           #int
-                        'install_name':,        #string
-                        'username':,            #string
-                        'description':,         #string
-                        'url':,                 #string
-                        'date':,                #date
-                        'status':,              #int
-                        'feedforward_table':    #string, base64 encoded file content
+                        'id':,                      #int
+                        'installid':,               #int
+                        'install_name':,            #string
+                        'username':,                #string
+                        'description':,             #string
+                        'rawdata_path':,            #string
+                        'date':,                    #date
+                        'status':,                  #int
+                        'feedforward_file_name':,   #int
+                        'feedforward_data':,        #base64 string
+                        'is_ascii':,                #boolean
                     }
                 }
 
@@ -2648,10 +2622,6 @@ class IDODSClient(object):
         if 'description' in kws:
             params['description'] = kws['description']
 
-        # Add url
-        if 'url' in kws:
-            params['url'] = kws['url']
-
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
@@ -2661,62 +2631,11 @@ class IDODSClient(object):
 
         returnData = r.json()
 
-        # Set data path
-        data_path = None
-
-        if 'data_path' in kws:
-            data_path = kws['data_path']
-
-        # Set callback
-        callback = None
-
-        if 'callback' in kws:
-            callback = kws['callback']
-
-        # Append data if with_data is set
-        if 'with_data' in kws and kws['with_data'] is True:
-
-            # Set URL
-            url = 'rawdata/'
-
-            # Go through all returned online data and append data
-            onlineDataKeys = returnData.keys()
-
-            for key in onlineDataKeys:
-                onlineData = returnData[key]
-                urlParts = self.__baseURL.split('/')
-                downloadUrl = urlParts[:-3]
-
-                urllib.urlretrieve('/'.join(downloadUrl) + '/' + onlineData['url'], filename=data_path, reporthook=callback)
-
-                # Set parameters
-                params = {
-                    'raw_data_id': onlineData['feedforward_table_id']
-                }
-
-                result = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
-                self.__raise_for_status(r.status_code, r.text)
-                resultData = result.json()
-
-                resultKeys = resultData.keys()
-                resultObject = resultData[resultKeys[0]]
-                returnData[key]['feedforward_table'] = resultObject['data']
-
         return returnData
 
     def saveOnlineData(self, install_name, **kws):
-        '''Save insertion device online data using any of the acceptable key words:
-
-        - install_name
-        - username
-        - description
-        - data
-        - data_file_name
-        - status
-        - feedforward_table
-
-        The data itself is stored on server's harddisk because its size might blow up to GB level.
-        Ths file url is stored in the database.
+        '''
+        Save insertion device online data using any of the acceptable key words:
 
         :param install_name: device name that the data belongs to
         :type install_name: str
@@ -2727,17 +2646,17 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param data: path to the file we want to upload
-        :type data: str
-
-        :param data_file_name: name of the file we want to upload
-        :type data_file_name: str
+        :param rawdata_path: file path to the common location where the data file is stored
+        :type rawdata_path: str
 
         :param status: status of this data set
         :type status: int
 
-        :param feedforward_table: real data dumped into JSON string
-        :type feedforward_table: str
+        :param feedforward_file_name: feedforward file name
+        :type feedforward_file_name: str
+
+        :param feedforward_data: feedforward data
+        :type feedforward_data: blob
 
         :return: a map with structure like:
 
@@ -2764,27 +2683,21 @@ class IDODSClient(object):
         if 'username' in kws:
             params['username'] = kws['username']
 
-        # Add url
-        if 'data' in kws and 'data_file_name' in kws:
-
-            # Upload a file
-            uploadedFile = self.uploadFile(kws['data'], kws['data_file_name'])
-
-            params['url'] = uploadedFile['path']
-
-        # Add feedforward table data
-        if 'feedforward_table' in kws:
-            fileName = kws['feedforward_table']
-
-            with open(fileName, 'rb') as f:
-                ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
-                self.__raise_for_status(ur.status_code, ur.text)
-
-            params['feedforward_table'] = ur.json()['id']
+        # Add rawdata_path
+        if 'rawdata_path' in kws:
+            params['rawdata_path'] = kws['rawdata_path']
 
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
+
+        # Add feedforward_file_name
+        if 'feedforward_file_name' in kws:
+            params['feedforward_file_name'] = kws['feedforward_file_name']
+
+        # Add feedforward_file_name
+        if 'feedforward_data' in kws:
+            params['feedforward_data'] = kws['feedforward_data']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
@@ -2795,17 +2708,6 @@ class IDODSClient(object):
         '''
         Update insertion device online data using any of the acceptable key words:
 
-        - install_name
-        - username
-        - description
-        - data
-        - data_file_name
-        - status
-        - feedforward_table
-
-        The data itself is stored on server's harddisk because its size might blow up to GB level.
-        Ths file url is stored in the database.
-
         :param install_name: device name that the data belongs to
         :type install_name: str
 
@@ -2815,17 +2717,17 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param data: path to the file we want to upload
-        :type data: str
-
-        :param data_file_name: name of the file we want to upload
-        :type data_file_name: str
+        :param rawdata_path: file path to the common location where the data file is stored
+        :type rawdata_path: str
 
         :param status: status of this data set
         :type status: int
 
-        :param feedforward_table: real data dumped into JSON string
-        :type feedforward_table: str
+        :param feedforward_file_name: feedforward file name
+        :type feedforward_file_name: str
+
+        :param feedforward_data: feedforward data
+        :type feedforward_data: blob
 
         :return: True if everything is ok
 
@@ -2856,27 +2758,21 @@ class IDODSClient(object):
         if 'username' in kws:
             params['username'] = kws['username']
 
-        # Add url
-        if 'data' in kws and 'data_file_name' in kws:
-
-            # Upload a file
-            uploadedFile = self.uploadFile(kws['data'], kws['data_file_name'])
-
-            params['url'] = uploadedFile['path']
-
-        # Add feedforward table data
-        if 'feedforward_table' in kws:
-            fileName = kws['feedforward_table']
-
-            with open(fileName, 'rb') as f:
-                ur = self.__session.post(self.__baseURL+'saverawdata/', files={'file': f}, auth=self.__auth)
-                self.__raise_for_status(ur.status_code, ur.text)
-
-            params['feedforward_table'] = ur.json()['id']
+        # Add rawdata_path
+        if 'rawdata_path' in kws:
+            params['rawdata_path'] = kws['rawdata_path']
 
         # Add status
         if 'status' in kws:
             params['status'] = kws['status']
+
+        # Add feedforward_file_name
+        if 'feedforward_file_name' in kws:
+            params['feedforward_file_name'] = kws['feedforward_file_name']
+
+        # Add feedforward_data
+        if 'feedforward_data' in kws:
+            params['feedforward_data'] = kws['feedforward_data']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)

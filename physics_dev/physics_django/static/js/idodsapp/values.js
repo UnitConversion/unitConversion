@@ -178,8 +178,6 @@ app.value('CmpntTypeInfo', {
 
  				this.prop_keys.push({'name':key, 'value':obj[key]});
  			}
-
-
  		}
 
  		this.description = obj.description;
@@ -1315,36 +1313,79 @@ app.value('OnlineDataInfo', {
  app.value('OnlineData', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["install_name", "status", "file_name"];
+ 	this.m = ["install_name", "status"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["install_name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "install_name", "description", "username", "status", "url", "date"];
+ 	this.retrieve = [
+ 		"id",
+ 		"install_name",
+ 		"description",
+ 		"username",
+ 		"status",
+ 		"rawdata_path",
+ 		"date",
+ 		"feedforward_file_name",
+ 		"feedforward_data"
+ 	];
 
  	// Parameters that are displayed when showing item details
  	this.retrieve_show = ["id", "status"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["install_name", "description", "username", "url", "date", "feedforward_table_id"];
+ 	this.retrieve_hide = [
+ 		"install_name",
+ 		"description",
+ 		"username",
+ 		"rawdata_path",
+ 		"date",
+ 		"feedforward_data"
+ 		];
 
  	// Parameters that are checked before saving or updating
  	this.list = ["install_name", "description", "date", "status"];
 
  	// Parameters used for save URL
- 	this.save = ["install_name", "description", "status", "url", "feedforward_table_id"];
+ 	this.save = [
+ 		"install_name",
+ 		"description",
+ 		"status",
+ 		"rawdata_path",
+ 		"feedforward_file_name",
+ 		"feedforward_data"
+ 	];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["install_name", "description", "status"];
+ 	this.save_show = ["install_name", "description", "rawdata_path", "status"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["online_data_id", "install_name", "description", "status", "url", "feedforward_table_id"];
+ 	this.update = [
+ 		"online_data_id",
+ 		"install_name",
+ 		"description",
+ 		"status",
+ 		"rawdata_path",
+ 		"feedforward_file_name",
+ 		"feedforward_data"
+ 	];
 
  	// Parameters that are displayed in install details pane
  	this.install_display = ["date", "description", "status"];
 
- 	this.all = ["online_data_id", "id", "install_name", "description", "username", "date", "status", "url", "file_name", "feedforward_table_id"];
+ 	this.all = [
+ 		"online_data_id",
+ 		"id",
+ 		"install_name",
+ 		"description",
+ 		"username",
+ 		"date",
+ 		"status",
+ 		"rawdata_path",
+ 		"feedforward_file_name",
+ 		"feedforward_data"
+ 	];
 
  	this.display = {
  		"id": "Id",
@@ -1352,8 +1393,9 @@ app.value('OnlineDataInfo', {
  		"description": "Description",
  		"status": "Status",
  		"date": "Date",
- 		"url": "Data file",
- 		"file_name": "Data file name"
+ 		"rawdata_path": "Raw data file path",
+ 		"feedforward_file_name": "Feedforward data file name",
+ 		"feedforward_data": "Feedforward data"
  	};
 
  	this.id = "";
@@ -1363,9 +1405,9 @@ app.value('OnlineDataInfo', {
  	this.username = "";
  	this.date = "";
  	this.status = "";
- 	this.url = "";
- 	this.file_name = "";
- 	this.feedforward_table_id = undefined;
+ 	this.rawdata_path = "";
+ 	this.feedforward_file_name = "";
+ 	this.feedforward_data = undefined;
 
  	this.set = function(obj) {
 
@@ -1384,17 +1426,17 @@ app.value('OnlineDataInfo', {
 
   		}
 
- 		if(this.url !== undefined && this.url !== "") {
+ 		// if(this.url !== undefined && this.url !== "") {
 
-	 		var urlParts = obj.url.split(/[\/\\]/);
+	 	// 	var urlParts = obj.url.split(/[\/\\]/);
 
-	 		if (urlParts.length >= 1) {
-	 			this.file_name = urlParts[urlParts.length-1];
-	 		}
+	 	// 	if (urlParts.length >= 1) {
+	 	// 		this.file_name = urlParts[urlParts.length-1];
+	 	// 	}
 
- 		} else {
- 			this.file_name = obj.file_name;
- 		}
+ 		// } else {
+ 		// 	this.file_name = obj.file_name;
+ 		// }
  	};
 
  	if(obj !== undefined) {

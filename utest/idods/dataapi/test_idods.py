@@ -894,7 +894,7 @@ class TestIdods(unittest.TestCase):
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
-        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1)
 
         # Retrieve online data
         retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
@@ -911,25 +911,23 @@ class TestIdods(unittest.TestCase):
         self.assertEqual('username', retrievedOnlineDataObject['username'])
 
         # Test URL
-        self.assertEqual('url', retrievedOnlineDataObject['url'])
+        self.assertEqual('url', retrievedOnlineDataObject['rawdata_path'])
 
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
 
         # Prepare raw data
         with open('download_4', 'rb') as f:
-            savedData = self.api.saveRawData(f.read())
+            # Save online data
+            onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1, feedforward_data=f.read())
 
-        # Save online data
-        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1, feedforward_table_id=savedData['id'])
+            # Retrieve online data
+            retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
+            retrievedOnlineDataKeys = retrievedOnlineData.keys()
+            retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
 
-        # Retrieve online data
-        retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
-        retrievedOnlineDataKeys = retrievedOnlineData.keys()
-        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
-
-        # Test feedforward table id
-        self.assertEqual(retrievedOnlineDataObject['feedforward_table_id'], savedData['id'])
+            # Test rawdata path
+            self.assertEqual(retrievedOnlineDataObject['rawdata_path'], 'url')
 
     '''
     Test update online data
@@ -943,7 +941,7 @@ class TestIdods(unittest.TestCase):
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
-        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1)
 
         # Update online data
         self.assertTrue(self.api.updateOnlineData(onlineid['id'], username='username2'))
@@ -957,25 +955,23 @@ class TestIdods(unittest.TestCase):
         self.assertEqual('username2', retrievedOnlineDataObject['username'])
 
         # Test URL
-        self.assertEqual('url', retrievedOnlineDataObject['url'])
+        self.assertEqual('url', retrievedOnlineDataObject['rawdata_path'])
 
         # Test status
         self.assertEqual(1, retrievedOnlineDataObject['status'])
 
         # Prepare raw data
         with open('download_4', 'rb') as f:
-            savedData = self.api.saveRawData(f.read())
+            # Update online data with new feedforward table
+            self.assertTrue(self.api.updateOnlineData(onlineid['id'], feedforward_file_name="file_name", feedforward_data=f.read()))
 
-        # Update online data with new feedforward table
-        self.assertTrue(self.api.updateOnlineData(onlineid['id'], feedforward_table_id=savedData['id']))
+            # Retrieve online data
+            retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
+            retrievedOnlineDataKeys = retrievedOnlineData.keys()
+            retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
 
-        # Retrieve online data
-        retrievedOnlineData = self.api.retrieveOnlineData(onlineid=onlineid['id'])
-        retrievedOnlineDataKeys = retrievedOnlineData.keys()
-        retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
-
-        # Test username
-        self.assertEqual(retrievedOnlineDataObject['feedforward_table_id'], savedData['id'])
+            # Test username
+            self.assertEqual(retrievedOnlineDataObject['feedforward_file_name'], "file_name")
 
     def testOnlineData(self):
 
@@ -986,15 +982,12 @@ class TestIdods(unittest.TestCase):
         savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
-        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url='url', status=1)
-
-        # Delete online data
-        self.assertRaises(IOError, self.api.deleteOnlineData, onlineid['id'])
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1)
 
         fileResult = self.api.saveFile('tmp', 'bla')
 
         # Save online data
-        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', url=fileResult['path'], status=1)
+        onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path=fileResult['path'], status=1)
 
         # Delete online data
         self.assertTrue(self.api.deleteOnlineData(onlineid['id']))

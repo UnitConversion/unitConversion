@@ -239,7 +239,7 @@ function saveData($scope, dataFactory) {
 			$scope.alert.show = true;
 			$scope.alert.success = true;
 			$scope.alert.title = "Success!";
-			$scope.alert.body = "Offline data successfully saved!";
+			$scope.alert.body = "Data successfully saved!";
 
 		}, function(error) {
 			$scope.alert.show = true;
