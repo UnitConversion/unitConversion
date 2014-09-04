@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Diagram Name: v0_6
--- Created on: 8/26/2014 9:57:25 AM
--- Diagram Version: 534
+-- Created on: 9/4/2014 9:43:03 AM
+-- Diagram Version: 535
 -- =============================================================================
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -297,7 +297,7 @@ CREATE TABLE `inventory` (
   `serial_no` varchar(255),
   PRIMARY KEY(`inventory_id`),
   INDEX `idx_cmpnt_type_id_c`(`cmpnt_type_id`),
-  UNIQUE INDEX `new_index64`(`name`),
+  UNIQUE INDEX `new_index64`(`cmpnt_type_id`, `vendor_id`, `serial_no`),
   CONSTRAINT `cmpnt_ibfk_1` FOREIGN KEY (`cmpnt_type_id`)
     REFERENCES `cmpnt_type`(`cmpnt_type_id`)
     ON DELETE RESTRICT
@@ -357,7 +357,7 @@ CREATE TABLE `cmpnt_type_prop` (
   `cmpnt_type_prop_id` int(11) NOT NULL AUTO_INCREMENT,
   `cmpnt_type_id` int(11) NOT NULL DEFAULT '0',
   `cmpnt_type_prop_type_id` int(11),
-  `cmpnt_type_prop_value` varchar(4096),
+  `cmpnt_type_prop_value` mediumtext,
   PRIMARY KEY(`cmpnt_type_prop_id`),
   CONSTRAINT `Ref_188` FOREIGN KEY (`cmpnt_type_prop_type_id`)
     REFERENCES `cmpnt_type_prop_type`(`cmpnt_type_prop_type_id`)
@@ -669,7 +669,7 @@ CREATE TABLE `inventory_prop` (
   `inventory_prop_id` int(11) NOT NULL AUTO_INCREMENT,
   `inventory_id` int(11) NOT NULL,
   `inventory_prop_tmplt_id` int(11) NOT NULL DEFAULT '0',
-  `inventory_prop_value` varchar(4096),
+  `inventory_prop_value` mediumtext,
   PRIMARY KEY(`inventory_prop_id`),
   INDEX `idx_cmpnt_id`(`inventory_id`),
   CONSTRAINT `Ref_71` FOREIGN KEY (`inventory_id`)
