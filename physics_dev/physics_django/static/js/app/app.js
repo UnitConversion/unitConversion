@@ -13,13 +13,16 @@ app.config(function($routeSegmentProvider, $routeProvider){
 	$routeSegmentProvider.options.autoLoadTemplates = true;
 
 	$routeSegmentProvider.
-		when('/',																											's1.home').
-		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',					's1.home.list_install').
-		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',			's1.home.list_install.details').
-		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view/:subview',	's1.home.list_install.details.results').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',												's1.home.list_inventory').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',										's1.home.list_inventory.details').
-		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view/:subview',								's1.home.list_inventory.details.results').
+		when('/',																												's1.home').
+		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',						's1.home.list_install').
+		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/inst_id/:inst_id/step/md',	's1.home.list_install.wizard.md').
+		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/inst_id/:inst_id/step/mt_m',  's1.home.list_install.wizard.mt.m').
+		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/inst_id/:inst_id/step/mt_mc', 's1.home.list_install.wizard.mt.mc').
+		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',				's1.home.list_install.details').
+		when('/type/:type/system/:system?/name/:name?/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view/:subview',		's1.home.list_install.details.results').
+		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/list',													's1.home.list_inventory').
+		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view',											's1.home.list_inventory.details').
+		when('/type/:type/cmpnt_type/:cmpnt_type?/serialno/:serialno?/id/:id/:view/:subview',									's1.home.list_inventory.details.results').
 
 		segment('s1', {
 			templateUrl: 'content.html',
@@ -56,6 +59,31 @@ app.config(function($routeSegmentProvider, $routeProvider){
 					dependencies: ['type', 'system', 'name', 'cmpnt_type', 'serialno']
 				}).
 				within().
+					segment('wizard', {
+						templateUrl: 'wizard.html',
+						controller: 'showWizardCtrl',
+						dependencies: ['inst_id']
+					}).
+					within().
+						segment('md', {
+							templateUrl: 'md.html',
+							controller: 'showWizardCtrl'
+						}).
+						segment('mt', {
+							templateUrl: 'mt.html',
+							controller: 'showWizardCtrl'
+						}).
+						within().
+							segment('m', {
+								templateUrl: 'municonv.html',
+								controller: 'showWizardCtrl'
+							}).
+							segment('mc', {
+								templateUrl: 'municonv_chain.html',
+								controller: 'showWizardCtrl'
+							}).
+						up().
+					up().
 					segment('details', {
 						templateUrl: 'details.html',
 						controller: 'showDetailsCtrl',

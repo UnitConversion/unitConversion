@@ -24,11 +24,17 @@ app.config(function($routeSegmentProvider, $routeProvider) {
 
 	$routeSegmentProvider.
 		when('/inventory_name/:inventory_name?/view/:view', 'data').
+		when('/cmpnt_type_name/:cmpnt_type_name?/view/:view', 'ctdata').
 
 		segment('data', {
 			templateUrl: 'content.html',
 			controller: 'dataCtrl',
 			dependencies: ['view', 'inventory_name']
+		}).
+		segment('ctdata', {
+			templateUrl: 'content.html',
+			controller: 'ctDataCtrl',
+			dependencies: ['view', 'cmpnt_type_name']
 		});
 
 		$routeProvider.otherwise({redirectTo: '/inventory_name//view/readwrite'});

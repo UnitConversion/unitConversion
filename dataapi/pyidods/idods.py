@@ -9,6 +9,7 @@ import MySQLdb
 import os
 import base64
 import time
+import datetime
 
 from utils import (_generateFilePath, _checkParameter, _checkWildcardAndAppend, _generateUpdateQuery, _checkRangeAndAppend)
 from _mysql_exceptions import MySQLError
@@ -959,7 +960,7 @@ class idods(object):
 
         total = time.time() - startedd
         total = total*1000
-        print '=> elapsed time idods.retrieveInventory.DB: %f ms' % total
+        # print '=> elapsed time idods.retrieveInventory.DB: %f ms' % total
 
         resdict = {}
 
@@ -1084,7 +1085,7 @@ class idods(object):
 
             total = time.time() - startedd
             total = total*1000
-            print '=> elapsed time idods.saveRawData.DB: %f ms' % total
+            # print '=> elapsed time idods.saveRawData.DB: %f ms' % total
 
             return {'id': dataid}
 
@@ -1572,7 +1573,7 @@ class idods(object):
 
             total2 = time.time() - startedd2
             total2 = total2*1000
-            print '=> elapsed time idods.saveOfflineData.DB: %f ms' % total2
+            # print '=> elapsed time idods.saveOfflineData.DB: %f ms' % total2
 
             return {'id': offlinedataid}
 
@@ -2120,11 +2121,11 @@ class idods(object):
 
             total2 = time.time() - startedd2
             total2 = total2*1000
-            print '=> elapsed time idods.saveDataMethod.DB: %f ms' % total2
+            # print '=> elapsed time idods.saveDataMethod.DB: %f ms' % total2
 
             total = time.time() - startedd
             total = total*1000
-            print '=> elapsed time view.saveDataMethod.W: %f ms' % total
+            # print '=> elapsed time view.saveDataMethod.W: %f ms' % total
 
             return {'id': dataMethodId}
 
@@ -2267,7 +2268,7 @@ class idods(object):
 
             total2 = time.time() - startedd2
             total2 = total2*1000
-            print '=> elapsed time idods.retrieveDataMethod.DB: %f ms' % total2
+            # print '=> elapsed time idods.retrieveDataMethod.DB: %f ms' % total2
 
             resdict = {}
 
@@ -2281,7 +2282,7 @@ class idods(object):
 
             total = time.time() - startedd
             total = total*1000
-            print '=> elapsed time idods.retrieveDataMethod.W: %f ms' % total
+            # print '=> elapsed time idods.retrieveDataMethod.W: %f ms' % total
 
             return resdict
 
@@ -2745,10 +2746,18 @@ class idods(object):
             retrieveComponentTypePropertyType = self.retrieveComponentTypePropertyType(componentTypePropertyTypeName)
 
             if len(retrieveComponentTypePropertyType) == 0:
-                raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName)
 
-            retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
-            componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
+                # System parameters should be added automatically
+                if componentTypePropertyTypeName.startswith('__') and componentTypePropertyTypeName.endswith('__') or componentTypePropertyTypeName == 'rot_coil_data' or componentTypePropertyTypeName == 'hall_probe_data':
+                    res = self.saveComponentTypePropertyType(componentTypePropertyTypeName, 'System parameter')
+                    componentTypePropertyTypeId = res['id']
+
+                else:
+                    raise ValueError("Component type property type (%s) doesn't exist in the database!" % componentTypePropertyTypeName)
+
+            else:
+                retrieveComponentTypePropertyTypeKeys = retrieveComponentTypePropertyType.keys()
+                componentTypePropertyTypeId = retrieveComponentTypePropertyType[retrieveComponentTypePropertyTypeKeys[0]]['id']
 
         properties = self.physics.retrieveComponentTypeProperty(componentTypeId, componentTypePropertyTypeId, value)
 
@@ -2949,7 +2958,7 @@ class idods(object):
 
             total = time.time() - startedd
             total = total*1000
-            print '=> elapsed time idods.retrieveComponentType.DB: %f ms' % total
+            # print '=> elapsed time idods.retrieveComponentType.DB: %f ms' % total
 
             # Create return dictionry
             resdict = {}
@@ -3154,6 +3163,10 @@ class idods(object):
                 # Update all the properties
                 for key in props:
                     value = props[key]
+
+                    # Dump value if it is dictionary
+                    if isinstance(value, (dict)):
+                        value = json.dumps(value)
 
                     if key in currentPropsDict:
 
@@ -4657,11 +4670,11 @@ class idods(object):
 
         total2 = time.time() - startedd2
         total2 = total2*1000
-        print '=> elapsed time idods.saveInstall.DB: %f ms' % total2
+        # print '=> elapsed time idods.saveInstall.DB: %f ms' % total2
 
         total = time.time() - startedd
         total = total*1000
-        print '=> elapsed time idods.saveInstall.W: %f ms' % total
+        # print '=> elapsed time idods.saveInstall.W: %f ms' % total
 
         # Save install rel so properties can be saved fot install
         mapid = self.physics.saveInstallRel(invid, invid)
@@ -4890,7 +4903,7 @@ class idods(object):
             resdict = {}
             total = time.time() - startedd
             total = total*1000
-            print '=> elapsed time idods.retrieveInstall.DB: %f ms' % total
+            # print '=> elapsed time idods.retrieveInstall.DB: %f ms' % total
 
             # Construct return dict
             for r in res:
@@ -4918,7 +4931,7 @@ class idods(object):
 
             total2 = time.time() - startedd2
             total2 = total2*1000
-            print '=> elapsed time idods.retrieveInstall.W: %f ms' % total2
+            # print '=> elapsed time idods.retrieveInstall.W: %f ms' % total2
             return resdict
 
         except MySQLdb.Error as e:
@@ -5843,110 +5856,110 @@ class idods(object):
         '''
         Update rotation coil data
 
-        :param rot_coil_data_id:
+        :param rot_coil_data_id: id of the data in the database
         :type rot_coil_data_id: int
 
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
-        :type alias:
+        :param alias: alias name
+        :type alias: str
 
-        :param meas_coil_id:
-        :type meas_coil_id:
+        :param meas_coil_id: ID number of device used for this measurement
+        :type meas_coil_id: str
 
-        :param ref_radius:
-        :type ref_radius:
+        :param ref_radius: reference radius
+        :type ref_radius: double
 
-        :param magnet_notes:
-        :type magnet_notes:
+        :param magnet_notes: comment for this magnet measurement data set
+        :type magnet_notes: str
 
-        :param login_name:
-        :type login_name:
+        :param login_name: user who generated this data set
+        :type login_name: str
 
-        :param cond_curr:
-        :type cond_curr:
+        :param cond_curr: condition current
+        :type cond_curr: double
 
-        :param meas_loc:
-        :type meas_loc:
+        :param meas_loc: measurement location
+        :type meas_loc: str
 
-        :param run_number:
-        :type run_number:
+        :param run_number: in which run this data was produced
+        :type run_number: str
 
-        :param sub_device:
-        :type sub_device:
+        :param sub_device: name of the sub device
+        :type sub_device: str
 
-        :param current_1:
-        :type current_1:
+        :param current_1: 1 st measurement current
+        :type current_1: double
 
-        :param current_2:
-        :type current_2:
+        :param current_2: 2 nd measurement current
+        :type current_2: double
 
-        :param current_3:
-        :type current_3:
+        :param current_3: 3 rd measurement current
+        :type current_3: double
 
-        :param up_dn_1:
-        :type up_dn_1:
+        :param up_dn_1: direction of 1 st current
+        :type up_dn_1: str
 
-        :param up_dn_2:
-        :type up_dn_2:
+        :param up_dn_2: direction of 2 nd current
+        :type up_dn_2: str
 
-        :param up_dn_3:
-        :type up_dn_3:
+        :param up_dn_3: direction of 4 rd current
+        :type up_dn_3: str
 
-        :param analysis_number:
-        :type analysis_number:
+        :param analysis_number: in which analysis does this data belongs
+        :type analysis_number: str
 
-        :param integral_xfer_function:
-        :type integral_xfer_function:
+        :param integral_xfer_function: integral transfer function
+        :type integral_xfer_function: double
 
-        :param orig_offset_x:
-        :type orig_offset_x:
+        :param orig_offset_x: horizontal origin offset
+        :type orig_offset_x: double
 
-        :param orig_offset_y:
-        :type orig_offset_y:
+        :param orig_offset_y: vertical origin offset
+        :type orig_offset_y: double
 
-        :param b_ref_int:
-        :type b_ref_int:
+        :param b_ref_int: integrated reference field
+        :type b_ref_int: double
 
-        :param roll_angle:
-        :type roll_angle:
+        :param roll_angle: rolling angle
+        :type roll_angle: double
 
-        :param meas_notes:
-        :type meas_notes:
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
 
-        :param author:
-        :type author:
+        :param author: who measured it
+        :type author: str
 
-        :param a1:
-        :type a1:
+        :param a1: magnetic field (a1)
+        :type a1: double
 
-        :param a2:
-        :type a2:
+        :param a2: magnetic field (a2)
+        :type a2: double
 
-        :param a3:
-        :type a3:
+        :param a3: magnetic field (a3)
+        :type a3: double
 
-        :param b1:
-        :type b1:
+        :param b1: magnetic field (b1)
+        :type b1: double
 
-        :param b2:
-        :type b2:
+        :param b2: magnetic field (b2)
+        :type b2: double
 
-        :param b3:
-        :type b3:
+        :param b3: magnetic field (b3)
+        :type b3: double
 
-        :param a4_21:
-        :type a4_21:
+        :param a4_21: high order magnetic field (a4 to a21)
+        :type a4_21: str
 
-        :param b4_21:
-        :type b4_21:
+        :param b4_21: high order magnetic field (b4 to b21)
+        :type b4_21: str
 
-        :param data_issues:
-        :type data_issues:
+        :param data_issues: Reserved: special field to note each measure point
+        :type data_issues: str
 
-        :param data_usage:
-        :type data_usage:
+        :param data_usage: Reserved
+        :type data_usage: int
 
         :return: True if everything was ok
 
@@ -6214,11 +6227,875 @@ class idods(object):
         '''
         Update hall probe data
 
-        :param hall_probe_id: id hall probe
+        :param hall_probe_id: id of the hall probe
         :type hall_probe_id: int
 
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param sub_device: sub device name
+        :type sub_device: str
+
+        :param measured_at_location: where was it measured
+        :type measured_at_location: str
+
+        :param run_identifier:  in which run this data was produced
+        :type run_identifier: str
+
+        :param login_name: who generated this data set
+        :type login_name: str
+
+        :param conditioning_current: condition current
+        :type conditioning_current: double
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn1: direction of 1 st current
+        :type up_dn1: str
+
+        :param up_dn2: direction of 2 nd current
+        :type up_dn2: str
+
+        :param up_dn3: direction of 3 rd current
+        :type up_dn3: str
+
+        :param mag_volt_1: voltage at 1 st current given to magnet
+        :type mag_volt_1: double
+
+        :param mag_volt_2: voltage at 2 nd current given to magnet
+        :type mag_volt_2: double
+
+        :param mag_volt_3: voltage at 3 rd current given to magnet
+        :type mag_volt_3: double
+
+        :param x: x position
+        :type x: double
+
+        :param y: y position
+        :type y: double
+
+        :param z: z position
+        :type z: double
+
+        :param bx_t: magnetic field along x axis
+        :type bx_t: double
+
+        :param by_t: magnetic field along y axis
+        :type by_t: double
+
+        :param bz_t: magnetic field along z axis
+        :type bz_t: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param data_issues: reserved
+        :type data_issues: str
+
+        :param data_usage: reserved
+        :type data_usage: int
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Check id
+        _checkParameter('id', hall_probe_id, 'prim')
+
+        inventory_id = None
+
+        if inventory_name:
+            # Check inventory
+            retrieveInventory = self.retrieveInventory(inventory_name)
+
+            if len(retrieveInventory) == 0:
+                raise ValueError("Inventory (%s) doesn't exist in the database!" % oldInventoryName)
+
+            retrieveInventoryKeys = retrieveInventory.keys()
+            inventory_id = retrieveInventory[retrieveInventoryKeys[0]]['id']
+
+        return self.physics.updateHallProbeData(
+            hall_probe_id, inventory_id, sub_device, alias, measured_at_location,
+            run_identifier, login_name, conditioning_current, current_1, current_2,
+            current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
+            x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage)
+
+    def deleteHallProbeData(self, inventory_name, hall_probe_id=None):
+        '''
+        Delete one or more hall probe data
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param hall_probe_id: id of data in the table
+        :type hall_probe_id: int
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Get existing inventory
+        inv = self.retrieveInventory(inventory_name)
+
+        if len(inv) == 0:
+            raise ValueError("Inventory (%s) doesn't exist in the database!" % inventory_name)
+
+        retrieveInventoryKeys = inv.keys()
+        inventory_id = inv[retrieveInventoryKeys[0]]['id']
+
+        return self.physics.deleteHallProbeData(inventory_id, hall_probe_id)
+
+    def retrieveComponentTypeRotCoilData(self, cmpnt_type_name):
+        '''
+        Return component type rotation coil data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        rot_coil_data_id,
+                        cmpnt_type_id,
+                        alias,
+                        meas_coil_id,
+                        ref_radius,
+                        magnet_notes,
+                        login_name,
+                        cond_curr,
+                        meas_loc,
+                        run_number,
+                        sub_device,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn_1,
+                        up_dn_2,
+                        up_dn_3,
+                        analysis_number,
+                        integral_xfer_function,
+                        orig_offset_x,
+                        orig_offset_y,
+                        b_ref_int,
+                        roll_angle,
+                        meas_notes,
+                        meas_date,
+                        author,
+                        a1,
+                        a2,
+                        a3,
+                        b1,
+                        b2,
+                        b3,
+                        a4_21,
+                        b4_21,
+                        data_issues,
+                        data_usage,
+                        cmpnt_type_name
+                    },
+                    ...
+                }
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check component type
+        cmpnt_type = self.retrieveComponentType(cmpnt_type_name)
+
+        if len(cmpnt_type) == 0:
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type_name))
+
+        cmpnt_type_id = cmpnt_type.keys()[0]
+
+        # Check if component type has rot coil data attribute
+        if 'rot_coil_data' in cmpnt_type[cmpnt_type_id]:
+            rot_coil_data = json.loads(cmpnt_type[cmpnt_type_id]['rot_coil_data'])
+
+        else:
+            raise ValueError("Component type (%s) does not have rot coil data." % (cmpnt_type_name))
+
+        return rot_coil_data
+
+    def saveComponentTypeRotCoilData(
+            self, cmpnt_type_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save component type rotation coil data
+
+        :param cmpnt_type_name: name of the device in the inventory
+        :type cmpnt_type_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param meas_coil_id: ID number of device used for this measurement
+        :type meas_coil_id: str
+
+        :param ref_radius: reference radius
+        :type ref_radius: double
+
+        :param magnet_notes: comment for this magnet measurement data set
+        :type magnet_notes: str
+
+        :param login_name: user who generated this data set
+        :type login_name: str
+
+        :param cond_curr: condition current
+        :type cond_curr: double
+
+        :param meas_loc: measurement location
+        :type meas_loc: str
+
+        :param run_number: in which run this data was produced
+        :type run_number: str
+
+        :param sub_device: name of the sub device
+        :type sub_device: str
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn_1: direction of 1 st current
+        :type up_dn_1: str
+
+        :param up_dn_2: direction of 2 nd current
+        :type up_dn_2: str
+
+        :param up_dn_3: direction of 4 rd current
+        :type up_dn_3: str
+
+        :param analysis_number: in which analysis does this data belongs
+        :type analysis_number: str
+
+        :param integral_xfer_function: integral transfer function
+        :type integral_xfer_function: double
+
+        :param orig_offset_x: horizontal origin offset
+        :type orig_offset_x: double
+
+        :param orig_offset_y: vertical origin offset
+        :type orig_offset_y: double
+
+        :param b_ref_int: integrated reference field
+        :type b_ref_int: double
+
+        :param roll_angle: rolling angle
+        :type roll_angle: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param author: who measured it
+        :type author: str
+
+        :param a1: magnetic field (a1)
+        :type a1: double
+
+        :param a2: magnetic field (a2)
+        :type a2: double
+
+        :param a3: magnetic field (a3)
+        :type a3: double
+
+        :param b1: magnetic field (b1)
+        :type b1: double
+
+        :param b2: magnetic field (b2)
+        :type b2: double
+
+        :param b3: magnetic field (b3)
+        :type b3: double
+
+        :param a4_21: high order magnetic field (a4 to a21)
+        :type a4_21: str
+
+        :param b4_21: high order magnetic field (b4 to b21)
+        :type b4_21: str
+
+        :param data_issues: Reserved: special field to note each measure point
+        :type data_issues: str
+
+        :param data_usage: Reserved
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': rot coil data id}
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check component type
+        cmpnt_type = self.retrieveComponentType(cmpnt_type_name)
+
+        if len(cmpnt_type) == 0:
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type_name))
+
+        cmpnt_type_id = cmpnt_type.keys()[0]
+
+        new_rot_coil_data_id = int(time.time())
+
+        # Check if id exists
+        if 'rot_coil_data' in cmpnt_type[cmpnt_type_id]:
+            current_resdict = self.retrieveComponentTypeRotCoilData(cmpnt_type_name)
+
+            # Increase index
+            while str(new_rot_coil_data_id) in current_resdict:
+                new_rot_coil_data_id += 1
+
+        resdict = {}
+
+        # Construct data dict
+        datadict = {
+            'id': str(new_rot_coil_data_id),
+            'cmpnt_type_id': cmpnt_type_id,
+            'alias': alias,
+            'meas_coil_id': meas_coil_id,
+            'ref_radius': ref_radius,
+            'magnet_notes': magnet_notes,
+            'login_name': login_name,
+            'cond_curr': cond_curr,
+            'meas_loc': meas_loc,
+            'run_number': run_number,
+            'sub_device': sub_device,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn_1': up_dn_1,
+            'up_dn_2': up_dn_2,
+            'up_dn_3': up_dn_3,
+            'analysis_number': analysis_number,
+            'integral_xfer_function': integral_xfer_function,
+            'orig_offset_x': orig_offset_x,
+            'orig_offset_y': orig_offset_y,
+            'b_ref_int': b_ref_int,
+            'roll_angle': roll_angle,
+            'meas_notes': meas_notes,
+            'meas_date': datetime.datetime.fromtimestamp(new_rot_coil_data_id).strftime("%Y-%m-%d %H:%M:%S"),
+            'author': author,
+            'a1': a1,
+            'a2': a2,
+            'a3': a3,
+            'b1': b1,
+            'b2': b2,
+            'b3': b3,
+            'a4_21': a4_21,
+            'b4_21': b4_21,
+            'data_issues': data_issues,
+            'data_usage': data_usage,
+            'cmpnt_type_name': cmpnt_type_name
+        }
+
+        # Check if component type has rot coil data attribute
+        if 'rot_coil_data' not in cmpnt_type[cmpnt_type_id]:
+            self.saveComponentTypePropertyType('rot_coil_data')
+            resdict[new_rot_coil_data_id] = datadict
+            self.saveComponentTypeProperty(cmpnt_type_name, 'rot_coil_data', json.dumps(resdict))
+
+        else:
+            resdict = self.retrieveComponentTypeRotCoilData(cmpnt_type_name)
+            resdict[new_rot_coil_data_id] = datadict
+            self.updateComponentTypeProperty(cmpnt_type_name, 'rot_coil_data', json.dumps(resdict))
+
+        return {'id': str(new_rot_coil_data_id)}
+
+    def updateComponentTypeRotCoilData(
+            self, rot_coil_data_id, cmpnt_type_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None):
+        '''
+        Update component type rotation coil data
+
+        :param rot_coil_data_id:
+        :type rot_coil_data_id: int
+
+        :param inventory_name: name of the device in the inventory
+        :type inventory_name: str
+
+        :param alias:
+        :type alias:
+
+        :param meas_coil_id:
+        :type meas_coil_id:
+
+        :param ref_radius:
+        :type ref_radius:
+
+        :param magnet_notes:
+        :type magnet_notes:
+
+        :param login_name:
+        :type login_name:
+
+        :param cond_curr:
+        :type cond_curr:
+
+        :param meas_loc:
+        :type meas_loc:
+
+        :param run_number:
+        :type run_number:
+
+        :param sub_device:
+        :type sub_device:
+
+        :param current_1:
+        :type current_1:
+
+        :param current_2:
+        :type current_2:
+
+        :param current_3:
+        :type current_3:
+
+        :param up_dn_1:
+        :type up_dn_1:
+
+        :param up_dn_2:
+        :type up_dn_2:
+
+        :param up_dn_3:
+        :type up_dn_3:
+
+        :param analysis_number:
+        :type analysis_number:
+
+        :param integral_xfer_function:
+        :type integral_xfer_function:
+
+        :param orig_offset_x:
+        :type orig_offset_x:
+
+        :param orig_offset_y:
+        :type orig_offset_y:
+
+        :param b_ref_int:
+        :type b_ref_int:
+
+        :param roll_angle:
+        :type roll_angle:
+
+        :param meas_notes:
+        :type meas_notes:
+
+        :param author:
+        :type author:
+
+        :param a1:
+        :type a1:
+
+        :param a2:
+        :type a2:
+
+        :param a3:
+        :type a3:
+
+        :param b1:
+        :type b1:
+
+        :param b2:
+        :type b2:
+
+        :param b3:
+        :type b3:
+
+        :param a4_21:
+        :type a4_21:
+
+        :param b4_21:
+        :type b4_21:
+
+        :param data_issues:
+        :type data_issues:
+
+        :param data_usage:
+        :type data_usage:
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Check id
+        _checkParameter('id', rot_coil_data_id, 'prim')
+
+        # Check component type name
+        _checkParameter('cmpnt_type_name', cmpnt_type_name)
+
+        cmpnt_type_id = None
+
+        # Check component type
+        retrieveCmpntType = self.retrieveComponentType(cmpnt_type_name)
+
+        if len(retrieveCmpntType.keys()) == 0:
+            raise ValueError("Component type (%s) doesn't exist in the database!" % cmpnt_type_name)
+
+        retrieveCmpntTypeKeys = retrieveCmpntType.keys()
+        cmpnt_type_id = retrieveCmpntType[retrieveCmpntTypeKeys[0]]['id']
+
+        # Construct data dict
+        datadict = {
+            'id': rot_coil_data_id,
+            'cmpnt_type_id': cmpnt_type_id,
+            'alias': alias,
+            'meas_coil_id': meas_coil_id,
+            'ref_radius': ref_radius,
+            'magnet_notes': magnet_notes,
+            'login_name': login_name,
+            'cond_curr': cond_curr,
+            'meas_loc': meas_loc,
+            'run_number': run_number,
+            'sub_device': sub_device,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn_1': up_dn_1,
+            'up_dn_2': up_dn_2,
+            'up_dn_3': up_dn_3,
+            'analysis_number': analysis_number,
+            'integral_xfer_function': integral_xfer_function,
+            'orig_offset_x': orig_offset_x,
+            'orig_offset_y': orig_offset_y,
+            'b_ref_int': b_ref_int,
+            'roll_angle': roll_angle,
+            'meas_notes': meas_notes,
+            'meas_date': datetime.datetime.fromtimestamp(float(rot_coil_data_id)).strftime("%Y-%m-%d %H:%M:%S"),
+            'author': author,
+            'a1': a1,
+            'a2': a2,
+            'a3': a3,
+            'b1': b1,
+            'b2': b2,
+            'b3': b3,
+            'a4_21': a4_21,
+            'b4_21': b4_21,
+            'data_issues': data_issues,
+            'data_usage': data_usage,
+            'cmpnt_type_name': cmpnt_type_name
+        }
+
+        # Check if component type has rot coil data
+        if 'rot_coil_data' not in retrieveCmpntType[retrieveCmpntTypeKeys[0]]:
+            raise ValueError("Component type (%s) doesn't have rot coil data!" % cmpnt_type_name)
+
+        current_rot_coil_data = json.loads(retrieveCmpntType[retrieveCmpntTypeKeys[0]]['rot_coil_data'])
+
+        # Check if id exists in rot coil data
+        if str(rot_coil_data_id) not in current_rot_coil_data:
+            raise ValueError("Component type (%s) doesn't have specific (%s) rot coil data!" % (cmpnt_type_name, rot_coil_data))
+
+        current_rot_coil_data[str(rot_coil_data_id)] = datadict
+        res = self.updateComponentTypeProperty(cmpnt_type_name, 'rot_coil_data', json.dumps(current_rot_coil_data))
+
+        return True
+
+    def deleteComponentTypeRotCoilData(self, cmpnt_type_name, rot_coil_data_id=None):
+        '''
+        Delete one or more rot coil data
+
+        :param cmpnt_type_name: name of the device in the inventory
+        :type cmpnt_type_name: str
+
+        :param rot_coil_data_id: id of data in the table
+        :type rot_coil_data_id: int
+
+        :return: True if everything was ok
+
+        :raises: ValueError, MySQLError
+        '''
+
+        # Get existing component type
+        cmpnt_type = self.retrieveComponentType(cmpnt_type_name)
+
+        if len(cmpnt_type) == 0:
+            raise ValueError("Component type (%s) doesn't exist in the database!" % cmpnt_type_name)
+
+        retrieveCmpntTypeKeys = cmpnt_type.keys()
+        cmpnt_type_id = cmpnt_type[retrieveCmpntTypeKeys[0]]['id']
+
+        # Check if component type has rot coil data
+        if 'rot_coil_data' not in cmpnt_type[retrieveCmpntTypeKeys[0]]:
+            raise ValueError("Component type (%s) doesn't have hall probe data!" % cmpnt_type_name)
+
+        if rot_coil_data_id is not None:
+            # Get current rot coil data and delete specific key
+            current_rot_coil_data = json.loads(cmpnt_type[retrieveCmpntTypeKeys[0]]['rot_coil_data'])
+            del current_rot_coil_data[str(rot_coil_data_id)]
+
+        else:
+            current_rot_coil_data = {}
+
+        # Save updated data
+        res = self.updateComponentTypeProperty(cmpnt_type_name, 'rot_coil_data', json.dumps(current_rot_coil_data))
+
+        return True
+
+    def retrieveComponentTypeHallProbeData(self, cmpnt_type_name):
+        '''
+        Return component type hall probe data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        hall_probe_id,
+                        cmpnt_type_id,
+                        alias,
+                        meas_date,
+                        measured_at_location,
+                        sub_device,
+                        run_identifier,
+                        login_name,
+                        conditioning_current,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn1,
+                        up_dn2,
+                        up_dn3,
+                        mag_volt_1,
+                        mag_volt_2,
+                        mag_volt_3,
+                        x,
+                        y,
+                        z,
+                        bx_t,
+                        by_t,
+                        bz_t,
+                        meas_notes,
+                        data_issues,
+                        data_usage,
+                        cmpnt_type_name
+                    },
+                    ...
+                }
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check component type
+        cmpnt_type = self.retrieveComponentType(cmpnt_type_name)
+
+        if len(cmpnt_type) == 0:
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type_name))
+
+        cmpnt_type_id = cmpnt_type.keys()[0]
+
+        # Check if component type has hall probe data attribute
+        if 'hall_probe_data' in cmpnt_type[cmpnt_type_id]:
+            hall_probe_data = json.loads(cmpnt_type[cmpnt_type_id]['hall_probe_data'])
+
+        else:
+            raise ValueError("Component type (%s) does not have hall probe data." % (cmpnt_type_name))
+
+        return hall_probe_data
+
+    def saveComponentTypeHallProbeData(
+            self, cmpnt_type_name, sub_device, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save component type hall probe data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param sub_device: sub device name
+        :type sub_device: str
+
+        :param measured_at_location: where was it measured
+        :type measured_at_location: str
+
+        :param run_identifier:  in which run this data was produced
+        :type run_identifier: str
+
+        :param login_name: who generated this data set
+        :type login_name: str
+
+        :param conditioning_current: condition current
+        :type conditioning_current: double
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn1: direction of 1 st current
+        :type up_dn1: str
+
+        :param up_dn2: direction of 2 nd current
+        :type up_dn2: str
+
+        :param up_dn3: direction of 3 rd current
+        :type up_dn3: str
+
+        :param mag_volt_1: voltage at 1 st current given to magnet
+        :type mag_volt_1: double
+
+        :param mag_volt_2: voltage at 2 nd current given to magnet
+        :type mag_volt_2: double
+
+        :param mag_volt_3: voltage at 3 rd current given to magnet
+        :type mag_volt_3: double
+
+        :param x: x position
+        :type x: double
+
+        :param y: y position
+        :type y: double
+
+        :param z: z position
+        :type z: double
+
+        :param bx_t: magnetic field along x axis
+        :type bx_t: double
+
+        :param by_t: magnetic field along y axis
+        :type by_t: double
+
+        :param bz_t: magnetic field along z axis
+        :type bz_t: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param data_issues: reserved
+        :type data_issues: str
+
+        :param data_usage: reserved
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': hall probe data id}
+
+        :Raises: ValueError, MySQLError
+        '''
+
+        # Check component type
+        cmpnt_type = self.retrieveComponentType(cmpnt_type_name)
+
+        if len(cmpnt_type) == 0:
+            raise ValueError("Component type (%s) does not exist in the database." % (cmpnt_type_name))
+
+        cmpnt_type_id = cmpnt_type.keys()[0]
+
+        # Check parameter
+        _checkParameter('sub device', sub_device)
+
+        new_hall_probe_data_id = int(time.time())
+
+        # Check if id exists
+        if 'hall_probe_data' in cmpnt_type[cmpnt_type_id]:
+            current_resdict = self.retrieveComponentTypeHallProbeData(cmpnt_type_name)
+
+            # Increase index
+            while str(new_hall_probe_data_id) in current_resdict:
+                new_hall_probe_data_id += 1
+
+        resdict = {}
+
+        # Construct data dict
+        datadict = {
+            'id': str(new_hall_probe_data_id),
+            'cmpnt_type_id': cmpnt_type_id,
+            'alias': alias,
+            'meas_date': datetime.datetime.fromtimestamp(new_hall_probe_data_id).strftime("%Y-%m-%d %H:%M:%S"),
+            'measured_at_location': measured_at_location,
+            'sub_device': sub_device,
+            'run_identifier': run_identifier,
+            'login_name': login_name,
+            'conditioning_current': conditioning_current,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn1': up_dn1,
+            'up_dn2': up_dn2,
+            'up_dn3': up_dn3,
+            'mag_volt_1': mag_volt_1,
+            'mag_volt_2': mag_volt_2,
+            'mag_volt_3': mag_volt_3,
+            'x': x,
+            'y': y,
+            'z': z,
+            'bx_t': bx_t,
+            'by_t': by_t,
+            'bz_t': bz_t,
+            'meas_notes': meas_notes,
+            'data_issues': data_issues,
+            'data_usage': data_usage,
+            'cmpnt_type_name': cmpnt_type_name
+        }
+
+        # Check if component type has hall probe data attribute
+        if 'hall_probe_data' not in cmpnt_type[cmpnt_type_id]:
+            self.saveComponentTypePropertyType('hall_probe_data')
+            resdict[new_hall_probe_data_id] = datadict
+            self.saveComponentTypeProperty(cmpnt_type_name, 'hall_probe_data', json.dumps(resdict))
+
+        else:
+            resdict = self.retrieveComponentTypeHallProbeData(cmpnt_type_name)
+            resdict[new_hall_probe_data_id] = datadict
+            self.updateComponentTypeProperty(cmpnt_type_name, 'hall_probe_data', json.dumps(resdict))
+
+        return {'id': str(new_hall_probe_data_id)}
+
+    def updateComponentTypeHallProbeData(
+            self, hall_probe_id, cmpnt_type_name, sub_device=None, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None):
+        '''
+        Update hall probe data
+
+        :param hall_probe_id: id hall probe
+        :type hall_probe_id: int
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
 
         :param alias:
         :type alias: str
@@ -6300,30 +7177,73 @@ class idods(object):
         # Check id
         _checkParameter('id', hall_probe_id, 'prim')
 
-        inventory_id = None
+        # Check component type name
+        _checkParameter('cmpnt_type_name', cmpnt_type_name)
 
-        if inventory_name:
-            # Check inventory
-            retrieveInventory = self.retrieveInventory(inventory_name)
+        cmpnt_type_id = None
 
-            if len(retrieveInventory) == 0:
-                raise ValueError("Inventory (%s) doesn't exist in the database!" % oldInventoryName)
+        # Check component type
+        retrieveCmpntType = self.retrieveComponentType(cmpnt_type_name)
 
-            retrieveInventoryKeys = retrieveInventory.keys()
-            inventory_id = retrieveInventory[retrieveInventoryKeys[0]]['id']
+        if len(retrieveCmpntType.keys()) == 0:
+            raise ValueError("Component type (%s) doesn't exist in the database!" % cmpnt_type_name)
 
-        return self.physics.updateHallProbeData(
-            hall_probe_id, inventory_id, sub_device, alias, measured_at_location,
-            run_identifier, login_name, conditioning_current, current_1, current_2,
-            current_3, up_dn1, up_dn2, up_dn3, mag_volt_1, mag_volt_2, mag_volt_3,
-            x, y, z, bx_t, by_t, bz_t, meas_notes, data_issues, data_usage)
+        retrieveCmpntTypeKeys = retrieveCmpntType.keys()
+        cmpnt_type_id = retrieveCmpntType[retrieveCmpntTypeKeys[0]]['id']
 
-    def deleteHallProbeData(self, inventory_name, hall_probe_id=None):
+        # Construct data dict
+        datadict = {
+            'id': hall_probe_id,
+            'cmpnt_type_id': cmpnt_type_id,
+            'alias': alias,
+            'meas_date': datetime.datetime.fromtimestamp(float(hall_probe_id)).strftime("%Y-%m-%d %H:%M:%S"),
+            'measured_at_location': measured_at_location,
+            'sub_device': sub_device,
+            'run_identifier': run_identifier,
+            'login_name': login_name,
+            'conditioning_current': conditioning_current,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn1': up_dn1,
+            'up_dn2': up_dn2,
+            'up_dn3': up_dn3,
+            'mag_volt_1': mag_volt_1,
+            'mag_volt_2': mag_volt_2,
+            'mag_volt_3': mag_volt_3,
+            'x': x,
+            'y': y,
+            'z': z,
+            'bx_t': bx_t,
+            'by_t': by_t,
+            'bz_t': bz_t,
+            'meas_notes': meas_notes,
+            'data_issues': data_issues,
+            'data_usage': data_usage,
+            'cmpnt_type_name': cmpnt_type_name
+        }
+
+        # Check if component type has hall probe data
+        if 'hall_probe_data' not in retrieveCmpntType[retrieveCmpntTypeKeys[0]]:
+            raise ValueError("Component type (%s) doesn't have hall probe data!" % cmpnt_type_name)
+
+        current_hall_probe_data = json.loads(retrieveCmpntType[retrieveCmpntTypeKeys[0]]['hall_probe_data'])
+
+        # Check if id exists in hall probe data
+        if str(hall_probe_id) not in current_hall_probe_data:
+            raise ValueError("Component type (%s) doesn't have specific (%s) hall probe data!" % (cmpnt_type_name, hall_probe_id))
+
+        current_hall_probe_data[str(hall_probe_id)] = datadict
+        res = self.updateComponentTypeProperty(cmpnt_type_name, 'hall_probe_data', json.dumps(current_hall_probe_data))
+
+        return True
+
+    def deleteComponentTypeHallProbeData(self, cmpnt_type_name, hall_probe_id=None):
         '''
         Delete one or more hall probe data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
 
         :param hall_probe_id: id of data in the table
         :type hall_probe_id: int
@@ -6333,13 +7253,28 @@ class idods(object):
         :raises: ValueError, MySQLError
         '''
 
-        # Get existing inventory
-        inv = self.retrieveInventory(inventory_name)
+        # Get existing component type
+        cmpnt_type = self.retrieveComponentType(cmpnt_type_name)
 
-        if len(inv) == 0:
-            raise ValueError("Inventory (%s) doesn't exist in the database!" % inventory_name)
+        if len(cmpnt_type) == 0:
+            raise ValueError("Component type (%s) doesn't exist in the database!" % cmpnt_type_name)
 
-        retrieveInventoryKeys = inv.keys()
-        inventory_id = inv[retrieveInventoryKeys[0]]['id']
+        retrieveCmpntTypeKeys = cmpnt_type.keys()
+        cmpnt_type_id = cmpnt_type[retrieveCmpntTypeKeys[0]]['id']
 
-        return self.physics.deleteHallProbeData(inventory_id, hall_probe_id)
+        # Check if component type has hall probe data
+        if 'hall_probe_data' not in cmpnt_type[retrieveCmpntTypeKeys[0]]:
+            raise ValueError("Component type (%s) doesn't have hall probe data!" % cmpnt_type_name)
+
+        if hall_probe_id is not None:
+            # Get current hall probe data and delete specific key
+            current_hall_probe_data = json.loads(cmpnt_type[retrieveCmpntTypeKeys[0]]['hall_probe_data'])
+            del current_hall_probe_data[str(hall_probe_id)]
+
+        else:
+            current_hall_probe_data = {}
+
+        # Save updated data
+        res = self.updateComponentTypeProperty(cmpnt_type_name, 'hall_probe_data', json.dumps(current_hall_probe_data))
+
+        return True

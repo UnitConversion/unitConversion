@@ -2,21 +2,18 @@
  * Controllers for measurement data manager
  *
  * @author: Dejan Dežman <dejan.dezman@cosylab.com>
- * @created: Avg 1, 2014
+ * @created: Sept 3, 2014
  */
-
-app.controller('indexCtrl', function($scope){
-});
 
 /*
- * Bending magnet controller that displays anf manages everything connected to bending magnet table
+ * Data controller that displays and manages everything connected to data table
  */
-app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeout, Inventory, inventoryFactory, EntityError, RotCoilData, HallProbeData, hallProbeDataFactory, rotCoilDataFactory){
+app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $timeout, CmpntType, cmpntTypeFactory, EntityError, CmpntTypeRotCoilData, CmpntTypeHallProbeData, cmpntTypeHallProbeDataFactory, cmpntTypeRotCoilDataFactory){
 	$scope.error = {};
 	$scope.alert = {};
 	$scope.view = $routeParams.view;
-	$scope.inventory_name = $routeParams.inventory_name;
-	$scope.inv = new Inventory();
+	$scope.cmpnt_type_name = $routeParams.cmpnt_type_name;
+	$scope.inv = new CmpntType();
 
 	$scope.rcdColumns = {};
 	$scope.rawRcdColumns = [];
@@ -25,21 +22,21 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 	$scope.rawHpdColumns = [];
 	$scope.hpdHeaderColumns = ['alias', 'measured_at_location', 'run_identifier', 'login_name', 'conditioning_current'];
 
-	$scope.firstRotCoilDataId = -1;
+	$scope.firstCmpntTypeRotCoilDataId = -1;
 	$scope.rotCoilData = {};
 	$scope.rotCoilData2 = {};
 
-	$scope.firstHallProbeDataId = -1;
+	$scope.firstCmpntTypeHallProbeDataId = -1;
 	$scope.hallProbeData = {};
 	$scope.hallProbeData2 = {};
 
 	$scope.measurementData = {
-		'rot_coil_data': new RotCoilData(),
-		'hall_probe_data': new HallProbeData()
+		'rot_coil_data': new CmpntTypeRotCoilData(),
+		'hall_probe_data': new CmpntTypeHallProbeData()
 	};
 
 	// Return if there is no inventory name in the URL
-	if(!$scope.inventory_name) {
+	if(!$scope.cmpnt_type_name) {
 		return;
 	}
 
@@ -49,10 +46,10 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 	$scope.newHPDs = {};
 	$scope.numHPDs = 0;
 
-	// Retrieve all Inventory items
-	inventoryFactory.retrieveItems({'name': $scope.inventory_name}).then(function(result) {
+	// Retrieve all CmpntType items
+	cmpntTypeFactory.retrieveCompntTypes({'name': $scope.cmpnt_type_name}).then(function(result) {
 		var ids = Object.keys(result);
-		$scope.inv = new Inventory(result[ids[0]]);
+		$scope.inv = new CmpntType(result[ids[0]]);
 		l($scope.inv);
 
 		// Load rotation coil data columns
@@ -69,7 +66,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'inventory_name' || $.inArray(column, $scope.rcdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if((column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.rcdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
 					return;
 				}
 
@@ -93,7 +90,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'inventory_name' || $.inArray(column, $scope.hpdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if((column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.hpdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
 					return;
 				}
 
@@ -103,20 +100,21 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 			});
 		}
 
-		rotCoilDataFactory.retrieveItems({'inventory_name': $scope.inv.name}).then(function(result) {
+		cmpntTypeRotCoilDataFactory.retrieveItems({'cmpnt_type_name': $scope.inv.name}).then(function(result) {
 			$scope.rotCoilData = result;
+			l(result);
 
 			if($scope.numElements(result) > 0) {
-				$scope.firstRotCoilDataId = Object.keys(result)[0];
+				$scope.firstCmpntTypeRotCoilDataId = Object.keys(result)[0];
 			}
 		});
 
-		hallProbeDataFactory.retrieveItems({'inventory_name': $scope.inv.name}).then(function(result) {
+		cmpntTypeHallProbeDataFactory.retrieveItems({'cmpnt_type_name': $scope.inv.name}).then(function(result) {
 			$scope.hallProbeData = result;
 			l(result);
 
 			if($scope.numElements(result) > 0) {
-				$scope.firstHallProbeDataId = Object.keys(result)[0];
+				$scope.firstCmpntTypeHallProbeDataId = Object.keys(result)[0];
 			}
 		});
 
@@ -217,10 +215,10 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		var md;
 
 		if(sourceTable === 'rot_coil_data') {
-			md = new RotCoilData();
+			md = new CmpntTypeRotCoilData();
 
 		} else {
-			md = new HallProbeData();
+			md = new CmpntTypeHallProbeData();
 		}
 
 		// Set properties if Copy&Create action
@@ -229,7 +227,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		}
 
 		// Set inventory name
-		md.inventory_name = $scope.inventory_name;
+		md.cmpnt_type_name = $scope.cmpnt_type_name;
 
 		var key = $.now();
 
@@ -259,7 +257,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/close_table.html',
-			controller: 'closeDataCtrl',
+			controller: 'cTcloseDataCtrl',
 			resolve: {
 				device: function() {
 					return undefined;
@@ -278,7 +276,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/delete_data.html',
-			controller: 'deleteDataCtrl',
+			controller: 'cTdeleteDataCtrl',
 			resolve: {
 				device: function() {
 					return undefined;
@@ -300,7 +298,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/delete_data.html',
-			controller: 'deleteDataCtrl',
+			controller: 'cTdeleteDataCtrl',
 			resolve: {
 				device: function() {
 					return deviceObj.id;
@@ -322,7 +320,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/update_measurement_data_columns.html',
-			controller: 'manageMeasurementDataColumnsCtrl',
+			controller: 'cTmanageMeasurementDataColumnsCtrl',
 			resolve: {
 				source: function() {
 					return sourceTable;
@@ -347,7 +345,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 
 		$.each(columnList, function(i, column) {
 
-			if(column === 'inventory_name' || column === 'sub_device') {
+			if(column === 'cmpnt_type_name' || column === 'sub_device') {
 				$scope.inv.__measurement_data_settings__[sourceTable][column] = {'display_name': '', 'displayed': true};
 
 			} else {
@@ -371,13 +369,13 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		var headerItem;
 
 		if(sourceTable === 'rot_coil_data') {
-			headerItem = new RotCoilData();
+			headerItem = new CmpntTypeRotCoilData();
 
 		} else {
-			headerItem = new HallProbeData();
+			headerItem = new CmpntTypeHallProbeData();
 		}
 		headerItem.sub_device = $scope.inv.name;
-		headerItem.inventory_name = $scope.inv.name;
+		headerItem.cmpnt_type_name = $scope.inv.name;
 
 		$scope.addRow(headerItem, sourceTable);
 		$scope.saveItem(0, headerItem, sourceTable);
@@ -403,14 +401,16 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		if(sourceTable === 'rot_coil_data') {
 			params = {};
 			params.rot_coil_data_id = device.id;
+			params.cmpnt_type_name = $scope.inv.name;
 			params[typeName] = propValue;
-			promise = rotCoilDataFactory.updateItem(params);
+			promise = cmpntTypeRotCoilDataFactory.updateItem(params);
 
 		} else {
 			params = {};
 			params.hall_probe_id = device.id;
+			params.cmpnt_type_name = $scope.inv.name;
 			params[typeName] = propValue;
-			promise = hallProbeDataFactory.updateItem(params);
+			promise = cmpntTypeHallProbeDataFactory.updateItem(params);
 		}
 
 		promise.then(function(data) {
@@ -452,12 +452,12 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		$scope.error = {};
 
 		if(sourceTable === 'rot_coil_data') {
-			$scope.newMD = new RotCoilData(newItem);
-			$scope.error = rotCoilDataFactory.checkItem($scope.newMD);
+			$scope.newMD = new CmpntTypeRotCoilData(newItem);
+			$scope.error = cmpntTypeRotCoilDataFactory.checkItem($scope.newMD);
 
 		} else {
-			$scope.newMD = new HallProbeData(newItem);
-			$scope.error = hallProbeDataFactory.checkItem($scope.newMD);
+			$scope.newMD = new CmpntTypeHallProbeData(newItem);
+			$scope.error = cmpntTypeHallProbeDataFactory.checkItem($scope.newMD);
 		}
 
 		l($scope.error);
@@ -467,10 +467,10 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 			var promise;
 
 			if(sourceTable === 'rot_coil_data') {
-				promise = rotCoilDataFactory.saveItem($scope.newMD);
+				promise = cmpntTypeRotCoilDataFactory.saveItem($scope.newMD);
 
 			} else {
-				promise = hallProbeDataFactory.saveItem($scope.newMD);
+				promise = cmpntTypeHallProbeDataFactory.saveItem($scope.newMD);
 			}
 
 			promise.then(function(data) {
@@ -483,10 +483,10 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				var promise;
 
 				if(sourceTable === 'rot_coil_data') {
-					promise = rotCoilDataFactory.retrieveItems({'inventory_name': $scope.inv.name});
+					promise = cmpntTypeRotCoilDataFactory.retrieveItems({'cmpnt_type_name': $scope.inv.name});
 
 				} else {
-					promise = hallProbeDataFactory.retrieveItems({'inventory_name': $scope.inv.name});
+					promise = cmpntTypeHallProbeDataFactory.retrieveItems({'cmpnt_type_name': $scope.inv.name});
 				}
 
 				promise.then(function(result) {
@@ -539,7 +539,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 /*
  * Delete data controller
  */
-app.controller('deleteDataCtrl', function($scope, $modalInstance, $window, RotCoilData, HallProbeData, inventoryFactory, rotCoilDataFactory, hallProbeDataFactory, device, source, inventory_obj, data_scope) {
+app.controller('cTdeleteDataCtrl', function($scope, $modalInstance, $window, CmpntTypeRotCoilData, CmpntTypeHallProbeData, cmpntTypeFactory, cmpntTypeRotCoilDataFactory, cmpntTypeHallProbeDataFactory, device, source, inventory_obj, data_scope) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
@@ -555,10 +555,10 @@ app.controller('deleteDataCtrl', function($scope, $modalInstance, $window, RotCo
 		var promise;
 
 		if(source === 'rot_coil_data') {
-			promise = rotCoilDataFactory.deleteItem({'inventory_name': inventory_obj.name, 'rot_coil_data_id': device});
+			promise = cmpntTypeRotCoilDataFactory.deleteItem({'cmpnt_type_name': inventory_obj.name, 'rot_coil_data_id': device});
 
 		} else {
-			promise = hallProbeDataFactory.deleteItem({'inventory_name': inventory_obj.name, 'hall_probe_id': device});
+			promise = cmpntTypeHallProbeDataFactory.deleteItem({'cmpnt_type_name': inventory_obj.name, 'hall_probe_id': device});
 		}
 
 		promise.then(function(data) {
@@ -578,13 +578,13 @@ app.controller('deleteDataCtrl', function($scope, $modalInstance, $window, RotCo
 				var headerItem;
 
 				if(source === 'rot_coil_data') {
-					headerItem = new RotCoilData();
+					headerItem = new CmpntTypeRotCoilData();
 
 				} else {
-					headerItem = new HallProbeData();
+					headerItem = new CmpntTypeHallProbeData();
 				}
 				headerItem.sub_device = inventory_obj.name;
-				headerItem.inventory_name = inventory_obj.name;
+				headerItem.cmpnt_type_name = inventory_obj.name;
 
 				data_scope.addRow(headerItem, source);
 				data_scope.saveItem(0, headerItem, source);
@@ -612,7 +612,7 @@ app.controller('deleteDataCtrl', function($scope, $modalInstance, $window, RotCo
 /*
  * Close table controller
  */
-app.controller('closeDataCtrl', function($scope, $modalInstance, $window, inventoryFactory, rotCoilDataFactory, hallProbeDataFactory, device, source, inventory_obj) {
+app.controller('cTcloseDataCtrl', function($scope, $modalInstance, $window, cmpntTypeFactory, cmpntTypeRotCoilDataFactory, cmpntTypeHallProbeDataFactory, device, source, inventory_obj) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
@@ -628,10 +628,10 @@ app.controller('closeDataCtrl', function($scope, $modalInstance, $window, invent
 		var promise;
 
 		if(source === 'rot_coil_data') {
-			promise = rotCoilDataFactory.deleteItem({'inventory_name': inventory_obj.name, 'rot_coil_data_id': device});
+			promise = cmpntTypeRotCoilDataFactory.deleteItem({'cmpnt_type_name': inventory_obj.name, 'rot_coil_data_id': device});
 
 		} else {
-			promise = hallProbeDataFactory.deleteItem({'inventory_name': inventory_obj.name, 'hall_probe_id': device});
+			promise = cmpntTypeHallProbeDataFactory.deleteItem({'cmpnt_type_name': inventory_obj.name, 'hall_probe_id': device});
 		}
 
 		promise.then(function(data) {
@@ -664,7 +664,7 @@ app.controller('closeDataCtrl', function($scope, $modalInstance, $window, invent
 
 				l($scope.element);
 				l(source);
-				inventoryFactory.updateItem($scope.element);
+				cmpntTypeFactory.updateCmpntType($scope.element);
 			}
 
 		}, function(error) {
@@ -689,7 +689,7 @@ app.controller('closeDataCtrl', function($scope, $modalInstance, $window, invent
 /*
  * Manage measurement data columns controller
  */
-app.controller('manageMeasurementDataColumnsCtrl', function($scope, $modalInstance, $window, RotCoilData, HallProbeData, inventoryFactory, source, inventory_obj) {
+app.controller('cTmanageMeasurementDataColumnsCtrl', function($scope, $modalInstance, $window, CmpntTypeRotCoilData, CmpntTypeHallProbeData, cmpntTypeFactory, source, inventory_obj) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
@@ -698,8 +698,8 @@ app.controller('manageMeasurementDataColumnsCtrl', function($scope, $modalInstan
 	$scope.sourceTable = source;
 
 	$scope.measurementData = {
-		'rot_coil_data': new RotCoilData(),
-		'hall_probe_data': new HallProbeData()
+		'rot_coil_data': new CmpntTypeRotCoilData(),
+		'hall_probe_data': new CmpntTypeHallProbeData()
 	};
 
 	$scope.closeAlert = function() {
@@ -721,7 +721,7 @@ app.controller('manageMeasurementDataColumnsCtrl', function($scope, $modalInstan
 		// Set old name so we can update
 		$scope.element.old_name = $scope.element.name;
 
-		var promise = inventoryFactory.updateItem($scope.element);
+		var promise = cmpntTypeFactory.updateCmpntType($scope.element);
 
 		promise.then(function(data) {
 			$scope.alert.show = true;

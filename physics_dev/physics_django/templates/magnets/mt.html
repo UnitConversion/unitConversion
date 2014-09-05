@@ -1,0 +1,25 @@
+{% load verbatim %}
+{% verbatim %}
+
+<a name="{{scroll.scroll}}"></a>
+<div class="details_data">
+
+	<div class="alert alert-error" ng-show="error.display === true">
+		<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}. {{error.message}}
+	</div>
+
+	<div class="float_left right_space">
+		<h3>Conversion info</h3>
+
+		<div app-view-segment="5"></div>
+
+		<br/>
+		<br/>
+		<p>
+			<button class="btn btn-info" ng-click="goToMeasurementData()">Go to measurement data</button>
+			<button class="btn btn-info" ng-click="goToDetails()">Save data</button>
+		</p>
+	</div>
+</div>
+
+{% endverbatim %}

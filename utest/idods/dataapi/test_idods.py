@@ -1102,5 +1102,121 @@ class TestIdods(unittest.TestCase):
         # Test deleting
         self.assertTrue(self.api.deleteHallProbeData('name2', data[firstKey]['id']))
 
+    def testComponentTypeRotCoilData(self):
+        '''
+        Test component type rot coil data
+        '''
+
+        cmpnt = self.api.saveComponentType('Magnet')
+
+        # Try retrieving without first saving it
+        self.assertRaises(ValueError, self.api.retrieveComponentTypeRotCoilData, 'Magnet')
+
+        hpd = self.api.saveComponentTypeRotCoilData('Magnet', 'sub device', b2=2.4)
+        hpd2 = self.api.saveComponentTypeRotCoilData('Magnet', 'sub device2', roll_angle=1)
+
+        # Retrieve rot coil data
+        data = self.api.retrieveComponentTypeRotCoilData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 2)
+
+        firstKey = data.keys()[1]
+
+        self.assertEqual(data[hpd['id']]['cmpnt_type_id'], cmpnt['id'])
+        self.assertEqual(data[hpd['id']]['cmpnt_type_name'], 'Magnet')
+        self.assertEqual(data[hpd['id']]['b2'], 2.4)
+
+        # Test update
+        self.assertTrue(self.api.updateComponentTypeRotCoilData(hpd['id'], 'Magnet', b2=2.5))
+
+        # Retrieve rot coil data
+        data = self.api.retrieveComponentTypeRotCoilData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 2)
+
+        firstKey = data.keys()[1]
+
+        self.assertEqual(data[hpd['id']]['cmpnt_type_id'], cmpnt['id'])
+        self.assertEqual(data[hpd['id']]['cmpnt_type_name'], 'Magnet')
+        self.assertEqual(data[hpd['id']]['b2'], 2.5)
+
+        # Delete rot coil data
+        self.assertTrue(self.api.deleteComponentTypeRotCoilData('Magnet', hpd['id']))
+
+        # Retrieve rot coil data
+        data = self.api.retrieveComponentTypeRotCoilData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+
+        # Delete rot coil data
+        self.assertTrue(self.api.deleteComponentTypeRotCoilData('Magnet', hpd2['id']))
+
+        # Retrieve rot coil data
+        data = self.api.retrieveComponentTypeRotCoilData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 0)
+
+    def testComponentTypeHallProbeData(self):
+        '''
+        Test component type hall probe data
+        '''
+
+        cmpnt = self.api.saveComponentType('Magnet')
+
+        # Try retrieving without first saving it
+        self.assertRaises(ValueError, self.api.retrieveComponentTypeHallProbeData, 'Magnet')
+
+        hpd = self.api.saveComponentTypeHallProbeData('Magnet', 'sub device', up_dn2=2.4)
+        hpd2 = self.api.saveComponentTypeHallProbeData('Magnet', 'sub device2', bx_t=1)
+
+        # Retrieve hall probe data
+        data = self.api.retrieveComponentTypeHallProbeData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 2)
+
+        firstKey = data.keys()[1]
+
+        self.assertEqual(data[hpd['id']]['cmpnt_type_id'], cmpnt['id'])
+        self.assertEqual(data[hpd['id']]['cmpnt_type_name'], 'Magnet')
+        self.assertEqual(data[hpd['id']]['up_dn2'], 2.4)
+
+        # Test update
+        self.assertTrue(self.api.updateComponentTypeHallProbeData(hpd['id'], 'Magnet', up_dn2=2.5))
+
+        # Retrieve hall probe data
+        data = self.api.retrieveComponentTypeHallProbeData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 2)
+
+        firstKey = data.keys()[1]
+
+        self.assertEqual(data[hpd['id']]['cmpnt_type_id'], cmpnt['id'])
+        self.assertEqual(data[hpd['id']]['cmpnt_type_name'], 'Magnet')
+        self.assertEqual(data[hpd['id']]['up_dn2'], 2.5)
+
+        # Delete hall probe data
+        self.assertTrue(self.api.deleteComponentTypeHallProbeData('Magnet', hpd['id']))
+
+        # Retrieve hall probe data
+        data = self.api.retrieveComponentTypeHallProbeData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 1)
+
+        # Delete hall probe data
+        self.assertTrue(self.api.deleteComponentTypeHallProbeData('Magnet', hpd2['id']))
+
+        # Retrieve hall probe data
+        data = self.api.retrieveComponentTypeHallProbeData('Magnet')
+
+        # Test the number of items in the table
+        self.assertEqual(len(data.keys()), 0)
+
 if __name__ == '__main__':
     unittest.main()

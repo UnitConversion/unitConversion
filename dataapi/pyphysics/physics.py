@@ -571,6 +571,7 @@ class physics(object):
         '''
 
         try:
+            self.logger.info('sql: %s cmpnt_type_id: %s type_id: %s val: %s' % (sql, component_type_id, component_type_property_type_id, value))
             cur = self.conn.cursor()
             cur.execute(sql, (component_type_id, component_type_property_type_id, value))
 
@@ -869,6 +870,7 @@ class physics(object):
         '''
 
         try:
+            self.logger.info('sql: %s inv_id: %s tmplt_id: %s val: %s' % (sql, inventory_id, inventory_property_template_id, value))
             cur = self.conn.cursor()
             cur.execute(sql, (inventory_id, inventory_property_template_id, value))
 

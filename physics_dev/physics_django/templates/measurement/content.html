@@ -21,9 +21,9 @@
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readwrite'" ng-if="firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<div ng-if="false" ng-if="firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% endif %}
 {% verbatim %}
 	<p>
@@ -40,9 +40,9 @@
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readonly'" ng-if="firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="view == 'readonly' && firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<div ng-if="true" ng-if="view == 'readwrite'" ng-if="firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% endif %}
 {% verbatim %}
 	<p>
@@ -56,7 +56,13 @@
 <br/>
 
 <div ng-if="inv.__measurement_data_settings__.source.rot_coil_data == undefined || inv.__measurement_data_settings__.source.rot_coil_data == false">
-	<span>Hall probe data is not set for this device <button ng-click="generateColumns('rot_coil_data')" class="btn btn-default">Create table</button></span>
+	<span>Hall probe data is not set for this device
+		{% endverbatim %}
+			{% if user.is_authenticated %}
+				<button ng-click="generateColumns('rot_coil_data')" class="btn btn-default">Create table</button>
+			{% endif %}
+		{% verbatim %}
+	</span>
 </div>
 
 <div ng-if="inv.__measurement_data_settings__.source.rot_coil_data != undefined && inv.__measurement_data_settings__.source.rot_coil_data == true">
@@ -167,9 +173,9 @@
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readwrite'" ng-if="firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% else %}
-	<div ng-if="false" ng-if="firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% endif %}
 {% verbatim %}
 	<p>
@@ -186,9 +192,9 @@
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readonly'" ng-if="firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="view == 'readonly' && firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% else %}
-	<div ng-if="true" ng-if="firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% endif %}
 {% verbatim %}
 	<p>
@@ -203,7 +209,13 @@
 <br/>
 
 <div ng-if="inv.__measurement_data_settings__.source.hall_probe_data == undefined || inv.__measurement_data_settings__.source.hall_probe_data == false">
-	<span>Hall probe data is not set for this device <button ng-click="generateColumns('hall_probe_data')" class="btn btn-default">Create table</button></span>
+	<span>Hall probe data is not set for this device
+		{% endverbatim %}
+			{% if user.is_authenticated %}
+				<button ng-click="generateColumns('hall_probe_data')" class="btn btn-default">Create table</button>
+			{% endif %}
+		{% verbatim %}
+	</span>
 </div>
 
 <div ng-if="inv.__measurement_data_settings__.source.hall_probe_data != undefined && inv.__measurement_data_settings__.source.hall_probe_data == true">

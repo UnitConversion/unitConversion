@@ -127,10 +127,9 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 	$scope.id = $routeParams.id;
 
 	$scope.devices = [];
-	var previousDevice = undefined;
+	var previousDevice;
 
 	var query = serviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
-	l(query);
 
 	$http.get(query).success(function(data){
 
@@ -156,7 +155,6 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 
 			$scope.devices.push(newItem);
 		});
-		l($scope.devices);
 	});
 
 	// Show details when user selects the device from a list
@@ -185,7 +183,7 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 /*
  * Show details in the right pane
  */
-app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsService, $location){
+app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window, detailsService, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 
@@ -198,6 +196,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 	var detailsTabsIndex = 0;
 	$scope.tabs = [];
 	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
+	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst_id/" + $routeParams.id + '/';
 	$scope.view = $routeParams.view;
 	$scope.properties = {};
 
@@ -211,6 +210,16 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 
 	$scope.scroll = {};
 	$scope.scroll.scroll = $routeParams.id;
+
+	$scope.goToMuniconv = function() {
+		var url = $scope.inst_url + 'step/mt_m';
+		$window.location = url;
+	};
+
+	$scope.goToMeasurementData = function() {
+		var url = $scope.inst_url + 'step/md';
+		$window.location = url;
+	};
 
 	l("hash: " + $location.hash());
 
@@ -321,6 +330,135 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, detailsS
 			$scope.error.display = true;
 		});
 	};
+});
+
+/*
+ * Show details in the right pane
+ */
+app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, detailsService, $location){
+	// Remove image from the middle pane if there is something to show
+	$scope.style.right_class = "container-scroll-last-one-no-img";
+
+	$routeParams.id = $routeParams.inst_id;
+	$scope.id = $routeParams.id;
+	$scope.data = {};
+	$scope.rawData = {};
+	$scope.device = {};
+	$scope.view = $routeParams.view;
+	$scope.subview = $routeParams.subview;
+	$scope.result = {};
+	$scope.detailsTabs = [];
+	var detailsTabsIndex = 0;
+	$scope.tabs = [];
+	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst_id/" + $routeParams.id + '/';
+	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
+	$scope.view = $routeParams.view;
+	$scope.properties = {};
+
+	$scope.error = {};
+	$scope.error.message = "";
+
+	var algorithms = {};
+	$scope.results = {};
+	$scope.results.convertedResult = [];
+	$scope.results.series = [];
+
+	$scope.scroll = {};
+	$scope.scroll.scroll = $routeParams.id;
+
+	//l("hash: " + $location.hash());
+	$scope.mdType = "inventory_name";
+
+	$scope.municonv = {
+		'standard': {},
+		'complex:1': {},
+		'complex:2': {},
+		'complex:3': {}
+	};
+	$scope.municonvChain = {
+		'standard': {},
+		'complex:1': {},
+		'complex:2': {},
+		'complex:3': {}
+	};
+
+	$scope.goToMuniconv = function() {
+		var url = $scope.inst_url + 'step/mt_m';
+		$window.location = url;
+	};
+
+	$scope.goToMuniconvChain = function() {
+		var url = $scope.inst_url + 'step/mt_mc';
+		$window.location = url;
+	};
+
+	$scope.goToMeasurementData = function() {
+		var url = $scope.inst_url + 'step/md';
+		$window.location = url;
+	};
+
+	$scope.goToDetails = function() {
+		var url = $scope.url + "0/results#" + $routeParams.id;
+		$window.location = url;
+	};
+
+	$scope.manageMeasurementData = function() {
+		var deviceId = $scope.device.inventoryId;
+
+		if($scope.mdType === "cmpnt_type_name") {
+			deviceId = $scope.device.componentType;
+		}
+
+		var newWindowUrl = serviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
+
+
+		$window.open(newWindowUrl);
+	};
+
+	var query = serviceurl + 'magnets/install/?name=' + $scope.id;
+
+	$http.get(query).success(function(deviceData){
+		l(deviceData[0]);
+		$scope.device = deviceData[0];
+	});
+
+	detailsService.getDetails($routeParams).then(function(data) {
+
+		$scope.rawData = data;
+		l(data);
+		$scope.data = data[$routeParams.id];
+
+		for(var first in $scope.data) {
+			$scope.properties[first] = {};
+
+			for(var second in $scope.data[first]) {
+				$scope.detailsTabs.push({first: first, second: second, index: detailsTabsIndex});
+				detailsTabsIndex ++;
+				$scope.properties[first][second] = {};
+
+				// Save all axcept the algorithms in an array
+				for(var third in $scope.data[first][second]) {
+
+					if(third !== "algorithms" && third !== "measurementData") {
+						$scope.properties[first][second][third] = $scope.data[first][second][third];
+					}
+				}
+
+				// Save all algorithms into an array
+				for(var algorithm in $scope.data[first][second].algorithms) {
+					var algorithmParts = algorithm.split("2");
+					algorithms[algorithm] = $scope.data[first][second].algorithms[algorithm];
+					algorithms[algorithmParts[0]] = $scope.data[first][second].algorithms[algorithm];
+				}
+			}
+		}
+	});
+});
+
+app.controller('showMdCtrl', function($scope, $routeParams, $http, detailsService, $location){
+});
+
+app.controller('showMtCtrl', function($scope, $routeParams, $http, detailsService, $location){
 });
 
 /*

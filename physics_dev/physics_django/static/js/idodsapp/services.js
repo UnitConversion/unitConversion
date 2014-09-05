@@ -1288,3 +1288,175 @@ app.factory('hallProbeDataFactory', function($http, $q, HallProbeData, EntityErr
 
 	return factory;
 });
+
+/*
+ * Provide a factory for the component type rot coil data entity. Rot coil data can be checked, retrieved, saved and updated
+ */
+app.factory('cmpntTypeRotCoilDataFactory', function($http, $q, CmpntTypeRotCoilData, EntityError) {
+	var factory = {};
+	factory.entity = new CmpntTypeRotCoilData();
+	factory.error = new EntityError();
+
+	// Set rot coil data object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	};
+
+	// Check rot coil data before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	};
+
+	// Get rot coil data from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "ctrotcoildata", this.entity, CmpntTypeRotCoilData);
+	};
+
+	// Get rot coil data from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "ctrotcoildata", this.entity.list, params, this.entity.search_m);
+	};
+
+	// Save new rot coil data
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "savectrotcoildata", this.entity);
+	};
+
+	// Update rot coil data
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updatectrotcoildata", this.entity);
+	};
+
+	// Delete rot coil data
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deletectrotcoildata/";
+		l(this.entity);
+		var params = prepareUrlParameters(["cmpnt_type_name", "rot_coil_data_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	};
+
+	return factory;
+});
+
+/*
+ * Provide a factory for the component type hall probe data entity. Hall probe data can be checked, retrieved, saved and updated
+ */
+app.factory('cmpntTypeHallProbeDataFactory', function($http, $q, CmpntTypeHallProbeData, EntityError) {
+	var factory = {};
+	factory.entity = new CmpntTypeHallProbeData();
+	factory.error = new EntityError();
+
+	// Set rot hall probe object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	};
+
+	// Check rot hall probe before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	};
+
+	// Get rot hall probe from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "cthallprobedata", this.entity, CmpntTypeHallProbeData);
+	};
+
+	// Get rot hall probe from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "cthallprobedata", this.entity.list, params, this.entity.search_m);
+	};
+
+	// Save new rot hall probe
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "savecthallprobedata", this.entity);
+	};
+
+	// Update rot hall probe
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+		l(item);
+		l(this.entity);
+
+		return updateItem($q, $http, "updatecthallprobedata", this.entity);
+	};
+
+	// Delete hall probe data
+	factory.deleteItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		var query = serviceurl + "/deletecthallprobedata/";
+		l(this.entity);
+		var params = prepareUrlParameters(["cmpnt_type_name", "hall_probe_id"], item);
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.post(query, params).success(function(data){
+			deffered.resolve(data);
+
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	};
+
+	return factory;
+});

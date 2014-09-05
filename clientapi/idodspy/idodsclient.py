@@ -2875,8 +2875,8 @@ class IDODSClient(object):
                         integral_xfer_function,
                         orig_offset_x,
                         orig_offset_y,
-                        B_ref_int,
-                        Roll_angle,
+                        b_ref_int,
+                        roll_angle,
                         meas_notes,
                         meas_date,
                         author,
@@ -2913,7 +2913,7 @@ class IDODSClient(object):
     def saveRotCoilData(
             self, inventory_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
             meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
-            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, B_ref_int=None, Roll_angle=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
             ):
         '''
@@ -2922,103 +2922,103 @@ class IDODSClient(object):
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
+        :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id:
+        :param meas_coil_id: ID number of device used for this measurement
         :type meas_coil_id: str
 
-        :param ref_radius:
+        :param ref_radius: reference radius
         :type ref_radius: double
 
-        :param magnet_notes:
+        :param magnet_notes: comment for this magnet measurement data set
         :type magnet_notes: str
 
-        :param login_name:
+        :param login_name: user who generated this data set
         :type login_name: str
 
-        :param cond_curr:
+        :param cond_curr: condition current
         :type cond_curr: double
 
-        :param meas_loc:
+        :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number:
+        :param run_number: in which run this data was produced
         :type run_number: str
 
-        :param sub_device:
+        :param sub_device: name of the sub device
         :type sub_device: str
 
-        :param current_1:
+        :param current_1: 1 st measurement current
         :type current_1: double
 
-        :param current_2:
+        :param current_2: 2 nd measurement current
         :type current_2: double
 
-        :param current_3:
+        :param current_3: 3 rd measurement current
         :type current_3: double
 
-        :param up_dn_1:
+        :param up_dn_1: direction of 1 st current
         :type up_dn_1: str
 
-        :param up_dn_2:
+        :param up_dn_2: direction of 2 nd current
         :type up_dn_2: str
 
-        :param up_dn_3:
+        :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number:
+        :param analysis_number: in which analysis does this data belongs
         :type analysis_number: str
 
-        :param integral_xfer_function:
+        :param integral_xfer_function: integral transfer function
         :type integral_xfer_function: double
 
-        :param orig_offset_x:
+        :param orig_offset_x: horizontal origin offset
         :type orig_offset_x: double
 
-        :param orig_offset_y:
+        :param orig_offset_y: vertical origin offset
         :type orig_offset_y: double
 
-        :param B_ref_int:
-        :type B_ref_int: double
+        :param b_ref_int: integrated reference field
+        :type b_ref_int: double
 
-        :param Roll_angle:
-        :type Roll_angle: double
+        :param roll_angle: rolling angle
+        :type roll_angle: double
 
-        :param meas_notes:
+        :param meas_notes: comments for each measuring data point
         :type meas_notes: str
 
-        :param author:
+        :param author: who measured it
         :type author: str
 
-        :param a1:
+        :param a1: magnetic field (a1)
         :type a1: double
 
-        :param a2:
+        :param a2: magnetic field (a2)
         :type a2: double
 
-        :param a3:
+        :param a3: magnetic field (a3)
         :type a3: double
 
-        :param b1:
+        :param b1: magnetic field (b1)
         :type b1: double
 
-        :param b2:
+        :param b2: magnetic field (b2)
         :type b2: double
 
-        :param b3:
+        :param b3: magnetic field (b3)
         :type b3: double
 
-        :param a4_21:
+        :param a4_21: high order magnetic field (a4 to a21)
         :type a4_21: str
 
-        :param b4_21:
+        :param b4_21: high order magnetic field (b4 to b21)
         :type b4_21: str
 
-        :param data_issues:
+        :param data_issues: Reserved: special field to note each measure point
         :type data_issues: str
 
-        :param data_usage:
+        :param data_usage: Reserved
         :type data_usage: int
 
         :return: a map with structure like:
@@ -3055,8 +3055,8 @@ class IDODSClient(object):
             'integral_xfer_function': integral_xfer_function,
             'orig_offset_x': orig_offset_x,
             'orig_offset_y': orig_offset_y,
-            'B_ref_int': B_ref_int,
-            'Roll_angle': Roll_angle,
+            'b_ref_int': b_ref_int,
+            'roll_angle': roll_angle,
             'meas_notes': meas_notes,
             'author': author,
             'a1': a1,
@@ -3079,116 +3079,116 @@ class IDODSClient(object):
     def updateRotCoilData(
             self, rot_coil_data_id, inventory_name=None, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
             meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
-            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, B_ref_int=None, Roll_angle=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
             ):
         '''
         Update rotation coil data
 
-        :param rot_coil_data_id:
+        :param rot_coil_data_id: id of the data in the database
         :type rot_coil_data_id: int
 
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
-        :type alias:
+        :param alias: alias name
+        :type alias: str
 
-        :param meas_coil_id:
-        :type meas_coil_id:
+        :param meas_coil_id: ID number of device used for this measurement
+        :type meas_coil_id: str
 
-        :param ref_radius:
-        :type ref_radius:
+        :param ref_radius: reference radius
+        :type ref_radius: double
 
-        :param magnet_notes:
-        :type magnet_notes:
+        :param magnet_notes: comment for this magnet measurement data set
+        :type magnet_notes: str
 
-        :param login_name:
-        :type login_name:
+        :param login_name: user who generated this data set
+        :type login_name: str
 
-        :param cond_curr:
-        :type cond_curr:
+        :param cond_curr: condition current
+        :type cond_curr: double
 
-        :param meas_loc:
-        :type meas_loc:
+        :param meas_loc: measurement location
+        :type meas_loc: str
 
-        :param run_number:
-        :type run_number:
+        :param run_number: in which run this data was produced
+        :type run_number: str
 
-        :param sub_device:
-        :type sub_device:
+        :param sub_device: name of the sub device
+        :type sub_device: str
 
-        :param current_1:
-        :type current_1:
+        :param current_1: 1 st measurement current
+        :type current_1: double
 
-        :param current_2:
-        :type current_2:
+        :param current_2: 2 nd measurement current
+        :type current_2: double
 
-        :param current_3:
-        :type current_3:
+        :param current_3: 3 rd measurement current
+        :type current_3: double
 
-        :param up_dn_1:
-        :type up_dn_1:
+        :param up_dn_1: direction of 1 st current
+        :type up_dn_1: str
 
-        :param up_dn_2:
-        :type up_dn_2:
+        :param up_dn_2: direction of 2 nd current
+        :type up_dn_2: str
 
-        :param up_dn_3:
-        :type up_dn_3:
+        :param up_dn_3: direction of 4 rd current
+        :type up_dn_3: str
 
-        :param analysis_number:
-        :type analysis_number:
+        :param analysis_number: in which analysis does this data belongs
+        :type analysis_number: str
 
-        :param integral_xfer_function:
-        :type integral_xfer_function:
+        :param integral_xfer_function: integral transfer function
+        :type integral_xfer_function: double
 
-        :param orig_offset_x:
-        :type orig_offset_x:
+        :param orig_offset_x: horizontal origin offset
+        :type orig_offset_x: double
 
-        :param orig_offset_y:
-        :type orig_offset_y:
+        :param orig_offset_y: vertical origin offset
+        :type orig_offset_y: double
 
-        :param B_ref_int:
-        :type B_ref_int:
+        :param b_ref_int: integrated reference field
+        :type b_ref_int: double
 
-        :param Roll_angle:
-        :type Roll_angle:
+        :param roll_angle: rolling angle
+        :type roll_angle: double
 
-        :param meas_notes:
-        :type meas_notes:
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
 
-        :param author:
-        :type author:
+        :param author: who measured it
+        :type author: str
 
-        :param a1:
-        :type a1:
+        :param a1: magnetic field (a1)
+        :type a1: double
 
-        :param a2:
-        :type a2:
+        :param a2: magnetic field (a2)
+        :type a2: double
 
-        :param a3:
-        :type a3:
+        :param a3: magnetic field (a3)
+        :type a3: double
 
-        :param b1:
-        :type b1:
+        :param b1: magnetic field (b1)
+        :type b1: double
 
-        :param b2:
-        :type b2:
+        :param b2: magnetic field (b2)
+        :type b2: double
 
-        :param b3:
-        :type b3:
+        :param b3: magnetic field (b3)
+        :type b3: double
 
-        :param a4_21:
-        :type a4_21:
+        :param a4_21: high order magnetic field (a4 to a21)
+        :type a4_21: str
 
-        :param b4_21:
-        :type b4_21:
+        :param b4_21: high order magnetic field (b4 to b21)
+        :type b4_21: str
 
-        :param data_issues:
-        :type data_issues:
+        :param data_issues: Reserved: special field to note each measure point
+        :type data_issues: str
 
-        :param data_usage:
-        :type data_usage:
+        :param data_usage: Reserved
+        :type data_usage: int
 
         :return: True or HTTPError
 
@@ -3221,8 +3221,8 @@ class IDODSClient(object):
             'integral_xfer_function': integral_xfer_function,
             'orig_offset_x': orig_offset_x,
             'orig_offset_y': orig_offset_y,
-            'B_ref_int': B_ref_int,
-            'Roll_angle': Roll_angle,
+            'b_ref_int': b_ref_int,
+            'roll_angle': roll_angle,
             'meas_notes': meas_notes,
             'author': author,
             'a1': a1,
@@ -3343,76 +3343,76 @@ class IDODSClient(object):
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
+        :param alias: alias name
         :type alias: str
 
-        :param sub_device:
+        :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location:
+        :param measured_at_location: where was it measured
         :type measured_at_location: str
 
-        :param run_identifier:
+        :param run_identifier:  in which run this data was produced
         :type run_identifier: str
 
-        :param login_name:
+        :param login_name: who generated this data set
         :type login_name: str
 
-        :param conditioning_current:
+        :param conditioning_current: condition current
         :type conditioning_current: double
 
-        :param current_1:
+        :param current_1: 1 st measurement current
         :type current_1: double
 
-        :param current_2:
+        :param current_2: 2 nd measurement current
         :type current_2: double
 
-        :param current_3:
+        :param current_3: 3 rd measurement current
         :type current_3: double
 
-        :param up_dn1:
+        :param up_dn1: direction of 1 st current
         :type up_dn1: str
 
-        :param up_dn2:
+        :param up_dn2: direction of 2 nd current
         :type up_dn2: str
 
-        :param up_dn3:
+        :param up_dn3: direction of 3 rd current
         :type up_dn3: str
 
-        :param mag_volt_1:
+        :param mag_volt_1: voltage at 1 st current given to magnet
         :type mag_volt_1: double
 
-        :param mag_volt_2:
+        :param mag_volt_2: voltage at 2 nd current given to magnet
         :type mag_volt_2: double
 
-        :param mag_volt_3:
+        :param mag_volt_3: voltage at 3 rd current given to magnet
         :type mag_volt_3: double
 
-        :param x:
+        :param x: x position
         :type x: double
 
-        :param y:
+        :param y: y position
         :type y: double
 
-        :param z:
+        :param z: z position
         :type z: double
 
-        :param bx_t:
+        :param bx_t: magnetic field along x axis
         :type bx_t: double
 
-        :param by_t:
+        :param by_t: magnetic field along y axis
         :type by_t: double
 
-        :param bz_t:
+        :param bz_t: magnetic field along z axis
         :type bz_t: double
 
-        :param meas_notes:
+        :param meas_notes: comments for each measuring data point
         :type meas_notes: str
 
-        :param data_issues:
+        :param data_issues: reserved
         :type data_issues: str
 
-        :param data_usage:
+        :param data_usage: reserved
         :type data_usage: int
 
         :return: a map with structure like:
@@ -3470,82 +3470,82 @@ class IDODSClient(object):
         '''
         Update hall probe data
 
-        :param hall_probe_id: id hall probe
+        :param hall_probe_id: id of the hall probe
         :type hall_probe_id: int
 
         :param inventory_name: name of the device in the inventory
         :type inventory_name: str
 
-        :param alias:
+        :param alias: alias name
         :type alias: str
 
-        :param sub_device:
+        :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location:
+        :param measured_at_location: where was it measured
         :type measured_at_location: str
 
-        :param run_identifier:
+        :param run_identifier:  in which run this data was produced
         :type run_identifier: str
 
-        :param login_name:
+        :param login_name: who generated this data set
         :type login_name: str
 
-        :param conditioning_current:
+        :param conditioning_current: condition current
         :type conditioning_current: double
 
-        :param current_1:
+        :param current_1: 1 st measurement current
         :type current_1: double
 
-        :param current_2:
+        :param current_2: 2 nd measurement current
         :type current_2: double
 
-        :param current_3:
+        :param current_3: 3 rd measurement current
         :type current_3: double
 
-        :param up_dn1:
+        :param up_dn1: direction of 1 st current
         :type up_dn1: str
 
-        :param up_dn2:
+        :param up_dn2: direction of 2 nd current
         :type up_dn2: str
 
-        :param up_dn3:
+        :param up_dn3: direction of 3 rd current
         :type up_dn3: str
 
-        :param mag_volt_1:
+        :param mag_volt_1: voltage at 1 st current given to magnet
         :type mag_volt_1: double
 
-        :param mag_volt_2:
+        :param mag_volt_2: voltage at 2 nd current given to magnet
         :type mag_volt_2: double
 
-        :param mag_volt_3:
+        :param mag_volt_3: voltage at 3 rd current given to magnet
         :type mag_volt_3: double
 
-        :param x:
+        :param x: x position
         :type x: double
 
-        :param y:
+        :param y: y position
         :type y: double
 
-        :param z:
+        :param z: z position
         :type z: double
 
-        :param bx_t:
+        :param bx_t: magnetic field along x axis
         :type bx_t: double
 
-        :param by_t:
+        :param by_t: magnetic field along y axis
         :type by_t: double
 
-        :param bz_t:
+        :param bz_t: magnetic field along z axis
         :type bz_t: double
 
-        :param meas_notes:
+        :param meas_notes: comments for each measuring data point
         :type meas_notes: str
 
-        :param data_issues:
+        :param data_issues: reserved
         :type data_issues: str
 
-        :param data_usage:
+        :param data_usage: reserved
         :type data_usage: int
 
         :return: True or HTTPError
@@ -3613,6 +3613,787 @@ class IDODSClient(object):
         # Set parameters
         params = {
             'inventory_name': inventory_name,
+            'hall_probe_id': hall_probe_id
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def retrieveComponentTypeRotCoilData(self, cmpnt_type_name):
+        '''
+        Return rotation coil data
+
+        :param cmpnt_type_name: name of the device in the inventory
+        :type cmpnt_type_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        rot_coil_data_id,
+                        cmpnt_type_id,
+                        alias,
+                        meas_coil_id,
+                        ref_radius,
+                        magnet_notes,
+                        login_name,
+                        cond_curr,
+                        meas_loc,
+                        run_number,
+                        sub_device,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn_1,
+                        up_dn_2,
+                        up_dn_3,
+                        analysis_number,
+                        integral_xfer_function,
+                        orig_offset_x,
+                        orig_offset_y,
+                        b_ref_int,
+                        roll_angle,
+                        meas_notes,
+                        meas_date,
+                        author,
+                        a1,
+                        a2,
+                        a3,
+                        b1,
+                        b2,
+                        b3,
+                        a4_21,
+                        b4_21,
+                        data_issues,
+                        data_usage,
+                        cmpnt_type_name
+                    },
+                    ...
+                }
+
+        :Raises: HTTPError
+        '''
+
+        # Try to retrieve data
+        url = 'ctrotcoildata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name
+        }
+
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def saveComponentTypeRotCoilData(
+            self, cmpnt_type_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save rotation coil data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param meas_coil_id: ID number of device used for this measurement
+        :type meas_coil_id: str
+
+        :param ref_radius: reference radius
+        :type ref_radius: double
+
+        :param magnet_notes: comment for this magnet measurement data set
+        :type magnet_notes: str
+
+        :param login_name: user who generated this data set
+        :type login_name: str
+
+        :param cond_curr: condition current
+        :type cond_curr: double
+
+        :param meas_loc: measurement location
+        :type meas_loc: str
+
+        :param run_number: in which run this data was produced
+        :type run_number: str
+
+        :param sub_device: name of the sub device
+        :type sub_device: str
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn_1: direction of 1 st current
+        :type up_dn_1: str
+
+        :param up_dn_2: direction of 2 nd current
+        :type up_dn_2: str
+
+        :param up_dn_3: direction of 4 rd current
+        :type up_dn_3: str
+
+        :param analysis_number: in which analysis does this data belongs
+        :type analysis_number: str
+
+        :param integral_xfer_function: integral transfer function
+        :type integral_xfer_function: double
+
+        :param orig_offset_x: horizontal origin offset
+        :type orig_offset_x: double
+
+        :param orig_offset_y: vertical origin offset
+        :type orig_offset_y: double
+
+        :param b_ref_int: integrated reference field
+        :type b_ref_int: double
+
+        :param roll_angle: rolling angle
+        :type roll_angle: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param author: who measured it
+        :type author: str
+
+        :param a1: magnetic field (a1)
+        :type a1: double
+
+        :param a2: magnetic field (a2)
+        :type a2: double
+
+        :param a3: magnetic field (a3)
+        :type a3: double
+
+        :param b1: magnetic field (b1)
+        :type b1: double
+
+        :param b2: magnetic field (b2)
+        :type b2: double
+
+        :param b3: magnetic field (b3)
+        :type b3: double
+
+        :param a4_21: high order magnetic field (a4 to a21)
+        :type a4_21: str
+
+        :param b4_21: high order magnetic field (b4 to b21)
+        :type b4_21: str
+
+        :param data_issues: Reserved: special field to note each measure point
+        :type data_issues: str
+
+        :param data_usage: Reserved
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': rot_coil_data_id}
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'savectrotcoildata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name,
+            'alias': alias,
+            'meas_coil_id': meas_coil_id,
+            'ref_radius': ref_radius,
+            'magnet_notes': magnet_notes,
+            'login_name': login_name,
+            'cond_curr': cond_curr,
+            'meas_loc': meas_loc,
+            'run_number': run_number,
+            'sub_device': sub_device,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn_1': up_dn_1,
+            'up_dn_2': up_dn_2,
+            'up_dn_3': up_dn_3,
+            'analysis_number': analysis_number,
+            'integral_xfer_function': integral_xfer_function,
+            'orig_offset_x': orig_offset_x,
+            'orig_offset_y': orig_offset_y,
+            'b_ref_int': b_ref_int,
+            'roll_angle': roll_angle,
+            'meas_notes': meas_notes,
+            'author': author,
+            'a1': a1,
+            'a2': a2,
+            'a3': a3,
+            'b1': b1,
+            'b2': b2,
+            'b3': b3,
+            'a4_21': a4_21,
+            'b4_21': b4_21,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def updateComponentTypeRotCoilData(
+            self, rot_coil_data_id, cmpnt_type_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
+            analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
+            meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Update rotation coil data
+
+        :param rot_coil_data_id: id of the data in the database
+        :type rot_coil_data_id: int
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param meas_coil_id: ID number of device used for this measurement
+        :type meas_coil_id: str
+
+        :param ref_radius: reference radius
+        :type ref_radius: double
+
+        :param magnet_notes: comment for this magnet measurement data set
+        :type magnet_notes: str
+
+        :param login_name: user who generated this data set
+        :type login_name: str
+
+        :param cond_curr: condition current
+        :type cond_curr: double
+
+        :param meas_loc: measurement location
+        :type meas_loc: str
+
+        :param run_number: in which run this data was produced
+        :type run_number: str
+
+        :param sub_device: name of the sub device
+        :type sub_device: str
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn_1: direction of 1 st current
+        :type up_dn_1: str
+
+        :param up_dn_2: direction of 2 nd current
+        :type up_dn_2: str
+
+        :param up_dn_3: direction of 4 rd current
+        :type up_dn_3: str
+
+        :param analysis_number: in which analysis does this data belongs
+        :type analysis_number: str
+
+        :param integral_xfer_function: integral transfer function
+        :type integral_xfer_function: double
+
+        :param orig_offset_x: horizontal origin offset
+        :type orig_offset_x: double
+
+        :param orig_offset_y: vertical origin offset
+        :type orig_offset_y: double
+
+        :param b_ref_int: integrated reference field
+        :type b_ref_int: double
+
+        :param roll_angle: rolling angle
+        :type roll_angle: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param author: who measured it
+        :type author: str
+
+        :param a1: magnetic field (a1)
+        :type a1: double
+
+        :param a2: magnetic field (a2)
+        :type a2: double
+
+        :param a3: magnetic field (a3)
+        :type a3: double
+
+        :param b1: magnetic field (b1)
+        :type b1: double
+
+        :param b2: magnetic field (b2)
+        :type b2: double
+
+        :param b3: magnetic field (b3)
+        :type b3: double
+
+        :param a4_21: high order magnetic field (a4 to a21)
+        :type a4_21: str
+
+        :param b4_21: high order magnetic field (b4 to b21)
+        :type b4_21: str
+
+        :param data_issues: Reserved: special field to note each measure point
+        :type data_issues: str
+
+        :param data_usage: Reserved
+        :type data_usage: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'updatectrotcoildata/'
+
+        # Set parameters
+        params = {
+            'rot_coil_data_id': rot_coil_data_id,
+            'cmpnt_type_name': cmpnt_type_name,
+            'alias': alias,
+            'meas_coil_id': meas_coil_id,
+            'ref_radius': ref_radius,
+            'magnet_notes': magnet_notes,
+            'login_name': login_name,
+            'cond_curr': cond_curr,
+            'meas_loc': meas_loc,
+            'run_number': run_number,
+            'sub_device': sub_device,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn_1': up_dn_1,
+            'up_dn_2': up_dn_2,
+            'up_dn_3': up_dn_3,
+            'analysis_number': analysis_number,
+            'integral_xfer_function': integral_xfer_function,
+            'orig_offset_x': orig_offset_x,
+            'orig_offset_y': orig_offset_y,
+            'b_ref_int': b_ref_int,
+            'roll_angle': roll_angle,
+            'meas_notes': meas_notes,
+            'author': author,
+            'a1': a1,
+            'a2': a2,
+            'a3': a3,
+            'b1': b1,
+            'b2': b2,
+            'b3': b3,
+            'a4_21': a4_21,
+            'b4_21': b4_21,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def deleteComponentTypeRotCoilData(self, cmpnt_type_name, rot_coil_data_id=None):
+        '''
+        Delete one or more rot coil data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param rot_coil_data_id: id of data in the table
+        :type rot_coil_data_id: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'deletectrotcoildata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name,
+            'rot_coil_data_id': rot_coil_data_id
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def retrieveComponentTypeHallProbeData(self, cmpnt_type_name):
+        '''
+        Return hall probe data
+
+        :param cmpnt_type_name: name of the device in the inventory
+        :type cmpnt_type_name: str
+
+        :return: dictionary with a structure like:
+
+            .. code-block:: python
+
+                {
+                    'id': {
+                        hall_probe_id,
+                        cmpnt_type_id,
+                        alias,
+                        meas_date,
+                        measured_at_location,
+                        sub_device,
+                        run_identifier,
+                        login_name,
+                        conditioning_current,
+                        current_1,
+                        current_2,
+                        current_3,
+                        up_dn1,
+                        up_dn2,
+                        up_dn3,
+                        mag_volt_1,
+                        mag_volt_2,
+                        mag_volt_3,
+                        x,
+                        y,
+                        z,
+                        bx_t,
+                        by_t,
+                        bz_t,
+                        meas_notes,
+                        data_issues,
+                        data_usage,
+                        cmpnt_type_name
+                    },
+                    ...
+                }
+
+        :Raises: HTTPError
+        '''
+
+        # Try to retrieve data
+        url = 'cthallprobedata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name
+        }
+
+        r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def saveComponentTypeHallProbeData(
+            self, cmpnt_type_name, sub_device, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Save hall probe data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param sub_device: sub device name
+        :type sub_device: str
+
+        :param measured_at_location: where was it measured
+        :type measured_at_location: str
+
+        :param run_identifier:  in which run this data was produced
+        :type run_identifier: str
+
+        :param login_name: who generated this data set
+        :type login_name: str
+
+        :param conditioning_current: condition current
+        :type conditioning_current: double
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn1: direction of 1 st current
+        :type up_dn1: str
+
+        :param up_dn2: direction of 2 nd current
+        :type up_dn2: str
+
+        :param up_dn3: direction of 3 rd current
+        :type up_dn3: str
+
+        :param mag_volt_1: voltage at 1 st current given to magnet
+        :type mag_volt_1: double
+
+        :param mag_volt_2: voltage at 2 nd current given to magnet
+        :type mag_volt_2: double
+
+        :param mag_volt_3: voltage at 3 rd current given to magnet
+        :type mag_volt_3: double
+
+        :param x: x position
+        :type x: double
+
+        :param y: y position
+        :type y: double
+
+        :param z: z position
+        :type z: double
+
+        :param bx_t: magnetic field along x axis
+        :type bx_t: double
+
+        :param by_t: magnetic field along y axis
+        :type by_t: double
+
+        :param bz_t: magnetic field along z axis
+        :type bz_t: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param data_issues: reserved
+        :type data_issues: str
+
+        :param data_usage: reserved
+        :type data_usage: int
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {'id': hall_probe_data_id}
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'savecthallprobedata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name,
+            'sub_device': sub_device,
+            'alias': alias,
+            'measured_at_location': measured_at_location,
+            'run_identifier': run_identifier,
+            'login_name': login_name,
+            'conditioning_current': conditioning_current,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn1': up_dn1,
+            'up_dn2': up_dn2,
+            'up_dn3': up_dn3,
+            'mag_volt_1': mag_volt_1,
+            'mag_volt_2': mag_volt_2,
+            'mag_volt_3': mag_volt_3,
+            'x': x,
+            'y': y,
+            'z': z,
+            'bx_t': bx_t,
+            'by_t': by_t,
+            'bz_t': bz_t,
+            'meas_notes': meas_notes,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def updateComponentTypeHallProbeData(
+            self, hall_probe_id, cmpnt_type_name, sub_device=None, alias=None, measured_at_location=None,
+            run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
+            current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
+            x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
+            ):
+        '''
+        Update hall probe data
+
+        :param hall_probe_id: id of the hall probe
+        :type hall_probe_id: int
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param alias: alias name
+        :type alias: str
+
+        :param sub_device: sub device name
+        :type sub_device: str
+
+        :param measured_at_location: where was it measured
+        :type measured_at_location: str
+
+        :param run_identifier:  in which run this data was produced
+        :type run_identifier: str
+
+        :param login_name: who generated this data set
+        :type login_name: str
+
+        :param conditioning_current: condition current
+        :type conditioning_current: double
+
+        :param current_1: 1 st measurement current
+        :type current_1: double
+
+        :param current_2: 2 nd measurement current
+        :type current_2: double
+
+        :param current_3: 3 rd measurement current
+        :type current_3: double
+
+        :param up_dn1: direction of 1 st current
+        :type up_dn1: str
+
+        :param up_dn2: direction of 2 nd current
+        :type up_dn2: str
+
+        :param up_dn3: direction of 3 rd current
+        :type up_dn3: str
+
+        :param mag_volt_1: voltage at 1 st current given to magnet
+        :type mag_volt_1: double
+
+        :param mag_volt_2: voltage at 2 nd current given to magnet
+        :type mag_volt_2: double
+
+        :param mag_volt_3: voltage at 3 rd current given to magnet
+        :type mag_volt_3: double
+
+        :param x: x position
+        :type x: double
+
+        :param y: y position
+        :type y: double
+
+        :param z: z position
+        :type z: double
+
+        :param bx_t: magnetic field along x axis
+        :type bx_t: double
+
+        :param by_t: magnetic field along y axis
+        :type by_t: double
+
+        :param bz_t: magnetic field along z axis
+        :type bz_t: double
+
+        :param meas_notes: comments for each measuring data point
+        :type meas_notes: str
+
+        :param data_issues: reserved
+        :type data_issues: str
+
+        :param data_usage: reserved
+        :type data_usage: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'updatecthallprobedata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name,
+            'hall_probe_id': hall_probe_id,
+            'sub_device': sub_device,
+            'alias': alias,
+            'measured_at_location': measured_at_location,
+            'run_identifier': run_identifier,
+            'login_name': login_name,
+            'conditioning_current': conditioning_current,
+            'current_1': current_1,
+            'current_2': current_2,
+            'current_3': current_3,
+            'up_dn1': up_dn1,
+            'up_dn2': up_dn2,
+            'up_dn3': up_dn3,
+            'mag_volt_1': mag_volt_1,
+            'mag_volt_2': mag_volt_2,
+            'mag_volt_3': mag_volt_3,
+            'x': x,
+            'y': y,
+            'z': z,
+            'bx_t': bx_t,
+            'by_t': by_t,
+            'bz_t': bz_t,
+            'meas_notes': meas_notes,
+            'data_issues': data_issues,
+            'data_usage': data_usage
+        }
+
+        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        self.__raise_for_status(r.status_code, r.text)
+
+        return r.json()
+
+    def deleteComponentTypeHallProbeData(self, cmpnt_type_name, hall_probe_id=None):
+        '''
+        Delete one or more hall probe data
+
+        :param cmpnt_type_name: name of the component type
+        :type cmpnt_type_name: str
+
+        :param hall_probe_id: id of data in the table
+        :type hall_probe_id: int
+
+        :return: True or HTTPError
+
+        :Raises: HTTPError
+        '''
+
+        # Set URL
+        url = 'deletecthallprobedata/'
+
+        # Set parameters
+        params = {
+            'cmpnt_type_name': cmpnt_type_name,
             'hall_probe_id': hall_probe_id
         }
 

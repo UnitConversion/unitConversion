@@ -21,6 +21,8 @@ from physics_django.idods.views import (retrieveTreesWS)
 from physics_django.idods.views import (saveDataMethodOfflineDataWS)
 from physics_django.idods.views import (retrieveRotCoilDataWS, saveRotCoilDataWS, updateRotCoilDataWS, deleteRotCoilDataWS)
 from physics_django.idods.views import (retrieveHallProbeDataWS, saveHallProbeDataWS, updateHallProbeDataWS, deleteHallProbeDataWS)
+from physics_django.idods.views import (retrieveCmpntTypeRotCoilDataWS, saveCmpntTypeRotCoilDataWS, updateCmpntTypeRotCoilDataWS, deleteCmpntTypeRotCoilDataWS)
+from physics_django.idods.views import (retrieveCmpntTypeHallProbeDataWS, saveCmpntTypeHallProbeDataWS, updateCmpntTypeHallProbeDataWS, deleteCmpntTypeHallProbeDataWS)
 from physics_django.idods.views import (idodsIndexHtml, idodsHtmls)
 from physics_django.idods.views import (measurementIndexHtml, measurementHtmls)
 
@@ -129,6 +131,18 @@ urlpatterns = patterns(
     url(r'^id/device/savehallprobedata/$', saveHallProbeDataWS),
     url(r'^id/device/updatehallprobedata/$', updateHallProbeDataWS),
     url(r'^id/device/deletehallprobedata/$', deleteHallProbeDataWS),
+
+    # Define component type rot coil data urls
+    url(r'^id/device/ctrotcoildata/$', retrieveCmpntTypeRotCoilDataWS),
+    url(r'^id/device/savectrotcoildata/$', saveCmpntTypeRotCoilDataWS),
+    url(r'^id/device/updatectrotcoildata/$', updateCmpntTypeRotCoilDataWS),
+    url(r'^id/device/deletectrotcoildata/$', deleteCmpntTypeRotCoilDataWS),
+
+    # Define component type hall probe data urls
+    url(r'^id/device/cthallprobedata/$', retrieveCmpntTypeHallProbeDataWS),
+    url(r'^id/device/savecthallprobedata/$', saveCmpntTypeHallProbeDataWS),
+    url(r'^id/device/updatecthallprobedata/$', updateCmpntTypeHallProbeDataWS),
+    url(r'^id/device/deletecthallprobedata/$', deleteCmpntTypeHallProbeDataWS),
 
     url(r'^id/web/$', idodsIndexHtml),
     url(r'^id/web/(.+)', idodsHtmls),

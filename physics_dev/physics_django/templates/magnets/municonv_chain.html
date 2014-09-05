@@ -1,0 +1,50 @@
+{% load verbatim %}
+{% verbatim %}
+
+<div class="details_data_tabs">
+	<ul class="nav nav-tabs">
+		<li><a href ng-click="goToMuniconv()">Municonv</a></li>
+		<li class="active"><a href ng-click="goToMuniconvChain()">MuniconvChain</a></li>
+	</ul>
+</div>
+
+<div ng-repeat="(key, value) in municonvChain">
+
+	<div class="">
+		<label class="checkbox">
+			<input ng-model="rawData[id]['municonvChain'][key]" type="checkbox"> <span>{{key}}</span>
+		</label>
+		<br/>
+		<input ng-model="rawData[id]['municonvChain'][key].description" type="text" placeholder="Description">
+		<br/>
+		<input ng-model="rawData[id]['municonvChain'][key].defaultEnergy" type="text" placeholder="Default Energy">
+
+		<table class="table table-bordered table-condensed">
+			<tr>
+				<th>Id</th>
+				<th>Type</th>
+				<th>Function</th>
+				<th>Init unit</th>
+				<th>Dest unit</th>
+				<th></th>
+				<th></th>
+			</tr>
+			<tr ng-repeat="(id, otherValues) in rawData[id]['municonvChain'][key].algorithms">
+				<td>{{id}}</td>
+				<td>{{otherValues.type}}</td>
+				<td>{{otherValues.function}}</td>
+				<td>{{otherValues.initialUnit}}</td>
+				<td>{{otherValues.resultUnit}}</td>
+				<td><a href="#">Edit</a></td>
+				<td><a href="#">Delete</a></td>
+			</tr>
+			<tr>
+				<td colspan="7">
+					<button class="btn btn-info"><i class="icon-plus icon-white"></i> Add {{key}} algorithm</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+{% endverbatim %}

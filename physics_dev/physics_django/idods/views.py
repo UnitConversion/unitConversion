@@ -848,6 +848,104 @@ def deleteHallProbeDataWS(request):
     return _updateData(request, idodsi.deleteHallProbeData, ['inventory_name', 'hall_probe_id'])
 
 
+@require_http_methods(["GET"])
+def retrieveCmpntTypeRotCoilDataWS(request):
+    '''
+    Retrieve component type rot coil data
+    '''
+    return _retrieveData(request, idodsi.retrieveComponentTypeRotCoilData, ['cmpnt_type_name'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveCmpntTypeRotCoilDataWS(request):
+    '''
+    Save component type rot coil data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _saveData(request, idodsi.saveComponentTypeRotCoilData, [
+        'cmpnt_type_name', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
+        'meas_loc', 'run_number', 'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2', 'up_dn_3',
+        'analysis_number', 'integral_xfer_function', 'orig_offset_x', 'orig_offset_y', 'b_ref_int', 'roll_angle',
+        'meas_notes', 'author', 'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def updateCmpntTypeRotCoilDataWS(request):
+    '''
+    Update component type rot coil data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _updateData(request, idodsi.updateComponentTypeRotCoilData, [
+        'rot_coil_data_id', 'cmpnt_type_name', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
+        'meas_loc', 'run_number', 'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2', 'up_dn_3',
+        'analysis_number', 'integral_xfer_function', 'orig_offset_x', 'orig_offset_y', 'b_ref_int', 'roll_angle',
+        'meas_notes', 'author', 'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteCmpntTypeRotCoilDataWS(request):
+    '''
+    Delete component type rot coil data
+    '''
+    return _updateData(request, idodsi.deleteComponentTypeRotCoilData, ['cmpnt_type_name', 'rot_coil_data_id'])
+
+
+@require_http_methods(["GET"])
+def retrieveCmpntTypeHallProbeDataWS(request):
+    '''
+    Retrieve component type hall probe data
+    '''
+    return _retrieveData(request, idodsi.retrieveComponentTypeHallProbeData, ['cmpnt_type_name'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveCmpntTypeHallProbeDataWS(request):
+    '''
+    Save component type hall probe data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _saveData(request, idodsi.saveComponentTypeHallProbeData, [
+        'cmpnt_type_name', 'sub_device', 'alias', 'measured_at_location',
+        'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+        'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+        'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def updateCmpntTypeHallProbeDataWS(request):
+    '''
+    Update component type hall probe data
+    '''
+    request.POST = request.POST.copy()
+    request.POST['login_name'] = request.user.username
+    return _updateData(request, idodsi.updateComponentTypeHallProbeData, [
+        'hall_probe_id', 'cmpnt_type_name', 'sub_device', 'alias', 'measured_at_location',
+        'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+        'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+        'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
+        ])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def deleteCmpntTypeHallProbeDataWS(request):
+    '''
+    Delete component type hall probe data
+    '''
+    return _updateData(request, idodsi.deleteComponentTypeHallProbeData, ['cmpnt_type_name', 'hall_probe_id'])
+
+
 def idodsIndexHtml(request):
     '''
     Load index html file

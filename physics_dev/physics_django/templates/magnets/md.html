@@ -1,0 +1,43 @@
+{% load verbatim %}
+{% verbatim %}
+
+<a name="{{scroll.scroll}}"></a>
+<div class="details_data">
+
+	<div class="alert alert-error" ng-show="error.display === true">
+		<strong>Error</strong> while converting from {{source_unit}} to {{destination_unit}}. {{error.message}}
+	</div>
+
+	<div class="float_left right_space">
+		<h3>Measurement data</h3>
+
+		<span>Currently no device measurement data exists so component type measurement data will be used</span>
+
+		<br/>
+		<br/>
+
+		<div class="form-inline">
+			<label class="radio">
+				<input name="md_type" type="radio" value="inventory_name" ng-model="mdType"> Individual device
+			</label>
+			<label class="radio">
+				<input name="md_type" type="radio" ng-model="mdType" value="cmpnt_type_name"> Component type
+			</label>
+		</div>
+
+		<br/>
+		<p>
+			<button ng-click="manageMeasurementData()" class="btn">Create</button>
+			<button ng-click="manageMeasurementData()" class="btn">Manage</button>
+			<button class="btn">Delete</button>
+		</p>
+
+		<br/>
+		<br/>
+		<p>
+			<button class="btn btn-info" ng-click="goToMuniconv()">Go to conversion info</button>
+		</p>
+	</div>
+</div>
+
+{% endverbatim %}

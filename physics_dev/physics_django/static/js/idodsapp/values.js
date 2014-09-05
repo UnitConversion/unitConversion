@@ -143,13 +143,19 @@ app.value('CmpntTypeInfo', {
  	this.save = ["name", "description", "props"];
  	this.save_show = ["name", "description"];
  	this.update = ["old_name", "name", "description", "props"];
- 	this.display = {"name": "Name", "description": "Description", "id": "Id"};
+ 	this.display = {
+ 		"name": "Name",
+ 		"description": "Description",
+ 		"id": "Id",
+ 		"__measurement_data_settings__": "Measurement data settings"
+ 	};
  	this.id = "";
  	this.old_name = "";
  	this.name = "";
  	this.description = "";
  	this.props = {};
  	this.prop_keys = [];
+ 	this.__measurement_data_settings__ = undefined;
 
  	this.set = function(obj) {
 
@@ -181,6 +187,17 @@ app.value('CmpntTypeInfo', {
  		}
 
  		this.description = obj.description;
+
+ 		if('__measurement_data_settings__' in obj) {
+ 			l(typeof obj.__measurement_data_settings__);
+
+ 			if ((typeof obj.__measurement_data_settings__) === 'string') {
+ 				this.__measurement_data_settings__ = JSON.parse(obj.__measurement_data_settings__);
+
+			} else {
+ 				this.__measurement_data_settings__ = obj.__measurement_data_settings__;
+			}
+ 		}
  	};
 
  	if(obj !== undefined) {
@@ -212,7 +229,11 @@ app.value('CmpntTypeTypeInfo', {
  	this.list = ["name"];
  	this.save = ["name", "description"];
  	this.update = ["old_name", "name", "description"];
- 	this.display = {"name": "Name", "description": "Description", "id": "Id"};
+ 	this.display = {
+ 		"name": "Name",
+ 		"description": "Description",
+ 		"id": "Id"
+ 	};
 
  	this.id = "";
  	this.old_name = "";
@@ -1597,6 +1618,156 @@ app.value('HallProbeDataInfo', {
  	this.display = {
  		"id": "Id",
  		"inventory_name": "Inventory name",
+ 		"description": "Description",
+ 		"meas_date": "Date"
+ 	};
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+
+ 			if(obj[this.all[i]] === null) {
+ 				this[this.all[i]] = undefined;
+
+ 			} else {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+
+  		}
+ 	};
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
+/*
+ * Component type rot coil data object
+ */
+ app.value('CmpntTypeRotCoilData', function(obj){
+
+ 	// All parameters
+ 	this.all = ['rot_coil_data_id', 'id', 'cmpnt_type_id', 'cmpnt_type_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
+ 	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
+ 	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
+ 	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'meas_date', 'author',
+ 	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
+
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["cmpnt_type_name"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["cmpnt_type_name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ['id', 'cmpnt_type_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
+ 	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
+ 	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
+ 	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'meas_date', 'author',
+ 	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["cmpnt_type_name"];
+
+ 	// Parameters used for save URL
+ 	this.save = ['cmpnt_type_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
+ 	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
+ 	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
+ 	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'author',
+ 	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
+
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = this.save;
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ['rot_coil_data_id', 'cmpnt_type_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
+ 	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
+ 	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
+ 	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'author',
+ 	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
+
+ 	this.display = {
+ 		"id": "Id",
+ 		"cmpnt_type_name": "Component type name",
+ 		"description": "Description",
+ 		"meas_date": "Date"
+ 	};
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+
+ 			if(obj[this.all[i]] === null) {
+ 				this[this.all[i]] = undefined;
+
+ 			} else {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+
+  		}
+ 	};
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
+/*
+ * Component type hall probe data object
+ */
+ app.value('CmpntTypeHallProbeData', function(obj){
+
+ 	// All parameters
+ 	this.all = ['hall_probe_id', 'id', 'cmpnt_type_id', 'cmpnt_type_name', 'sub_device', 'alias', 'meas_date', 'measured_at_location',
+    'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+    'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+    'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
+
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["cmpnt_type_name", "sub_device"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["cmpnt_type_name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ['id', 'cmpnt_type_name', 'sub_device', 'alias', 'measured_at_location',
+    'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+    'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+    'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["cmpnt_type_name"];
+
+ 	// Parameters used for save URL
+ 	this.save = ['cmpnt_type_name', 'sub_device', 'alias', 'measured_at_location',
+    'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+    'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+    'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
+
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = this.save;
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ['hall_probe_id', 'cmpnt_type_name', 'sub_device', 'alias', 'measured_at_location',
+    'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+    'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+    'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
+
+ 	this.display = {
+ 		"id": "Id",
+ 		"cmpnt_type_name": "Component type name",
  		"description": "Description",
  		"meas_date": "Date"
  	};
