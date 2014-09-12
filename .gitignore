@@ -15,3 +15,5 @@ _build
 /utest/idods/dataapi/download_4
 /example/nsls2idods/file10mb.txt
 /example/nsls2idods/result
+*.ps1
+htmlcov/

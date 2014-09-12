@@ -32,7 +32,7 @@
 				<td><button onclick="toggleTableRows(this, 'inventory')" class="btn btn-info">Show</button></td>
 			</tr>
 			<tr class="info inventory" style="display: none;">
-				<td colspan="3">
+				<td colspan="5">
 					<table class="table table-bordered">
 						<tr ng-repeat="property in element.retrieve_hide">
 							<td>{{element.display[property]}}</td>
@@ -170,11 +170,11 @@
 				<td>
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
-							<select ng-if="property == 'cmpnt_type'" ng-model="new[property]" ng-options="type for type in types"></select>
+							<select ng-if="property == 'cmpnt_type_name'" ng-model="new[property]" ng-options="type for type in types"></select>
 
-							<select ng-if="property == 'vendor'" ng-model="new[property]" ng-options="vendor for vendor in vendors"></select>
+							<select ng-if="property == 'vendor_name'" ng-model="new[property]" ng-options="vendor for vendor in vendors"></select>
 
-							<input ng-if="property != 'cmpnt_type' && property != 'vendor' && property != '__device_category__'" type="text" ng-model="new[property]" />
+							<input ng-if="property != 'cmpnt_type_name' && property != 'vendor_name' && property != '__device_category__'" type="text" ng-model="new[property]" />
 
 							<select ng-if="property == '__device_category__'" ng-model="new[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
 
@@ -269,11 +269,11 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<select ng-if="property == 'cmpnt_type'" ng-model="element[property]" ng-options="type for type in types"></select>
+							<select ng-if="property == 'cmpnt_type_name'" ng-model="element[property]" ng-options="type for type in types"></select>
 
-							<select ng-if="property == 'vendor'" ng-model="element[property]" ng-options="vendor for vendor in vendors"></select>
+							<select ng-if="property == 'vendor_name'" ng-model="element[property]" ng-options="vendor for vendor in vendors"></select>
 
-							<input ng-if="property != 'cmpnt_type' && property != 'vendor' && property != '__device_category__'" type="text" ng-model="element[property]" />
+							<input ng-if="property != 'cmpnt_type_name' && property != 'vendor_name' && property != '__device_category__'" type="text" ng-model="element[property]" />
 
 							<select ng-if="property == '__device_category__'" ng-model="element[property]" ng-options="s.name as s.value for s in deviceCatagoryList"></select>
 

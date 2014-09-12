@@ -63,10 +63,13 @@ def _saveData(request, fun, propList):
     Private template for save function
     '''
     params = _retrievecmddict(request.POST.copy())
+    print params.keys()
+    print propList
     res = {}
 
     try:
-        _checkkeys(params.keys(), propList)
+        checkres = _checkkeys(params.keys(), propList)
+        print checkres
         res = fun(**params)
         transaction.commit_unless_managed()
 
@@ -213,7 +216,7 @@ def retrieveInventoryWS(request):
     '''
     Retrieve inventory
     '''
-    return _retrieveData(request, idodsi.retrieveInventory, ['name'])
+    return _retrieveData(request, idodsi.retrieveInventory, ['serial_no', 'cmpnt_type_name', 'vendor_name', 'name'])
 
 
 @require_http_methods(["POST"])
@@ -222,7 +225,7 @@ def saveInventoryWS(request):
     '''
     Save inventory
     '''
-    return _saveData(request, idodsi.saveInventory, ['cmpnt_type', 'name', 'alias', 'serialno', 'vendor', 'props'])
+    return _saveData(request, idodsi.saveInventory, ['serial_no', 'cmpnt_type_name', 'vendor_name', 'name', 'alias', 'props'])
 
 
 @require_http_methods(["POST"])
@@ -231,7 +234,7 @@ def updateInventoryWS(request):
     '''
     Update inventory
     '''
-    return _updateData(request, idodsi.updateInventory, ['old_name', 'cmpnt_type', 'name', 'alias', 'serialno', 'vendor', 'props'], {'inventory_id': None})
+    return _updateData(request, idodsi.updateInventory, ['inventory_id', 'serial_no', 'cmpnt_type_name', 'vendor_name', 'name', 'alias', 'props'])
 
 
 @require_http_methods(["GET"])
@@ -239,7 +242,7 @@ def retrieveInventoryPropTmpltWS(request):
     '''
     Retrieve inventory property template
     '''
-    return _retrieveData(request, idodsi.retrieveInventoryPropertyTemplate, ['name'])
+    return _retrieveData(request, idodsi.retrieveInventoryPropertyTemplate, ['name', 'cmpnt_type_name'])
 
 
 @require_http_methods(["POST"])
@@ -248,7 +251,7 @@ def saveInventoryPropTmpltWS(request):
     '''
     Save inventory property template
     '''
-    return _saveData(request, idodsi.saveInventoryPropertyTemplate, ['cmpnt_type', 'name', 'description', 'default', 'unit'])
+    return _saveData(request, idodsi.saveInventoryPropertyTemplate, ['cmpnt_type_name', 'name', 'description', 'default', 'unit'])
 
 
 @require_http_methods(["POST"])
@@ -257,7 +260,7 @@ def updateInventoryPropTmpltWS(request):
     '''
     Update inventory property template
     '''
-    return _updateData(request, idodsi.updateInventoryPropertyTemplate, ['tmplt_id', 'cmpnt_type', 'name', 'description', 'default', 'unit'])
+    return _updateData(request, idodsi.updateInventoryPropertyTemplate, ['tmplt_id', 'cmpnt_type_name', 'name', 'description', 'default', 'unit'])
 
 
 @require_http_methods(["GET"])
@@ -265,11 +268,7 @@ def retrieveInstallWS(request):
     '''
     Retrieve install
     '''
-    startedd = time.time()
-    result = _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
-    total = time.time() - startedd
-    total = total*1000
-    print '=> elapsed time view.retrieveInstall.V: %f ms' % total
+    result = _retrieveData(request, idodsi.retrieveInstall, ['name', 'description', 'cmpnt_type_name', 'coordinatecenter'])
     return result
 
 
@@ -279,7 +278,7 @@ def saveInstallWS(request):
     '''
     Save install
     '''
-    return _saveData(request, idodsi.saveInstall, ['name', 'description', 'cmpnt_type', 'coordinatecenter'])
+    return _saveData(request, idodsi.saveInstall, ['name', 'description', 'cmpnt_type_name', 'coordinatecenter'])
 
 
 @require_http_methods(["POST"])
@@ -288,7 +287,7 @@ def updateInstallWS(request):
     '''
     Update install
     '''
-    return _updateData(request, idodsi.updateInstall, ['old_name', 'name', 'description', 'cmpnt_type', 'coordinatecenter'], {'install_id': None})
+    return _updateData(request, idodsi.updateInstall, ['old_name', 'name', 'description', 'cmpnt_type_name', 'coordinatecenter'], {'install_id': None})
 
 
 @require_http_methods(["GET"])
@@ -375,7 +374,7 @@ def retrieveInventoryToInstallWS(request):
     '''
     Retrieve inventory to install
     '''
-    return _retrieveData(request, idodsi.retrieveInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inv_name'], {'inventory_to_install_id': None})
+    return _retrieveData(request, idodsi.retrieveInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inventory_id'], {'inventory_to_install_id': None})
 
 
 @require_http_methods(["POST"])
@@ -384,7 +383,7 @@ def saveInventoryToInstallWS(request):
     '''
     Save inventory to install
     '''
-    return _saveData(request, idodsi.saveInventoryToInstall, ['install_name', 'inv_name'])
+    return _saveData(request, idodsi.saveInventoryToInstall, ['install_name', 'inventory_id'])
 
 
 @require_http_methods(["POST"])
@@ -393,7 +392,7 @@ def updateInventoryToInstallWS(request):
     '''
     Update inventory to install
     '''
-    return _updateData(request, idodsi.updateInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inv_name'])
+    return _updateData(request, idodsi.updateInventoryToInstall, ['inventory_to_install_id', 'install_name', 'inventory_id'])
 
 
 @require_http_methods(["POST"])
@@ -488,7 +487,7 @@ def retrieveOfflineDataWS(request):
     '''
     Retrieve offline data
     '''
-    return _retrieveData(request, idodsi.retrieveOfflineData, ['offlineid', 'description', 'date', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'method_name', 'inventory_name'])
+    return _retrieveData(request, idodsi.retrieveOfflineData, ['offlineid', 'description', 'date', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phasemode', 'polarmode', 'status', 'method_name', 'inventory_id'])
 
 
 @require_http_methods(["GET"])
@@ -506,13 +505,11 @@ def saveOfflineDataWS(request):
     Save offline data
     '''
 
-    startedd = time.time()
-
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
 
     result = _saveData(request, idodsi.saveOfflineData, [
-        'inventory_name',
+        'inventory_id',
         'username',
         'description',
         'gap',
@@ -531,10 +528,6 @@ def saveOfflineDataWS(request):
         'method_name'
     ])
 
-    total = time.time() - startedd
-    total = total*1000
-    print '=> elapsed time view.saveOfflineData.V: %f ms' % total
-
     return result
 
 
@@ -545,13 +538,9 @@ def saveDataMethodOfflineDataWS(request):
     Save data method and offline data
     '''
 
-    startedd = time.time()
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
-    result = _saveData(request, idodsi.saveMethodAndOfflineData, ['inventory_name', 'username', 'method', 'method_desc', 'data_desc', 'data_file_name', 'data_id', 'status', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phase_mode', 'polar_mode'])
-    total = time.time() - startedd
-    total = total*1000
-    print '=> elapsed time view.saveDataMethodOfflineData: %f ms' % total
+    result = _saveData(request, idodsi.saveMethodAndOfflineData, ['inventory_id', 'username', 'method', 'method_desc', 'data_desc', 'data_file_name', 'data_id', 'status', 'gap', 'phase1', 'phase2', 'phase3', 'phase4', 'phase_mode', 'polar_mode'])
 
     return result
 
@@ -566,7 +555,7 @@ def updateOfflineDataWS(request):
     request.POST['username'] = request.user.username
     return _updateData(request, idodsi.updateOfflineData, [
         'offline_data_id',
-        'inventory_name',
+        'inventory_id',
         'username',
         'description',
         'gap',
@@ -634,7 +623,7 @@ def retrieveOnlineDataWS(request):
     '''
     Retrieve online data
     '''
-    return _retrieveData(request, idodsi.retrieveOnlineData, ['onlineid', 'install_name', 'username', 'description', 'status'])
+    return _retrieveData(request, idodsi.retrieveOnlineData, ['onlineid', 'install_name', 'username', 'rawdata_path', 'description', 'status'])
 
 
 @require_http_methods(["POST"])
@@ -755,7 +744,7 @@ def retrieveRotCoilDataWS(request):
     '''
     Retrieve rot coil data
     '''
-    return _retrieveData(request, idodsi.retrieveRotCoilData, ['inventory_name'])
+    return _retrieveData(request, idodsi.retrieveRotCoilData, ['inventory_id'])
 
 
 @require_http_methods(["POST"])
@@ -767,7 +756,7 @@ def saveRotCoilDataWS(request):
     request.POST = request.POST.copy()
     request.POST['login_name'] = request.user.username
     return _saveData(request, idodsi.saveRotCoilData, [
-        'inventory_name', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
+        'inventory_id', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
         'meas_loc', 'run_number', 'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2', 'up_dn_3',
         'analysis_number', 'integral_xfer_function', 'orig_offset_x', 'orig_offset_y', 'b_ref_int', 'roll_angle',
         'meas_notes', 'author', 'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'
@@ -783,7 +772,7 @@ def updateRotCoilDataWS(request):
     request.POST = request.POST.copy()
     request.POST['login_name'] = request.user.username
     return _updateData(request, idodsi.updateRotCoilData, [
-        'rot_coil_data_id', 'inventory_name', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
+        'rot_coil_data_id', 'inventory_id', 'alias', 'meas_coil_id', 'ref_radius', 'magnet_notes', 'login_name', 'cond_curr',
         'meas_loc', 'run_number', 'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2', 'up_dn_3',
         'analysis_number', 'integral_xfer_function', 'orig_offset_x', 'orig_offset_y', 'b_ref_int', 'roll_angle',
         'meas_notes', 'author', 'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'
@@ -796,7 +785,7 @@ def deleteRotCoilDataWS(request):
     '''
     Delete rot coil data
     '''
-    return _updateData(request, idodsi.deleteRotCoilData, ['inventory_name', 'rot_coil_data_id'])
+    return _updateData(request, idodsi.deleteRotCoilData, ['inventory_id', 'rot_coil_data_id'])
 
 
 @require_http_methods(["GET"])
@@ -804,7 +793,7 @@ def retrieveHallProbeDataWS(request):
     '''
     Retrieve hall probe data
     '''
-    return _retrieveData(request, idodsi.retrieveHallProbeData, ['inventory_name'])
+    return _retrieveData(request, idodsi.retrieveHallProbeData, ['inventory_id'])
 
 
 @require_http_methods(["POST"])
@@ -816,7 +805,7 @@ def saveHallProbeDataWS(request):
     request.POST = request.POST.copy()
     request.POST['login_name'] = request.user.username
     return _saveData(request, idodsi.saveHallProbeData, [
-        'inventory_name', 'sub_device', 'alias', 'measured_at_location',
+        'inventory_id', 'sub_device', 'alias', 'measured_at_location',
         'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
         'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
         'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
@@ -832,7 +821,7 @@ def updateHallProbeDataWS(request):
     request.POST = request.POST.copy()
     request.POST['login_name'] = request.user.username
     return _updateData(request, idodsi.updateHallProbeData, [
-        'hall_probe_id', 'inventory_name', 'sub_device', 'alias', 'measured_at_location',
+        'hall_probe_id', 'inventory_id', 'sub_device', 'alias', 'measured_at_location',
         'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
         'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
         'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'
@@ -845,7 +834,7 @@ def deleteHallProbeDataWS(request):
     '''
     Delete hall probe data
     '''
-    return _updateData(request, idodsi.deleteHallProbeData, ['inventory_name', 'hall_probe_id'])
+    return _updateData(request, idodsi.deleteHallProbeData, ['inventory_id', 'hall_probe_id'])
 
 
 @require_http_methods(["GET"])

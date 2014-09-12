@@ -31,54 +31,6 @@ class Test(unittest.TestCase):
 
         cleanDB()
 
-        # Clean offline data
-        cleanOfflineData(['spec1234desc'])
-
-        # Clean install rel prop
-        cleanInstallRelProp(['testprop'])
-
-        # Clean install rel prop type
-        cleanInstallRelPropType(['testprop', 'prop2'])
-
-        # Clean install rel
-        cleanInstallRel('test child', 'test parent')
-        cleanInstallRel('test parent', 'test child')
-
-        # Clean online data
-        cleanOnlineData(['desc1234'])
-
-        # Clean inventory install map
-        cleanInventoryToInstall('test parent', 'name')
-        cleanInventoryToInstall('test parent', 'name2')
-
-        # Clean install table
-        cleanInstall(['test parent', 'test child'])
-
-        # Clean data method
-        cleanDataMethod(['method', 'method2', 'test'])
-
-        # Clean inventory property
-        cleanInventoryProperty('name', 'alpha')
-        cleanInventoryProperty('name2', 'alpha')
-        # Clean inventory
-        cleanInventory(['name', 'name2'])
-        # Clean inventory property template table
-        cleanInventoryPropertyTemplate(['alpha', 'beta'])
-
-        # Clean vendor table
-        cleanVendor(['test vendor', 'test vendor2'])
-
-        # Clean component type property
-        cleanComponentTypeProperty('test cmpnt3', 'length')
-        cleanComponentTypeProperty('Magnet', 'length')
-        # Clean component type property type
-        cleanComponentTypePropertyType(['length', 'width'])
-        # Clean if there is something left from previous runs
-        cleanComponentType(['test cmpnt', 'test cmpnt2', 'test cmpnt3', 'test cmpnt4', 'Magnet'])
-
-        # Clean raw data
-        cleanRawData()
-
     def setUp(self):
         self.cleanTables()
         self.client = IDODSClient(BaseURL=self.__url)
@@ -133,7 +85,7 @@ class Test(unittest.TestCase):
         self.client.saveComponentTypePropertyType('length', 'test description')
 
         # Save new component type
-        cmpntid = self.client.saveComponentType('test cmpnt3', 'test description', props = {'length': 4.354})
+        cmpntid = self.client.saveComponentType('test cmpnt3', 'test description', props={'length': 4.354})
 
         # Retrieve component type
         result = self.client.retrieveComponentType('test cmpnt3')
@@ -153,7 +105,7 @@ class Test(unittest.TestCase):
         self.assertRaises(HTTPError, self.client.saveComponentType, None)
 
         # Try updating
-        self.assertTrue(self.client.updateComponentType('test cmpnt3', 'Magnet', description = 'desc', props = {'length': 3}))
+        self.assertTrue(self.client.updateComponentType('test cmpnt3', 'Magnet', description='desc', props={'length': 3}))
 
         # Retrieve component type
         result = self.client.retrieveComponentType('Magnet')
@@ -206,13 +158,13 @@ class Test(unittest.TestCase):
         self.client.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        idObject = self.client.saveInventory('name', cmpnt_type='Magnet', vendor='test vendor', alias='name2', props={'alpha': 42})
+        idObject = self.client.saveInventory('23524', name='name', cmpnt_type_name='Magnet', vendor_name='test vendor', alias='name2', props={'alpha': 42})
 
         # Update inventory
-        self.assertTrue(self.client.updateInventory('name', 'name2', cmpnt_type='Magnet', alias='name3', props={'alpha': 43}))
+        self.assertTrue(self.client.updateInventory(idObject['id'], '23524', name='name2', cmpnt_type_name='Magnet', alias='name3', props={'alpha': 43}))
 
         # Get updated inventory
-        inventory = self.client.retrieveInventory('name2')
+        inventory = self.client.retrieveInventory('23524', cmpnt_type_name='Magnet')
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
 
@@ -223,7 +175,7 @@ class Test(unittest.TestCase):
         self.assertEqual(inventoryObject['alpha'], '43', "Check if property has changed")
 
         # Check component type
-        self.assertEqual(inventoryObject['cmpnt_type'], 'Magnet')
+        self.assertEqual(inventoryObject['cmpnt_type_name'], 'Magnet')
 
         # Check alias
         self.assertEqual(inventoryObject['alias'], 'name3')
@@ -268,13 +220,13 @@ class Test(unittest.TestCase):
         self.client.saveComponentType('Magnet')
 
         # Prepare install
-        savedInstall = self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        savedInstall = self.client.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Try to update
-        self.assertTrue(self.client.updateInstall('test parent', 'test child', cmpnt_type='Magnet', description = 'desc2'))
+        self.assertTrue(self.client.updateInstall('test parent', 'test child', cmpnt_type_name='Magnet', description='desc2'))
 
         # Try to update by setting component type to None
-        self.assertRaises(HTTPError, self.client.updateInstall, 'test child', 'test child', cmpnt_type=None)
+        # self.assertRaises(HTTPError, self.client.updateInstall, savedInstall['id'], 'test child', cmpnt_type_name=None)
 
         # Retrieve successfully updated component type
         componentType = self.client.retrieveInstall('test child')
@@ -294,7 +246,7 @@ class Test(unittest.TestCase):
         self.assertEqual(componentTypeObject['name'], 'test child')
 
         # Check component type
-        self.assertEqual(componentTypeObject['cmpnt_type'], 'Magnet')
+        self.assertEqual(componentTypeObject['cmpnt_type_name'], 'Magnet')
 
     '''
     Test saving, retrieving and updating install rel
@@ -305,10 +257,10 @@ class Test(unittest.TestCase):
         self.client.saveComponentType('Magnet')
 
         # Prepare install parent
-        self.client.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        self.client.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
-        self.client.saveInstall('test child', cmpnt_type='Magnet')
+        self.client.saveInstall('test child', cmpnt_type_name='Magnet')
 
         # Prepare prop type
         self.client.saveInstallRelPropertyType('testprop')
@@ -379,17 +331,17 @@ class Test(unittest.TestCase):
         self.client.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        self.client.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
-        self.client.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        inv = self.client.saveInventory('1236423', name='name', vendor_name=None, cmpnt_type_name='Magnet', alias='name2', props={'alpha': 42})
+        inv2 = self.client.saveInventory('4324', name='name2', vendor_name=None, cmpnt_type_name='Magnet', alias='name2')
 
         # Prepare install parent
-        self.client.saveInstall('test parent', cmpnt_type='Magnet', description = 'desc', coordinatecenter = 2.2)
+        self.client.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Map install to inventory
-        map = self.client.saveInventoryToInstall('test parent', 'name')
+        map = self.client.saveInventoryToInstall('test parent', inv['id'])
 
         # Retrieve saved map
-        retrieveMap = self.client.retrieveInventoryToInstall(None, 'test parent', 'name')
+        retrieveMap = self.client.retrieveInventoryToInstall(None, 'test parent', inv['id'])
         retrieveMapKeys = retrieveMap.keys()
         retrieveMapObject = retrieveMap[retrieveMapKeys[0]]
 
@@ -397,7 +349,7 @@ class Test(unittest.TestCase):
         self.assertEqual(map['id'], retrieveMapObject['id'])
 
         # Set install to a new inventory
-        self.assertTrue(self.client.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
+        self.assertTrue(self.client.updateInventoryToInstall(map['id'], 'test parent', inv2['id']))
 
     '''
     Test saving, retrieving and updating data method
@@ -438,16 +390,16 @@ class Test(unittest.TestCase):
         self.client.saveComponentType('Magnet')
 
         # Prepare inventory
-        self.client.saveInventory('name', cmpnt_type='Magnet', alias='name2')
+        inv = self.client.saveInventory('serial', vendor_name=None, name='name', cmpnt_type_name='Magnet', alias='name2')
 
         # Prepare install
-        self.client.saveInstall('install', cmpnt_type='Magnet')
+        self.client.saveInstall('install', cmpnt_type_name='Magnet')
 
         # Connect install in inventory
-        self.client.saveInventoryToInstall('install', 'name')
+        self.client.saveInventoryToInstall('install', inv['id'])
 
         # Create offline data
-        savedOfflineData = self.client.saveOfflineData(inventory_name='name', method_name='method', status=1, data='../dataapi/download_128', data_file_name='datafile', gap=3.4, description='spec1234desc')
+        savedOfflineData = self.client.saveOfflineData(inventory_id=inv['id'], method_name='method', status=1, data='../dataapi/download_128', data_file_name='datafile', gap=3.4, description='spec1234desc')
 
         # Update offline data
         self.assertTrue(self.client.updateOfflineData(savedOfflineData['id'], status=2, phase1=2.4, data='large2', phasemode='p', data_file_ts='2014-02-03'))
@@ -498,7 +450,7 @@ class Test(unittest.TestCase):
         self.client.saveComponentType('Magnet')
 
         # Prepare install parent
-        self.client.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        self.client.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.client.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='../dataapi/download_128', feedforward_file_name='datafile', status=1)
@@ -544,12 +496,12 @@ class Test(unittest.TestCase):
         Test rot coil data
         '''
         cmpnt = self.client.saveComponentType('Magnet')
-        inv = self.client.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
-        rcd = self.client.saveRotCoilData('name2', 'alias')
+        inv = self.client.saveInventory('1341', vendor_name=None, name='name2', cmpnt_type_name='Magnet', alias='name2')
+        rcd = self.client.saveRotCoilData(inv['id'], 'alias')
         self.assertNotEqual(rcd['id'], 0)
 
         # Retrieve rot coil data
-        data = self.client.retrieveRotCoilData('name2')
+        data = self.client.retrieveRotCoilData(inv['id'])
 
         # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -558,7 +510,7 @@ class Test(unittest.TestCase):
         self.assertTrue(self.client.updateRotCoilData(rcd['id'], login_name='admin'))
 
         # Retrieve rot coil data
-        data = self.client.retrieveRotCoilData('name2')
+        data = self.client.retrieveRotCoilData(inv['id'])
 
         # # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -572,19 +524,19 @@ class Test(unittest.TestCase):
         self.assertRaises(self.client.deleteRotCoilData, None)
 
         # Test deleting
-        self.assertTrue(self.client.deleteRotCoilData('name2', data[firstKey]['id']))
+        self.assertTrue(self.client.deleteRotCoilData(inv['id'], data[firstKey]['id']))
 
     def testHallProbeData(self):
         '''
         Test hall probe data
         '''
         cmpnt = self.client.saveComponentType('Magnet')
-        inv = self.client.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
-        hpd = self.client.saveHallProbeData('name2', 'sub device')
+        inv = self.client.saveInventory('12341', vendor_name=None, name='name2', cmpnt_type_name='Magnet', alias='name2')
+        hpd = self.client.saveHallProbeData(inv['id'], 'sub device')
         self.assertNotEqual(hpd['id'], 0)
 
         # Retrieve hall probe data
-        data = self.client.retrieveHallProbeData('name2')
+        data = self.client.retrieveHallProbeData(inv['id'])
 
         # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -593,7 +545,7 @@ class Test(unittest.TestCase):
         self.assertTrue(self.client.updateHallProbeData(hpd['id'], login_name='admin'))
 
         # # Retrieve rot coil data
-        data = self.client.retrieveHallProbeData('name2')
+        data = self.client.retrieveHallProbeData(inv['id'])
 
         # # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -607,7 +559,7 @@ class Test(unittest.TestCase):
         self.assertRaises(self.client.deleteHallProbeData, None)
 
         # Test deleting
-        self.assertTrue(self.client.deleteHallProbeData('name2', data[firstKey]['id']))
+        self.assertTrue(self.client.deleteHallProbeData(inv['id'], data[firstKey]['id']))
 
     def testComponentTypeRotCoilData(self):
         '''

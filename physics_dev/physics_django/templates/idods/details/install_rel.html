@@ -56,9 +56,9 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<input type="text" ng-if="property == 'child_install'" ng-model="new[property]" typeahead="install for install in installs | filter:$viewValue | limitTo:8" />
+							<input type="text" ng-if="property == 'child_install'" ng-model="new[property]" placeholder="Start typing ..." typeahead="install for install in installs | filter:$viewValue | limitTo:8" />
 
-							<input type="text" ng-disabled="parentDisabled" ng-if="property == 'parent_install'" ng-model="new[property]" typeahead="install for install in installs | filter:$viewValue | limitTo:8" />
+							<input type="text" ng-disabled="parentDisabled" placeholder="Start typing ..." ng-if="property == 'parent_install'" ng-model="new[property]" typeahead="install for install in installs | filter:$viewValue | limitTo:8" />
 
 							<input ng-if="property != 'child_install' && property != 'parent_install'" type="text" ng-model="new[property]" />
 

@@ -112,13 +112,13 @@
 						<span class="control-group" ng-class="{'error': error[property]}">
 							<span class="controls">
 
-								<select ng-if="property == 'inventory_name'" ng-model="new[property]" ng-options="inv for inv in inventories"></select>
+								<select ng-if="property == 'inventory_id'" ng-model="new[property]" ng-options="inv for inv in inventories"></select>
 
 								<select ng-if="property == 'method_name'" ng-model="new[property]" ng-options="method for method in methods"></select>
 
 								<textarea rows="8" ng-if="property == 'script'" ng-model="new[property]"></textarea>
 
-								<input ng-if="property != 'status' && property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="new[property]" />
+								<input ng-if="property != 'status' && property != 'inventory_id' && property != 'method_name' && property != 'script'" type="text" ng-model="new[property]" />
 
 								<select ng-if="property == 'status'" ng-model="new[property]" ng-options="s.name as s.value for s in statusArr"></select>
 
@@ -178,13 +178,13 @@
 						<span class="control-group" ng-class="{'error': error[property]}">
 							<span class="controls">
 
-								<select ng-if="property == 'inventory_name'" ng-model="element[property]" ng-options="inv for inv in inventories"></select>
+								<select ng-if="property == 'inventory_id'" ng-model="element[property]" ng-options="inv for inv in inventories"></select>
 
 								<select ng-if="property == 'method_name'" ng-model="element[property]" ng-options="method for method in methods"></select>
 
 								<textarea rows="8" ng-if="property == 'script'" ng-model="element[property]"></textarea>
 
-								<input ng-if="property != 'status' && property != 'inventory_name' && property != 'method_name' && property != 'script'" type="text" ng-model="element[property]" />
+								<input ng-if="property != 'status' && property != 'inventory_id' && property != 'method_name' && property != 'script'" type="text" ng-model="element[property]" />
 
 								<select ng-if="property == 'status'" ng-model="element[property]" ng-options="s.name as s.value for s in statusArr"></select>
 

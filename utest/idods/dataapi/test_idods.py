@@ -78,7 +78,7 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(vendorObject['description'], 'desc2')
 
         # Test updating by name
-        self.assertTrue(self.api.updateVendor(None, 'test vendor2', 'test vendor', description=None))
+        self.assertTrue(self.api.updateVendor(None, 'test vendor2', 'test vendor', description=''))
 
         # Retrieve updated vendor
         vendor = self.api.retrieveVendor('test vendor')
@@ -86,7 +86,7 @@ class TestIdods(unittest.TestCase):
         vendorObject = vendor[vendorKeys[0]]
 
         # Check new description
-        self.assertEqual(vendorObject['description'], None, "New description should be set to None")
+        self.assertEqual(vendorObject['description'], '', "New description should be set to None")
 
     '''
     Test different options of retrieving component type
@@ -296,7 +296,7 @@ class TestIdods(unittest.TestCase):
             result[resultKeys[0]]['description'] == 'description' and
             result[resultKeys[0]]['default'] == 'default' and
             result[resultKeys[0]]['unit'] == 'm' and
-            result[resultKeys[0]]['cmpnt_type'] == 'Magnet',
+            result[resultKeys[0]]['cmpnt_type_name'] == 'Magnet',
             "Check all the properties in the returned object"
         )
 
@@ -335,28 +335,28 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        self.assertRaises(ValueError, self.api.saveInventory, None, cmpnt_type='Magnet')
+        self.assertRaises(ValueError, self.api.saveInventory, None, 'Magnet', None)
 
         # Create inventory
-        inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
+        inventory = self.api.saveInventory('62352', 'Magnet',  vendor_name=None, name='name')
 
         # Create property
-        prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
+        prop = self.api.saveInventoryProperty(inventory['id'], 'alpha', 'value')
 
         # Retrieve property
-        retrieveProperty = self.api.retrieveInventoryProperty('name', 'alpha', 'value')
+        retrieveProperty = self.api.retrieveInventoryProperty(inventory['id'], 'alpha', 'value')
         retrievePropertyKeys = retrieveProperty.keys()
 
         self.assertEqual('value', retrieveProperty[retrievePropertyKeys[0]]['value'], "Property save and property retrieved have the same value.")
 
         # Try to save property with not existing property template without providing component type name
-        self.assertRaises(ValueError, self.api.saveInventoryProperty, 'name', 'cmpnt', 1)
+        self.assertRaises(ValueError, self.api.saveInventoryProperty, inventory['id'], 'cmpnt', 1)
 
         # Try to save property with not existing template by providing component type name
-        self.api.saveInventoryProperty('name', 'cmpnt', 1, 'Magnet')
+        self.api.saveInventoryProperty(inventory['id'], 'cmpnt', 1, 'Magnet')
 
         # Retrieve newly saved property
-        result = self.api.retrieveInventoryProperty('name', 'cmpnt')
+        result = self.api.retrieveInventoryProperty(inventory['id'], 'cmpnt')
 
         self.assertNotEqual(len(result), 0)
 
@@ -370,16 +370,16 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        inventory = self.api.saveInventory('name', cmpnt_type='Magnet')
+        inventory = self.api.saveInventory('123', cmpnt_type_name='Magnet', vendor_name=None)
 
         # Create property
-        prop = self.api.saveInventoryProperty('name', 'alpha', 'value')
+        prop = self.api.saveInventoryProperty(inventory['id'], 'alpha', 'value')
 
         # Try to update
-        self.assertTrue(self.api.updateInventoryProperty('name', 'alpha', 'newvalue'), "Set new value to alpha property")
+        self.assertTrue(self.api.updateInventoryProperty(inventory['id'], 'alpha', 'newvalue'), "Set new value to alpha property")
 
         # Retrieve property
-        retrieveProperty = self.api.retrieveInventoryProperty('name', 'alpha')
+        retrieveProperty = self.api.retrieveInventoryProperty(inventory['id'], 'alpha')
         retrievePropertyKeys = retrieveProperty.keys()
         propertyObject = retrieveProperty[retrievePropertyKeys[0]]
 
@@ -401,9 +401,9 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
+        idObject = self.api.saveInventory('1235235', 'Magnet', vendor_name=None, name='name', alias='name2', props={'alpha': 42})
 
-        inventory = self.api.retrieveInventory('name')
+        inventory = self.api.retrieveInventory('1235235')
         inventoryKeys = inventory.keys()
 
         # Check names
@@ -413,10 +413,10 @@ class TestIdods(unittest.TestCase):
         self.assertTrue('alpha' in inventory[inventoryKeys[0]], "Key in returned object")
 
         # Exception should be raised if component type doesn't exist
-        self.assertRaises(ValueError, self.api.saveInventory, 'name')
+        self.assertRaises(ValueError, self.api.saveInventory, '1235234', None, vendor_name=None)
 
         # Exception should be raised if inventory property template doesn't exist
-        self.assertRaises(ValueError, self.api.saveInventory, 'name', compnttype='Magnet', props={'beta': 43})
+        self.assertRaises(ValueError, self.api.saveInventory, '1235234', vendor_name=None, name='name', cmpnt_type_name=None, props={'sdfg': 43})
 
         # Test retrieve with int name
         self.assertRaises(ValueError, self.api.retrieveInventory, 1)
@@ -428,16 +428,16 @@ class TestIdods(unittest.TestCase):
         self.api.saveVendor('vendor')
 
         # Save inventory
-        idObject = self.api.saveInventory('name3', cmpnt_type='Magnet', alias='alias', serialno='serial', vendor='vendor', props={'prop': 'true'})
+        idObject = self.api.saveInventory('serial', vendor_name='vendor', name='name3', cmpnt_type_name='Magnet', alias='alias', props={'prop': 'true'})
 
-        retrievedInventory = self.api.retrieveInventory('name3')
+        retrievedInventory = self.api.retrieveInventoryById(idObject['id'])
         invObj = retrievedInventory[retrievedInventory.keys()[0]]
 
         # Test props
         self.assertEqual(invObj['name'], 'name3')
-        self.assertEqual(invObj['serialno'], 'serial')
+        self.assertEqual(invObj['serial_no'], 'serial')
         self.assertEqual(invObj['alias'], 'alias')
-        self.assertEqual(invObj['cmpnt_type'], 'Magnet')
+        self.assertEqual(invObj['cmpnt_type_name'], 'Magnet')
         self.assertEqual(invObj['vendor'], 'vendor')
         self.assertEqual(invObj['prop'], 'true')
 
@@ -453,13 +453,13 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
+        idObject = self.api.saveInventory('43456', cmpnt_type_name='Magnet', vendor_name=None, alias='name2', props={'alpha': 42})
 
         # Update inventory
-        self.assertTrue(self.api.updateInventory(None, 'name', 'name2', cmpnt_type='Magnet', alias='name3', props={'alpha': 43}))
+        self.assertTrue(self.api.updateInventory(idObject['id'], 'ser', 'Magnet', None, alias='name3', props={'alpha': 43}))
 
         # Get updated inventory
-        inventory = self.api.retrieveInventory('name2')
+        inventory = self.api.retrieveInventory('ser', 'Magnet')
         inventoryKeys = inventory.keys()
         inventoryObject = inventory[inventoryKeys[0]]
 
@@ -574,7 +574,7 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare inventory
-        savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
+        savedInventory = self.api.saveInventory('123455', 'Magnet', vendor_name=None, alias='name2', name='name')
 
         # Prepare method
         savedMethod = self.api.saveDataMethod('test')
@@ -584,7 +584,7 @@ class TestIdods(unittest.TestCase):
             savedData = self.api.saveRawData(f.read())
 
         # Create save offline data
-        savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
+        savedOfflineData = self.api.saveOfflineData(inventory_id=savedInventory['id'], data_id=savedData['id'], method_name='test', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
 
         # Retrieve offline data by gap range
         offlineData = self.api.retrieveOfflineData(gap=json.dumps((3, 4)))
@@ -624,14 +624,14 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare inventory
-        savedInventory = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2')
+        savedInventory = self.api.saveInventory('123', cmpnt_type_name='Magnet', vendor_name=None, alias='name2')
 
         # Prepare raw data
         with open('download_4', 'rb') as f:
             savedData = self.api.saveRawData(f.read())
 
         # Create offline data
-        savedOfflineData = self.api.saveOfflineData(inventory_name='name', data_id=savedData['id'], method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
+        savedOfflineData = self.api.saveOfflineData(inventory_id=savedInventory['id'], data_id=savedData['id'], method_name='method', status=1, data_file_name='datafile', gap=3.4, description='spec1234desc')
 
         # Update offline data
         self.assertTrue(self.api.updateOfflineData(savedOfflineData['id'], status=2, phase1=2.4, phasemode='p', data_file_ts='2014-02-03'))
@@ -661,16 +661,16 @@ class TestIdods(unittest.TestCase):
         self.assertRaises(ValueError, self.api.saveInstall, None)
 
         # Prepare install
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Test another save
-        self.assertRaises(ValueError, self.api.saveInstall, 'test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        self.assertRaises(ValueError, self.api.saveInstall, 'test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Try to update
         self.assertTrue(self.api.updateInstall(None, 'test parent', 'test child', description='desc2'))
 
         # Try to update by setting component type to None
-        self.assertRaises(ValueError, self.api.updateInstall, None, 'test child', 'test child', cmpnt_type=None)
+        # self.assertRaises(ValueError, self.api.updateInstall, None, 'test child', 'test child', cmpnt_type_name=None)
 
         # Retrieve successfully updated component type
         componentType = self.api.retrieveInstall('test child')
@@ -723,10 +723,10 @@ class TestIdods(unittest.TestCase):
         propType = self.api.saveInstallRelPropertyType('testprop')
 
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
-        savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
+        savedInstallChild = self.api.saveInstall('test child', cmpnt_type_name='Magnet')
 
         # Save rel
         rel = self.api.saveInstallRel('test parent', 'test child', 'desc', 1)
@@ -754,10 +754,10 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
-        savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
+        savedInstallChild = self.api.saveInstall('test child', cmpnt_type_name='Magnet')
 
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
@@ -794,10 +794,10 @@ class TestIdods(unittest.TestCase):
         savedComponentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstallParent = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Prepare install child
-        savedInstallChild = self.api.saveInstall('test child', cmpnt_type='Magnet')
+        savedInstallChild = self.api.saveInstall('test child', cmpnt_type_name='Magnet')
 
         # Prepare prop type
         propType = self.api.saveInstallRelPropertyType('testprop')
@@ -839,17 +839,17 @@ class TestIdods(unittest.TestCase):
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        idObject = self.api.saveInventory('name', cmpnt_type='Magnet', alias='name2', props={'alpha': 42})
-        idObject2 = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
+        idObject = self.api.saveInventory('345678', vendor_name=None, name='name', cmpnt_type_name='Magnet', alias='name2', props={'alpha': 42})
+        idObject2 = self.api.saveInventory('345672', vendor_name=None, name='name2', cmpnt_type_name='Magnet', alias='name2')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Map install to inventory
-        map = self.api.saveInventoryToInstall('test parent', 'name')
+        map = self.api.saveInventoryToInstall('test parent', idObject['id'])
 
         # Retrieve saved map
-        retrieveMap = self.api.retrieveInventoryToInstall(None, 'test parent', 'name')
+        retrieveMap = self.api.retrieveInventoryToInstall(None, 'test parent', idObject['id'])
         retrieveMapKeys = retrieveMap.keys()
         retrieveMapObject = retrieveMap[retrieveMapKeys[0]]
 
@@ -857,7 +857,7 @@ class TestIdods(unittest.TestCase):
         self.assertEqual(map['id'], retrieveMapObject['id'])
 
         # Set install to a new inventory
-        self.assertTrue(self.api.updateInventoryToInstall(map['id'], 'test parent', 'name2'))
+        self.assertTrue(self.api.updateInventoryToInstall(map['id'], 'test parent', idObject2['id']))
 
         # Save online data
         od = self.api.saveOnlineData('test parent', status=1)
@@ -877,7 +877,7 @@ class TestIdods(unittest.TestCase):
         self.assertTrue(odObj['status'] == 0)
 
         # Map install to inventory
-        map = self.api.saveInventoryToInstall('test parent', 'name')
+        map = self.api.saveInventoryToInstall('test parent', idObject['id'])
 
         # Delete inventory to install
         self.assertTrue(self.api.deleteInventoryToInstall(map['id'], delete_online_data=True))
@@ -891,7 +891,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1)
@@ -938,7 +938,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1)
@@ -979,7 +979,7 @@ class TestIdods(unittest.TestCase):
         componentType = self.api.saveComponentType('Magnet')
 
         # Prepare install parent
-        savedInstall = self.api.saveInstall('test parent', cmpnt_type='Magnet', description='desc', coordinatecenter=2.2)
+        savedInstall = self.api.saveInstall('test parent', cmpnt_type_name='Magnet', description='desc', coordinatecenter=2.2)
 
         # Save online data
         onlineid = self.api.saveOnlineData('test parent', username='username', description='desc1234', rawdata_path='url', status=1)
@@ -1037,12 +1037,12 @@ class TestIdods(unittest.TestCase):
         Test rot coil data
         '''
         cmpnt = self.api.saveComponentType('Magnet')
-        inv = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
-        rcd = self.api.saveRotCoilData('name2', 'alias')
+        inv = self.api.saveInventory('23523', vendor_name=None, name='name2', cmpnt_type_name='Magnet', alias='name2')
+        rcd = self.api.saveRotCoilData(inv['id'], 'alias')
         self.assertNotEqual(rcd['id'], 0)
 
         # Retrieve rot coil data
-        data = self.api.retrieveRotCoilData('name2')
+        data = self.api.retrieveRotCoilData(inv['id'])
 
         # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -1051,7 +1051,7 @@ class TestIdods(unittest.TestCase):
         self.assertTrue(self.api.updateRotCoilData(rcd['id'], login_name='admin'))
 
         # Retrieve rot coil data
-        data = self.api.retrieveRotCoilData('name2')
+        data = self.api.retrieveRotCoilData(inv['id'])
 
         # # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -1065,19 +1065,19 @@ class TestIdods(unittest.TestCase):
         self.assertRaises(self.api.deleteRotCoilData, None)
 
         # Test deleting
-        self.assertTrue(self.api.deleteRotCoilData('name2', data[firstKey]['id']))
+        self.assertTrue(self.api.deleteRotCoilData(inv['id'], data[firstKey]['id']))
 
     def testHallProbeData(self):
         '''
         Test hall probe data
         '''
         cmpnt = self.api.saveComponentType('Magnet')
-        inv = self.api.saveInventory('name2', cmpnt_type='Magnet', alias='name2')
-        hpd = self.api.saveHallProbeData('name2', 'sub device')
+        inv = self.api.saveInventory('2352141', vendor_name=None, name='name2', cmpnt_type_name='Magnet', alias='name2')
+        hpd = self.api.saveHallProbeData(inv['id'], 'sub device')
         self.assertNotEqual(hpd['id'], 0)
 
         # Retrieve hall probe data
-        data = self.api.retrieveHallProbeData('name2')
+        data = self.api.retrieveHallProbeData(inv['id'])
 
         # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -1086,7 +1086,7 @@ class TestIdods(unittest.TestCase):
         self.assertTrue(self.api.updateHallProbeData(hpd['id'], login_name='admin'))
 
         # # Retrieve rot coil data
-        data = self.api.retrieveHallProbeData('name2')
+        data = self.api.retrieveHallProbeData(inv['id'])
 
         # # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
@@ -1100,7 +1100,7 @@ class TestIdods(unittest.TestCase):
         self.assertRaises(self.api.deleteHallProbeData, None)
 
         # Test deleting
-        self.assertTrue(self.api.deleteHallProbeData('name2', data[firstKey]['id']))
+        self.assertTrue(self.api.deleteHallProbeData(inv['id'], data[firstKey]['id']))
 
     def testComponentTypeRotCoilData(self):
         '''
@@ -1166,6 +1166,7 @@ class TestIdods(unittest.TestCase):
         '''
 
         cmpnt = self.api.saveComponentType('Magnet')
+        cmpnt2 = self.api.saveComponentType('Magnet2')
 
         # Try retrieving without first saving it
         self.assertRaises(ValueError, self.api.retrieveComponentTypeHallProbeData, 'Magnet')
@@ -1209,8 +1210,17 @@ class TestIdods(unittest.TestCase):
         # Test the number of items in the table
         self.assertEqual(len(data.keys()), 1)
 
+        # Test deletion with not existing component type
+        self.assertRaises(ValueError, self.api.deleteComponentTypeHallProbeData, 'str', hpd2['id'])
+
+        # Test deletion with not existing component type
+        self.assertRaises(ValueError, self.api.deleteComponentTypeHallProbeData, 'Magnet2', None)
+
         # Delete hall probe data
         self.assertTrue(self.api.deleteComponentTypeHallProbeData('Magnet', hpd2['id']))
+
+        # Delete hall probe data
+        self.assertTrue(self.api.deleteComponentTypeHallProbeData('Magnet', None))
 
         # Retrieve hall probe data
         data = self.api.retrieveComponentTypeHallProbeData('Magnet')

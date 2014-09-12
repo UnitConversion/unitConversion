@@ -29,8 +29,6 @@ if len(client.retrieveInventory("inv").keys()) == 0:
 if len(client.retrieveDataMethod("method").keys()) == 0:
     client.saveDataMethod("method")
 
-startedd = time.time()
-
 client.saveOfflineData(
     inventory_name="inv",
     status=1,
@@ -38,7 +36,3 @@ client.saveOfflineData(
     data="file10mb.txt",
     data_file_name="file"
 )
-
-total = time.time() - startedd
-total = total*1000
-print '=> elapsed time example.saveOfflineData.E: %f ms' % total

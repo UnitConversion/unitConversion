@@ -56,11 +56,11 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<select ng-if="property == 'inv_name'" ng-model="new[property]" ng-options="inventory for inventory in inv"></select>
+							<select ng-if="property == 'inventory_id'" ng-model="new[property]" ng-options="inventory for inventory in inv"></select>
 
 							<select ng-if="property == 'install_name'" ng-model="new[property]" ng-options="install for install in inst"></select>
 
-							<input ng-if="property != 'inv_name' && property != 'install_name'" type="text" ng-model="new[property]" />
+							<input ng-if="property != 'inventory_id' && property != 'install_name'" type="text" ng-model="new[property]" />
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>
@@ -98,10 +98,10 @@
 					<span class="control-group" ng-class="{'error': error[property]}">
 						<span class="controls">
 
-							<select ng-if="property == 'inv_name'" ng-model="element[property]" ng-options="inventory for inventory in inv"></select>
+							<select ng-if="property == 'inventory_id'" ng-model="element[property]" ng-options="inventory for inventory in inv"></select>
 							<select ng-if="property == 'install_name'" ng-model="element[property]" ng-options="install for install in inst"></select>
 
-							<input ng-if="property != 'inv_name' && property != 'install_name'" type="text" ng-model="element[property]" />
+							<input ng-if="property != 'inventory_id' && property != 'install_name'" type="text" ng-model="element[property]" />
 
 							<span class="help-inline">{{error[property]}}</span>
 						</span>

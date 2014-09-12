@@ -285,38 +285,38 @@ app.value('InventoryInfo', {
  app.value('Inventory', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name", "cmpnt_type", "__device_category__"];
+ 	this.m = ["cmpnt_type_name", "__device_category__"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["name"];
+ 	this.search_m = ["serial_no", "cmpnt_type_name", "vendor_name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "name", "cmpnt_type", "vendor", "alias", "serialno"];
+ 	this.retrieve = ["id", "name", "cmpnt_type_name", "vendor_name", "alias", "serial_no"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_show = ["id", "name"];
+ 	this.retrieve_show = ["id", "serial_no", "cmpnt_type_name", "vendor_name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["cmpnt_type", "vendor", "alias", "serialno"];
+ 	this.retrieve_hide = ["name", "alias"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "vendor", "alias", "serialno"];
+ 	this.list = ["name", "cmpnt_type_name", "vendor_name", "alias", "serial_no"];
 
  	// Parameters used for save URL
- 	this.save = ["name", "cmpnt_type", "vendor", "alias", "serialno", "props"];
+ 	this.save = ["name", "cmpnt_type_name", "vendor_name", "alias", "serial_no", "props"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "cmpnt_type", "vendor", "alias", "serialno", "__device_category__"];
+ 	this.save_show = ["name", "cmpnt_type_name", "vendor_name", "alias", "serial_no", "__device_category__"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["old_name", "name", "cmpnt_type", "vendor", "alias", "serialno", "props"];
+ 	this.update = ["old_name", "name", "cmpnt_type_name", "vendor_name", "alias", "serial_no", "props"];
 
  	this.display = {
- 		"serialno": "Serial number",
+ 		"serial_no": "Serial number",
  		"alias": "Alias",
- 		"vendor": "Vendor",
+ 		"vendor_name": "Vendor",
  		"name": "Name",
- 		"cmpnt_type": "Component type",
+ 		"cmpnt_type_name": "Component type",
  		"__device_category__": "Device category",
  		"__measurement_data_settings__": "Measurement data settings",
  		"id": "Id"
@@ -325,10 +325,10 @@ app.value('InventoryInfo', {
  	this.id = "";
  	this.old_name = "";
  	this.name = "";
- 	this.cmpnt_type = "";
- 	this.vendor = undefined;
+ 	this.cmpnt_type_name = "";
+ 	this.vendor_name = undefined;
  	this.alias = "";
- 	this.serialno = "";
+ 	this.serial_no = "";
 
  	this.__device_category__ = "";
  	this.__measurement_data_settings__ = undefined;
@@ -371,16 +371,16 @@ app.value('InventoryInfo', {
  			}
  		}
 
- 		this.cmpnt_type = obj.cmpnt_type;
- 		this.vendor = obj.vendor;
+ 		this.cmpnt_type_name = obj.cmpnt_type_name;
+ 		this.vendor_name = obj.vendor_name;
 
  		// Correct vendor
- 		if(this.vendor === "" || this.vendor === null) {
- 			this.vendor = undefined;
+ 		if(this.vendor_name === "" || this.vendor_name === null) {
+ 			this.vendor_name = undefined;
  		}
 
  		this.alias = obj.alias;
- 		this.serialno = obj.serialno;
+ 		this.serial_no = obj.serial_no;
 
  		if('__device_category__' in obj) {
  			this.__device_category__ = obj.__device_category__;
@@ -423,30 +423,30 @@ app.value('InventoryTypeInfo', {
  app.value('InventoryType', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name", "cmpnt_type"];
+ 	this.m = ["name", "cmpnt_type_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "name", "cmpnt_type", "description", "default", "unit"];
+ 	this.retrieve = ["id", "name", "cmpnt_type_name", "description", "default", "unit"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "description", "default", "unit"];
+ 	this.list = ["name", "cmpnt_type_name", "description", "default", "unit"];
 
  	// Parameters used for save URL
- 	this.save = ["name", "cmpnt_type", "description", "default", "unit"];
+ 	this.save = ["name", "cmpnt_type_name", "description", "default", "unit"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "cmpnt_type", "description", "default", "unit"];
+ 	this.save_show = ["name", "cmpnt_type_name", "description", "default", "unit"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["tmplt_id", "name", "cmpnt_type", "description", "default", "unit"];
+ 	this.update = ["tmplt_id", "name", "cmpnt_type_name", "description", "default", "unit"];
 
  	this.display = {
  		"id": "Id",
  		"name": "Name",
- 		"cmpnt_type": "Component type",
+ 		"cmpnt_type_name": "Component type",
  		"description": "Description",
  		"default": "Default",
  		"unit": "Unit"
@@ -455,7 +455,7 @@ app.value('InventoryTypeInfo', {
  	this.id = "";
  	this.tmplt_id = "";
  	this.name = "";
- 	this.cmpnt_type = "";
+ 	this.cmpnt_type_name = "";
  	this.description = "";
  	this.default = "";
  	this.unit = "";
@@ -472,7 +472,7 @@ app.value('InventoryTypeInfo', {
  		}
 
  		this.name = obj.name;
- 		this.cmpnt_type = obj.cmpnt_type;
+ 		this.cmpnt_type_name = obj.cmpnt_type_name;
  		this.description = obj.description;
  		this.default = obj.default;
  		this.unit = obj.unit;
@@ -741,36 +741,36 @@ app.value('InstallInfo', {
  app.value('Install', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name", "cmpnt_type"];
+ 	this.m = ["name", "cmpnt_type_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.retrieve = ["id", "name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when showing item details
  	this.retrieve_show = ["id", "name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["cmpnt_type", "description", "coordinatecenter"];
+ 	this.retrieve_hide = ["cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.list = ["name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters used for save URL
- 	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.save = ["name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["node_type", "name", "cmpnt_type", "description", "coordinatecenter", "beamline", "project"];
+ 	this.save_show = ["node_type", "name", "cmpnt_type_name", "description", "coordinatecenter", "beamline", "project"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["old_name", "name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.update = ["old_name", "name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	this.display = {
  		"id": "Id",
  		"name": "Name",
- 		"cmpnt_type": "Component type",
+ 		"cmpnt_type_name": "Component type",
  		"description": "Description",
  		"coordinatecenter": "Coordinate center",
  		"node_type": "Node type",
@@ -780,7 +780,7 @@ app.value('InstallInfo', {
 
  	this.id = "";
  	this.name = "";
- 	this.cmpnt_type = "";
+ 	this.cmpnt_type_name = "";
  	this.description = "";
  	this.coordinatecenter = undefined;
 
@@ -807,7 +807,7 @@ app.value('InstallInfo', {
  		}
 
  		this.name = obj.name;
- 		this.cmpnt_type = obj.cmpnt_type;
+ 		this.cmpnt_type_name = obj.cmpnt_type_name;
  		this.description = obj.description;
 
  		if (obj.coordinatecenter === null) {
@@ -859,43 +859,43 @@ app.value('InsertionDeviceInfo', {
  app.value('InsertionDevice', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["name", "cmpnt_type"];
+ 	this.m = ["name", "cmpnt_type_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.retrieve = ["id", "name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when showing item details
  	this.retrieve_show = ["id", "name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["cmpnt_type", "description", "coordinatecenter"];
+ 	this.retrieve_hide = ["cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.list = ["name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters used for save URL
- 	this.save = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.save = ["name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.save_show = ["name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["old_name", "name", "cmpnt_type", "description", "coordinatecenter"];
+ 	this.update = ["old_name", "name", "cmpnt_type_name", "description", "coordinatecenter"];
 
  	this.display = {
  		"id": "Id",
  		"name": "Name",
- 		"cmpnt_type": "Component type",
+ 		"cmpnt_type_name": "Component type",
  		"description": "Description",
  		"coordinatecenter": "Coordinate center"
  	};
 
  	this.id = "";
  	this.name = "";
- 	this.cmpnt_type = "";
+ 	this.cmpnt_type_name = "";
  	this.description = "";
  	this.coordinatecenter = undefined;
 
@@ -914,7 +914,7 @@ app.value('InsertionDeviceInfo', {
  		}
 
  		this.name = obj.name;
- 		this.cmpnt_type = obj.cmpnt_type;
+ 		this.cmpnt_type_name = obj.cmpnt_type_name;
  		this.description = obj.description;
 
  		if (obj.coordinatecenter === null) {
@@ -951,39 +951,39 @@ app.value('InventoryToInstallInfo', {
  app.value('InventoryToInstall', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["install_name", "inv_name"];
+ 	this.m = ["install_name", "inventory_id"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["install_name", "inv_name"];
+ 	this.search_m = ["install_name", "inventory_id"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["inventory_to_install_id", "install_name", "inv_name"];
+ 	this.retrieve = ["inventory_to_install_id", "install_name", "inventory_id"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["install_name", "inv_name"];
+ 	this.list = ["install_name", "inventory_id"];
 
  	// Parameters used for save URL
- 	this.save = ["install_name", "inv_name"];
+ 	this.save = ["install_name", "inventory_id"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["install_name", "inv_name"];
+ 	this.save_show = ["install_name", "inventory_id"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["inventory_to_install_id", "install_name", "inv_name"];
+ 	this.update = ["inventory_to_install_id", "install_name", "inventory_id"];
 
  	// All parameters
- 	this.all = ["inventory_to_install_id", "install_name", "inv_name"];
+ 	this.all = ["inventory_to_install_id", "install_name", "inventory_id"];
 
  	this.display = {
  		"inventory_to_install_id": "Id",
  		"install_name": "Install name",
- 		"inv_name": "Inventory name"
+ 		"inventory_id": "Inventory id"
  	};
 
  	this.id = "";
  	this.inventory_to_install_id = "";
  	this.install_name = "";
- 	this.inv_name = "";
+ 	this.inventory_id = "";
 
  	this.set = function(obj) {
 
@@ -993,15 +993,15 @@ app.value('InventoryToInstallInfo', {
 
  		this.inventory_to_install_id = obj.id;
  		this.id = obj.id;
- 		this.install_name = obj.installname;
- 		this.inv_name = obj.inventoryname;
+ 		this.install_name = obj.install_name;
+ 		this.inventory_id = obj.inventory_id;
 
  		if(obj.install_name) {
  			this.install_name = obj.install_name;
  		}
 
- 		if(obj.inv_name) {
- 			this.inv_name = obj.inv_name;
+ 		if(obj.inventory_id) {
+ 			this.inventory_id = obj.inventory_id;
  		}
  	};
 
@@ -1104,41 +1104,41 @@ app.value('OfflineDataInfo', {
  app.value('OfflineData', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_name", "data_id", "status"];
+ 	this.m = ["inventory_id", "data_id", "status"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["inventory_name"];
+ 	this.search_m = ["inventory_id"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
+ 	this.retrieve = ["id", "inventory_id", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are displayed when showing item details
  	this.retrieve_show = ["id", "status"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["inventory_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "script_name", "method_name", "methoddesc"];
+ 	this.retrieve_hide = ["inventory_id", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
+ 	this.list = ["inventory_id", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 
  	// Parameters used for save URL
- 	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+ 	this.save = ["inventory_id", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
+ 	this.save_show = ["inventory_id", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+ 	this.update = ["offline_data_id", "inventory_id", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// All props
- 	this.all = ["id", "offline_data_id", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
+ 	this.all = ["id", "offline_data_id", "inventory_id", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
  	// Parameters that are displayed in install details pane
  	this.install_display = ["date", "description", "status", "gap", "phase1"];
 
  	this.display = {
  		"id": "Id",
- 		"inventory_name": "Inventory name",
+ 		"inventory_id": "Inventory id",
  		"description": "Description",
  		"polarmode": "Polar mode",
  		"methoddesc": "Method description",
@@ -1158,7 +1158,7 @@ app.value('OfflineDataInfo', {
  	};
 
  	this.id = "";
- 	this.inventory_name = "";
+ 	this.inventory_id = "";
  	this.description = "";
  	this.username = "";
  	this.date = "";
@@ -1221,39 +1221,39 @@ app.value('OfflineDataInstallInfo', {
  app.value('OfflineDataInstall', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_name", "data_id", "status", "method_name"];
+ 	this.m = ["inventory_id", "data_id", "status", "method_name"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["install_name"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ["id", "inventory_name", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
+ 	this.retrieve = ["id", "inventory_id", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are displayed when showing item details
  	this.retrieve_show = ["id", "status"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve_hide = ["inventory_name", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "script_name", "method_name", "methoddesc"];
+ 	this.retrieve_hide = ["inventory_id", "install_name", "description", "username", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "script_name", "method_name", "methoddesc"];
 
  	// Parameters that are checked before saving or updating
  	this.list = ["install_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "status", "method_name"];
 
  	// Parameters used for save URL
- 	this.save = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+ 	this.save = ["inventory_id", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
+ 	this.save_show = ["inventory_id", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "method_name", "script_name", "script", "status", "data_file_name"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["offline_data_id", "inventory_name", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
+ 	this.update = ["offline_data_id", "inventory_id", "description", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "status", "script_name", "script"];
 
  	// All props
- 	this.all = ["id", "offline_data_id", "install_name", "inventory_name", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
+ 	this.all = ["id", "offline_data_id", "install_name", "inventory_id", "description", "date", "gap", "phase1", "phase2", "phase3", "phase4", "phasemode", "polarmode", "data_file_name", "data_id", "method_name", "methoddesc", "status", "script_name", "script"];
 
  	this.display = {
  		"id": "Id",
  		"install_name": "Install name",
- 		"inventory_name": "Inventory name",
+ 		"inventory_id": "Inventory id",
  		"description": "Description",
  		"polarmode": "Polar mode",
  		"methoddesc": "Method description",
@@ -1273,7 +1273,7 @@ app.value('OfflineDataInstallInfo', {
 
  	this.id = "";
  	this.install_name = "";
- 	this.inventory_name = "";
+ 	this.inventory_id = "";
  	this.description = "";
  	this.username = "";
  	this.date = "";
@@ -1494,13 +1494,13 @@ app.value('RotCoilDataInfo', {
  	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_name"];
+ 	this.m = ["inventory_id"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["inventory_name"];
+ 	this.search_m = ["inventory_id"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ['id', 'inventory_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	this.retrieve = ['id', 'inventory_id', 'alias', 'meas_coil_id', 'ref_radius',
  	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
  	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
  	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
@@ -1508,10 +1508,10 @@ app.value('RotCoilDataInfo', {
  	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["inventory_name"];
+ 	this.list = ["inventory_id"];
 
  	// Parameters used for save URL
- 	this.save = ['inventory_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	this.save = ['inventory_id', 'alias', 'meas_coil_id', 'ref_radius',
  	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
  	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
  	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
@@ -1522,7 +1522,7 @@ app.value('RotCoilDataInfo', {
  	this.save_show = this.save;
 
  	// Parameters used as update URL parameters
- 	this.update = ['rot_coil_data_id', 'inventory_name', 'alias', 'meas_coil_id', 'ref_radius',
+ 	this.update = ['rot_coil_data_id', 'inventory_id', 'alias', 'meas_coil_id', 'ref_radius',
  	'magnet_notes', 'login_name', 'cond_curr', 'meas_loc', 'run_number',
  	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
  	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
@@ -1531,7 +1531,7 @@ app.value('RotCoilDataInfo', {
 
  	this.display = {
  		"id": "Id",
- 		"inventory_name": "Inventory name",
+ 		"inventory_id": "Inventory id",
  		"description": "Description",
  		"meas_date": "Date"
  	};
@@ -1586,22 +1586,22 @@ app.value('HallProbeDataInfo', {
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_name", "sub_device"];
+ 	this.m = ["inventory_id", "sub_device"];
 
  	// Mandatory parameters that have to be present in an URL when searching
- 	this.search_m = ["inventory_name"];
+ 	this.search_m = ["inventory_id"];
 
  	// Parameters that are displayed when showing item details
- 	this.retrieve = ['id', 'inventory_name', 'sub_device', 'alias', 'measured_at_location',
+ 	this.retrieve = ['id', 'inventory_id', 'sub_device', 'alias', 'meas_date', 'measured_at_location',
     'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
     'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
 
  	// Parameters that are checked before saving or updating
- 	this.list = ["inventory_name"];
+ 	this.list = ["inventory_id"];
 
  	// Parameters used for save URL
- 	this.save = ['inventory_name', 'sub_device', 'alias', 'measured_at_location',
+ 	this.save = ['inventory_id', 'sub_device', 'alias', 'measured_at_location',
     'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
     'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
@@ -1610,14 +1610,14 @@ app.value('HallProbeDataInfo', {
  	this.save_show = this.save;
 
  	// Parameters used as update URL parameters
- 	this.update = ['hall_probe_id', 'inventory_name', 'sub_device', 'alias', 'measured_at_location',
+ 	this.update = ['hall_probe_id', 'inventory_id', 'sub_device', 'alias', 'measured_at_location',
     'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
     'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
 
  	this.display = {
  		"id": "Id",
- 		"inventory_name": "Inventory name",
+ 		"inventory_id": "Inventory id",
  		"description": "Description",
  		"meas_date": "Date"
  	};

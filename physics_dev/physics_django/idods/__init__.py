@@ -19,7 +19,7 @@ def finished(sender, **kwargs):
     '''
     total = time.time() - startedd
     total = total*1000
-    print '=> elapsed time request/response: %f ms' % total
+    # print '=> elapsed time request/response: %f ms' % total
 
 try:
     request_started.connect(started)

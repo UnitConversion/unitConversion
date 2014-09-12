@@ -179,7 +179,7 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateVendor(self, old_name, name, **kws):
+    def updateVendor(self, old_name, name, description=None):
         '''
         Update vendor and its description
 
@@ -204,12 +204,9 @@ class IDODSClient(object):
         params = {
             'vendor_id': None,
             'old_name': old_name,
-            'name': name
+            'name': name,
+            'description': description
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
@@ -217,7 +214,8 @@ class IDODSClient(object):
         return r.json()
 
     def retrieveComponentType(self, name, description=None):
-        '''Retrieve a component type using the key words:
+        '''
+        Retrieve a component type using the key words:
 
         - name
         - description
@@ -310,7 +308,7 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateComponentType(self, old_name, name, **kws):
+    def updateComponentType(self, old_name, name, description=None, props=None):
         '''
         Update description of a device type.
         Once a device type is saved, it is not allowed to change it again since it will cause potential colflict.
@@ -344,16 +342,13 @@ class IDODSClient(object):
         params = {
             'component_type_id': None,
             'old_name': old_name,
-            'name': name
+            'name': name,
+            'description': description
         }
 
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
         # Add props
-        if 'props' in kws:
-            params['props'] = json.dumps(kws['props'])
+        if props:
+            params['props'] = json.dumps(props)
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
@@ -427,7 +422,7 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateComponentTypePropertyType(self, old_name, name, **kws):
+    def updateComponentTypePropertyType(self, old_name, name, description=None):
         '''
         Insert new component type property type into database
 
@@ -447,27 +442,34 @@ class IDODSClient(object):
         params = {
             'property_type_id': None,
             'old_name': old_name,
-            'name': name
+            'name': name,
+            'description': description
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveInventory(self, name):
-        '''Retrieve an insertion device from inventory by device inventory name and type.
+    def retrieveInventory(self, serial_no, cmpnt_type_name=None, vendor_name=None, name=None):
+        '''
+        Retrieve an insertion device from inventory by device inventory name and type.
         Wildcard matching is supported for inventory name and device type. ::
 
             * for multiple characters matching
             ? for single character matching
 
 
-        :param name: insertion device inventory name, which is usually different from its field name (the name after installation).
+        :param serial_no: serial number
+        :type serial_no: str
+
+        :param cmpnt_type_name: component type name
+        :type cmpnt_type_name: str
+
+        :param vendor_name: vendor name
+        :type vendor_name: str
+
+        :param name: inventory name
         :type name: str
 
         :return: a map with structure like:
@@ -476,7 +478,7 @@ class IDODSClient(object):
 
                 {'id': { 'name':,                       # string
                          'serialno':,                   # string
-                         'cmpnt_type':                   # string
+                         'cmpnt_type_name':             # string
                          'typeinto':                    # string
                          'vendor':,                     # string
                          'length': ,                    # float
@@ -500,6 +502,7 @@ class IDODSClient(object):
                          'phase_mode_p':,               # string
                          'phase_mode_a1':,              # string
                          'phase_mode_a2':               # string
+                         'prop_keys':                   ['key1', 'key2']
 
                         }
                 }
@@ -512,6 +515,9 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
+            'serial_no': serial_no,
+            'cmpnt_type_name': cmpnt_type_name,
+            'vendor_name': vendor_name,
             'name': name
         }
 
@@ -520,7 +526,7 @@ class IDODSClient(object):
 
         return r.json()
 
-    def saveInventory(self, name, **kws):
+    def saveInventory(self, serial_no, cmpnt_type_name, vendor_name, name=None, alias=None, props=None):
         '''
         save insertion device into inventory using any of the acceptable key words:
 
@@ -560,14 +566,14 @@ class IDODSClient(object):
         :param name: insertion device name, which is usually different from its field name (the name after installation).
         :type name: str
 
-        :param dtype: device type
-        :type dtype: str
+        :param cmpnt_type_name: component type name
+        :type cmpnt_type_name: str
 
         :param alias: alias name if it has
         :type alias: str
 
-        :param serialno: serial number
-        :type serialno: str
+        :param serial_no: serial number
+        :type serial_no: str
 
         :param vendor: name of vendor
         :type vendor: str
@@ -589,49 +595,32 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
+            'serial_no': serial_no,
+            'cmpnt_type_name': cmpnt_type_name,
+            'vendor_name': vendor_name,
+            'alias': alias,
             'name': name
         }
 
-        # Add component type
-        if 'cmpnt_type' in kws:
-            params['cmpnt_type'] = kws['cmpnt_type']
-
-        # Add alias
-        if 'alias' in kws:
-            params['alias'] = kws['alias']
-
-        # Add serialno
-        if 'serialno' in kws:
-            params['serialno'] = kws['serialno']
-
-        # Add vendor
-        if 'vendor' in kws:
-
-            # Check vendor value
-            if kws['vendor'] is None:
-                self.__raise_for_status(400, 'If vendor is passed it should not be None!')
-
-            params['vendor'] = kws['vendor']
-
         # Add props
-        if 'props' in kws:
-            params['props'] = json.dumps(kws['props'])
+        if props:
+            params['props'] = json.dumps(props)
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def updateInventory(self, old_name, name, **kws):
+    def updateInventory(self, inventory_id, serial_no=None, cmpnt_type_name=None, vendor_name=None, name=None, alias=None, props=None):
         '''
         Update inventory using any of the acceptable key words:
 
-        - old_name:  name of the inventory we want to update by
+        - inventory_id:  inventory id from the database table
         - name:  name to identify that device from vendor
-        - cmpnt_type: device type name
+        - cmpnt_type_name: device type name
         - alias: alias name if it has
-        - serialno: serial number
-        - vendor: vendor name
+        - serial_no: serial number
+        - vendor_name: vendor name
         - props: properties with structure as below
 
         .. code-block:: python
@@ -663,17 +652,17 @@ class IDODSClient(object):
         :param name: insertion device name, which is usually different from its field name (the name after installation).
         :type name: str
 
-        :param dtype: device type
-        :type dtype: str
+        :param cmpnt_type_name: component type name
+        :type cmpnt_type_name: str
 
         :param alias: alias name if it has
         :type alias: str
 
-        :param serialno: serial number
-        :type serialno: str
+        :param serial_no: serial number
+        :type serial_no: str
 
-        :param vendor: name of vendor
-        :type vendor: str
+        :param vendor_name: name of vendor
+        :type vendor_name: str
 
         :param props: a map to describe the property of an insertion device as described above
         :type props: object
@@ -688,46 +677,32 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_id': None,
-            'old_name': old_name,
-            'name': name
+            'inventory_id': inventory_id,
+            'serial_no': serial_no,
+            'cmpnt_type_name': cmpnt_type_name,
+            'vendor_name': vendor_name,
+            'name': name,
+            'alias': alias
         }
 
-        # Add component type
-        if 'cmpnt_type' in kws:
-            params['cmpnt_type'] = kws['cmpnt_type']
-
-        # Add alias
-        if 'alias' in kws:
-            params['alias'] = kws['alias']
-
-        # Add serialno
-        if 'serialno' in kws:
-            params['serialno'] = kws['serialno']
-
-        # Add vendor
-        if 'vendor' in kws:
-
-            # Check vendor value
-            if kws['vendor'] is None:
-                self.__raise_for_status(400, 'If vendor is passed it should not be None!')
-
-            params['vendor'] = kws['vendor']
-
         # Add props
-        if 'props' in kws:
-            params['props'] = json.dumps(kws['props'])
+        if props:
+            params['props'] = json.dumps(props)
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveInventoryPropertyTemplate(self, name):
+    def retrieveInventoryPropertyTemplate(self, name, cmpnt_type_name=None):
         '''
         Retrieve inventory property template by its name
 
-        - name: Inventory property name
+        :param name: Inventory property name
+        :type name: str
+
+        :param cmpnt_type_name: component type name
+        :type cmpnt_type_name: str
 
         :return: a map with structure like:
 
@@ -736,11 +711,11 @@ class IDODSClient(object):
                 {
                     'id': {
                         'id': ,              # int
-                        'cmpnt_type': ,      # int
-                        'name': ,           # string
-                        'description': ,    # string
-                        'default': ,        # string
-                        'unit':             # string
+                        'cmpnt_type_name': , # string
+                        'name': ,            # string
+                        'description': ,     # string
+                        'default': ,         # string
+                        'unit':              # string
                     }
                 }
 
@@ -752,6 +727,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
+            'cmpnt_type_name': cmpnt_type_name,
             'name': name
         }
 
@@ -760,15 +736,24 @@ class IDODSClient(object):
 
         return r.json()
 
-    def saveInventoryPropertyTemplate(self, cmpnt_type, name, description=None, default=None, unit=None):
+    def saveInventoryPropertyTemplate(self, cmpnt_type_name, name, description=None, default=None, unit=None):
         '''
         Insert new inventory property template into database
 
-        - cmpnt_type: component type name M
-        - name: property template name M
-        - description: property template description O
-        - default: property template default value O
-        - unit: property template unit O
+        :param cmpnt_type_name: component type name M
+        :type cmpnt_type_name: str
+
+        :param name: property template name M
+        :type name: str
+
+        :param description: property template description O
+        :type description: str
+
+        :param default: property template default value O
+        :type default: str
+
+        :param unit: property template unit O
+        :type unit: str
 
         :return: a map with structure like:
 
@@ -784,7 +769,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'cmpnt_type': cmpnt_type,
+            'cmpnt_type_name': cmpnt_type_name,
             'name': name
         }
 
@@ -805,16 +790,27 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type, name, **kws):
+    def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type_name, name, description=None, default=None, unit=None):
         '''
         Update inventory property template in a database
 
-        - tmplt_id: property template id M
-        - cmpnt_type: component type name M
-        - name: property template name M
-        - description: property template description O
-        - default: property template default value O
-        - unit: property template unit O
+        :param tmplt_id: property template id M
+        :type tmplt_id: int
+
+        :param cmpnt_type_name: component type name M
+        :type cmpnt_type_name: str
+
+        :param name: property template name M
+        :type name: str
+
+        :param description: property template description O
+        :type description: str
+
+        :param default: property template default value O
+        :type default: str
+
+        :param unit: property template unit O
+        :type unit: str
 
         :return: True if update succeeded
 
@@ -826,29 +822,20 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
+            'unit': unit,
+            'default': default,
+            'description': description,
             'tmplt_id': tmplt_id,
-            'cmpnt_type': cmpnt_type,
+            'cmpnt_type_name': cmpnt_type_name,
             'name': name
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
-        # Add default
-        if 'default' in kws:
-            params['default'] = kws['default']
-
-        # Add unit
-        if 'unit' in kws:
-            params['unit'] = kws['unit']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveInstall(self, name, **kws):
+    def retrieveInstall(self, name, description=None, cmpnt_type_name=None, coordinatecenter=None):
         '''Retrieve insertion device installation using any of the acceptable key words:
 
         :param name: installation name, which is its label on field
@@ -857,14 +844,11 @@ class IDODSClient(object):
         :param description: installation description
         :type description: str
 
-        :param cmpnt_type: component type name of the device
-        :type cmpnt_type: str
+        :param cmpnt_type_name: component type name of the device
+        :type cmpnt_type_name: str
 
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: str
-
-        :param all_install: retrieve also system installs
-        :type all_install: str
 
         :return: a map with structure like:
 
@@ -874,9 +858,12 @@ class IDODSClient(object):
                         'id':                     #int,
                         'name':                   #string,
                         'description':            #string,
-                        'cmpnt_type':             #string,
+                        'cmpnt_type_name':             #string,
                         'cmpnt_type_description': #string,
-                        'coordinatecenter':       #float
+                        'coordinatecenter':       #float,
+                        'key1':                   #str,
+                        ...
+                        'prop_keys':              ['key1', 'key2']
                     }
                 }
 
@@ -888,24 +875,11 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'name': name
+            'name': name,
+            'description': description,
+            'cmpnt_type_name': cmpnt_type_name,
+            'coordinatecenter': coordinatecenter
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
-        # Add component type
-        if 'cmpnt_type' in kws:
-            params['cmpnt_type'] = kws['cmpnt_type']
-
-        # Add coordinate center
-        if 'coordinatecenter' in kws:
-            params['coordinatecenter'] = kws['coordinatecenter']
-
-        # Add all install
-        if 'all_install' in kws:
-            params['all_install'] = kws['all_install']
 
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
@@ -913,12 +887,15 @@ class IDODSClient(object):
         return r.json()
 
     def saveInsertionDevice(
-            self, install_name, coordinate_center, project, beamline, beamline_desc,
-            install_desc, inventory_name, down_corrector, up_corrector, length, gap_max,
-            gap_min, gap_tolerance, phase1_max, phase1_min, phase2_max, phase2_min,
-            phase3_max, phase3_min, phase4_max, phase4_min, phase_tolerance,
-            k_max_circular, k_max_linear, phase_mode_a1, phase_mode_a2, phase_mode_p,
-            type_name, type_desc
+            self, install_name=None, coordinate_center=None, project=None,
+            beamline=None, beamline_desc=None, install_desc=None,
+            inventory_name=None, down_corrector=None, up_corrector=None,
+            length=None, gap_max=None, gap_min=None, gap_tolerance=None,
+            phase1_max=None, phase1_min=None, phase2_max=None,
+            phase2_min=None, phase3_max=None, phase3_min=None,
+            phase4_max=None, phase4_min=None, phase_tolerance=None,
+            k_max_circular=None, k_max_linear=None, phase_mode_a1=None,
+            phase_mode_a2=None, phase_mode_p=None, type_name=None, type_desc=None
             ):
         '''
         Save insertion device
@@ -1056,18 +1033,26 @@ class IDODSClient(object):
 
         return r.json()
 
-    def saveInstall(self, name, **kws):
-        '''Save insertion device installation using any of the acceptable key words:
+    def saveInstall(self, name, description=None, cmpnt_type_name=None, coordinatecenter=None):
+        '''
+        Save insertion device installation
 
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type of the device
-        - coordinatecenter: coordinate center number
+        :param name: installation name, which is its label on field
+        :type name: str
 
-        raises:
+        :param description: installation description
+        :type description: str
+
+        :param cmpnt_type_name: component type of the device
+        :type cmpnt_type_name: str
+
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: float
+
+        :raises:
             HTTPError
 
-        returns:
+        :returns:
             {'id': new install id}
         '''
 
@@ -1076,34 +1061,35 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'name': name
+            'name': name,
+            'description': description,
+            'cmpnt_type_name': cmpnt_type_name,
+            'coordinatecenter': coordinatecenter
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
-        # Add component type
-        if 'cmpnt_type' in kws:
-            params['cmpnt_type'] = kws['cmpnt_type']
-
-        # Add coordinate center
-        if 'coordinatecenter' in kws:
-            params['coordinatecenter'] = kws['coordinatecenter']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def updateInstall(self, old_name, name, **kws):
-        '''Update insertion device installation using any of the acceptable key words:
+    def updateInstall(self, old_name, name, description=None, cmpnt_type_name=None, coordinatecenter=None):
+        '''
+        Update insertion device installation using any of the acceptable key words:
 
-        - old_name: installation name, we want ot update by
-        - name: installation name, which is its label on field
-        - description: installation description
-        - cmpnt_type: component type of the device
-        - coordinatecenter: coordinate center number
+        :param old_name: installation name, which is its label on field
+        :type old_name: str
+
+        :param name: installation name, which is its label on field
+        :type name: str
+
+        :param description: installation description
+        :type description: str
+
+        :param cmpnt_type_name: component type of the device
+        :type cmpnt_type_name: str
+
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: float
 
         raises:
             HTTPError
@@ -1118,25 +1104,11 @@ class IDODSClient(object):
         # Set parameters
         params = {
             'old_name': old_name,
-            'name': name
+            'name': name,
+            'description': description,
+            'cmpnt_type_name': cmpnt_type_name,
+            'coordinatecenter': coordinatecenter
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
-        # Add component type
-        if 'cmpnt_type' in kws:
-
-            # Check for none
-            if kws['cmpnt_type'] is None:
-                self.__raise_for_status(400, 'If component type parameter is present it should not be set to None!')
-
-            params['cmpnt_type'] = kws['cmpnt_type']
-
-        # Add coordinate center
-        if 'coordinatecenter' in kws:
-            params['coordinatecenter'] = kws['coordinatecenter']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
@@ -1350,7 +1322,7 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateInstallRel(self, parent_install, child_install, **kws):
+    def updateInstallRel(self, parent_install, child_install, description=None, order=None, props=None):
         '''
         Update install relationship.
 
@@ -1391,20 +1363,14 @@ class IDODSClient(object):
         # Set parameters
         params = {
             'parent_install': parent_install,
-            'child_install': child_install
+            'child_install': child_install,
+            'description': description,
+            'order': order
         }
 
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
-        # Add order
-        if 'order' in kws:
-            params['order'] = kws['order']
-
         # Add props
-        if 'props' in kws:
-            params['props'] = json.dumps(kws['props'])
+        if props:
+            params['props'] = json.dumps(props)
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
@@ -1484,14 +1450,21 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateInstallRelPropertyType(self, old_name, name, **kws):
+    def updateInstallRelPropertyType(self, old_name, name, description=None, unit=None):
         '''
         Update install relationship property type
 
-        - old_name: name of the install relationship property type we want to update by O
-        - name: name of the install relationship property type M
-        - description: description of the install relationship property type O
-        - unit: units used for this property type O
+        :param old_name: name of the install relationship property type we want to update by O
+        :type old_name: str
+
+        :param name: name of the install relationship property type M
+        :type name: str
+
+        :param description: description of the install relationship property type O
+        :type description: str
+
+        :param unit: units used for this property type O
+        :type unit: str
 
         :return: True if everything is ok
 
@@ -1504,30 +1477,19 @@ class IDODSClient(object):
         # Set parameters
         params = {
             'old_name': old_name,
-            'name': name
+            'name': name,
+            'description': description,
+            'unit': unit
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
-
-        # Add unit
-        if 'unit' in kws:
-            params['unit'] = kws['unit']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
 
-    def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
+    def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inventory_id):
         '''
         Return installed devices or psecific map
-
-        params:
-            - inventory_to_install_id
-            - install_name
-            - inv_name
 
         :param inventory_to_install_id: id of the inventory to install map
         :type inventory_to_install_id: int
@@ -1535,7 +1497,8 @@ class IDODSClient(object):
         :param install_name: label name after installation
         :type install_name: str
 
-        :param inv_name: name in its inventory
+        :param inventory_id: id in inventory
+        :type inventory_id: intme in its inventory
         :type inv_name: str
 
         :return: a map with structure like:
@@ -1561,7 +1524,7 @@ class IDODSClient(object):
         params = {
             'inventory_to_install_id': inventory_to_install_id,
             'install_name': install_name,
-            'inv_name': inv_name
+            'inventory_id': inventory_id
         }
 
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
@@ -1569,16 +1532,15 @@ class IDODSClient(object):
 
         return r.json()
 
-    def saveInventoryToInstall(self, install_name, inv_name):
-        '''Link a device as installed once it is installed into field using the key words:
-        - install_name
-        - inv_name
+    def saveInventoryToInstall(self, install_name, inventory_id):
+        '''
+        Link a device as installed once it is installed into field using the key words:
 
         :param install_name: label name after installation
         :type install_name: str
 
-        :param inv_name: name in its inventory
-        :type inv_name: str
+        :param inventory_id: id in its inventory
+        :type inventory_id: int
 
         :return: a map with structure like:
 
@@ -1595,7 +1557,7 @@ class IDODSClient(object):
         # Set parameters
         params = {
             'install_name': install_name,
-            'inv_name': inv_name
+            'inventory_id': inventory_id
         }
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
@@ -1603,18 +1565,15 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateInventoryToInstall(self, inventory_to_install_id, install_name, inv_name):
-        '''Update a device as installed when its installation has been changed using the key words:
-
-        - inventory_to_install_id
-        - install_name
-        - inv_name
+    def updateInventoryToInstall(self, inventory_to_install_id, install_name, inventory_id):
+        '''
+        Update a device as installed when its installation has been changed using the key words:
 
         :param install_name: label name after installation
         :type install_name: str
 
-        :param inv_name: name in its inventory
-        :type inv_name: str
+        :param inventory_id: id in its inventory
+        :type inventory_id: int
 
         :return: True if everything was ok
 
@@ -1628,7 +1587,7 @@ class IDODSClient(object):
         params = {
             'inventory_to_install_id': inventory_to_install_id,
             'install_name': install_name,
-            'inv_name': inv_name
+            'inventory_id': inventory_id
         }
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
@@ -1711,8 +1670,9 @@ class IDODSClient(object):
 
         return r.json()
 
-    def updateDataMethod(self, old_name, name, **kws):
-        '''Update data method by id or name.
+    def updateDataMethod(self, old_name, name, description=None):
+        '''
+        Update data method by id or name.
 
         :param datamethod_id id of the data method we want to update by
         :type datamethod_id: int
@@ -1738,12 +1698,9 @@ class IDODSClient(object):
         params = {
             'datamethod_id': None,
             'old_name': old_name,
-            'name': name
+            'name': name,
+            'description': description
         }
-
-        # Add description
-        if 'description' in kws:
-            params['description'] = kws['description']
 
         r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
@@ -1751,7 +1708,8 @@ class IDODSClient(object):
         return r.json()
 
     def retrieveOfflineData(self, **kws):
-        '''Retrieve insertion device offline data using any of the acceptable key words:
+        '''
+        Retrieve insertion device offline data using any of the acceptable key words:
 
         - offlineid
         - description
@@ -1764,7 +1722,7 @@ class IDODSClient(object):
         - polarmode
         - status
         - method_name
-        - inventory_name
+        - inventory_id
         - with_data
 
         :param offlineid: id of the offline data we want to retrieve
@@ -1800,8 +1758,8 @@ class IDODSClient(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :param inventory_name: name of inventory used to produce the data
-        :type inventory_name: str
+        :param inventory_id: id of inventory used to produce the data
+        :type inventory_id: int
 
         :param with_data: do we want data is returned together with the result?
         :type with_data: True/False
@@ -1830,6 +1788,7 @@ class IDODSClient(object):
                         'method_name':,    # string
                         'methoddesc':,     # string
                         'inventory_name':, # string
+                        'inventory_id':,   # int
                         'data':            # string, base64 encoded file content
                     }
                 }
@@ -1887,9 +1846,9 @@ class IDODSClient(object):
         if 'method_name' in kws:
             params['method_name'] = kws['method_name']
 
-        # Add inventory name
-        if 'inventory_name' in kws:
-            params['inventory_name'] = kws['inventory_name']
+        # Add inventory id
+        if 'inventory_id' in kws:
+            params['inventory_id'] = kws['inventory_id']
 
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
@@ -1923,8 +1882,9 @@ class IDODSClient(object):
 
         return returnData
 
-    def retrieveInstallOfflineData(self, **kws):
-        '''Retrieve insertion device offline data using any of the acceptable key words:
+    def retrieveInstallOfflineData(self, install_name, **kws):
+        '''
+        Retrieve insertion device offline data using any of the acceptable key words:
 
         - install_name
         - description
@@ -2015,7 +1975,9 @@ class IDODSClient(object):
         url = 'offlinedatainstall/'
 
         # Set parameters
-        params = {}
+        params = {
+            'install_name': install_name
+        }
 
         # Add description
         if 'description' in kws:
@@ -2061,10 +2023,6 @@ class IDODSClient(object):
         if 'method_name' in kws:
             params['method_name'] = kws['method_name']
 
-        # Add install name
-        if 'install_name' in kws:
-            params['install_name'] = kws['install_name']
-
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
@@ -2097,12 +2055,17 @@ class IDODSClient(object):
 
         return returnData
 
-    def saveMethodAndOfflineData(self, inventory_name, method, method_desc, data_desc, data_file_name, data_file_path, status, gap, phase1, phase2, phase3, phase4, phase_mode, polar_mode):
+    def saveMethodAndOfflineData(
+            self, inventory_id, method=None,
+            method_desc=None, data_desc=None, data_file_name=None,
+            data_file_path=None, status=None, gap=None, phase1=None, phase2=None,
+            phase3=None, phase4=None, phase_mode=None, polar_mode=None
+            ):
         '''
         Save data method and offline data into the database
 
-        :param inventory_name: inventory name
-        :type inventory_name: str
+        :param inventory_id: inventory id
+        :type inventory_id: int
 
         :param username: username of the user who saved the offline data
         :type username: str
@@ -2160,7 +2123,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'method': method,
             'method_desc': method_desc,
             'data_desc': data_desc,
@@ -2188,11 +2151,11 @@ class IDODSClient(object):
 
         return r.json()
 
-    def saveOfflineData(self, **kws):
+    def saveOfflineData(self, inventory_id, **kws):
         '''
-        save insertion device offline data using any of the acceptable key words:
+        Save insertion device offline data using any of the acceptable key words:
 
-        - inventory_name
+        - inventory_id
         - username
         - description
         - gap
@@ -2210,8 +2173,8 @@ class IDODSClient(object):
         - script
         - method_name
 
-        :param inventory_name: name of the inventory offline data is connected to
-        :type inventory_name: str
+        :param inventory_id: name of the inventory offline data is connected to
+        :type inventory_id: str
 
         :param username: author who created this data entry originally
         :type username: str
@@ -2274,16 +2237,9 @@ class IDODSClient(object):
         url = 'saveofflinedata/'
 
         # Set parameters
-        params = {}
-
-        # Add inventory name
-        if 'inventory_name' in kws:
-
-            # Check inventory name
-            if kws['inventory_name'] is None:
-                self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
-
-            params['inventory_name'] = kws['inventory_name']
+        params = {
+            'inventory_id': inventory_id
+        }
 
         # Add description
         if 'description' in kws:
@@ -2365,7 +2321,7 @@ class IDODSClient(object):
         Update insertion device offline data by its id
 
         parameters:
-        - inventory_name
+        - inventory_id
         - username
         - description
         - gap
@@ -2383,8 +2339,8 @@ class IDODSClient(object):
         - script
         - method_name
 
-        :param inventory_name: name of the inventory offline data is connected to
-        :type inventory_name: str
+        :param inventory_id: id of the inventory offline data is connected to
+        :type inventory_id: int
 
         :param username: author who created this data entry originally
         :type username: str
@@ -2446,14 +2402,9 @@ class IDODSClient(object):
             'offline_data_id': offline_data_id
         }
 
-        # Add inventory name
-        if 'inventory_name' in kws:
-
-            # Check inventory name
-            if kws['inventory_name'] is None:
-                self.__raise_for_status(400, 'If inventory name is passed it should not be None!')
-
-            params['inventory_name'] = kws['inventory_name']
+        # Add inventory id
+        if 'inventory_id' in kws:
+            params['inventory_id'] = kws['inventory_id']
 
         # Add description
         if 'description' in kws:
@@ -2575,6 +2526,9 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
+        :param rawdata_path: file path to the common location where the data file is stored
+        :type rawdata_path: str
+
         :param status: status of this data set
         :type status: int
 
@@ -2621,6 +2575,10 @@ class IDODSClient(object):
         # Add description
         if 'description' in kws:
             params['description'] = kws['description']
+
+        # Add rawdata_path
+        if 'rawdata_path' in kws:
+            params['rawdata_path'] = kws['rawdata_path']
 
         # Add status
         if 'status' in kws:
@@ -2841,12 +2799,12 @@ class IDODSClient(object):
 
         return r.json()
 
-    def retrieveRotCoilData(self, inventory_name):
+    def retrieveRotCoilData(self, inventory_id):
         '''
         Return rotation coil data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :return: dictionary with a structure like:
 
@@ -2889,7 +2847,8 @@ class IDODSClient(object):
                         a4_21,
                         b4_21,
                         data_issues,
-                        data_usage
+                        data_usage,
+                        inventory_name
                     },
                     ...
                 }
@@ -2902,7 +2861,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name
+            'inventory_id': inventory_id
         }
 
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
@@ -2911,7 +2870,7 @@ class IDODSClient(object):
         return r.json()
 
     def saveRotCoilData(
-            self, inventory_name, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            self, inventory_id, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
             meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
             analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
@@ -2919,8 +2878,8 @@ class IDODSClient(object):
         '''
         Save rotation coil data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :param alias: alias name
         :type alias: str
@@ -3035,7 +2994,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'alias': alias,
             'meas_coil_id': meas_coil_id,
             'ref_radius': ref_radius,
@@ -3077,7 +3036,7 @@ class IDODSClient(object):
         return r.json()
 
     def updateRotCoilData(
-            self, rot_coil_data_id, inventory_name=None, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
+            self, rot_coil_data_id, inventory_id=None, alias=None, meas_coil_id=None, ref_radius=None, magnet_notes=None, login_name=None, cond_curr=None,
             meas_loc=None, run_number=None, sub_device=None, current_1=None, current_2=None, current_3=None, up_dn_1=None, up_dn_2=None, up_dn_3=None,
             analysis_number=None, integral_xfer_function=None, orig_offset_x=None, orig_offset_y=None, b_ref_int=None, roll_angle=None,
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
@@ -3088,8 +3047,8 @@ class IDODSClient(object):
         :param rot_coil_data_id: id of the data in the database
         :type rot_coil_data_id: int
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :param alias: alias name
         :type alias: str
@@ -3201,7 +3160,7 @@ class IDODSClient(object):
         # Set parameters
         params = {
             'rot_coil_data_id': rot_coil_data_id,
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'alias': alias,
             'meas_coil_id': meas_coil_id,
             'ref_radius': ref_radius,
@@ -3242,12 +3201,12 @@ class IDODSClient(object):
 
         return r.json()
 
-    def deleteRotCoilData(self, inventory_name, rot_coil_data_id=None):
+    def deleteRotCoilData(self, inventory_id, rot_coil_data_id=None):
         '''
         Delete one or more rot coil data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: name of the device in the inventory
+        :type inventory_id: str
 
         :param rot_coil_data_id: id of data in the table
         :type rot_coil_data_id: int
@@ -3262,7 +3221,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'rot_coil_data_id': rot_coil_data_id
         }
 
@@ -3271,12 +3230,12 @@ class IDODSClient(object):
 
         return r.json()
 
-    def retrieveHallProbeData(self, inventory_name):
+    def retrieveHallProbeData(self, inventory_id):
         '''
         Return hall probe data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :return: dictionary with a structure like:
 
@@ -3310,7 +3269,8 @@ class IDODSClient(object):
                         bz_t,
                         meas_notes,
                         data_issues,
-                        data_usage
+                        data_usage,
+                        inventory_name
                     },
                     ...
                 }
@@ -3323,7 +3283,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name
+            'inventory_id': inventory_id
         }
 
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
@@ -3332,7 +3292,7 @@ class IDODSClient(object):
         return r.json()
 
     def saveHallProbeData(
-            self, inventory_name, sub_device, alias=None, measured_at_location=None,
+            self, inventory_id, sub_device, alias=None, measured_at_location=None,
             run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
             current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
@@ -3340,8 +3300,8 @@ class IDODSClient(object):
         '''
         Save hall probe data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :param alias: alias name
         :type alias: str
@@ -3429,7 +3389,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'sub_device': sub_device,
             'alias': alias,
             'measured_at_location': measured_at_location,
@@ -3462,7 +3422,7 @@ class IDODSClient(object):
         return r.json()
 
     def updateHallProbeData(
-            self, hall_probe_id, inventory_name=None, sub_device=None, alias=None, measured_at_location=None,
+            self, hall_probe_id, inventory_id=None, sub_device=None, alias=None, measured_at_location=None,
             run_identifier=None, login_name=None, conditioning_current=None, current_1=None, current_2=None,
             current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
@@ -3473,8 +3433,8 @@ class IDODSClient(object):
         :param hall_probe_id: id of the hall probe
         :type hall_probe_id: int
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :param alias: alias name
         :type alias: str
@@ -3558,9 +3518,8 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'hall_probe_id': hall_probe_id,
-            'inventory_name': inventory_name,
             'sub_device': sub_device,
             'alias': alias,
             'measured_at_location': measured_at_location,
@@ -3592,12 +3551,12 @@ class IDODSClient(object):
 
         return r.json()
 
-    def deleteHallProbeData(self, inventory_name, hall_probe_id=None):
+    def deleteHallProbeData(self, inventory_id, hall_probe_id=None):
         '''
         Delete one or more hall probe data
 
-        :param inventory_name: name of the device in the inventory
-        :type inventory_name: str
+        :param inventory_id: id of the device in the inventory
+        :type inventory_id: int
 
         :param hall_probe_id: id of data in the table
         :type hall_probe_id: int
@@ -3612,7 +3571,7 @@ class IDODSClient(object):
 
         # Set parameters
         params = {
-            'inventory_name': inventory_name,
+            'inventory_id': inventory_id,
             'hall_probe_id': hall_probe_id
         }
 
