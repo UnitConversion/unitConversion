@@ -1,6 +1,6 @@
-MUNICONV web service
+MUNICONV Web Service
 =====================
 
 Introduction
 ------------
-To be coming soon...
+More coming soon...

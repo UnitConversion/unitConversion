@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to physicsServices's documentation!
-===========================================
+Welcome to the Documentation for physicsServices!
+=================================================
 
 .. toctree::
    :maxdepth: 2
@@ -18,7 +18,7 @@ Welcome to physicsServices's documentation!
    latmoduser
    latmodref
    
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`

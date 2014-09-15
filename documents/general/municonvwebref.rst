@@ -1,6 +1,6 @@
-MUNICONV web service Reference Manual
+MUNICONV Web Service Reference Manual
 ============================================
 
 Introduction
 ------------
-To be coming soon...
+More coming soon...
