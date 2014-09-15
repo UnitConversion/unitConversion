@@ -3,7 +3,7 @@ Introduction
 
 General
 --------------
-This system is dedicated for NSLS II (National Synchrotron Light Source II) project, which is constructed
+This system is dedicated for the NSLS II (National Synchrotron Light Source II) project, which is constructed
 at BNL (Brookhaven National Laboratory). All requirements are driven by NSLS II project at BNL, especially its storage ring.
 
 This system is a data service for insertion device, and to help to store the data for insertion commissioning and operation.
