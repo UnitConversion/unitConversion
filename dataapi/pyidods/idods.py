@@ -4923,6 +4923,9 @@ class idods(object):
         :param feedforward_data: feedforward data
         :type feedforward_data: blob
 
+        :param meas_time: measurement time
+        :type meas_time: str
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -4979,6 +4982,12 @@ class idods(object):
         if 'feedforward_data' in kws and kws['feedforward_data'] is not None:
             feedforward_data = kws['feedforward_data']
 
+        # Check measurement time
+        meas_time = None
+
+        if 'meas_time' in kws and kws['meas_time'] is not None:
+            meas_time = kws['meas_time']
+
         # Generate SQL
         sql = '''
         INSERT INTO id_online_data (
@@ -4989,9 +4998,10 @@ class idods(object):
             date,
             status,
             feedforward_file_name,
-            feedforward_data
+            feedforward_data,
+            meas_time
         ) VALUES (
-            %s, %s, %s, %s, NOW(), %s, %s, %s
+            %s, %s, %s, %s, NOW(), %s, %s, %s, %s
         )
         '''
 
@@ -5005,7 +5015,8 @@ class idods(object):
                 rawdata_path,
                 status,
                 feedforward_file_name,
-                feedforward_data
+                feedforward_data,
+                meas_time
             ))
 
             # Get last row id
@@ -5027,7 +5038,8 @@ class idods(object):
             raise MySQLError('Error when saving new online data:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def retrieveOnlineData(self, **kws):
-        '''Retrieve insertion device online data.
+        '''
+        Retrieve insertion device online data.
 
         :param onlineid: id of the online data we want to update by
         :type onlineid: int
@@ -5047,6 +5059,9 @@ class idods(object):
         :param status: status of this data set
         :type status: int
 
+        :param meas_time: measurement time
+        :type meas_time: str
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -5062,6 +5077,7 @@ class idods(object):
                         'status':,                  #int
                         'feedforward_file_name':,   #int
                         'feedforward_data':,        #base64 string
+                        'meas_time':,               #str
                         'is_ascii':,                #boolean
                     }
                 }
@@ -5081,7 +5097,8 @@ class idods(object):
             iod.status,
             inst.field_name,
             iod.feedforward_file_name,
-            iod.feedforward_data
+            iod.feedforward_data,
+            iod.meas_time
         FROM id_online_data iod
         LEFT JOIN install inst ON(iod.install_id = inst.install_id)
         WHERE 1=1
@@ -5116,6 +5133,13 @@ class idods(object):
         # Append status
         if 'status' in kws and kws['status'] is not None:
             sqlVals = _checkRangeAndAppend('iod.status', kws['status'], sql, vals, 'AND')
+            sql = sqlVals[0]
+            vals = sqlVals[1]
+
+        # Append measurement time
+        if 'meas_time' in kws and kws['meas_time'] is not None:
+            self.logger.info(kws['meas_time'])
+            sqlVals = _checkRangeAndAppend('iod.meas_time', kws['meas_time'], sql, vals, 'AND')
             sql = sqlVals[0]
             vals = sqlVals[1]
 
@@ -5154,7 +5178,8 @@ class idods(object):
                     'date': r[5].strftime("%Y-%m-%d %H:%M:%S"),
                     'status': r[6],
                     'feedforward_file_name': r[8],
-                    'is_ascii': is_ascii
+                    'is_ascii': is_ascii,
+                    'meas_time': r[10]
                 }
 
                 # Only encode if available
@@ -5202,6 +5227,9 @@ class idods(object):
 
         :param feedforward_data: feedforward data
         :type feedforward_data: blob
+
+        :param meas_time: measurement time
+        :type meas_time: str
 
         :return: True if everything is ok
 
@@ -5252,6 +5280,10 @@ class idods(object):
         # Check feedforward file name
         if 'feedforward_data' in kws:
             queryDict['feedforward_data'] = kws['feedforward_data']
+
+        # Check measurement time
+        if 'meas_time' in kws:
+            queryDict['meas_time'] = kws['meas_time']
 
         # Generate SQL
         sqlVals = _generateUpdateQuery('id_online_data', queryDict, whereKey, whereValue)

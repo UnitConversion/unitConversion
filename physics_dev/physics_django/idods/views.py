@@ -8,6 +8,7 @@ from django.db import connection, transaction
 from django.db.transaction import TransactionManagementError
 from django.template import RequestContext
 from utils.timer import Timer
+import base64
 
 try:
     from django.utils import simplejson as json
@@ -449,14 +450,8 @@ def saveRawDataWS(request):
     res = {}
 
     try:
-        startedd = time.time()
-
         res = idodsi.saveRawData(rawFile.read())
         transaction.commit_unless_managed()
-
-        total = time.time() - startedd
-        total = total*1000
-        print '=> elapsed time view.saveRawData.V: %f ms' % total
 
     except TypeError as e:
         idods_log.exception(e)
@@ -623,7 +618,7 @@ def retrieveOnlineDataWS(request):
     '''
     Retrieve online data
     '''
-    return _retrieveData(request, idodsi.retrieveOnlineData, ['onlineid', 'install_name', 'username', 'rawdata_path', 'description', 'status'])
+    return _retrieveData(request, idodsi.retrieveOnlineData, ['onlineid', 'install_name', 'username', 'rawdata_path', 'description', 'status', 'meas_time'])
 
 
 @require_http_methods(["POST"])
@@ -639,9 +634,9 @@ def saveOnlineDataWS(request):
 
     if request.FILES:
         rawFile = request.FILES.getlist('file')[0]
-        request.POST['feedforward_data'] = rawFile.read()
+        request.POST['feedforward_data'] = base64.b64encode(rawFile.read())
 
-    return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'rawdata_path', 'status', 'feedforward_file_name', 'feedforward_data'])
+    return _saveData(request, idodsi.saveOnlineData, ['install_name', 'username', 'description', 'rawdata_path', 'status', 'feedforward_file_name', 'feedforward_data', 'meas_time'])
 
 
 @require_http_methods(["POST"])
@@ -652,7 +647,12 @@ def updateOnlineDataWS(request):
     '''
     request.POST = request.POST.copy()
     request.POST['username'] = request.user.username
-    return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'rawdata_path', 'status', 'feedforward_file_name', 'feedforward_data'])
+
+    if request.FILES:
+        rawFile = request.FILES.getlist('file')[0]
+        request.POST['feedforward_data'] = base64.b64encode(rawFile.read())
+
+    return _updateData(request, idodsi.updateOnlineData, ['online_data_id', 'install_name', 'username', 'description', 'rawdata_path', 'status', 'feedforward_file_name', 'feedforward_data', 'meas_time'])
 
 
 @require_http_methods(["POST"])

@@ -1349,7 +1349,8 @@ app.value('OnlineDataInfo', {
  		"rawdata_path",
  		"date",
  		"feedforward_file_name",
- 		"feedforward_data"
+ 		"feedforward_data",
+ 		"meas_time"
  	];
 
  	// Parameters that are displayed when showing item details
@@ -1362,6 +1363,7 @@ app.value('OnlineDataInfo', {
  		"username",
  		"rawdata_path",
  		"date",
+ 		"meas_time",
  		"feedforward_data"
  		];
 
@@ -1375,11 +1377,12 @@ app.value('OnlineDataInfo', {
  		"status",
  		"rawdata_path",
  		"feedforward_file_name",
- 		"feedforward_data"
+ 		"feedforward_data",
+ 		"meas_time"
  	];
 
  	// Parameters that are displayed when saving new item
- 	this.save_show = ["install_name", "description", "rawdata_path", "status"];
+ 	this.save_show = ["install_name", "description", "rawdata_path", "status", "meas_time"];
 
  	// Parameters used as update URL parameters
  	this.update = [
@@ -1389,7 +1392,8 @@ app.value('OnlineDataInfo', {
  		"status",
  		"rawdata_path",
  		"feedforward_file_name",
- 		"feedforward_data"
+ 		"feedforward_data",
+ 		"meas_time"
  	];
 
  	// Parameters that are displayed in install details pane
@@ -1405,7 +1409,9 @@ app.value('OnlineDataInfo', {
  		"status",
  		"rawdata_path",
  		"feedforward_file_name",
- 		"feedforward_data"
+ 		"feedforward_data",
+ 		"meas_time",
+ 		"is_ascii"
  	];
 
  	this.display = {
@@ -1416,7 +1422,8 @@ app.value('OnlineDataInfo', {
  		"date": "Date",
  		"rawdata_path": "Raw data file path",
  		"feedforward_file_name": "Feedforward data file name",
- 		"feedforward_data": "Feedforward data"
+ 		"feedforward_data": "Feedforward data",
+ 		"meas_time": "Measurement time"
  	};
 
  	this.id = "";
@@ -1428,7 +1435,9 @@ app.value('OnlineDataInfo', {
  	this.status = "";
  	this.rawdata_path = "";
  	this.feedforward_file_name = "";
+ 	this.meas_time = "";
  	this.feedforward_data = undefined;
+ 	this.is_ascii = false;
 
  	this.set = function(obj) {
 

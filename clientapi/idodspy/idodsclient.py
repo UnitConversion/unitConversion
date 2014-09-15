@@ -2532,6 +2532,9 @@ class IDODSClient(object):
         :param status: status of this data set
         :type status: int
 
+        :param meas_time: measurement time
+        :type meas_time: str
+
         :return: a map with structure like:
 
             .. code-block:: python
@@ -2548,6 +2551,7 @@ class IDODSClient(object):
                         'feedforward_file_name':,   #int
                         'feedforward_data':,        #base64 string
                         'is_ascii':,                #boolean
+                        'meas_time':,               #string
                     }
                 }
 
@@ -2584,6 +2588,10 @@ class IDODSClient(object):
         if 'status' in kws:
             params['status'] = kws['status']
 
+        # Add meas_time
+        if 'meas_time' in kws:
+            params['meas_time'] = kws['meas_time']
+
         r = self.__session.get(self.__baseURL+url, params=params, verify=False, headers=self.__jsonheader)
         self.__raise_for_status(r.status_code, r.text)
 
@@ -2615,6 +2623,9 @@ class IDODSClient(object):
 
         :param feedforward_data: feedforward data
         :type feedforward_data: blob
+
+        :param meas_time: measurement time
+        :type meas_time: str
 
         :return: a map with structure like:
 
@@ -2654,10 +2665,17 @@ class IDODSClient(object):
             params['feedforward_file_name'] = kws['feedforward_file_name']
 
         # Add feedforward_file_name
-        if 'feedforward_data' in kws:
-            params['feedforward_data'] = kws['feedforward_data']
+        filesDict = None
 
-        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        if 'feedforward_data' in kws:
+            # params['feedforward_data'] = kws['feedforward_data']
+            filesDict = {'file': kws['feedforward_data']}
+
+        # Add meas_time
+        if 'meas_time' in kws:
+            params['meas_time'] = kws['meas_time']
+
+        r = self.__session.post(self.__baseURL+url, data=params, files=filesDict, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()
@@ -2686,6 +2704,9 @@ class IDODSClient(object):
 
         :param feedforward_data: feedforward data
         :type feedforward_data: blob
+
+        :param meas_time: measurement time
+        :type meas_time: str
 
         :return: True if everything is ok
 
@@ -2729,10 +2750,17 @@ class IDODSClient(object):
             params['feedforward_file_name'] = kws['feedforward_file_name']
 
         # Add feedforward_data
-        if 'feedforward_data' in kws:
-            params['feedforward_data'] = kws['feedforward_data']
+        filesDict = None
 
-        r = self.__session.post(self.__baseURL+url, data=params, headers=self.__jsonheader, verify=False, auth=self.__auth)
+        if 'feedforward_data' in kws:
+            # params['feedforward_data'] = kws['feedforward_data']
+            filesDict = {'file': kws['feedforward_data']}
+
+        # Add meas_time
+        if 'meas_time' in kws:
+            params['meas_time'] = kws['meas_time']
+
+        r = self.__session.post(self.__baseURL+url, data=params, files=filesDict, auth=self.__auth)
         self.__raise_for_status(r.status_code, r.text)
 
         return r.json()

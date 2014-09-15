@@ -17,3 +17,4 @@ _build
 /example/nsls2idods/result
 *.ps1
 htmlcov/
+retrieved_image.jpg

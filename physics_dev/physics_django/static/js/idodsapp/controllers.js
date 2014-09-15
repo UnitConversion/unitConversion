@@ -3407,6 +3407,7 @@ app.controller('showOnlineDataCtrl', function($scope, $modal, $routeParams, $htt
 	};
 
 	$scope.downloadRawData = function(element) {
+		l(element);
 		download(element.feedforward_file_name, element.feedforward_data, false);
 	};
 });

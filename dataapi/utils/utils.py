@@ -255,7 +255,7 @@ def _generateUpdateQuery(tableName, queryDict, whereKey, whereValue, whereDict =
 
     sql += ','.join(sqlList)
 
-    if whereDict == None:
+    if whereDict is None:
         # Append where condition
         sql += ' WHERE ' + whereKey + ' = %s '
         vals.append(whereValue)
@@ -279,15 +279,22 @@ def _checkRangeAndAppend(parameterKey, parameterValue, sqlString, valsList, prep
     '''
     Check for ranges in a parameter value and append appropriate sql
 
-    parameters:
-        - parameterKey: name of the parameter in the DB table
-        - parameterValue: value of this parameter, it can be a tuple
-        - sqlString: existing sql string that was generated outside of this function
-        - valsList: list of formated values that should be inserted into sql statement
-        - prepandedOperator: sql operator that will be prepended before the new condition
+    :param parameterKey: name of the parameter in the DB table
+    :type parameterKey: str
 
-    return:
-        tuple of new sql string and new list of values
+    :param parameterValue: value of this parameter, it can be a tuple
+    :type parameterValue: multiple
+
+    :param sqlString: existing sql string that was generated outside of this function
+    :type sqlString: str
+
+    :param valsList: list of formated values that should be inserted into sql statement
+    :type valsList: list
+
+    :param prepandedOperator: sql operator that will be prepended before the new condition
+    :type prepandedOperator: str
+
+    :return: tuple of new sql string and new list of values
     '''
 
     # If value type is set, cast a value
