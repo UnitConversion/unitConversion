@@ -331,11 +331,12 @@ class TestIdods(unittest.TestCase):
 
         # Prepare component type
         componentType = self.api.saveComponentType('Magnet')
+
         # Try to save new inventory property template
         template = self.api.saveInventoryPropertyTemplate('Magnet', 'alpha')
 
         # Create inventory
-        self.assertRaises(ValueError, self.api.saveInventory, None, 'Magnet', None)
+        self.assertRaises(ValueError, self.api.saveInventory, None, None, None)
 
         # Create inventory
         inventory = self.api.saveInventory('62352', 'Magnet',  vendor_name=None, name='name')
@@ -417,12 +418,6 @@ class TestIdods(unittest.TestCase):
 
         # Exception should be raised if inventory property template doesn't exist
         self.assertRaises(ValueError, self.api.saveInventory, '1235234', vendor_name=None, name='name', cmpnt_type_name=None, props={'sdfg': 43})
-
-        # Test retrieve with int name
-        self.assertRaises(ValueError, self.api.retrieveInventory, 1)
-
-        # Test retrieve with none name
-        self.assertRaises(ValueError, self.api.retrieveInventory, None)
 
         # Prepare vendor
         self.api.saveVendor('vendor')

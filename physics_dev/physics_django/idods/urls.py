@@ -3,7 +3,7 @@ from django.conf.urls.defaults import patterns, url
 from physics_django.idods.views import (retrieveVendorWS, saveVendorWS, updateVendorWS)
 from physics_django.idods.views import (retrieveCompntTypePropTypeWS, saveCompntTypePropTypeWS, updateCmpntTypePropTypeWS)
 from physics_django.idods.views import (retrieveCompntTypeWS, saveCompntTypeWS, updateCmpntTypeWS)
-from physics_django.idods.views import (retrieveInventoryWS, saveInventoryWS, updateInventoryWS)
+from physics_django.idods.views import (retrieveInventoryWS, retrieveInventoryByIdWS, saveInventoryWS, updateInventoryWS)
 from physics_django.idods.views import (retrieveInventoryPropTmpltWS, saveInventoryPropTmpltWS, updateInventoryPropTmpltWS)
 from physics_django.idods.views import (retrieveInstallWS, saveInstallWS, updateInstallWS)
 from physics_django.idods.views import (retrieveInstallRelWS, saveInstallRelWS, updateInstallRelWS, deleteInstallRelWS)
@@ -46,6 +46,7 @@ urlpatterns = patterns(
 
     # Retrieve, save and update inventory
     url(r'^id/device/inventory/$', retrieveInventoryWS),
+    url(r'^id/device/inventorybyid/$', retrieveInventoryByIdWS),
     url(r'^id/device/saveinventory/$', saveInventoryWS),
     url(r'^id/device/updateinventory/$', updateInventoryWS),
 

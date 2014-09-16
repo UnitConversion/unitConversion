@@ -212,7 +212,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 	$scope.scroll.scroll = $routeParams.id;
 
 	$scope.goToMuniconv = function() {
-		var url = $scope.inst_url + 'step/mt_m';
+		var url = $scope.inst_url + 'step/mt/m';
 		$window.location = url;
 	};
 
@@ -338,6 +338,8 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, detailsService, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
+	l("Show wizard!");
+	l($routeParams);
 
 	$routeParams.id = $routeParams.inst_id;
 	$scope.id = $routeParams.id;
@@ -350,8 +352,8 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.detailsTabs = [];
 	var detailsTabsIndex = 0;
 	$scope.tabs = [];
-	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst_id/" + $routeParams.id + '/';
-	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
+	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst_id/" + $routeParams.inst_id + '/';
+	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.inst_id + '/';
 	$scope.view = $routeParams.view;
 	$scope.properties = {};
 
@@ -367,7 +369,7 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.scroll.scroll = $routeParams.id;
 
 	//l("hash: " + $location.hash());
-	$scope.mdType = "inventory_name";
+	$scope.mdType = "inventory_id";
 
 	$scope.municonv = {
 		'standard': {},
@@ -398,7 +400,7 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 	};
 
 	$scope.goToDetails = function() {
-		var url = $scope.url + "0/results#" + $routeParams.id;
+		var url = $scope.url + "0/results#" + $routeParams.inst_id;
 		$window.location = url;
 	};
 
@@ -472,10 +474,11 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.plot.y_axis = "field";
 	$scope.plot.direction_plot = "true";
 	$scope.data = undefined;
+	l("Show results!!!");
+	l($routeParams);
 
 	var detailsTabsIndex = 0;
 	$scope.scroll.scroll = $routeParams.id;
-	$location.hash($scope.scroll.scroll);
 
 	// Get and parse device details
 	detailsService.getDetails($routeParams).then(function(data) {
@@ -493,7 +496,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 
 		// Only try to draw plot if in result subview
 		if($scope.subview === "results") {
-			drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view]['first']][$scope.data.detailsTabs[$routeParams.view]['second']].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
+			drawPlot($scope.data.details[$scope.data.detailsTabs[$routeParams.view].first][$scope.data.detailsTabs[$routeParams.view].second].measurementData, $scope.plot.x_axis, $scope.plot.y_axis, $scope.results.series, $scope);
 		}
 
 		$anchorScroll();

@@ -309,7 +309,7 @@ app.value('InventoryInfo', {
  	this.save_show = ["name", "cmpnt_type_name", "vendor_name", "alias", "serial_no", "__device_category__"];
 
  	// Parameters used as update URL parameters
- 	this.update = ["old_name", "name", "cmpnt_type_name", "vendor_name", "alias", "serial_no", "props"];
+ 	this.update = ["inventory_id", "name", "cmpnt_type_name", "vendor_name", "alias", "serial_no", "props"];
 
  	this.display = {
  		"serial_no": "Serial number",
@@ -323,7 +323,7 @@ app.value('InventoryInfo', {
  	};
 
  	this.id = "";
- 	this.old_name = "";
+ 	this.inventory_id = "";
  	this.name = "";
  	this.cmpnt_type_name = "";
  	this.vendor_name = undefined;
@@ -348,8 +348,8 @@ app.value('InventoryInfo', {
 
  		this.name = obj.name;
 
- 		if('old_name' in obj) {
- 			this.old_name = obj.old_name;
+ 		if('inventory_id' in obj) {
+ 			this.inventory_id = obj.inventory_id;
  		}
 
  		if('props' in obj) {

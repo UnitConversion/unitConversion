@@ -377,6 +377,24 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 		return retrieveItem($q, $http, "inventory", this.entity, Inventory);
 	};
 
+	// Get inventory from server
+	factory.retrieveItemById = function(item) {
+
+		var query = serviceurl + "/inventorybyid/?inventory_id=" + item.inventory_id;
+
+		var deffered = $q.defer();
+		var promise = deffered.promise;
+
+		$http.get(query).success(function(data){
+			deffered.resolve(new Inventory(data[item.inventory_id]));
+
+		}).error(function(data, status, headers, config) {
+			deffered.reject(data);
+		});
+
+		return promise;
+	};
+
 	// Get inventories from server
 	factory.retrieveItems = function(params) {
 		return retrieveItems($q, $http, "inventory", this.entity.list, params, this.entity.search_m);
@@ -1184,7 +1202,7 @@ app.factory('rotCoilDataFactory', function($http, $q, RotCoilData, EntityError) 
 
 		var query = serviceurl + "/deleterotcoildata/";
 		l(this.entity);
-		var params = prepareUrlParameters(["inventory_name", "rot_coil_data_id"], item);
+		var params = prepareUrlParameters(["inventory_id", "rot_coil_data_id"], item);
 
 		var deffered = $q.defer();
 		var promise = deffered.promise;
@@ -1271,7 +1289,7 @@ app.factory('hallProbeDataFactory', function($http, $q, HallProbeData, EntityErr
 
 		var query = serviceurl + "/deletehallprobedata/";
 		l(this.entity);
-		var params = prepareUrlParameters(["inventory_name", "hall_probe_id"], item);
+		var params = prepareUrlParameters(["inventory_id", "hall_probe_id"], item);
 
 		var deffered = $q.defer();
 		var promise = deffered.promise;

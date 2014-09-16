@@ -610,7 +610,7 @@ class idods(object):
 
         return resdict
 
-    def retrieveInventory(self, serial_no, cmpnt_type_name=None, vendor_name=None, name=None):
+    def retrieveInventory(self, serial_no=None, cmpnt_type_name=None, vendor_name=None, name=None):
         '''
         Retrieve an insertion device from inventory by device inventory name and type.
         Wildcard matching is supported for inventory name and device type. ::
@@ -668,10 +668,6 @@ class idods(object):
 
         :Raises: ValueError, MySQLError
         '''
-
-        # Check serial number parameter
-        _checkParameter('serial_no', serial_no)
-
         res = self.physics.retrieveInventory(name, serial_no, cmpnt_type_name, vendor_name)
 
         resdict = {}

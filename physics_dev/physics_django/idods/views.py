@@ -220,6 +220,14 @@ def retrieveInventoryWS(request):
     return _retrieveData(request, idodsi.retrieveInventory, ['serial_no', 'cmpnt_type_name', 'vendor_name', 'name'])
 
 
+@require_http_methods(["GET"])
+def retrieveInventoryByIdWS(request):
+    '''
+    Retrieve inventory
+    '''
+    return _retrieveData(request, idodsi.retrieveInventoryById, ['inventory_id'])
+
+
 @require_http_methods(["POST"])
 @has_perm_or_basicauth('id.can_modify_id')
 def saveInventoryWS(request):

@@ -15,9 +15,11 @@
 			<input ng-model="rawData[id]['municonv'][key]" type="checkbox"> <span>{{key}}</span>
 		</label>
 		<br/>
-		<input ng-model="rawData[id]['municonv'][key].description" type="text" placeholder="Description">
+		<label>Description</label>
+		<input ng-model="rawData[id]['municonv'][key].description" type="text" placeholder="Enter description ...">
 		<br/>
-		<input ng-model="rawData[id]['municonv'][key].defaultEnergy" type="text" placeholder="Default Energy">
+		<label>Default Energy</label>
+		<input ng-model="rawData[id]['municonv'][key].defaultEnergy" type="text" placeholder="Enter default Energy ...">
 
 		<table class="table table-bordered table-condensed">
 			<tr>
