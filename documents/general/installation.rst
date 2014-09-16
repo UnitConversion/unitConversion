@@ -27,7 +27,7 @@ Packages needed for the MUNICONV service:
 
 Packages needed for the Lattice/Model service:
  - a command line tool related to, e.g., tracy3, tracy4
- - elegant/sdds if an online simulation is desired.
+ - ``elegant``/``SDDS`` if an online simulation is desired.
 
 Checkout the Source Code
 --------------------------
@@ -95,11 +95,9 @@ If the server runs successfully, a message similar to what appears below will be
     Development server is running at http://127.0.0.1:8000/
     Quit the server with CONTROL-C.
 
-If there is an error, e.g. like:
+If there is an error, e.g. like: ::
 
-.. code-block:: bash
-
-    Error: Can't find the file 'settings.py' in the directory containing 'manage.py'. It appears you've customized things.
+    Error: Can't find the file `settings.py` in the directory containing 'manage.py'. It appears you've customized things.
     You'll have to run django-admin.py, passing it your settings module.
     (If the file settings.py does indeed exist, it's causing an ImportError somehow.)
 

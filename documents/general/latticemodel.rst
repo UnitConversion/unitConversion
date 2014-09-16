@@ -1,5 +1,5 @@
 The Lattice/Model Service
-==========================
+=========================
 
 Introduction
 ------------
@@ -11,17 +11,23 @@ Terminology
 -----------
 The following terms are used in this service:
 
-*Element*: an individual component of a lattice, which could be a real hardware device, or a virtual entity.
+*Element*
+	an individual component of a lattice, which could be a real hardware device, or a virtual entity.
 
-*Lattice*: an accelerator geometric layout with a magnetic strength setting for each element.
+*Lattice*
+	an accelerator geometric layout with a magnetic strength setting for each element.
 
-*Lattice Deck*: an input container for a particular simulation code. For example, a ``.lat`` file for Tracy, or a ``.lte`` file for elegant
+*Lattice Deck*
+	an input container for a particular simulation code. For example, a ``.lat`` file for Tracy, or a ``.lte`` file for elegant
 
-*Model*: a result from either simulation or measurement for a given lattice.
+*Model*
+	a result from either simulation or measurement for a given lattice.
 
-*Tracy*: a particle accelerator simulation code [1]_
+*Tracy*
+	a particle accelerator simulation code [1]_
 
-*elegant*: a particle accelerator simulation code [2]_
+*elegant*
+	a particle accelerator simulation code [2]_
 
 **Note**: 
 
@@ -43,6 +49,7 @@ The relation between a lattice and a model is as shown in Figure 1.
     Figure 1: Generate model results from a lattice deck
 
 
+.. _lattice_model_architecture:
 
 Architecture
 -------------
@@ -55,13 +62,24 @@ The system architecture is shown in Figure 2.
 
     Figure 2: Lattice/Model Service Architecture
 
-The service consists of 3 layers, which are the RDB layer, the service layer, and the client layer.
+The service consists of 3 layers, which are the Relational Database (RDB) layer, the Service layer, and the Client layer.
 
-- *RDB layer*. All data is stored inside this layer. The data could be real, e.g. element name or magnetic strength, or links to external files on the file system. The RDB schema is derived from the IRMIS schema, which was originally developed by Don Dohan at Brookhaven National Laboratory. It uses a MySQL RDBMS (relational database management system) as a backend data storage engine. 
-- *Service layer*. The service layer responds to requests from the client and [server data back from or save data into database]. The database is accessed via a data API (application programming interface), which isolates the RDB access details and business logic from the RDB client. The advantage with the data API is that it makes any internal schema changes transparent to the RDB client, which gives both the RDB schema expert and service developer more flexibility. Two major functions are provided in this layer. (1) As a data storage center, it receives all data from the client, and stores the data in the RDB, and [serving data back]. (2) It provides a quick online simulation when a proper lattice deck with required model control information is provided.
-- *Client layer*. The client layer provides an interface to the end user in 2 formats: (1) API library, which can be used by a client application, e.g. a Python script or a Matlab application; (2) user interface, a graphic interface from a web browser, or from a CSS (Control System Studio) application.
+*RDB Layer* 
+	All data is stored inside this layer. The data could be real, e.g. element name or magnetic strength, or links to external files on the file system. The RDB schema is derived from the IRMIS schema, which was originally developed by Don Dohan at Brookhaven National Laboratory. It uses a MySQL RDBMS (relational database management system) as a backend data storage engine. 
 
-The service is implemented using the Django framework, and in phase I, [serves] data through a REST web-service. An extension to EPICS V4 and [serving] data through pvAccess (the EPICS V4 communication protocol) will be implemented in its next major release.
+*Service Layer*
+	The Service layer responds to requests from the client and reads data from and writes data into the database. The database is accessed via a data API (application programming interface), which isolates the RDB access details and business logic from the RDB client. The advantage with the data API is that it makes any internal schema changes transparent to the RDB client, which gives both the RDB schema expert and service developer more flexibility. Two major functions are provided in this layer. 
+	
+	1. As a data storage center, it receives all data from the client, and stores the data in the RDB, and sends data back. 
+	2. It provides a quick online simulation when a proper lattice deck with required model control information is provided.
+
+*Client Layer* 
+	The Client layer provides an interface to the end user in 2 formats: 
+	
+	1. API library, which can be used by a client application, e.g. a Python script or a Matlab application; 
+	2. user interface, a graphic interface from a web browser, or from a CSS (Control System Studio) application.
+
+The service is implemented using the Django framework, and in phase I, return data through a REST web-service. An extension to EPICS V4 and returning data through pvAccess (the EPICS V4 communication protocol) will be implemented in its next major release.
 
 Lattice
 -------
@@ -86,7 +104,7 @@ For a particular lattice, the following information is saved:
 - element position: which is also so-called "s" location;
 - element sequence index: beware that often simulation code has an internal element at its start point, e.g. "BEGIN" in tracy and "_BEG_" in elegant. Since this kind of element is not included in the lattice deck, the first index should be one (1) for these simulations, otherwise, it should be zero (0).
 - element length;
-- mis-alignment information, displacements (:math:`\delta x, \delta y, \delta z`), and rotations (pitch, yaw, and row);
+- mis-alignment information, displacements (:math:`\delta x, \delta y, \delta z`), and rotations (pitch, yaw, and roll);
 - element type: the type defined in a lattice. The Lattice service does not force any element type, and does not use an internal type. Therefore, it saves whatever the element type is received from the client, e.g. a lattice file. An element type in Tracy could be for example "Quadrupole" while it could be "CSBEND" in elegant.
 - element type property: attribute names of an element type. For example, the elegant element type CSBEND could have properties of ANGLE for bend angle, E1 for entrance edge angle, E2 for exit edge angle, etc.
 - element type property value: value for each type property, for example 0.10472 rad for ANGLE, 0.05236 rad for E1, 0.05236 rad for E2, etc.
@@ -129,14 +147,14 @@ Beam parameter for each element could be as below:
 - model id, to identify which model this beam parameter belongs to
 - element name, to identify which element this beam parameter is for
 - position generated by for example a simulation
-- Twiss parameters, :math:`(\alpha_x, \alpha_y, \beta_x, \beta_y, \gamma_x, \gamma_y, \eta_x, \eta_y)` , \eta'_x, \eta'_y, \nu_x, \nu_y)`
-- closed orbit, :math:`(cod_x, cod_y)`
+- Twiss parameters, :math:`\alpha_x, \alpha_y, \beta_x, \beta_y, \gamma_x, \gamma_y, \eta_x, \eta_y, \eta_x\', \eta_y\', \nu_x, \nu_y`
+- closed orbit, :math:`cod_x, cod_y`
 - transfer matrix, normally it is a :math:`6\times6` linear matrix
 - beam energy at each element
 - particle properties (particle mass, charge, density)
 - beam current
-- coordinates, :math:`(x, x', y, y', z, z')`
-- emittance :math:`(\epsilon_x, \epsilon_y, \epsilon_z)`
+- coordinates, :math:`(x, x\', y, y\', z, z\')`
+- emittance, :math:`\epsilon_x, \epsilon_y, \epsilon_z`
 
 A model is also associated with a status, which is an integer. Users can use this in their own way, and a typical use case is to identify whether a model is a golden model by applying their own convention. The model status could have information as below:
 
