@@ -1,7 +1,9 @@
+.. _data_api:
+
 Data API
 =============================
 
-Dataapi is a layer between RESTful Interface at the top and RDB database at the bottom. It directly communicates to RDB database and returns its data. It is implemented in Python. 
+``dataapi`` is a layer between the RESTful Interface at the top and the RDB at the bottom. It communicates directly with the RDB and returns data from the database. It is implemented in Python. 
 
 .. automodule:: pyidods.idods
     :members: 

@@ -3,10 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Insertion Device Data Storage Service's documentation!
+Welcome to the Documentation for the Insertion Device Data Storage Service!
 ========================================================================
-
-Contents:
 
 .. toctree::
    :maxdepth: 2
@@ -14,10 +12,11 @@ Contents:
    introduction
    installation
    dataapi
+   service
    clientapi
    webclient
 
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`

@@ -201,6 +201,8 @@ GET Methods - Lattice
                'version': 20100407}}
 
 
+.. _lattice_model_ref_retrieveLattice:
+   
 * **retrieveLattice**
 
     Retrieves lattice geometric layout with magnetic strength. It should be possible to generate a proper lattice deck from the retrieved data.
@@ -525,14 +527,15 @@ As defined, a model is an output from either a simulation code, or from a measur
         }
                                 
                                }
+							   
     :NOTE: For data generated from ``Elegant``, ``finalEnergy`` is usually :math:`\beta*\gamma` unless the client has converted it before saving.
-
+    
     An example command to get information for all existing models::
     
         /lattice/?function=retrieveModel&name=*
         
     :NOTE: This command should be used with care since it might return a lot of information.
-
+    
     To retrieve information for a model with id=1: ::    
     
         /lattice/?function=retrieveModel&id=1
@@ -716,6 +719,7 @@ As defined, a model is an output from either a simulation code, or from a measur
     - phasex: ``phasex`` is the horizontal phase advance
     - phasey: ``phasey`` is the vertical phase advance
 
+
     :NOTE: Be careful about the value, especially the unit of value. Usually, the value is stored as it is. It is suggested that client does not manipulate the value and uses code convention when it is stored. 
 
     An example of a command to request Twiss parameter for the model named ``whateverthename``, with element s position (12.3456, 34.5678): ::
@@ -771,31 +775,31 @@ POST Methods
 A POST method saves data into the service, and the APIs for post operations are listed in this section.
 
 * **saveLatticeType**
-    Saves lattice type information using the given lattice type name and format. The purpose behind having the lattice type with its format is to capture the original lattice information, which will help when retrieving the original lattice, and converting a lattice to another format. If the lattice type with its format already exists, then the server returns an error.
+    Saves lattice type information using the given lattice type name and format. The purpose behind saving the lattice type with its format is to capture the original lattice information, which will help when retrieving the original lattice, and converting a lattice to another format. If the lattice type with its format already exists, then the server returns an error.
 
     **keywords** to carry data:
 
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
 
         {'function': 'saveLatticeType',
          'name':     lattice type name,
          'format':   lattice type format
         }
 
-    As described above, a lattice type is site-specific. Typical lattice types could be , but not limited to: ::
+    Lattice types are site-specific. Typical lattice types could be, but are not limited to: ::
 
         {'name': 'plain', 'format': 'txt'}
         {'name': 'tracy3',  'format': 'lat'}
         {'name': 'tracy4',  'format': 'lat'}
         {'name': 'elegant', 'format': 'lte'}
 
-    If this operation is finished successfully, it returns a map as below: ::
+    If this operation completes successfully, then the server returns a map with the following structure: ::
         
         {'result': internal id}
     
-    otherwise, raise an error.
+    otherwise, it returns an error.
 
-    A Python client example is shown as below:
+    A Python client example is shown below:
     
     .. code-block:: python
         :linenos:
@@ -813,22 +817,22 @@ A POST method saves data into the service, and the APIs for post operations are 
         response = conn.getresponse()
         conn.close()
 
-    in this case, if lattice ``tracy3`` with ``lat`` format is not in server yet, client gets a result like for example: ::
+    In this case, if the lattice ``tracy3`` with a ``lat`` format does not yet exist on the server, then the client receives a result similar to: ::
     
         {"result": 9}
         
-    if it exists already, server returns an error with message like : ::
+    If the lattice type and format already exist, then the server returns an error message: ::
 
         Lattice type (tracy3) with given format (lat) exists already.
 
 
 * **saveLatticeInfo**
 
-    This command is to save lattice description information. Lattice data, geometric layout and strength setting respectively, are not included here. A lattice has a name, version, and branch, and those 3 make a lattice unique globally. A time stamp is added automatically by the underneath database, which is transparent to the client. If a lattice info exists already, the server returns an error.
+    Saves lattice description information. Lattice data, geometric layout and the strength setting are not included here. A lattice has a name, version, and branch, and those 3 make a lattice globally unique. A time stamp is added automatically by the underlying database, which is transparent to the client. If the lattice information already exists, then the server returns an error.
 
-    **keywords** to carry data:
+    **keywords** to transfer data:
 
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
 
         {'function':    'saveLatticeInfo',
          'name':        lattice name
@@ -837,17 +841,17 @@ A POST method saves data into the service, and the APIs for post operations are 
          'latticetype': [optional] a dictionary which consists of {'name': , 'format': }
                          example lattice type is as described above.
          'description': [optional] description for this lattice, 
-                            allow user put any info here (< 255 characters)
+                        allow user to put any information here (< 255 characters)
          'creator':     [optional] original creator
          }
 
-    If this operation is finished successfully, it returns id of the new lattice as a map as below: ::
+    If this operation completes successfully, the server returns the id of the new lattice as a map with the following structure: ::
     
         {'id': internal id}
     
-    otherwise, raise an error.
+    otherwise, the server returns an error.
 
-    A Python client example is shown as below:
+    A Python client example is shown:
     
     .. code-block:: python
         :linenos:
@@ -871,42 +875,42 @@ A POST method saves data into the service, and the APIs for post operations are 
         response = conn.getresponse()
         conn.close()
 
-    in this case, if lattice does not exist yet, and is saved successfully, client gets a result like for example: ::
+    In this case, if the lattice does not yet exist, and the save operation is successful, the client receives a result similar to: ::
     
         {"id": 9}
         
-    if it exists already, server returns an error with message like : ::
+    If the lattice already exists, then the server returns an error message similar to: ::
 
         lattice (name: lattice info demo, version: 20131001, branch: design) exists already.
 
 
 * **updateLatticeInfo**
 
-    Updating an existing lattice description information. Once a lattice is saved, it is not allowed to delete it anymore since it might be used by many other sources. However, it is always able to update it. If lattice does exist yet, it returns an error.
+    Updates information for an existing lattice description. Once a lattice is saved, it cannot be deleted since it might be used by many other sources, it is possible to update it. If the lattice does not exist, the server returns an error.
     
-    **keywords** to carry data: 
+    **keywords** to transfer data: 
 
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
 
-        {'function':    'saveLatticeInfo',
+        {'function':    'updateLatticeInfo',
          'name':        lattice name
          'version':     version number
          'branch':      branch name
          'latticetype': [optional] a dictionary which consists of {'name': , 'format': }
-                          example lattice type is as described above.
+                        example lattice type is as described above.
          'description': [optional] description for this lattice, 
-                            allow user put any info here (< 255 characters)
+                        allow user put any info here (< 255 characters)
          'creator':     [optional] name who update this lattice head
          }
 
-    If this operation is finished successfully, it returns new of the new lattice as a map as below: ::
+    If this operation completes successfully, the server returns the new lattice as a map: ::
     
         {'id': true}
     
-    otherwise, raise an error.
+    otherwise, the server returns an error.
 
     
-    A Python client example is shown as below:
+    A Python client example is shown:
     
     .. code-block:: python
         :linenos:
@@ -930,22 +934,22 @@ A POST method saves data into the service, and the APIs for post operations are 
         response = conn.getresponse()
         conn.close()
 
-    in this case, if lattice is there and updated successfully, client gets a result like for example: ::
+    In this case, if the lattice exists and is successfully updated, then client receives a result similar to: ::
     
         {"result": true}
 
-    If lattice does not exist yet, it get an error as: ::
+    If the lattice does not yet exist, the client receives an error similar to: ::
 
         Did not find lattice (name: lattice info demo, version: 20131001, branch: design).
     
 
 * **saveLattice**
 
-    This command is to save lattice data. It creates a new entry with given lattice description information, or raises an error if lattice description exists already. 
+    Saves lattice data. It creates a new entry with the given lattice data, or returns an error if the lattice data already exists. 
     
-    **keywords** to carry data: 
+    **keywords** to transfer data: 
     
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
     
         {'function':    'saveLattice',
          'name':        lattice name
@@ -966,60 +970,65 @@ A POST method saves data into the service, and the APIs for post operations are 
                                                 # ele file for ``elegant`` for example
                          'init_Twiss':, # initial Twiss condition
                          }
-                         name: file to be saved into, same with lattice name by default
+                         name: file to be saved into, default is lattice name
                          data: lattice geometric and strength with predefined format
                          raw:  raw data, same with data but in original lattice format
                          map:  name-value pair dictionary
                          alignment: mis-alignment information
          'dosimulation': Flag to identify whether to perform a simulation. 
-                            False by default.
+                         False by default.
          }
     
-    The structure is similar with command ``saveLatticeInfo`` except 2 additional keywords added in this function, which are ``lattice`` and ``dosimulation`` respectively. The data structure is described as below: ::
+    The structure is similar to that for ``saveLatticeInfo`` except there are 2 additional keywords, ``lattice`` and ``dosimulation``. The data structure for these is: ::
     
-        - lattice. Place to carry all lattice information, and transfer data  
-                    from client to server. Its structure is described as below.
+        - lattice: Contains all lattice data, and transfers data  
+                    from client to server. Its structure is described below.
         - dosimulation. A Flag to identify whether to perform a simulation. 
                     False by default, which means a simulation will not be carried out. 
     
     **lattice sub-structure**
     
-    Real lattice information is included in lattice sub-structure. Here is some details about the keywords used by this structure:
+    Real lattice information is included in lattice sub-structure. The keywords used by this structure are:
     
-    - name: lattice file name which the lattice raw data will be saved into on the server side.
-    - data: lattice data from lattice file. the real data is in this structure, and different lattice format has different requirement. Details will be explained below.
-    - raw: original lattice which might be carried in different format.
-    - map: place to contain for example field map. A typical use of this is to carry kick map over network. As described in section ``retrieveLattice``, plain text map are read in as list/array with each line as one value of the array. For binary map, the whole file has to be read and encoded with **Base64** algorithm.
-    - control: data to serve simulation on the server side. Since there are many simulation codes having separated file, an .ele of ``elegant`` for example, this information is carried here. It has ``name``, which is control file name, and ``data`` which is content of the control file. If a header is contained inside a lattice deck, tracy3/tracy4 for example, its header information other than element layout could be saved here also.
-    - alignment: place to hold misalignment data. It is currently a place holder, and not implemented yet. An integration with real misalignment data from survey could be hold here, and integrate on the server side.
-    - init_Twiss: place to send server initial Twiss parameters if it applies. It is currently a place holder, and not implemented yet.
+    - name: lattice file name to which the lattice raw data will be saved to on the server side.
+    - data: lattice data from lattice file. The real data is in this structure, and each lattice format has a different requirement. Details are explained below.
+    - raw: original lattice which might be transferred in a different format.
+    - map: contains, for example, field map. A typical use of this is to transfer a kick map over the network. As described in the section :ref:`retrieveLattice <lattice_model_ref_retrieveLattice>` , plain text maps are read in as a list/array with each line in the file being one value of the array. For a binary map, the whole file has to be read in and encoded with the **Base64** algorithm.
+    - control: data to perform simulation on the server side. Since there are many simulation codes having separate files, e.g. an .ele ``elegant`` file, this information is transferred here. ``name`` is the control file name, and ``data`` is the content of the control file. If a header is contained inside a lattice deck, e.g. tracy3/tracy4, its header information, excluding element layout, could also be saved here.
+    - alignment: place to hold misalignment data. This is currently a place holder, and has not yet been implemented. An integration with real misalignment data from a survey could be contained here, and integrated on the server side.
+    - init_Twiss: contains initial Twiss parameters, if applicable. This is currently a place holder, and has not yet been implemented.
     
     
     **data** sub-structure of lattice sub-structure
     
-    Current implementation of lattice service supports 3 different formats, which are (1) plain text format with tab-formatting, (2) tracy3, and (3) ``elegant`` respectively. To separate server from parsing all kinds of different lattice, it only accepts lattice from client with dedicated format.
+    The current implementation of the lattice service supports 3 different formats:
+		1. plain text format with tab-separation, 
+		2. ``tracy3``, and 
+		3. ``elegant``. 
+		
+	To prevent the server from parsing many different lattice formats, the server only accepts lattices from the client with these 3 dedicated formats.
 
-    (1) Tab-formatted plain lattice
+    **1. Tab-separated Plain Text Lattices**
     
-    Suggested lattice type for this lattice: ``{'name': 'plain', 'format': 'txt'}``. 
+    Suggested lattice types for this lattice file format: ``{'name': 'plain', 'format': 'txt'}``. 
     
-    For plain text file, it is carried as an array, which is with each line as one value of the array. A header is needed and should have the following format: ::
+    A plain text file is transported as an array, such that each line of the file corresponds to one value of the array. A header is needed and should have the following format: ::
     
              ElementName ElementType  L  s   K1    K2   Angle [dx dy dz pitch yaw roll map]
                                       m  m  1/m2  1/m3  rad   [m  m  m  rad   rad rad     ]
              ------------------------------------------------------------------------------
     
-    The 1\ :sup:`st` line is name for each column to identify what the property value is for. Most likely the first 7 columns are common to a lattice, but user also be able to add extra information like alignment errors and map such as kick map file name of insertion device. The map is suggested to appear as the last column. The 2\ :sup:`nd` column is the place to carry unit information if one column has, and 3\ :sup:`rd` column is divider between body and head. 
+    The 1\ :sup:`st` line of the header contains the name for each column to identify what the property. The first 7 columns will most likely be common to all lattices, but the user is also able to add extra information like alignment errors and maps such as a kick map file name of an insertion device. It is recommended that the map appear as the last column. The 2\ :sup:`nd` line of the header contains unit information, if applicable, and the 3\ :sup:`rd` line is a divider between the header and the body. 
     
-    It also needs that the ``s`` position starting from zero(0), which means the starting point to matching is suggested to include the starting point, which usually appears as for example ``_BEG_`` in ``elegant`` or ``begin`` in ``tracy3/tracy4``, but might not be in its lattice deck.
+    The file also needs that the ``s`` position start from zero (0), and it is recommended to include the starting point, e.g., ``_BEG_`` in ``elegant`` or ``begin`` in ``tracy3/tracy4``.
 
-    The misalignment could be displacement (:math:`\delta_x, \delta_y, \delta_x`) and/or rotating (:math:`\theta_x, \theta_y, \theta_z`, or pitch, yaw, roll) along ``x``, ``y``, and ``z`` axes.
+    The misalignment could be a displacement along (:math:`\delta_x, \delta_y, \delta_x`) and/or a rotation around (:math:`\theta_x, \theta_y, \theta_z`, or pitch, yaw, roll) the ``x``, ``y``, and ``z`` axes.
 
-    :NOTE: Currently, all properties of an element have to be on one line, and multiple lines is not supported yet.
+    :NOTE: Currently, all properties of an element have to be on one line; multiple lines are not yet supported.
 
-    (2) ``Tracy3``, and ``elegant`` lattice
+    **2. ``Tracy3``, and ``elegant`` Lattices**
 
-    Suggested lattice type as below: ::
+    Suggested lattice types for these lattice file formats: ::
     
         ===========   ==========================================
           lattice         type
@@ -1033,7 +1042,7 @@ A POST method saves data into the service, and the APIs for post operations are 
 
     
 
-    for a lattice used by a particular simulation code like tracy3, tracy4, or elegant, it has its own grammar, and most likely differs pretty much from each other. To avoid the trouble to parse each particular lattice by server, a data structure is designed as below: ::
+    For a lattice used by a particular simulation code like ``tracy3``, ``tracy4``, or ``elegant``, it has its own grammar, and most likely differs significantly with each other. To avoid the problem of the server needing to parse each particular lattice format, a data structure is designed as below: ::
     
         {sequence #: { 'name':     ,
                        'length':   , 
@@ -1043,7 +1052,7 @@ A POST method saves data into the service, and the APIs for post operations are 
                      }
         }
     
-    for example, a tracy lattice could be carried like: ::
+    For example, a ``tracy`` lattice could be transported as: ::
     
   		'data': {
 		0: {'position': '0.00000', 'length': '0.0', 
@@ -1086,12 +1095,12 @@ A POST method saves data into the service, and the APIs for post operations are 
 		....
 		}
 				
-    **online simulation**
+    **Online Simulation**
 
-    Currently, the server supports simulation using tracy-3 or elegant. If the lattice sent from client is in correctly format, either tracy3 or elegant, client can flag ``dosimulation`` to be true to trig server to carry out a quick simulation, and save simulation results. However, if the lattice format is not in tracy3 or elegant, even ``dosimulation`` is set to be true, the  server does not perform a simulation. Also server leaves client to check the lattice whether a simulation can be done correctly, which means that client is responsible to check the lattice to ensure a simulation could be executed successfully. Commands needed by server is listed as below: ::
+    Currently, the server supports simulation using ``tracy3`` or ``elegant``. If the lattice sent from a client is correctly formatted as one of these, then the client can set the ``dosimulation`` flag to be true to trigger the server to carry out a quick simulation, and to save the simulation results. However, if the lattice format is not one of ``tracy3`` or ``elegant``, and even if ``dosimulation`` is set to true, the server does not perform the simulation. Also the client is responsible for checking the lattice to ensure that a simulation can be executed successfully; the server does not do this check. Commands needed by the server are: ::
       
       ===========   =====================
-        code         needed commands
+         code           commands
       -----------   ---------------------
         tracy3          tracy3
       -----------   ---------------------
@@ -1103,11 +1112,11 @@ A POST method saves data into the service, and the APIs for post operations are 
       ===========   =====================
     
     
-    :NOTE: Above commands have to be locatable by server. If they are not in searching PATH, some environment variables, ``TRACY3_CMD`` for tracy3 and ``ELEGANT_CMD`` for elegant respectively, have to be set. 
+    :NOTE: These commands have to be accessible by the server. If they are not in the searchable PATH, some environment variables, ``TRACY3_CMD`` for ``tracy3`` and ``ELEGANT_CMD`` for ``elegant``, respectively, have to be set. 
 
-    Simulation results are saved associated with given lattice automatically if simulation is carried out successfully. The data is saved in 2 parts, which are global beam parameters like final beam energy, and beam parameters for each elements. Data from different simulation code are slightly different. Detailed data is described as below for tracy3 and elegant:
+    If the simulation completes successfully, then the simulation results are saved automatically together with the associated lattice. The data is saved in 2 parts: (a) global beam parameters like final beam energy, and (b) beam parameters for each element. Data from different simulation codes are slightly different and the detailed data for ``tracy3`` and ``elegant`` are described:
     
-    for tracy global parameters for a ring are: ::
+    For ``tracy``, the global parameters for a ring are: ::
     
         'tunex': horizontal tune
         'tuney':  vertical tune
@@ -1116,11 +1125,11 @@ A POST method saves data into the service, and the APIs for post operations are 
         'finalEnergy': beam energy in GeV
         'alphac': momentum compaction factor
         'simulationCode':  which is ``tracy3``
-        'sumulationAlgorithm': ,  which is ``SI``
+        'simulationAlgorithm': ,  which is ``SI``
 
-    for linear machine, only the ``finalEnergy`` is saved as global parameters.
+    For a linear machine, only the ``finalEnergy`` is saved as a global parameter.
     
-    parameters for each element are as: ::
+    Parameters for each element are: ::
         
         'alphax': ,
         'alphay': ,
@@ -1134,11 +1143,11 @@ A POST method saves data into the service, and the APIs for post operations are 
         'phasey': ,
         'codx': ,
         'cody': ,
-        'transferMatrix': which is linear matrix ordered M00, M01, M02, ..., M55
+        'transferMatrix': which is a linear matrix ordered M00, M01, M02, ..., M55
         's': ,
         'energy': energy at each element
     
-    for elegant, global parameters are: ::
+    For elegant, global parameters for a ring are: ::
     
         'tunex': , horizontal tune
         'tuney': , vertical tune
@@ -1151,9 +1160,9 @@ A POST method saves data into the service, and the APIs for post operations are 
         'finalEnergy': beam energy in GeV, this value is recorded as beta*gamma
         'alphac': , momentum compaction factor
         'simulationCode': , which is ``elegant``
-        'sumulationAlgorithm': ,  which is ``matrix``
+        'simulationAlgorithm': ,  which is ``matrix``
 
-    parameters for each element are as: ::
+    Parameters for each element are: ::
         
         'alphax': ,
         'alphay': ,
@@ -1167,36 +1176,34 @@ A POST method saves data into the service, and the APIs for post operations are 
         'phasey': ,
         'codx': ,
         'cody': ,
-        'transferMatrix': which is linear matrix ordered M00, M01, M02, ..., M55
+        'transferMatrix': which is a linear matrix ordered M00, M01, M02, ..., M55
         's': ,
         'energy': energy at each element, this value is recorded as beta*gamma
     
-    If a lattice does not exist yet, and saves successfully, client gets a result like for example: ::
+    If a lattice exists, and the save operation is successful, the client receives a result similar to: ::
     
         {"result": true}
 
-    If lattice does not exist yet, it get an error as: ::
+    If a lattice does not exist, the client receives an error as: ::
 
         Did not find lattice (name: lattice info demo, version: 20131001, branch: design).
 
 * **updateLattice**
 
-    This function is similar with ``saveLattice``, but updating an existing lattice information. The data structure is same with ``saveLattice`` function.
-    If lattice data is in place already, it returns an error, otherwise, if lattice is there and updated successfully, client gets a result like for example: ::
+    Updates lattice data. This function is similar to ``saveLattice``, but updates lattice data for an existing lattice. The data structure is the same as for ``saveLattice``.
+    If lattice data does not exist, the server returns an error, otherwise, if lattice is there and is updated successfully, the client receives a result similar to: ::
     
         {"result": true}
 
-    If lattice does not exist yet, it get an error.
-    
-    In this function, same with ``saveLattice``, user can request server to perform a simulation. 
+    As with ``saveLattice``, the user can request the server to perform a simulation with this function. 
 
 * **saveLatticeStatus**
 
-    Each lattice could be assigned a status, which is an integer with site-specific convention. It captures who assigns a status for a specific lattice, and by when. Also who updates its status, and by when.
+    Saves lattice status. Each lattice could be assigned a status, which is an integer with a site-specific convention. The status captures details about who assigned a status for a specific lattice, and when. Also who updated the status, and when.
     
-    **keywords** to carry data: 
+    **keywords** to transfer data: 
     
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
     
         {'function':    'saveLatticeStatus',
          'name':        lattice name
@@ -1208,35 +1215,36 @@ A POST method saves data into the service, and the APIs for post operations are 
     
     How to utilize the ``status`` is entirely up to each site, and could vary differently. A suggested convention could be as below: ::
 
+
         0: current golden lattice [by default]
         1: current live lattice
         2: alternative golden lattice
         3: previous golden lattice, but not any more
         
-        (The number is flexible to be changed or extended.)
+        (The number is customisable and can be changed or extended.)
     
-    It returns a structure as below if command is performed successfully: ::
+    If the command is successful, then the server returns: ::
         
         {'result': true}
     
-    otherwise, raise an exception
+    otherwise, an exception is raised.
     
-    :NOTE: The status is not captured in this version, therefore, there is no distinguish between command ``save*`` and ``update*``.  All are treated as saving a new status.
+    :NOTE: The status is not captured in this version, therefore, there is no difference between the ``save*`` and ``update*`` commands.  All are treated as saving a new status.
 
 * **saveModelCodeInfo**
 
-    In this service, a model is defined as an output from either simulation, or measurement. To help understanding each particular model, its environment, particularly the name of simulation code and a brief description for the algorithm used, is captured.
+    Saves information required to carry out a simulation for a model. In this service, a model is defined as an output from either simulation, or measurement. To help with understanding each particular model, its environment, particularly the name of the simulation code and a brief description for the algorithm used, is captured.
 
-    **keywords** to carry data: 
+    **keywords** to transfer data: 
     
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
     
         {'function':    'saveModelCodeInfo',
          'name':        simulation code name
-         'algorithm':   algorithm to be use to generate the beam parameters
+         'algorithm':   algorithm used to generate the beam parameters
         }
 
-    Example could be as below (user could have its own): ::
+    Examples of algorithms are (the user can define his own): ::
 
       ===========   =====================
         name           algorithm
@@ -1254,21 +1262,21 @@ A POST method saves data into the service, and the APIs for post operations are 
         elegant         parallel
       ===========   =====================    
     
-    One exception here is to deal with model data from measurement, which could be determined by each site, for example using ``measurement`` as name.
+    One exception here is to deal with model data from measurement, which could be determined by each site, for example using ``measurement`` as the name.
 
-    It returns a structure as below if command is performed successfully: ::
+    If this command is successful, then the following structure is returned: ::
         
         {'result': true}
     
-    otherwise, raise an exception
+    otherwise, an exception is raised.
 
 * **saveModelStatus**
     
-    Similar with lattice, each model could be assigned a status, which is an integer with site-specific convention. It captures who assigns a status for a specific model, and by when. Also who updates its status, and by when.
+    Saves model status. Similar to the equivalent command for the lattice, each model could be assigned a status, which is an integer with a  site-specific convention. The status captures details about who assigned a status for a specific model , and when. Also who updated the status, and when.
     
-    **keywords** to carry data: 
+    **keywords** to transfer data: 
     
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
     
         {'function':    'saveModelStatus',
          'name':        model name
@@ -1281,23 +1289,23 @@ A POST method saves data into the service, and the APIs for post operations are 
         1: alternative golden model
         2: previous golden model, but not any more
         
-        (The number is flexible to be changed or extended.)
+        (The number is customisable and can be changed or extended.)
     
-    It returns a structure as below if command is performed successfully: ::
+    If the command is successful, then the server returns: ::
         
         {'result': true}
     
-    otherwise, raise an exception
+    otherwise, an exception is raised.
     
-    :NOTE: The status is not captured in this version, therefore, there is no distinguish between command ``save*`` and ``update*``.  All are treated as saving a new status.
+    :NOTE: The status is not captured in this version, therefore, there is no difference between the ``save*`` and ``update*`` commands.  All are treated as saving a new status.
     
 * **saveModel**
     
-    This command is to save a model result for a given lattice. It requires a lattice exists first.
+    Saves a model result for a given lattice. It requires that a lattice exists.
 
-    **keywords** to carry data:
+    **keywords** to transfer data:
 
-    The data is shipped to server using a map, or a dictionary in Python, with following format: ::
+    The data is transferred to the server using a map, or a dictionary in Python, with the following format: ::
     
         {'function':      'saveModel',
          'latticename':   lattice name that this model belongs to
@@ -1306,9 +1314,9 @@ A POST method saves data into the service, and the APIs for post operations are 
          'model':         a dictionary which holds all data 
         }        
     
-    Details data is carried by ``model`` structure, which is ``model`` sub-structure section. 
-    
-    **model** sub-structure is described as below: ::
+	Details of the data contained in the model sub-structure are described below.
+	
+    **model** sub-structure: ::
     
         {'model name':               # model name
            { # header information
@@ -1317,17 +1325,17 @@ A POST method saves data into the service, and the APIs for post operations are 
             'tunex': ,               # horizontal tune
             'tuney': ,               # vertical tune
             'alphac':                # momentum compaction factor
-            'chromX0': ,            # linear horizontal chromaticity
-            'chromX1': ,            # non-linear horizontal chromaticity
-            'chromX2': ,            # high order non-linear horizontal chromaticity
-            'chromY0': ,            # linear vertical chromaticity
-            'chromY1': ,            # non-linear vertical chromaticity
-            'chromY2': ,            # high order non-linear vertical chromaticity
+            'chromX0': ,             # linear horizontal chromaticity
+            'chromX1': ,             # non-linear horizontal chromaticity
+            'chromX2': ,             # high order non-linear horizontal chromaticity
+            'chromY0': ,             # linear vertical chromaticity
+            'chromY1': ,             # non-linear vertical chromaticity
+            'chromY2': ,             # high order non-linear vertical chromaticity
             'finalEnergy': ,         # the final beam energy in GeV
             'simulationCode': ,      # name of simulation code, Elegant and Tracy for example
             'sumulationAlgorithm': , # algorithm used by simulation code, for example serial 
                                      # or parallel for elegant, and SI or PTC for Tracy 
-            'simulationControl': ,   # various control constrains such as initial condition, 
+            'simulationControl': ,   # various control constrains such as initial conditions, 
                                      # beam distribution, and output controls
             'simulationControlFile': # file name that control the simulation conditions, 
                                      # like a .ele file for elegant simulation data
@@ -1337,13 +1345,13 @@ A POST method saves data into the service, and the APIs for post operations are 
            ...
         }
     
-    This sub-structure allows a client to carry multiple results to server at the same time. All those values are for whole model except ``beamParameter`` structure, which is for each element.
+    This sub-structure allows a client to transfer multiple results to the server at the same time. All these values apply to the entire model, except for the ``beamParameter`` structure, which applies to each element.
     
-    For the ``simulationControl``, it is a readin from a file as a list with each line of the file as one value of the list; its file name is captured with ``simulationControlFile``.
+    The ``simulationControl`` is read in from a file as a list with each line of the file as one value of the list; the file name is contained in ``simulationControlFile``.
     
-    **beamParameter** sub-structure
+    **beamParameter** Sub-structure
     
-    Beam parameters at each element is carried in the ``beamParameter`` sub-structure as below: ::
+    Beam parameters at each element is contained in the ``beamParameter`` sub-structure as follows: ::
     
         { element_order: #element_order starts with 0.
             { 'name': ,     # element name
@@ -1380,29 +1388,28 @@ A POST method saves data into the service, and the APIs for post operations are 
             }
          }
 
-    Most values here are primitive data such as double, or string, except the transferMatrix which is a 2-D array with a structure as below.
+    Most values appear here as primitive data such as double, or string, except for the transferMatrix which is a 2-D array with a structure as follows:
     
-    **transferMatrix** sub-structure is as below: ::
+    **transferMatrix** sub-structure: ::
     
         [[M00, M01, M02, ..., M05], [M10, M11, ..., M15], ..., [M50, M51, ..., M55]]
         
     :NOTE: 
-        - In principle, server is capable to capture any type of transfer matrix. However, current implementation supports linear transfer matrix only.
-        - The element layout/sequence carried in this structure has to match with the one in lattice.
+        - In principle, the server is capable of capturing  any type of transfer matrix, however, the current implementation supports a linear transfer matrix only.
+        - The element layout/sequence contained in this structure has to correspond to the one in lattice.
     
-    It returns ids of the new model with a structure as below if command is performed successfully: ::
+    If this command completes successfully, then it returns the ids of the new model with a structure as follows: ::
         
         {'result': [ids]}
     
-    otherwise, raise an exception
+    otherwise, an exception is raised.
     
 * **updateModel**
 
-    If given model exists already, it is suggested to use ``updateModel`` command instead of ``saveModel``. The data structure is same with that in ``saveModel``.
+    Updates an existing model. If model already exists, then it is suggested that ``updateModel`` be used instead of ``saveModel``. The data structure for ``updateModel`` is the same as that for ``saveModel``.
 
-    It returns operation status with a structure as below if command is performed successfully: ::
+    If the command is successful, then the server returns: ::
         
         {'result': true}
-
-    otherwise, raise an exception
     
+    otherwise, an exception is raised.
