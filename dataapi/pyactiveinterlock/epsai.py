@@ -156,22 +156,29 @@ class epsai(object):
             if deviceObj['definition'] == 'bm':
                 
                 for prop in self.bm_props:
-                    deviceProps[prop[0]] = deviceObj[prop[0]]
-                    
-                    if prop[2] == 'approvable':
-                        approveProps.append(prop[0])
+                    try:
+                        deviceProps[prop[0]] = deviceObj[prop[0]]
+
+                        if prop[2] == 'approvable':
+                            approveProps.append(prop[0])
+                    except KeyError:
+                        self.logger.info("No value for key %s of SR-BPM " % prop[0])
             
             else:
                 
                 for prop in self.id_props:
-                    deviceProps[prop[0]] = deviceObj[prop[0]]
-                    
-                    if prop[2] == 'approvable':
-                        approveProps.append(prop[0])
+                    try:
+                        deviceProps[prop[0]] = deviceObj[prop[0]]
+
+                        if prop[2] == 'approvable':
+                            approveProps.append(prop[0])
+                    except KeyError:
+                        self.logger.info("No value for key %s of ID-BPM " % prop[0])
+
             
             newDeviceObj = self.saveDevice(0, deviceObj['name'], deviceObj['definition'], deviceObj['logic'], deviceProps)
             self.approveCells(newDeviceObj['id'], json.dumps(approveProps))
-        
+
         return True
         
     def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by):
