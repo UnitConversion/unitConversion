@@ -25,7 +25,7 @@ class idods(object):
     '''
     Data API for insertion device online data storage.
 
-    All data have to be either all saved, or none is saved.
+    All data has to be either "all is saved", or "none is saved".
     '''
     def __init__(self, conn, transaction=None):
         '''initialize idods class.
@@ -56,7 +56,7 @@ class idods(object):
     def retrieveVendor(self, name, description=None):
         '''
         Retrieve vendor by its name and description
-        Wildcast matching are supported for both name and description.
+        Wildcard matching is supported for both name and description.
 
         :param name: vendor name
         :type name: str
@@ -64,7 +64,7 @@ class idods(object):
         :param description: description for a vendor
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -103,7 +103,7 @@ class idods(object):
         :param description: a brief description which could have up to 255 characters
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -198,7 +198,7 @@ class idods(object):
         :param cmpnt_type_name: component type name
         :type cmpnt_type_name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -266,7 +266,7 @@ class idods(object):
         :param unit: property template unit O
         :type unit: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -298,7 +298,7 @@ class idods(object):
 
     def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type_name, name, description=None, default=None, unit=None):
         '''
-        Update inventory property template in a database
+        Update inventory property template in database
 
         :param tmplt_id: property template id M
         :type tmplt_id: int
@@ -318,7 +318,7 @@ class idods(object):
         :param unit: property template unit O
         :type unit: str
 
-        :return: True if update succeeded
+        :return: True if update successful
 
         :Raises: ValueError, MySQLError
         '''
@@ -449,7 +449,7 @@ class idods(object):
         '''
         Save inventory property into database
 
-        :param inventory_id: id of the inventory we are saving property for
+        :param inventory_id: id of the inventory that the property is being saved for
         :type inventory_id: int
 
         :param inventory_property_template_name: name of the property template/inventory property key name
@@ -498,7 +498,7 @@ class idods(object):
 
     def updateInventoryProperty(self, inventory_id, inventory_property_template_name, value, cmpnt_type_name=None):
         '''
-        Update inventory property in a database
+        Update inventory property in database
 
         :prop inventory_id: id of the inventory in the database
         :type inventory_id: int
@@ -533,17 +533,17 @@ class idods(object):
 
     def retrieveInventoryById(self, inventory_id):
         '''
-        Retrieve an insertion device from inventory by its database id.
+        Retrieve an insertion device from the inventory by its database id.
         Wildcard matching is supported for inventory name and device type. ::
 
-            * for multiple characters matching
+            * for multiple character matching
             ? for single character matching
 
 
         :param inventory_id: inventory database id
         :type inventory_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -612,10 +612,10 @@ class idods(object):
 
     def retrieveInventory(self, serial_no=None, cmpnt_type_name=None, vendor_name=None, name=None):
         '''
-        Retrieve an insertion device from inventory by device inventory name and type.
+        Retrieve an insertion device from the inventory by the device inventory name and type.
         Wildcard matching is supported for inventory name and device type. ::
 
-            * for multiple characters matching
+            * for multiple character matching
             ? for single character matching
 
 
@@ -631,7 +631,7 @@ class idods(object):
         :param name: inventory name
         :type name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -700,10 +700,10 @@ class idods(object):
 
         - name:  name to identify that device from vendor
         - cmpnt_type_name: device type name
-        - alias: alias name if it has
+        - alias: alias name, if applicable
         - serial_no: serial number
         - vendor_name: vendor name
-        - props: properties with structure as below
+        - props: properties with structure as
 
         .. code-block:: python
 
@@ -737,7 +737,7 @@ class idods(object):
         :param cmpnt_type_name: component type name
         :type cmpnt_type_name: str
 
-        :param alias: alias name if it has
+        :param alias: alias name, if applicable
         :type alias: str
 
         :param serial_no: serial number
@@ -749,7 +749,7 @@ class idods(object):
         :param props: a map to describe the property of an insertion device as described above
         :type props: object
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -822,10 +822,10 @@ class idods(object):
         - inventory_id:  inventory id from the database table
         - name:  name to identify that device from vendor
         - cmpnt_type_name: device type name
-        - alias: alias name if it has
+        - alias: alias name, if applicable
         - serial_no: serial number
         - vendor_name: vendor name
-        - props: properties with structure as below
+        - props: properties with structure as
 
         .. code-block:: python
 
@@ -859,7 +859,7 @@ class idods(object):
         :param cmpnt_type_name: component type name
         :type cmpnt_type_name: str
 
-        :param alias: alias name if it has
+        :param alias: alias name, if applicable
         :type alias: str
 
         :param serial_no: serial number
@@ -991,7 +991,7 @@ class idods(object):
         :param raw_data_id: raw data id
         :type raw_data_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1054,7 +1054,7 @@ class idods(object):
 
         :raises: MySQLError
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1092,7 +1092,7 @@ class idods(object):
 
     def concatRawData(self, data, raw_data_id):
         '''
-        Concat large data in the database
+        Concatenate raw data to existing raw data in the database
 
         :param data: part of the data we want to save in a blob
         :type data: blob
@@ -1137,7 +1137,7 @@ class idods(object):
         Update raw data
 
         params:
-            - rawDataId: id of the raw data we want to update by
+            - rawDataId: id of the raw data we want to update 
             - data: data we want to save in a blob
 
         raises:
@@ -1189,7 +1189,7 @@ class idods(object):
         :param raw_data_id: raw data id
         :type raw_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :Raises: ValueError, MySQLError
         '''
@@ -1247,7 +1247,7 @@ class idods(object):
         :param data_id: id of the saved raw data
         :type data_id: int
 
-        :param status: is offline data Active = 1 or Obsolete - 0
+        :param status: is offline data Active = 1 or Obsolete = 0
         :type status: int
 
         :param gap: gap
@@ -1325,28 +1325,28 @@ class idods(object):
         - script
         - method_name
 
-        :param inventory_id: id of the inventory offline data is connected to
+        :param inventory_id: id of the inventory that the offline data is connected to
         :type inventory_id: int
 
-        :param username: author who created this data entry originally
+        :param username: author who first created this data entry 
         :type username: str
 
         :param description: a brief description for this data entry
         :type description: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -1361,7 +1361,7 @@ class idods(object):
         :param data_file_name: file name of the data
         :type data_file_name: str
 
-        :param data_file_ts: time stamp of data file with format like "YYYY-MM-DD HH:MM:SS"
+        :param data_file_ts: time stamp of data file formatted as "YYYY-MM-DD HH:MM:SS"
         :type data_file_ts: str
 
         :param data_id: id of the raw data
@@ -1376,7 +1376,7 @@ class idods(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1589,25 +1589,25 @@ class idods(object):
         :param inventory_id: id of the inventory offline data is connected to
         :type inventory_id: int
 
-        :param username: author who created this data entry originally
+        :param username: author who first created this data entry 
         :type username: str
 
         :param description: a brief description for this data entry
         :type description: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -1622,16 +1622,16 @@ class idods(object):
         :param data_file_name: file name of the data
         :type data_file_name: str
 
-        :param data_file_ts: time stamp of data file with format like "YYYY-MM-DD HH:MM:SS"
+        :param data_file_ts: time stamp of data file formatted as "YYYY-MM-DD HH:MM:SS"
         :type data_file_ts: str
 
         :param data_id: id of the raw data
         :type data_id: str
 
-        :param script_name: name of script to produce the data
+        :param script_name: name of script used to produce the data
         :type script_name: str
 
-        :param script: script to produce the data
+        :param script: script used to produce the data
         :type script: str
 
         :param method_name: name of method used to produce the data
@@ -1779,19 +1779,19 @@ class idods(object):
         :param date: offline data date
         :type date: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -1809,7 +1809,7 @@ class idods(object):
         :param inventory_id: id of inventory used to produce the data
         :type inventory_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2002,7 +2002,7 @@ class idods(object):
         :param offline_data_id: offline data id
         :type offline_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :Raises: ValueError, MySQLError
         '''
@@ -2046,7 +2046,7 @@ class idods(object):
             raise MySQLError('Error when deleting offline data:\n%s (%d)' % (e.args[1], e.args[0]))
 
     def saveDataMethod(self, name, description=None):
-        '''Save a method with its description which is used when producing data set for an insertion device.
+        '''Save a method with its description which is used when producing the data set for an insertion device.
 
         :param name: name of the method
         :type name: str
@@ -2054,7 +2054,7 @@ class idods(object):
         :param description: description of this method
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2106,10 +2106,10 @@ class idods(object):
         '''
         Update data method by id or name.
 
-        :param datamethod_id id of the data method we want to update by
+        :param datamethod_id id of the data method we want to update
         :type datamethod_id: int
 
-        :param old_name: name of the method we want to update by
+        :param old_name: name of the method we want to update
         :type old_name: str
 
         :param name: name of the method
@@ -2118,7 +2118,7 @@ class idods(object):
         :param description: description of this method
         :type description: str
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :Raises: ValueError, MySQLError
         '''
@@ -2184,7 +2184,7 @@ class idods(object):
         :param description: description of this method
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2245,7 +2245,7 @@ class idods(object):
 
     def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inventory_id):
         '''
-        Return installed devices or psecific map
+        Return installed devices or specific map
 
         :param inventory_to_install_id: id of the inventory to install map
         :type inventory_to_install_id: int
@@ -2256,7 +2256,7 @@ class idods(object):
         :param inventory_id: id in inventory
         :type inventory_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2339,7 +2339,7 @@ class idods(object):
 
     def saveInventoryToInstall(self, install_name, inventory_id):
         '''
-        Link a device as installed once it is installed into field
+        Link a device as installed once it is installed into the field
 
         :param install_name: label name after installation
         :type install_name: str
@@ -2347,7 +2347,7 @@ class idods(object):
         :param inventory_id: id in its inventory
         :type inventory_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2391,7 +2391,7 @@ class idods(object):
         :param inventory_id: id in its inventory
         :type inventory_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :Raises: ValueError, MySQLError
         '''
@@ -2471,7 +2471,7 @@ class idods(object):
 
     def deleteInventoryToInstall(self, inventory_to_install_id, delete_online_data=None):
         '''
-        Delete inventory to install map
+        Delete map of inventory to install
 
         :param inventory_to_install_id: id of the map
         :type inventory_to_install_id: int
@@ -2479,7 +2479,7 @@ class idods(object):
         :param delete_online_data: should online data be deleted or just set to deprecated
         :type delete_online_data: boolean
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :Raises: ValueError, MySQLError
         '''
@@ -2532,7 +2532,7 @@ class idods(object):
         :param name: property type name
         :type name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2566,7 +2566,7 @@ class idods(object):
         - name: name of the component type property type M
         - description: description of the component type property type O
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2654,7 +2654,7 @@ class idods(object):
         :param value: value of the component type property type
         :type value: str
 
-        :returns: a map with structure like:
+        :returns: a map with structure:
 
             .. code-block:: python
 
@@ -2753,7 +2753,7 @@ class idods(object):
 
     def saveComponentTypeProperty(self, component_type_name, component_type_property_type_name, value):
         '''
-        Save inventory property into database
+        Save component type property into database
 
         :param component_type_name: name of the component type
         :type component_type_name: str
@@ -2800,7 +2800,7 @@ class idods(object):
 
     def updateComponentTypeProperty(self, old_component_type_name, old_component_type_property_type_name, value):
         '''
-        Save inventory property into database
+        Save component type property into database
 
         :param old_component_type_name: name of the component type
         :type old_component_type_name: str
@@ -2850,7 +2850,7 @@ class idods(object):
         :param description: description for this device
         :type desctiprion: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block: python
 
@@ -2949,7 +2949,7 @@ class idods(object):
         :param props: component type properties
         :type props: python dict
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block: python
 
@@ -3014,7 +3014,7 @@ class idods(object):
 
     def updateComponentType(self, component_type_id, old_name, name, description=None, props=None):
         '''Update description of a device type.
-        Once a device type is saved, it is not allowed to change it again since it will cause potential colflict.
+        Once a device type is saved, it cannot be changed again since this will cause potential colflicts.
 
         - component_type_id
         - old_name
@@ -3133,7 +3133,7 @@ class idods(object):
         :param name: property type name
         :type name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3201,7 +3201,7 @@ class idods(object):
         :param unit: unit used for this property type O
         :type unit: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3330,9 +3330,9 @@ class idods(object):
 
     def _retrieveInstallRelProperty(self, install_rel_id, install_rel_property_type_id=None, value=None):
         '''
-        Retrieve install rel property from the database
+        Retrieve install relationship property from the database
 
-        :param install_rel_id: id of the install rel entry
+        :param install_rel_id: id of the install relationship entry
         :type install_rel_id: int
 
         :param install_rel_property_type_id: id of the property type
@@ -3342,7 +3342,7 @@ class idods(object):
         :type value: str
 
 
-        :returns: a map with structure like:
+        :returns: a map with structure:
 
             .. code-block:: python
 
@@ -3408,16 +3408,16 @@ class idods(object):
         '''
         Retrieve component type property from the database by name
 
-        :param install_rel_id: id of the install rel
+        :param install_rel_id: id of the install relationship
         :type install_rel_id: int
 
-        :param install_rel_property_type_name: name of the install rel property type
+        :param install_rel_property_type_name: name of the install relationship property type
         :type install_rel_property_type_name: str
 
         :param install_rel_property_value: value of the property type
         :type install_rel_property_value: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3457,21 +3457,21 @@ class idods(object):
 
     def saveInstallRelPropertyByMap(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
         '''
-        Save install rel property by install rel map
+        Save install relationship property by install relationship map
 
-        :param install_rel_parent: name of the parent in the install rel
+        :param install_rel_parent: name of the parent in the install relationship
         :type install_rel_parent: str
 
-        :param install_rel_child: name of the child in the install rel
+        :param install_rel_child: name of the child in the install relationship
         :type install_rel_child: str
 
-        :param install_rel_property_type_name: name of the install rel property type
+        :param install_rel_property_type_name: name of the install relationship property type
         :type install_rel_property_type_name: str
 
-        :param install_rel_property_value: value of the install rel property
+        :param install_rel_property_value: value of the install relationship property
         :type install_rel_property_value: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3493,18 +3493,18 @@ class idods(object):
 
     def saveInstallRelProperty(self, install_rel_id, install_rel_property_type_name, install_rel_property_value):
         '''
-        Save install rel property into database
+        Save install relationship property into database
 
-        :param install_rel_id: id of the install rel
+        :param install_rel_id: id of the install relationship
         :type install_rel_id: int
 
-        :param install_rel_property_type_name: name of the install rel property type
+        :param install_rel_property_type_name: name of the install relationship property type
         :type install_rel_property_type_name: str
 
-        :param install_rel_property_value: value of the install rel property
+        :param install_rel_property_value: value of the install relationship property
         :type install_rel_property_value: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3568,21 +3568,21 @@ class idods(object):
 
     def updateInstallRelPropertyByMap(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
         '''
-        Update install rel property
+        Update install relationship property
 
-        :param install_rel_parent: name of the parent in the install rel
+        :param install_rel_parent: name of the parent in the install relationship
         :type install_rel_parent: str
 
-        :param install_rel_child: name of the child in the install rel
+        :param install_rel_child: name of the child in the install relationship
         :type install_rel_child: str
 
-        :param install_rel_property_type_name: name of the install rel property type
+        :param install_rel_property_type_name: name of the install relationship property type
         :type install_rel_property_type_name: str
 
-        :param install_rel_property_value: value of the install rel property
+        :param install_rel_property_value: value of the install relationship property
         :type install_rel_property_value: str
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -3640,12 +3640,12 @@ class idods(object):
 
     def deleteInstallRelProperty(self, install_rel_id):
         '''
-        Delete install rel property
+        Delete install relationship property
 
-        :param install_rel_id: Id in the install rel table
+        :param install_rel_id: Id in the install relationship table
         :type install_rel_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises:
             ValueError, MySQLError
@@ -3702,7 +3702,7 @@ class idods(object):
 
         :type props: dict
 
-        :return:  a map with structure like:
+        :return:  a map with structure:
 
             .. code-block:: python
 
@@ -3789,10 +3789,10 @@ class idods(object):
         '''
         Update install relationship.
 
-        :param parent_install: name of the parent element we want ot update by
+        :param parent_install: name of the parent element we want to update
         :type parent_install: str
 
-        :param child_install: name of the child element we want ot update by
+        :param child_install: name of the child element we want to update
         :type child_install: str
 
         :param description: description of the relationship
@@ -3976,8 +3976,8 @@ class idods(object):
 
     def retrieveInstallRel(self, install_rel_id=None, parent_install=None, child_install=None, description=None, order=None, date=None, expected_property=None):
         '''
-        Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
-        all the parents of specific child.
+        Retrieve install relationship from the database. A specific relationship can be retrieved or all the children of a specific parent or
+        all the parents of a specific child.
 
         :param install_rel_id: id of the install_rel table
         :type install_rel_id: int
@@ -3997,12 +3997,12 @@ class idods(object):
         :param date: date of the device installation; accepts a range in a tuple
         :type date: str
 
-        :param prop: if we want to search for relationships with specific property set to a specific value, we
-              can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
-              beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
+        :param prop: if we want to search for relationships with a specific property set to a specific value, we
+              can prepare a dictionary and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
+              beamlines with names starting with xh or {'beamline': None} will return all of the beamlines.
         :type prop: dict
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -4398,7 +4398,7 @@ class idods(object):
         :param length: inventory property length
         :type length: str
 
-        :param gap_max: invnetory property gap maximum
+        :param gap_max: inventory property gap maximum
         :type gap_max: str
 
         :param gap_min: inventory property gap minimum
@@ -4566,7 +4566,7 @@ class idods(object):
         '''
         Save insertion device installation
 
-        :param name: installation name, which is its label on field
+        :param name: installation name, which is its label in the field
         :type name: str
 
         :param description: installation description
@@ -4578,7 +4578,7 @@ class idods(object):
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: float
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -4620,7 +4620,7 @@ class idods(object):
         '''
         Update insertion device installation using any of the acceptable key words:
 
-        :param name: installation name, which is its label on field
+        :param name: installation name, which is its label in the field
         :type name: str
 
         :param description: installation description
@@ -4701,12 +4701,12 @@ class idods(object):
 
     def _retrieveInstallById(self, install_id):
         '''
-        Retrieve install its id.
+        Retrieve install by its id.
 
         :param install_id: id of the install entity
         :type install_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -4755,7 +4755,7 @@ class idods(object):
         '''
         Retrieve insertion device installation using any of the acceptable key words:
 
-        :param name: installation name, which is its label on field
+        :param name: installation name, which is its label in the field
         :type name: str
 
         :param description: installation description
@@ -4767,7 +4767,7 @@ class idods(object):
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -4867,13 +4867,13 @@ class idods(object):
         '''
         Save file that was uploaded and return file path
 
-        :param file_name: name of the file we want to save
+        :param file_name: name of the file to be saved
         :type file_name: str
 
-        :param data: data we want to save
+        :param data: data to be saved
         :type data: blob
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -4922,7 +4922,7 @@ class idods(object):
         :param meas_time: measurement time
         :type meas_time: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -5037,7 +5037,7 @@ class idods(object):
         '''
         Retrieve insertion device online data.
 
-        :param onlineid: id of the online data we want to update by
+        :param onlineid: id of the online data we want to retrieve
         :type onlineid: int
 
         :param install_name: device name that the data belongs to
@@ -5058,7 +5058,7 @@ class idods(object):
         :param meas_time: measurement time
         :type meas_time: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -5200,8 +5200,8 @@ class idods(object):
         '''
         Update insertion device online data.
 
-        The data itself is stored on server's harddisk because its size might blow up to GB level.
-        Ths file url is stored in the database.
+        The data itself is stored on the server's hard disk drive because its size might be on the order of GBs.
+        Ths file's url is stored in the database.
 
         :param install_name: device name that the data belongs to
         :type install_name: str
@@ -5311,7 +5311,7 @@ class idods(object):
         :param online_data_id: online data id
         :type online_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :Raises: ValueError, MySQLError
         '''
@@ -5342,7 +5342,7 @@ class idods(object):
     def retrieveInstallOfflineData(self, install_name, **kws):
         '''Retrieve insertion device offline data using any of the acceptable key words:
 
-        :param install_name: name of installed device on field
+        :param install_name: name of installed device in the field
         :type install_name: str
 
         :param description: a brief description for this data entry
@@ -5351,19 +5351,19 @@ class idods(object):
         :param date: offline data date
         :type date: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -5378,7 +5378,7 @@ class idods(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -5700,7 +5700,7 @@ class idods(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID of the device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -5718,7 +5718,7 @@ class idods(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: run in which this data was produced
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -5742,7 +5742,7 @@ class idods(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: analysis which this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -5760,7 +5760,7 @@ class idods(object):
         :param roll_angle: rolling angle
         :type roll_angle: double
 
-        :param meas_notes: comments for each measuring data point
+        :param meas_notes: comments for each measured data point
         :type meas_notes: str
 
         :param author: who measured it
@@ -5790,13 +5790,13 @@ class idods(object):
         :param b4_21: high order magnetic field (b4 to b21)
         :type b4_21: str
 
-        :param data_issues: Reserved: special field to note each measure point
+        :param data_issues: Reserved: special field to note each measured point
         :type data_issues: str
 
         :param data_usage: Reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -5830,7 +5830,7 @@ class idods(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID of device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -5848,7 +5848,7 @@ class idods(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: run in which this data was produced
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -5872,7 +5872,7 @@ class idods(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: analysis which this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -5890,7 +5890,7 @@ class idods(object):
         :param roll_angle: rolling angle
         :type roll_angle: double
 
-        :param meas_notes: comments for each measuring data point
+        :param meas_notes: comments for each measured data point
         :type meas_notes: str
 
         :param author: who measured it
@@ -5920,13 +5920,13 @@ class idods(object):
         :param b4_21: high order magnetic field (b4 to b21)
         :type b4_21: str
 
-        :param data_issues: Reserved: special field to note each measure point
+        :param data_issues: Reserved: special field to note each measured point
         :type data_issues: str
 
         :param data_usage: Reserved
         :type data_usage: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -5942,7 +5942,7 @@ class idods(object):
 
     def deleteRotCoilData(self, inventory_id, rot_coil_data_id=None):
         '''
-        Delete one or more rot coil data
+        Delete one or more rotation coil data
 
         :param inventory_id: name of the device in the inventory
         :type inventory_id: str
@@ -5950,7 +5950,7 @@ class idods(object):
         :param rot_coil_data_id: id of data in the table
         :type rot_coil_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -5963,7 +5963,7 @@ class idods(object):
 
     def retrieveHallProbeData(self, inventory_id):
         '''
-        Return hall probe data
+        Retrieve hall probe data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
@@ -6063,7 +6063,7 @@ class idods(object):
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
             ):
         '''
-        Save hall probe data
+        Save Hall probe data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
@@ -6077,7 +6077,7 @@ class idods(object):
         :param measured_at_location: where was it measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  run in which this data was produced
         :type run_identifier: str
 
         :param login_name: who generated this data set
@@ -6131,7 +6131,7 @@ class idods(object):
         :param bz_t: magnetic field along z axis
         :type bz_t: double
 
-        :param meas_notes: comments for each measuring data point
+        :param meas_notes: comments for each measured data point
         :type meas_notes: str
 
         :param data_issues: reserved
@@ -6140,7 +6140,7 @@ class idods(object):
         :param data_usage: reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -6166,9 +6166,9 @@ class idods(object):
             current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None):
         '''
-        Update hall probe data
+        Update Hall probe data
 
-        :param hall_probe_id: id of the hall probe
+        :param hall_probe_id: id of the Hall probe
         :type hall_probe_id: int
 
         :param inventory_id: id of the device in the inventory
@@ -6183,7 +6183,7 @@ class idods(object):
         :param measured_at_location: where was it measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  run in which this data was produced
         :type run_identifier: str
 
         :param login_name: who generated this data set
@@ -6237,7 +6237,7 @@ class idods(object):
         :param bz_t: magnetic field along z axis
         :type bz_t: double
 
-        :param meas_notes: comments for each measuring data point
+        :param meas_notes: comments for each measured data point
         :type meas_notes: str
 
         :param data_issues: reserved
@@ -6246,7 +6246,7 @@ class idods(object):
         :param data_usage: reserved
         :type data_usage: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -6262,7 +6262,7 @@ class idods(object):
 
     def deleteHallProbeData(self, inventory_id, hall_probe_id=None):
         '''
-        Delete one or more hall probe data
+        Delete one or more Hall probe data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
@@ -6270,7 +6270,7 @@ class idods(object):
         :param hall_probe_id: id of data in the table
         :type hall_probe_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -6370,7 +6370,7 @@ class idods(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID  of device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -6388,7 +6388,7 @@ class idods(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: run in which this data was produced
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -6412,7 +6412,7 @@ class idods(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: analysis which this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -6430,7 +6430,7 @@ class idods(object):
         :param roll_angle: rolling angle
         :type roll_angle: double
 
-        :param meas_notes: comments for each measuring data point
+        :param meas_notes: comments for each measured data point
         :type meas_notes: str
 
         :param author: who measured it
@@ -6460,13 +6460,13 @@ class idods(object):
         :param b4_21: high order magnetic field (b4 to b21)
         :type b4_21: str
 
-        :param data_issues: Reserved: special field to note each measure point
+        :param data_issues: Reserved: special field to note each measured point
         :type data_issues: str
 
         :param data_usage: Reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -6662,7 +6662,7 @@ class idods(object):
         :param data_usage:
         :type data_usage:
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -6742,7 +6742,7 @@ class idods(object):
 
     def deleteComponentTypeRotCoilData(self, cmpnt_type_name, rot_coil_data_id=None):
         '''
-        Delete one or more rot coil data
+        Delete one or more rotation coil data
 
         :param cmpnt_type_name: name of the device in the inventory
         :type cmpnt_type_name: str
@@ -6750,7 +6750,7 @@ class idods(object):
         :param rot_coil_data_id: id of data in the table
         :type rot_coil_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -6783,7 +6783,7 @@ class idods(object):
 
     def retrieveComponentTypeHallProbeData(self, cmpnt_type_name):
         '''
-        Return component type hall probe data
+        Return component type Hall probe data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
@@ -6853,7 +6853,7 @@ class idods(object):
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
             ):
         '''
-        Save component type hall probe data
+        Save component type Hall probe data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
@@ -6867,7 +6867,7 @@ class idods(object):
         :param measured_at_location: where was it measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  run in which this data was produced
         :type run_identifier: str
 
         :param login_name: who generated this data set
@@ -6921,7 +6921,7 @@ class idods(object):
         :param bz_t: magnetic field along z axis
         :type bz_t: double
 
-        :param meas_notes: comments for each measuring data point
+        :param meas_notes: comments for each measured data point
         :type meas_notes: str
 
         :param data_issues: reserved
@@ -6930,7 +6930,7 @@ class idods(object):
         :param data_usage: reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -7013,9 +7013,9 @@ class idods(object):
             current_3=None, up_dn1=None, up_dn2=None, up_dn3=None, mag_volt_1=None, mag_volt_2=None, mag_volt_3=None,
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None):
         '''
-        Update hall probe data
+        Update Hall probe data
 
-        :param hall_probe_id: id hall probe
+        :param hall_probe_id: id of Hall probe
         :type hall_probe_id: int
 
         :param cmpnt_type_name: name of the component type
@@ -7093,7 +7093,7 @@ class idods(object):
         :param data_usage:
         :type data_usage: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
@@ -7164,7 +7164,7 @@ class idods(object):
 
     def deleteComponentTypeHallProbeData(self, cmpnt_type_name, hall_probe_id=None):
         '''
-        Delete one or more hall probe data
+        Delete one or more Hall probe data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
@@ -7172,7 +7172,7 @@ class idods(object):
         :param hall_probe_id: id of data in the table
         :type hall_probe_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful.
 
         :raises: ValueError, MySQLError
         '''
