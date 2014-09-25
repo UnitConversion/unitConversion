@@ -57,7 +57,7 @@ class SSLAdapter(HTTPAdapter):
 class IDODSClient(object):
     '''
     IDODSClient provides a client connection object to perform
-    save, retrieve, and update operations for NSLS II insertion device online data service.
+    save, retrieve, and update operations for the NSLS II insertion device online data service.
     '''
 
     def __init__(self, BaseURL=None, username=None, password=None):
@@ -101,8 +101,8 @@ class IDODSClient(object):
 
     def retrieveVendor(self, name, description=None):
         '''
-        Retrieve vendor by its name and description
-        Wildcast matching are supported for both name and description.
+        Retrieves vendor by its name and description
+        Wildcard matching is supported for both name and description.
 
         :param name: vendor name
         :type name: str
@@ -110,7 +110,7 @@ class IDODSClient(object):
         :param description: description for a vendor
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -143,17 +143,17 @@ class IDODSClient(object):
         return r.json()
 
     def saveVendor(self, name, description=None):
-        '''Save vendor and its description into database
+        '''Saves vendor and its description into database
 
         :param name: vendor name
         :type name: str
 
         :param dtype: device type
 
-        :param description: a brief description which could have up to 255 characters
+        :param description: a brief description containing up to 255 characters
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -181,7 +181,7 @@ class IDODSClient(object):
 
     def updateVendor(self, old_name, name, description=None):
         '''
-        Update vendor and its description
+        Updates vendor and its description
 
         :param name: vendor name
         :type name: str
@@ -189,7 +189,7 @@ class IDODSClient(object):
         :param old_name: update vendor by its old name
         :type old_name: str
 
-        :param description: a brief description which could have up to 255 characters
+        :param description: a brief description containing up to 255 characters
         :type description: str
 
         :return: True or HTTPError
@@ -215,18 +215,18 @@ class IDODSClient(object):
 
     def retrieveComponentType(self, name, description=None):
         '''
-        Retrieve a component type using the key words:
+        Retrieves a component type using the key words:
 
         - name
         - description
 
-        :param name: component type type name
+        :param name: component type name
         :type name: str
 
         :param description: description for this device
         :type desctiprion: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block: python
 
@@ -262,7 +262,7 @@ class IDODSClient(object):
         return r.json()
 
     def saveComponentType(self, name, description=None, props=None):
-        '''Save a component type using the key words:
+        '''Saves a component type using the key words:
 
         - name
         - description
@@ -277,7 +277,7 @@ class IDODSClient(object):
         :param props: component type properties
         :type props: python dict
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block: python
 
@@ -310,15 +310,15 @@ class IDODSClient(object):
 
     def updateComponentType(self, old_name, name, description=None, props=None):
         '''
-        Update description of a device type.
-        Once a device type is saved, it is not allowed to change it again since it will cause potential colflict.
+        Updates description of a device type.
+        Once a device type is saved, changes are not allowed since changes could cause potential colflicts.
 
         - old_name
         - name
         - description
         - props
 
-        :param old_name: component type name we want to update by
+        :param old_name: current component type name
         :type old_name: str
 
         :param name: device type name
@@ -330,7 +330,7 @@ class IDODSClient(object):
         :param props: component type properties
         :type props: python dict
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -357,11 +357,11 @@ class IDODSClient(object):
 
     def retrieveComponentTypePropertyType(self, name):
         '''
-        Retrieve component type property type by its name
+        Retrieves component type property type by its name
 
         - name: property type name
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -391,12 +391,12 @@ class IDODSClient(object):
 
     def saveComponentTypePropertyType(self, name, description=None):
         '''
-        Insert new component type property type into database
+        Inserts new component type property type into database
 
         - name: name of the component type property type M
-        - description: description of the component type property tpye O
+        - description: description of the component type property type O
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -424,13 +424,13 @@ class IDODSClient(object):
 
     def updateComponentTypePropertyType(self, old_name, name, description=None):
         '''
-        Insert new component type property type into database
+        Inserts new component type property type into database
 
-        - old_name: name of the component type property type we want to update by M
+        - old_name: name of the component type property type we want to update M
         - name: name of the component type property type M
-        - description: description of the component type property tpye O
+        - description: description of the component type property type O
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -453,10 +453,10 @@ class IDODSClient(object):
 
     def retrieveInventory(self, serial_no, cmpnt_type_name=None, vendor_name=None, name=None):
         '''
-        Retrieve an insertion device from inventory by device inventory name and type.
+        Retrieves an insertion device from the inventory by device inventory name and type.
         Wildcard matching is supported for inventory name and device type. ::
 
-            * for multiple characters matching
+            * for multiple character matching
             ? for single character matching
 
 
@@ -472,7 +472,7 @@ class IDODSClient(object):
         :param name: inventory name
         :type name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -528,11 +528,11 @@ class IDODSClient(object):
 
     def saveInventory(self, serial_no, cmpnt_type_name, vendor_name, name=None, alias=None, props=None):
         '''
-        save insertion device into inventory using any of the acceptable key words:
+        Saves insertion device into the inventory using any of the acceptable key words:
 
         - name:  name to identify that device from vendor
         - cmpnt_type: device type name
-        - alias: alias name if it has
+        - alias: alias name, if applicable
         - serialno: serial number
         - vendor: vendor name
         - props: properties with structure as below
@@ -569,7 +569,7 @@ class IDODSClient(object):
         :param cmpnt_type_name: component type name
         :type cmpnt_type_name: str
 
-        :param alias: alias name if it has
+        :param alias: alias name, if applicable
         :type alias: str
 
         :param serial_no: serial number
@@ -581,7 +581,7 @@ class IDODSClient(object):
         :param props: a map to describe the property of an insertion device as described above
         :type props: object
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -618,7 +618,7 @@ class IDODSClient(object):
         - inventory_id:  inventory id from the database table
         - name:  name to identify that device from vendor
         - cmpnt_type_name: device type name
-        - alias: alias name if it has
+        - alias: alias name, if applicable
         - serial_no: serial number
         - vendor_name: vendor name
         - props: properties with structure as below
@@ -655,7 +655,7 @@ class IDODSClient(object):
         :param cmpnt_type_name: component type name
         :type cmpnt_type_name: str
 
-        :param alias: alias name if it has
+        :param alias: alias name, if applicable
         :type alias: str
 
         :param serial_no: serial number
@@ -667,7 +667,7 @@ class IDODSClient(object):
         :param props: a map to describe the property of an insertion device as described above
         :type props: object
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -696,7 +696,7 @@ class IDODSClient(object):
 
     def retrieveInventoryPropertyTemplate(self, name, cmpnt_type_name=None):
         '''
-        Retrieve inventory property template by its name
+        Retrieves inventory property template by its name
 
         :param name: Inventory property name
         :type name: str
@@ -704,7 +704,7 @@ class IDODSClient(object):
         :param cmpnt_type_name: component type name
         :type cmpnt_type_name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -738,7 +738,7 @@ class IDODSClient(object):
 
     def saveInventoryPropertyTemplate(self, cmpnt_type_name, name, description=None, default=None, unit=None):
         '''
-        Insert new inventory property template into database
+        Inserts new inventory property template into database
 
         :param cmpnt_type_name: component type name M
         :type cmpnt_type_name: str
@@ -755,7 +755,7 @@ class IDODSClient(object):
         :param unit: property template unit O
         :type unit: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -792,7 +792,7 @@ class IDODSClient(object):
 
     def updateInventoryPropertyTemplate(self, tmplt_id, cmpnt_type_name, name, description=None, default=None, unit=None):
         '''
-        Update inventory property template in a database
+        Updates inventory property template in a database
 
         :param tmplt_id: property template id M
         :type tmplt_id: int
@@ -836,9 +836,9 @@ class IDODSClient(object):
         return r.json()
 
     def retrieveInstall(self, name, description=None, cmpnt_type_name=None, coordinatecenter=None):
-        '''Retrieve insertion device installation using any of the acceptable key words:
+        '''Retrieves insertion device installation using any of the acceptable key words:
 
-        :param name: installation name, which is its label on field
+        :param name: installation name, which is its label in the field
         :type name: str
 
         :param description: installation description
@@ -850,7 +850,7 @@ class IDODSClient(object):
         :param coordinatecenter: coordinate center number
         :type coordinatecenter: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -898,7 +898,7 @@ class IDODSClient(object):
             phase_mode_a2=None, phase_mode_p=None, type_name=None, type_desc=None
             ):
         '''
-        Save insertion device
+        Saves insertion device
 
         :param install_name: installation name
         :type install_name: str
@@ -987,7 +987,7 @@ class IDODSClient(object):
         :param type_desc: component type description
         :type type_desc: str
 
-        :return: True if everything went ok
+        :return: True, if successful
 
         :raise: HTTPError
         '''
@@ -1035,9 +1035,9 @@ class IDODSClient(object):
 
     def saveInstall(self, name, description=None, cmpnt_type_name=None, coordinatecenter=None):
         '''
-        Save insertion device installation
+        Saves insertion device installation
 
-        :param name: installation name, which is its label on field
+        :param name: installation name, which is its label in the field
         :type name: str
 
         :param description: installation description
@@ -1074,12 +1074,12 @@ class IDODSClient(object):
 
     def updateInstall(self, old_name, name, description=None, cmpnt_type_name=None, coordinatecenter=None):
         '''
-        Update insertion device installation using any of the acceptable key words:
+        Updates insertion device installation using any of the acceptable key words:
 
-        :param old_name: installation name, which is its label on field
+        :param old_name: installation name, which is its label in the field
         :type old_name: str
 
-        :param name: installation name, which is its label on field
+        :param name: installation name, which is its label in the field
         :type name: str
 
         :param description: installation description
@@ -1095,7 +1095,7 @@ class IDODSClient(object):
             HTTPError
 
         returns:
-            True if everything is ok
+            True, if successful
         '''
 
         # Set URL
@@ -1117,18 +1117,18 @@ class IDODSClient(object):
 
     def saveInstallRelProperty(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
         '''
-        Save install rel property into database
+        Saves install relationahip property into database
 
-        :param install_rel_parent: name of the parent in the install rel
+        :param install_rel_parent: name of the parent in the install relationship
         :type install_rel_parent: str
 
-        :param install_rel_child: name of the child in the install rel
+        :param install_rel_child: name of the child in the install relationship
         :type install_rel_child: str
 
-        :param install_rel_property_type_name: name of the install rel property type
+        :param install_rel_property_type_name: name of the install relationship property type
         :type install_rel_property_type_name: str
 
-        :param install_rel_property_value: value of the install rel property
+        :param install_rel_property_value: value of the install relationship property
         :type install_rel_property_value: str
 
         :raises: HTTPError
@@ -1154,23 +1154,23 @@ class IDODSClient(object):
 
     def updateInstallRelProperty(self, install_rel_parent, install_rel_child, install_rel_property_type_name, install_rel_property_value):
         '''
-        Update install rel property in the database
+        Updates install relationship property in the database
 
-        :param install_rel_parent: name of the parent in the install rel
+        :param install_rel_parent: name of the parent in the install relationship
         :type install_rel_parent: str
 
-        :param install_rel_child: name of the child in the install rel
+        :param install_rel_child: name of the child in the install relationship
         :type install_rel_child: str
 
-        :param install_rel_property_type_name: name of the install rel property type
+        :param install_rel_property_type_name: name of the install relationship property type
         :type install_rel_property_type_name: str
 
-        :param install_rel_property_value: value of the install rel property
+        :param install_rel_property_value: value of the install relationship property
         :type install_rel_property_value: str
 
         :raises: HTTPError
 
-        :returns: True if everything was OK
+        :returns: True, if successful
         '''
 
         # Set URL
@@ -1191,8 +1191,8 @@ class IDODSClient(object):
 
     def retrieveInstallRel(self, install_rel_id=None, parent_install=None, child_install=None, description=None, order=None, date=None, expected_property=None):
         '''
-        Retrieve install rel from the database. Specific relation can be retrieved or all the children of specific parent or
-        all the parents of specific child.
+        Retrieves install relationship from the database. A specific relationship can be retrieved or all the children of a specific parent or
+        all the parents of a specific child.
 
         :param install_rel_id: id of the install_rel table
         :type install_rel_id: int
@@ -1212,13 +1212,13 @@ class IDODSClient(object):
         :param date: date of the device installation; accepts a range in a tuple
         :type date: str
 
-        :param expected_property: if we want to search for relationships with specific property set to a specific value, we
+        :param expected_property: if we want to search for relationships with a specific property set to a specific value, we
               can prepare a dict and pass it to the function e.g. {'beamline': 'xh*'} will return all of the
               beamlines with names starting with xh or {'beamline': None} will return all of the beamlines
 
         :type expected_property: dict
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block: python
 
@@ -1261,7 +1261,7 @@ class IDODSClient(object):
 
     def saveInstallRel(self, parent_install, child_install, description=None, order=None, props=None):
         '''
-        Save install relationship in the database.
+        Saves install relationship in the database.
 
         :param parent_install: id of the parent element
         :type parent_install: int
@@ -1287,7 +1287,7 @@ class IDODSClient(object):
 
         :type props: dict
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block: python
 
@@ -1324,12 +1324,12 @@ class IDODSClient(object):
 
     def updateInstallRel(self, parent_install, child_install, description=None, order=None, props=None):
         '''
-        Update install relationship.
+        Updates install relationship.
 
-        :param parent_install: name of the parent element we want ot update by
+        :param parent_install: name of the parent element we want to update
         :type parent_install: str
 
-        :param child_install: name of the child element we want ot update by
+        :param child_install: name of the child element we want to update
         :type child_install: str
 
         :param description: description of the relationship
@@ -1351,7 +1351,7 @@ class IDODSClient(object):
         :type props: dict
 
         returns:
-            True if everything is ok
+            True, if successful
 
         raises:
             HTTPError
@@ -1379,11 +1379,11 @@ class IDODSClient(object):
 
     def retrieveInstallRelPropertyType(self, name):
         '''
-        Retrieve install relationship property type by its name
+        Retrieves install relationship property type by its name
 
         - name: property type name
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1414,13 +1414,13 @@ class IDODSClient(object):
 
     def saveInstallRelPropertyType(self, name, description=None, unit=None):
         '''
-        Insert new install relationship property type into database
+        Inserts new install relationship property type into database
 
         - name: name of the install relationship property type M
         - description: description of the install relationship property type O
         - unit: unit used for this property type O
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1452,9 +1452,9 @@ class IDODSClient(object):
 
     def updateInstallRelPropertyType(self, old_name, name, description=None, unit=None):
         '''
-        Update install relationship property type
+        Updates install relationship property type
 
-        :param old_name: name of the install relationship property type we want to update by O
+        :param old_name: name of the install relationship property type we want to update O
         :type old_name: str
 
         :param name: name of the install relationship property type M
@@ -1466,7 +1466,7 @@ class IDODSClient(object):
         :param unit: units used for this property type O
         :type unit: str
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -1489,19 +1489,19 @@ class IDODSClient(object):
 
     def retrieveInventoryToInstall(self, inventory_to_install_id, install_name, inventory_id):
         '''
-        Return installed devices or psecific map
+        Retrieves installed devices or specific map
 
-        :param inventory_to_install_id: id of the inventory to install map
+        :param inventory_to_install_id: id of the inventory to the install map
         :type inventory_to_install_id: int
 
         :param install_name: label name after installation
         :type install_name: str
 
         :param inventory_id: id in inventory
-        :type inventory_id: intme in its inventory
+        :type inventory_id: int
         :type inv_name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1534,7 +1534,7 @@ class IDODSClient(object):
 
     def saveInventoryToInstall(self, install_name, inventory_id):
         '''
-        Link a device as installed once it is installed into field using the key words:
+        Links a device as installed after it is installed into field using the key words:
 
         :param install_name: label name after installation
         :type install_name: str
@@ -1542,7 +1542,7 @@ class IDODSClient(object):
         :param inventory_id: id in its inventory
         :type inventory_id: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1567,7 +1567,7 @@ class IDODSClient(object):
 
     def updateInventoryToInstall(self, inventory_to_install_id, install_name, inventory_id):
         '''
-        Update a device as installed when its installation has been changed using the key words:
+        Updates a device as installed when its installation has been changed using the key words:
 
         :param install_name: label name after installation
         :type install_name: str
@@ -1575,7 +1575,7 @@ class IDODSClient(object):
         :param inventory_id: id in its inventory
         :type inventory_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -1596,7 +1596,7 @@ class IDODSClient(object):
         return r.json()
 
     def retrieveDataMethod(self, name, description=None):
-        '''Retrieve a method name and its description which is used when producing data set for an insertion device.
+        '''Retrieves a method name and its description which is used when producing a data set for an insertion device.
 
         :param name: name of the method
         :type name: str
@@ -1604,7 +1604,7 @@ class IDODSClient(object):
         :param description: description of this method
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1636,7 +1636,7 @@ class IDODSClient(object):
         return r.json()
 
     def saveDataMethod(self, name, description=None):
-        '''Save a method with its description which is used when producing data set for an insertion device.
+        '''Saves a method with its description which is used when producing a data set for an insertion device.
 
         :param name: name of the method
         :type name: str
@@ -1644,7 +1644,7 @@ class IDODSClient(object):
         :param description: description of this method
         :type description: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1672,12 +1672,12 @@ class IDODSClient(object):
 
     def updateDataMethod(self, old_name, name, description=None):
         '''
-        Update data method by id or name.
+        Updates the data method by id or name.
 
-        :param datamethod_id id of the data method we want to update by
+        :param datamethod_id: id of the data method we want to update 
         :type datamethod_id: int
 
-        :param old_name: name of the method we want to update by
+        :param old_name: name of the method we want to update 
         :type old_name: str
 
         :param name: name of the method
@@ -1686,7 +1686,7 @@ class IDODSClient(object):
         :param description: description of this method
         :type description: str
 
-        :return: True if everything was ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -1709,7 +1709,7 @@ class IDODSClient(object):
 
     def retrieveOfflineData(self, **kws):
         '''
-        Retrieve insertion device offline data using any of the acceptable key words:
+        Retrieves insertion device offline data using any of the acceptable key words:
 
         - offlineid
         - description
@@ -1731,19 +1731,19 @@ class IDODSClient(object):
         :param description: a brief description for this data entry
         :type description: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -1761,10 +1761,10 @@ class IDODSClient(object):
         :param inventory_id: id of inventory used to produce the data
         :type inventory_id: int
 
-        :param with_data: do we want data is returned together with the result?
+        :param with_data: Should data be returned together with the result?
         :type with_data: True/False
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -1884,7 +1884,7 @@ class IDODSClient(object):
 
     def retrieveInstallOfflineData(self, install_name, **kws):
         '''
-        Retrieve insertion device offline data using any of the acceptable key words:
+        Retrieves insertion device offline data using any of the acceptable key words:
 
         - install_name
         - description
@@ -1906,19 +1906,19 @@ class IDODSClient(object):
         :param date: offline data date
         :type date: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -1936,10 +1936,10 @@ class IDODSClient(object):
         :param install_name: name of install item
         :type install_name: str
 
-        :param with_data: do we want data is returned together with the result?
+        :param with_data: Should data be returned together with the result?
         :type with_data: True/False
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2062,7 +2062,7 @@ class IDODSClient(object):
             phase3=None, phase4=None, phase_mode=None, polar_mode=None
             ):
         '''
-        Save data method and offline data into the database
+        Saves data method and offline data into the database
 
         :param inventory_id: inventory id
         :type inventory_id: int
@@ -2109,7 +2109,7 @@ class IDODSClient(object):
         :param polar_mode: polar mode
         :type polar_mode: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2153,7 +2153,7 @@ class IDODSClient(object):
 
     def saveOfflineData(self, inventory_id, **kws):
         '''
-        Save insertion device offline data using any of the acceptable key words:
+        Saves insertion device offline data using any of the acceptable key words:
 
         - inventory_id
         - username
@@ -2173,28 +2173,28 @@ class IDODSClient(object):
         - script
         - method_name
 
-        :param inventory_id: name of the inventory offline data is connected to
+        :param inventory_id: name of the inventory that the offline data is connected to
         :type inventory_id: str
 
-        :param username: author who created this data entry originally
+        :param username: author who first created this data entry 
         :type username: str
 
         :param description: a brief description for this data entry
         :type description: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -2224,7 +2224,7 @@ class IDODSClient(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2318,7 +2318,7 @@ class IDODSClient(object):
 
     def updateOfflineData(self, offline_data_id, **kws):
         '''
-        Update insertion device offline data by its id
+        Updates insertion device offline data by its id
 
         parameters:
         - inventory_id
@@ -2339,28 +2339,28 @@ class IDODSClient(object):
         - script
         - method_name
 
-        :param inventory_id: id of the inventory offline data is connected to
+        :param inventory_id: id of the inventory that the offline data is connected to
         :type inventory_id: int
 
-        :param username: author who created this data entry originally
+        :param username: author who first created this data entry 
         :type username: str
 
         :param description: a brief description for this data entry
         :type description: str
 
-        :param gap: gap when this data set is produced
+        :param gap: gap when this data set was produced
         :type gap: float
 
-        :param phase1: phase 1 when this data set is produced
+        :param phase1: phase 1 when this data set was produced
         :type phase1: float
 
-        :param phase2: phase 2 when this data set is produced
+        :param phase2: phase 2 when this data set was produced
         :type phase2: float
 
-        :param phase3: phase 3 when this data set is produced
+        :param phase3: phase 3 when this data set was produced
         :type phase3: float
 
-        :param phase4: phase 4 when this data set is produced
+        :param phase4: phase 4 when this data set was produced
         :type phase4: float
 
         :param phasemode: description for the mode of phase, which is determined by gap/phase
@@ -2390,7 +2390,7 @@ class IDODSClient(object):
         :param method_name: name of method used to produce the data
         :type method_name: str
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -2488,12 +2488,12 @@ class IDODSClient(object):
 
     def deleteOfflineData(self, offline_data_id):
         '''
-        Delete offline data
+        Deletes offline data
 
         :param offline_data_id: offline data id
         :type offline_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -2512,9 +2512,9 @@ class IDODSClient(object):
 
     def retrieveOnlineData(self, **kws):
         '''
-        Retrieve insertion device online data using any of the acceptable key words:
+        Retrieves insertion device online data using any of the acceptable key words:
 
-        :param onlineid: id of the online data we want to update by
+        :param onlineid: id of the online data we want to update 
         :type onlineid: int
 
         :param install_name: device name that the data belongs to
@@ -2535,7 +2535,7 @@ class IDODSClient(object):
         :param meas_time: measurement time
         :type meas_time: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2601,7 +2601,7 @@ class IDODSClient(object):
 
     def saveOnlineData(self, install_name, **kws):
         '''
-        Save insertion device online data using any of the acceptable key words:
+        Saves insertion device online data using any of the acceptable key words:
 
         :param install_name: device name that the data belongs to
         :type install_name: str
@@ -2627,7 +2627,7 @@ class IDODSClient(object):
         :param meas_time: measurement time
         :type meas_time: str
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -2682,7 +2682,7 @@ class IDODSClient(object):
 
     def updateOnlineData(self, online_data_id, **kws):
         '''
-        Update insertion device online data using any of the acceptable key words:
+        Updates insertion device online data using any of the acceptable key words:
 
         :param install_name: device name that the data belongs to
         :type install_name: str
@@ -2708,7 +2708,7 @@ class IDODSClient(object):
         :param meas_time: measurement time
         :type meas_time: str
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -2767,12 +2767,12 @@ class IDODSClient(object):
 
     def deleteOnlineData(self, online_data_id):
         '''
-        Delete online data
+        Deletes online data
 
         :param online_data_id: online data id
         :type online_data_id: int
 
-        :return: True if everything was ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -2791,11 +2791,11 @@ class IDODSClient(object):
 
     def uploadFile(self, data, file_name):
         '''
-        Upload a file
+        Uploads a file
 
         params:
-            - data path to the file
-            - file_name name of the file
+            - data: path to the file
+            - file_name: name of the file
         '''
 
         with open(data, 'rb') as f:
@@ -2812,9 +2812,9 @@ class IDODSClient(object):
 
     def idodsInstall(self):
         '''
-        Save common data into the database
+        Saves common data into the database
 
-        :return: True if everything is ok
+        :return: True, if successful
 
         :Raises: HTTPError
         '''
@@ -2829,12 +2829,12 @@ class IDODSClient(object):
 
     def retrieveRotCoilData(self, inventory_id):
         '''
-        Return rotation coil data
+        Retrieves rotation coil data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
 
-        :return: dictionary with a structure like:
+        :return: a dictionary with structure:
 
             .. code-block:: python
 
@@ -2904,7 +2904,7 @@ class IDODSClient(object):
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
             ):
         '''
-        Save rotation coil data
+        Saves rotation coil data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
@@ -2912,7 +2912,7 @@ class IDODSClient(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID  of device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -2921,7 +2921,7 @@ class IDODSClient(object):
         :param magnet_notes: comment for this magnet measurement data set
         :type magnet_notes: str
 
-        :param login_name: user who generated this data set
+        :param login_name: user Name of user who generated this data set
         :type login_name: str
 
         :param cond_curr: condition current
@@ -2930,7 +2930,7 @@ class IDODSClient(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: Which run was this data produced in?
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -2954,7 +2954,7 @@ class IDODSClient(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: Analysis that this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -3008,7 +3008,7 @@ class IDODSClient(object):
         :param data_usage: Reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3070,7 +3070,7 @@ class IDODSClient(object):
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
             ):
         '''
-        Update rotation coil data
+        Updates rotation coil data
 
         :param rot_coil_data_id: id of the data in the database
         :type rot_coil_data_id: int
@@ -3081,7 +3081,7 @@ class IDODSClient(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID  of device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -3090,7 +3090,7 @@ class IDODSClient(object):
         :param magnet_notes: comment for this magnet measurement data set
         :type magnet_notes: str
 
-        :param login_name: user who generated this data set
+        :param login_name: user Name of user who generated this data set
         :type login_name: str
 
         :param cond_curr: condition current
@@ -3099,7 +3099,7 @@ class IDODSClient(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: Which run was this data produced in?
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -3123,7 +3123,7 @@ class IDODSClient(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: Analysis that this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -3231,7 +3231,7 @@ class IDODSClient(object):
 
     def deleteRotCoilData(self, inventory_id, rot_coil_data_id=None):
         '''
-        Delete one or more rot coil data
+        Deletes one or more sets of rotation coil data
 
         :param inventory_id: name of the device in the inventory
         :type inventory_id: str
@@ -3260,12 +3260,12 @@ class IDODSClient(object):
 
     def retrieveHallProbeData(self, inventory_id):
         '''
-        Return hall probe data
+        Retrieves Hall probe data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
 
-        :return: dictionary with a structure like:
+        :return: a dictionary with structure:
 
             .. code-block:: python
 
@@ -3326,7 +3326,7 @@ class IDODSClient(object):
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
             ):
         '''
-        Save hall probe data
+        Saves Hall probe data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
@@ -3337,13 +3337,13 @@ class IDODSClient(object):
         :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location: where was it measured
+        :param measured_at_location: Location where data was measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  Run that this data was produced in
         :type run_identifier: str
 
-        :param login_name: who generated this data set
+        :param login_name: Name of user who generated this data set
         :type login_name: str
 
         :param conditioning_current: condition current
@@ -3403,7 +3403,7 @@ class IDODSClient(object):
         :param data_usage: reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3456,9 +3456,9 @@ class IDODSClient(object):
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
             ):
         '''
-        Update hall probe data
+        Updates Hall probe data
 
-        :param hall_probe_id: id of the hall probe
+        :param hall_probe_id: id of the Hall probe
         :type hall_probe_id: int
 
         :param inventory_id: id of the device in the inventory
@@ -3470,13 +3470,13 @@ class IDODSClient(object):
         :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location: where was it measured
+        :param measured_at_location: Location where data was measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  Run that this data was produced in
         :type run_identifier: str
 
-        :param login_name: who generated this data set
+        :param login_name: Name of user who generated this data set
         :type login_name: str
 
         :param conditioning_current: condition current
@@ -3581,7 +3581,7 @@ class IDODSClient(object):
 
     def deleteHallProbeData(self, inventory_id, hall_probe_id=None):
         '''
-        Delete one or more hall probe data
+        Deletes one or more sets of Hall probe data
 
         :param inventory_id: id of the device in the inventory
         :type inventory_id: int
@@ -3610,12 +3610,12 @@ class IDODSClient(object):
 
     def retrieveComponentTypeRotCoilData(self, cmpnt_type_name):
         '''
-        Return rotation coil data
+        Retrieves rotation coil data
 
         :param cmpnt_type_name: name of the device in the inventory
         :type cmpnt_type_name: str
 
-        :return: dictionary with a structure like:
+        :return: a dictionary with structure:
 
             .. code-block:: python
 
@@ -3685,7 +3685,7 @@ class IDODSClient(object):
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
             ):
         '''
-        Save rotation coil data
+        Saves rotation coil data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
@@ -3693,7 +3693,7 @@ class IDODSClient(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID  of device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -3702,7 +3702,7 @@ class IDODSClient(object):
         :param magnet_notes: comment for this magnet measurement data set
         :type magnet_notes: str
 
-        :param login_name: user who generated this data set
+        :param login_name: user Name of user who generated this data set
         :type login_name: str
 
         :param cond_curr: condition current
@@ -3711,7 +3711,7 @@ class IDODSClient(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: Run that this data was produced in
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -3735,7 +3735,7 @@ class IDODSClient(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: Analysis that this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -3789,7 +3789,7 @@ class IDODSClient(object):
         :param data_usage: Reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -3851,7 +3851,7 @@ class IDODSClient(object):
             meas_notes=None, author=None, a1=None, a2=None, a3=None, b1=None, b2=None, b3=None, a4_21=None, b4_21=None, data_issues=None, data_usage=None
             ):
         '''
-        Update rotation coil data
+        Updates rotation coil data
 
         :param rot_coil_data_id: id of the data in the database
         :type rot_coil_data_id: int
@@ -3862,7 +3862,7 @@ class IDODSClient(object):
         :param alias: alias name
         :type alias: str
 
-        :param meas_coil_id: ID number of device used for this measurement
+        :param meas_coil_id: ID  of device used for this measurement
         :type meas_coil_id: str
 
         :param ref_radius: reference radius
@@ -3871,7 +3871,7 @@ class IDODSClient(object):
         :param magnet_notes: comment for this magnet measurement data set
         :type magnet_notes: str
 
-        :param login_name: user who generated this data set
+        :param login_name: user Name of user who generated this data set
         :type login_name: str
 
         :param cond_curr: condition current
@@ -3880,7 +3880,7 @@ class IDODSClient(object):
         :param meas_loc: measurement location
         :type meas_loc: str
 
-        :param run_number: in which run this data was produced
+        :param run_number: Run that this data was produced in
         :type run_number: str
 
         :param sub_device: name of the sub device
@@ -3904,7 +3904,7 @@ class IDODSClient(object):
         :param up_dn_3: direction of 4 rd current
         :type up_dn_3: str
 
-        :param analysis_number: in which analysis does this data belongs
+        :param analysis_number: Analysis that this data belongs to
         :type analysis_number: str
 
         :param integral_xfer_function: integral transfer function
@@ -4012,7 +4012,7 @@ class IDODSClient(object):
 
     def deleteComponentTypeRotCoilData(self, cmpnt_type_name, rot_coil_data_id=None):
         '''
-        Delete one or more rot coil data
+        Deletes one or more sets of rotation coil data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
@@ -4041,12 +4041,12 @@ class IDODSClient(object):
 
     def retrieveComponentTypeHallProbeData(self, cmpnt_type_name):
         '''
-        Return hall probe data
+        Retrieves Hall probe data
 
         :param cmpnt_type_name: name of the device in the inventory
         :type cmpnt_type_name: str
 
-        :return: dictionary with a structure like:
+        :return: a dictionary with structure:
 
             .. code-block:: python
 
@@ -4107,7 +4107,7 @@ class IDODSClient(object):
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
             ):
         '''
-        Save hall probe data
+        Saves Hall probe data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
@@ -4118,13 +4118,13 @@ class IDODSClient(object):
         :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location: where was it measured
+        :param measured_at_location: Location where data was measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  Run that this data was produced in
         :type run_identifier: str
 
-        :param login_name: who generated this data set
+        :param login_name: Name of user who generated this data set
         :type login_name: str
 
         :param conditioning_current: condition current
@@ -4184,7 +4184,7 @@ class IDODSClient(object):
         :param data_usage: reserved
         :type data_usage: int
 
-        :return: a map with structure like:
+        :return: a map with structure:
 
             .. code-block:: python
 
@@ -4237,9 +4237,9 @@ class IDODSClient(object):
             x=None, y=None, z=None, bx_t=None, by_t=None, bz_t=None, meas_notes=None, data_issues=None, data_usage=None
             ):
         '''
-        Update hall probe data
+        Updates Hall probe data
 
-        :param hall_probe_id: id of the hall probe
+        :param hall_probe_id: id of the Hall probe
         :type hall_probe_id: int
 
         :param cmpnt_type_name: name of the component type
@@ -4251,13 +4251,13 @@ class IDODSClient(object):
         :param sub_device: sub device name
         :type sub_device: str
 
-        :param measured_at_location: where was it measured
+        :param measured_at_location: Location where data was measured
         :type measured_at_location: str
 
-        :param run_identifier:  in which run this data was produced
+        :param run_identifier:  Run that this data was produced in
         :type run_identifier: str
 
-        :param login_name: who generated this data set
+        :param login_name: Name of user who generated this data set
         :type login_name: str
 
         :param conditioning_current: condition current
@@ -4362,7 +4362,7 @@ class IDODSClient(object):
 
     def deleteComponentTypeHallProbeData(self, cmpnt_type_name, hall_probe_id=None):
         '''
-        Delete one or more hall probe data
+        Deletes one or more sets of Hall probe data
 
         :param cmpnt_type_name: name of the component type
         :type cmpnt_type_name: str
