@@ -1,59 +1,56 @@
 Introduction
 ==============================================
-revised: Feb 9, 2014
+Revised: Sep 26, 2014
 
 
 General
 --------------
-This system is dedicated for NSLS II (National Synchrotron Light Source II) project, which is constructed
-at BNL (Brookhaven National Laboratory). All requirements are driven by NSLS II project at BNL, especially its storage ring.
+This Active Interlock Data service is dedicated for the NSLS II (National Synchrotron Light Source II) project, being constructed
+at Brookhaven National Laboratory (BNL). All requirements are driven by the NSLS II project, especially its storage ring.
 
-This system is a sub-system of EPS (Equipment Protection System). Its purpose is to protect machine from an electron beam loss, 
-and operate the charged particle beam safely. When the beam conditions are out of range, it is needed to dump electron beam within 1 milli-seconds.
+This system is a sub-system of the Equipment Protection System (EPS). Its purpose is to protect machine from an electron beam loss, 
+and operate the charged particle beam safely. When the beam conditions are out of range, the electron beam must be dumped within 1 ms.
 
-The data service is to capture all static data which are needed to operate an active interlock system, save data in RDB (relational database), 
-and keep all history data. Each data set has a status, and details of status will be discussed later. 
+The purpose of the Active Interlock Data service is to capture all static data which is needed to operate an active interlock system, save data into a relational database (RDB), and keep all historical data. Each data set has a status, the details of which will be discussed later. 
 
-Currently, MySQL is adopted as back-end RDBMS.
+Currently, MySQL is adopted as the back-end RDBMS.
 
-**Terminology**:
+**Terminology**
 
-	The terminology defined here is a subset of whole fast active interlock system which are related the data management service. 
-	
+The terminology defined here is a subset of whole fast active interlock system which is related to the data management service. 
+
     - AI: Active Interlock system for storage ring equipment protection
     - AI-BM: Active Interlock system for equipment protection from bending magnet radiation
     - AI-ID: Active Interlock system for equipment protection from insertion device radiation
     - AIE: Active Interlock Envelope
     - AIE-BM: Active Interlock Envelope for Bending Magnets
     - AIE-ID: Active Interlock Envelope for Insertion Devices
-    - AIE: Active Interlock Envelope
-    - AIOL:  active interlock offset limit, which applies for both horizontal & vertical
+    - AIOL:  active interlock offset limit, which applies to both horizontal & vertical
         - AIOLH: active interlock offset limit in horizontal plane
         - AIOLV: active interlock offset limit in vertical  plane
-    - AIAL:  active interlock angle limit, which applies for both horizontal & vertical
+    - AIAL:  active interlock angle limit, which applies for to horizontal & vertical
         - AIALH: active interlock horizontal angle limit in horizontal plane
         - AIALV: active interlock vertical angle limit in vertical plane
     - BMPS: Bending Magnet Photon Shutter
     - BPM-ID: RF Beam Position Monitors installed in the Straight Section of the Storage Ring and dedicated to Insertion Device
     - BPM-SR: RF Beam Position Monitors installed in the the Storage Ring except BPM-IDs
-    - cUcd: Canted ID configuration and settings at upstream
-    - cucD: Canted ID configuration and settings at downstream
+    - cUcd: Canted ID configuration and settings, upstream
+    - cucD: Canted ID configuration and settings, downstream
     - PSH: ID Photon Shutter
     - SCBM: Safe Current for Bending Magnets
     - SCID: Safe Current for IDs
 
-**Data for active interlock**: 
+**Data for Active Interlock** 
 
 There are 2 types of interlock, which are AI-BM and AI-ID respectively.
-For AI-BM, 2 data are captured at each given BPM, which is threshold for horizontal plane, and for vertical plane. 
+For AI-BM, 2 data sets are captured at each given BPM, which is the threshold for the horizontal and vertical planes. 
 
 For AI-ID, each active interlock unit consists of three (3) logical devices, which are usually two (2) BPMs 
-and one virtual device located in between of 2 BPMs with a sequence as below: ::
+and one virtual device located between 2 BPMs with the sequence: ::
 
     Device 1 (BPM) ---> Device 3 (Active Interlock Envelop) ---> Device 2 (BPM)
 
-As mentioned above, AIOL/AIAL applies both horizontal and vertical axes. According the device location, 
-some detailed parameters are defined as below:
+AIOL and AIAL applies to the horizontal and vertical axes, respectively. According to the device location, some detailed parameters are defined:
     
      - ``x1``: horizontal and vertical (x & y) beam position at device 1;
      - ``x2``: horizontal and vertical (x & y) beam position at device 2;
@@ -61,10 +58,10 @@ some detailed parameters are defined as below:
      - ``s2``: location offset of device 2 relative a position, center of a straight section usually;
      - ``s3``: location offset of device 3 relative a position, center of a straight section usually;
      
-**Active interlock logic**: 
+**Active Interlock Logic** 
 
-An active interlock logic is defined to keep electron beam within allowed phase space in above 3 locations.
-The logic presented in source data are encoded with an algorithm as below: ::
+Active interlock logic is defined to keep the electron beam within an allowed phase space in the 3 locations above.
+The logic presented in the source data are encoded with according to the following algorithm: ::
     
     ======  ==================================  ====================  ======================
      code               logic                       shape               AIE type
@@ -87,51 +84,47 @@ The logic presented in source data are encoded with an algorithm as below: ::
 The tens digit identifies a major AIE (active interlock envelope) shape, and the unit digit is for a derivation.
 If there is a new shape, a new code could be extended.
 
-:NOTE: An assumption here is that there is no more than 10 different shapes, and each shape has less than 10 derivations.
+:NOTE: The assumption here is that there is no more than 10 different shapes, and each shape has less than 10 derivations.
 
-Status transaction
+Status Transaction
 --------------------
 
-One data set consists of the data of all AI-ID and AI-BM if it is given with the logic applying to those units.
+One data set consists of the data from all AI-IDs and AI-BMs if it is given with the logic applying to those units.
 
-Each data set has a status, and there are 5 status during the life time of a status as below:
+Each data set has a status, and there are 5 possibilies for the status:
 
-    - editable: only data with this status could be changed, and there is only up to one data set for this status 
-    - approved: all data and logic has been approved, and ready to be used, and there is only up to one data set for this status 
-    - active: data set is using, and there is only up to one data set for this status
-    - backup: previous active data set, and there is only up to one data set for this status
-    - history: history data which can be viewable only, and all data are here.
+    - editable: only data with this status can be changed
+		- There is up to one editable data-set (could be 0 or 1).
+    - approved: all data and logic has been approved, and ready to be used
+		- There is up to one approved data-set (could be 0 or 1).
+    - active: data set currently being used
+		- There is up to one active data-set (could be 0 or 1).
+    - backup: previous active data set
+		- There is up to one backup data-set (could be 0 or 1)
+    - history: historical data which can only be viewed.
+		- There are many data sets with a status of history.
 
-There is up to one editable data-set (could be 0 or 1);
-There is up to one approved data-set (could be 0 or 1);
-There is up to one active data-set (could be 0 or 1);
-There is up to one backup data-set (could be 0 or 1);
-There are many data set history data-set;
+An editable data set can be turned into approved data set manually. If there is another data set with an approved status, a warning will be given.
+If data in an approved data set is modified, its status turns into "editable", and the current editable data set is overwritten, with a warning.
+A approved data set can be turned into an active data set when downloaded by a Python client library. When that happens, it becomes an active data set, and the current active data set becomes a backup data set, while the current backup data set becomes a history data set.
 
-An editable data set could be turned into approved status manually. If there is another data set with approved status, a warning should be given.
-If any data in approved data set is modified, its status turns into edit mode, and overwrite current editable data set with a warning.
-A approved data set could be turned into active status when downloading by a Python client library. Once that happens, it turns into active data set, 
-and current data set in active turns into backup, and current data set in backup goes into history.
-Data set in active or backup could be copied into editable. If there is an editable data set, it overwrites existing once with a warning.  
-During copying data from active or backup, each data status is kept as approved except the whole data set as unapproved. 
+Data in an editable data set can be approved individually. Unapproved data is shown in red, and approved data is shown in green.
 
-Only after all data in editable data set and its logic are approved, its status could be turned into approved status.
-Data in editable data set could be approved separately.
+Active or backup data sets can be copied into an editable data set. If there is an existing editable data set, it is overwritten, with a warning.  
+When data is copied from an active or backup data set, the status of each piece of data is kept as approved, but the status of the whole data set is changed to unapproved. 
 
-Unapproved data shows as red, and approved data is green.
-  
+Only after all data in an editable data set and its logic are approved, can the status of the data set be changed to approved.
 
 Implementation
 ----------------
-A particular implementation of this data service is described in this section, which is as a REST web service under Django framework. This service consists of 3 layers: ::
+The implementation of the data service that is described in this section is as a REST web service under the Django framework. This service consists of 3 layers: ::
     
-    1. client layer, which provides an interface to end user of service; 
-    2. service layer, which (1) provides an interface to a client, response request from 
-       client and send/receive data overnetwork thru http/REST interface to/from client, 
-       and (2) interfaces with underneath rdb thru a data api; 
+    1. client layer, which provides an interface to the end user of the service; 
+    2. service layer, which 
+		a. provides an interface to a client, responds to requests the from client and sends/receives data over the network through an http/REST interface to/from the client, and 
+		b. interfaces with the underlying RDB throught a data api; 
     3. relational database layer, which stores all data.
 
-Together with the Django service, a web UI and Python client library should be provided.
-An authorized user could be able to modify the data, approve the data, and change the data status.
+Together with the Django service, a web UI and Python client library will also provided.
 
- 
+An authorized user will be able to modify the data, approve the data, and change the data status.

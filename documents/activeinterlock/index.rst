@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to active interlock data service's documentation!
+Welcome to the Documentation for the Active Interlock Data Service!
 ====================================================================================
 
-Active interlock data service is implementation using Django framework, and its implementation details could be found in this document.
+The Active Interlock Data Service is implemented using the Django framework, and its implementation details are given in this document.
 
 .. toctree::
     :maxdepth: 2
@@ -18,7 +18,7 @@ Active interlock data service is implementation using Django framework, and its 
     webclient
     howto
 
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`
