@@ -55,8 +55,8 @@ class SSLAdapter(HTTPAdapter):
 
 class ActiveInterlockClient(object):
     '''
-    The ActiveInterlockClient provides a client connection object to perform 
-    save, retrieve, and update operations for NSLS II active interlock service.
+    ActiveInterlockClient provides a client connection object to perform 
+    save, retrieve, and update operations for the NSLS II active interlock service.
     '''
  
     def __init__(self, BaseURL=None, username=None, password=None):
@@ -98,7 +98,7 @@ class ActiveInterlockClient(object):
 
     def downloadActiveInterlock(self, status="approved"):
         '''
-        Retrieve complete dataset with status approved and set it to active
+        Retrieves a complete dataset with a status of `approved` and sets the status to active
         
         :param status: AI status we want to download. Acceptable values are **approved** and **active**
         :type status: string
@@ -216,7 +216,7 @@ class ActiveInterlockClient(object):
         elif status == "active":
             statusParam = 2
         else:
-            self.__raise_for_status(400, "Status parameter not acceptable!")
+            self.__raise_for_status(400, "Status parameter invalid!")
 
         # Set parameters
         if self.__auth is None:
@@ -231,7 +231,7 @@ class ActiveInterlockClient(object):
             self.__raise_for_status(r.status_code, r.text)
             ds = r.json()
             if len(ds) != 1:
-                raise RuntimeError("Do not find a unique data set. Please check data set status.")
+                raise RuntimeError("Cannot find a unique data set. Please check dataset status.")
             aiid = ds.keys()[0]
             
             url = 'device/'

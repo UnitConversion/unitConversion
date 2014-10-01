@@ -1,7 +1,7 @@
-Client API Library
+The Client API
 ==============================================
 
-Client is implemented in Python and is accessing active interlock service through a RESTful interface. For now, there is only one method in library and it allows us to download/retrieve datasets from the database. If there is no dataset with specific status in the database, **no dataset available message** is returned instead. If dataset exists in the database it is returned as a json object with the following structure: ::
+The client is implemented in Python and accesses the active interlock service through a RESTful interface. Currently, there is only a single method in the library and it allows downloading/retrieval of datasets from the database. If there is no dataset with the specific status in the database, a **no dataset available** message is returned instead. If the dataset exists in the database, then it is returned as a JSON object with the following structure: ::
 
  {
   'bm': {   # Bending Magnet part of the returned object
@@ -39,7 +39,7 @@ Client is implemented in Python and is accessing active interlock service throug
     'id': {   # Insertion Device part of the returned object
       'id':                   , #int, id of the device in the database
       'ai_id':                , #int, id of the active interlock
-      'name':                 , #str, name of the device and also s3 name
+      'name':                 , #str, name of the device and also the s3 name
       'definition':           , #str, definition of the device
       'logic':                , #str, name of the logic
       'shape':                , #str, shape of the logic
@@ -88,7 +88,7 @@ Client is implemented in Python and is accessing active interlock service throug
   },
   'logic': {   # Logic part of the returned object
     'id': {
-      'label':                , # str, column's name
+      'label':                , # str, name of column
       'id':                   , # int, internal id of active interlock logic
       'name':                 , # str, name of active interlock envelop 
       'shape':                , # str, allowed envelop shape in phase space
@@ -102,53 +102,57 @@ Client is implemented in Python and is accessing active interlock service throug
   }
  }
 
-Response comprises of three parts. Part for the BPM data, part for the ID data and Logic part.
+The response is made up of three parts:
+    - BPM data
+    - ID data 
+    - logic.
 
-Examples of use
+Examples of Use
 ---------------------
 
-To download active interlock dataset firstly we have to initialize a client::
+To download the active interlock dataset, the client must first be initialized::
 
   client = ActiveInterlockClient(BaseURL="http://localhost:8000/ai/")
 
-Client accepts three input parameters that can also be omitted if they are defined in **activeinterlock.conf** file. These parameters are:
+The client accepts three input parameters that can be omitted if they have been defined in the **activeinterlock.conf** file. These parameters are:
  * BaseURL
  * username
  * password
-
-In the example above we passed in **BaseURL** parameter do define server access URL. After client is initialized, we can download active interlock by calling::
+where the **BaseURL** parameter defines the server access URL. After the client is initialized, the active interlock dataset can be downloaded by calling::
 
   client.downloadActiveInterlock()
 
-Another way of calling download is by passing a status parameter::
+Another method of downloading the dataset is by passing a status parameter::
 
   client.downloadActiveInterlock("approved")
 
-We can only download active interlock datasets that have the following statuses:
+Only active interlock datasets that have the following statuses can be downloaded:
  * approved
  * active
 
-In case status parameter is omitted it defaults to **approved**. Returned value of download method is explained in the following section.
+If the status parameter is omitted, it defaults to **approved**. The returned value of the download method is explained in the  :ref:`activeInterlockDownloadResponse` section. 
 
-If active interlock with **approved** status is downloaded, its status is changed to **active**.
+If an active interlock dataset with an **approved** status is downloaded, its status is changed to **active**.
+
+.. _activeInterlockDownloadResponse:
 
 Authentication
 --------------------
 
-Downloading active interlock requires user to have special permissions. To check if user has appropriate permissions, user needs to be authenticated when requesting the data.
+Downloading an active interlock dataset requires the user to have special permissions, which means that the user must be authenticated when requesting the data.
 
-To authenticate requests, user must create an **activeinterlock.conf** file in the **/etc/** directory with the following contents: ::
+To authenticate requests, the user must create an **activeinterlock.conf** file in the **/etc/** directory with the following content: ::
 
  [DEFAULT]
  username=username
  password=password
 
-After client is initialized it will check for this file, parse it and authenticate all POST requests with given username and password. If username and/or password are not correct or if file is not found in the directory mentioned above, server will respond with **401 Unauthorized** error message.
+After the client has been initialized, it will look for this file, parse it and authenticate all POST requests with the provided username and password. If the file is not found in the directory, or if the username and/or password are not correct, then the server will respond with a **401 Unauthorized** error message.
 
-Client API Library
+The Client API Library
 ---------------------
 
-This library is to access active interlock service.
+This library accesses the active interlock service.
 
 .. automodule:: activeinterlockpy.activeinterlockclient
     :members: 

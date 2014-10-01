@@ -1,9 +1,9 @@
-Data API
+The Data API
 =============================
 
-Dataapi is a layer between RESTful Interface at the top and RDB database at the bottom. It directly communicates to RDB database and returns its data. It is implemented in Python. 
+The dataapi is a layer between the RESTful Interface at the top and the relational database at the bottom. It communicates directly with the relational database and returns data retrieved from the database. The dataapi is implemented in Python. 
 
-Data API library
+The Data API library
 -----------------
 
 .. automodule:: pyactiveinterlock.epsai

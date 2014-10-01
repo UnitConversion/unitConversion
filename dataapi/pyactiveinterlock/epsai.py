@@ -23,7 +23,7 @@ __version__ = [1, 0, 0]
 
 class epsai(object):
     '''
-    Data API for active interlock system.
+    Data API for the active interlock system.
     '''
     def __init__(self, conn, transaction=None):
         '''initialize active interlock class.
@@ -103,7 +103,7 @@ class epsai(object):
         
     def copyActiveInterlock(self, status, description, modified_by):
         '''
-        Copy existing active interlock to an editable status
+        Copies existing active interlock dataset to an editable status
         
         Current statuses:
         
@@ -113,21 +113,21 @@ class epsai(object):
          - 3: backup
          - 4: history
         
-        :param status: status of the active interlock we are copying
+        :param status: status of the active interlock being copied
         :type status: int
         
         :param description: active interlock description
         :type description: str
         
-        :param modified_by: user who requests this update
+        :param modified_by: user requesting this update
         :type modified_by: str
             
         :Returns: boolean
             
             The return code: ::
                 
-                True -- when the active interlock was successfully copied.
-                Exception -- when there was an error.
+                True, if successful.
+                Exception, if there is an error.
         
         :Raises: MySQLError, ValueError
         '''
@@ -183,7 +183,7 @@ class epsai(object):
         
     def updateActiveInterlockStatus(self, ai_id, status, new_status, modified_by):
         '''
-        Update status of a data set.
+        Updates status of a dataset.
         
         Current statuses:
         
@@ -193,7 +193,7 @@ class epsai(object):
          - 3: backup
          - 4: history
         
-        :param ai_id: internal id of an active interlock data set
+        :param ai_id: internal id of an active interlock dataset
         :type ai_id: int
         
         :param status: current status code
@@ -202,18 +202,18 @@ class epsai(object):
         :param new_status: new status code
         :type new_status: int
         
-        :param modified_by: name who requests this update
+        :param modified_by: user requesting this update
         :type modified_by: str
         
-        :param definition: are we updating bm or id?
+        :param definition: is bm (bending magnet) or id (insertion device) being updated?
         :type definition: str
             
         :Returns: boolean
             
             The return code: ::
                 
-                True -- when the status is changed.
-                Exception -- when there was an error.
+                True, if successful.
+                Exception, if there is an error.
         
         :Raises: MySQLError, ValueError
         '''
@@ -293,7 +293,8 @@ class epsai(object):
 
     def saveDeviceProperties(self):
         '''
-        When creating new active interlock for the first time, create all needed property types
+        Saves new active interlock device.
+        When creating a new active interlock device, all necessary property types must be created.
         '''
         
         # Get current properties
@@ -312,21 +313,21 @@ class epsai(object):
         
     def retrieveActiveInterlockProp(self, aid_id, prop_type_name):
         '''
-        Retrieve properties of the active interlock device
+        Retrieves properties of the active interlock device
         
-        :param aid_id: active interlock device id
+        :param aid_id: active interlock device ID
         :type aid_id: int
         
         :param prop_type_name: active interlock property  type name
         :type prop_type_name: str
         
-        :returns: Returned dictionary
+        :returns: Python dictionary with structure:
             
             .. code-block:: python
             
                 {'id':
                     'id':            , #int, property id
-                    'aid_id':        , #int, active interlock device id
+                    'aid_id':        , #int, active interlock device ID
                     'value':         , #str, property value
                     'status':        , #int, property status
                     'date':          , #str, date property was set
@@ -336,8 +337,8 @@ class epsai(object):
                 }
         '''
         
-        # Check active interlock device id
-        _checkParameter('active interlock device id', aid_id, 'prim')
+        # Check active interlock device ID
+        _checkParameter('active interlock device ID', aid_id, 'prim')
         
         # Check property type name
         _checkParameter('prop type name', prop_type_name)
@@ -396,7 +397,7 @@ class epsai(object):
         
     def saveActiveInterlockProp(self, aid_id, prop_type_name, value):
         '''
-        Save active interlock property into database. Property type must exist before saving property value.
+        Saves active interlock property into database. Property type must exist before saving property value.
         
         :param aid_id: Id of the saved active interlock
         :type aid_id: int
@@ -408,7 +409,7 @@ class epsai(object):
         :type value: string
         
         :returns:
-            Python dictionary::
+            Python dictionary with structure::
             
                 {'id': id of the new property}
         
@@ -416,8 +417,8 @@ class epsai(object):
             ValueError, MySQLError
         '''
         
-        # Check active interlock device id
-        _checkParameter('active interlock device id', aid_id, 'prim')
+        # Check active interlock device ID
+        _checkParameter('active interlock device ID', aid_id, 'prim')
         
         # Retrieve property type name
         existingPropType = self.retrieveActiveInterlockPropType(prop_type_name)
@@ -474,9 +475,9 @@ class epsai(object):
 
     def updateActiveInterlockProp(self, aid_id, prop_type_name, value):
         '''
-        Update active interlock property in the database. Property type must exist before saving property value.
+        Updates active interlock property in the database. Property type must exist before property value can be saved.
         
-        :param ai_id: active interlock id
+        :param ai_id: active interlock ID
         :type ai_id: int
         
         :param prop_type_name: name of the property type
@@ -486,7 +487,7 @@ class epsai(object):
         :type value: str
         
         :returns: boolean or Exception.
-            True if everything is ok
+            True, if successful
         
         :raises:
             MySQLError, ValueError
@@ -518,8 +519,8 @@ class epsai(object):
         if typeObject['description'] == 'approvable':
             queryDict['status'] = 2
         
-        # Check active interlock device id
-        _checkParameter('active interlock device id', aid_id, 'prim')
+        # Check active interlock device ID
+        _checkParameter('active interlock device ID', aid_id, 'prim')
         whereDict['active_interlock_device_id'] = aid_id
         
         # Set value parameter
@@ -550,25 +551,26 @@ class epsai(object):
 
     def approveCells(self, aid_id, prop_types):
         '''
-        Approve cells passed in the props list. Status of the properties will be changed
+        Approves cells passed in the properties list. Status of the properties will be changed
         from unapproved (2) to approved (3)
         
-        :param aid_id: active interlock device id
+        :param aid_id: active interlock device ID
         :type aid_id: int
         
         :param props: list of property type names that should be updated
         :type props: list
         
         :returns:
-            True if everything is ok or exception
+                True, if successful.
+                Exception, if there is an error.
         '''
         
         # Define query dict
         queryDict = {}
         whereDict = {}
         
-        # Check active interlock device id
-        _checkParameter('active interlock device id', aid_id, 'prim')
+        # Check active interlock device ID
+        _checkParameter('active interlock device ID', aid_id, 'prim')
         whereDict['active_interlock_device_id'] = aid_id
         
         try:
@@ -619,10 +621,10 @@ class epsai(object):
 
     def retrieveDevice(self, ai_id = None, ai_status = None, name = None, definition = None, aid_id = None):
         '''
-        Retrieve devices of particular active interlock, name and definition. Name can also be a wildcard
+        Retrieves devices with the given active interlock name and definition. Name can also be a wildcard
         character to select all devices.
         
-        :param ai_id: active interlock id
+        :param ai_id: active interlock ID
         :type ai_id: int
         
         :param ai_status: active interlock status
@@ -634,12 +636,11 @@ class epsai(object):
         :param definition: type of the dataset (bm/id)
         :type definition: str
         
-        :param aid_id: active interlock device id
+        :param aid_id: active interlock device ID
         :type aid_id: int
         
         :returns:
-            
-            Retrieved Python dictionary::
+            Retrieved Python dictionary with structure::
             
                 {'id':
                     {'id':              , #int, id of the device in the database
@@ -677,9 +678,9 @@ class epsai(object):
         if ai_id != None:
             _checkParameter('active interlock id', ai_id, 'prim')
         
-        # Check active interlock device id
+        # Check active interlock device ID
         if aid_id != None:
-            _checkParameter('active interlock device id', aid_id, 'prim')
+            _checkParameter('active interlock device ID', aid_id, 'prim')
         
         # Check status
         if ai_status != None:
@@ -723,7 +724,7 @@ class epsai(object):
             sql += " AND aid.active_interlock_id = %s "
             vals.append(ai_id)
         
-        # Append active interlock device id
+        # Append active interlock device ID
         if aid_id != None:
             sql += " AND aid.active_interlock_device_id = %s "
             vals.append(int(aid_id))
@@ -781,9 +782,9 @@ class epsai(object):
 
     def saveDevice(self, ai_status, name, definition, logic, props, ai_id = None):
         '''
-        Save new device into database
+        Saves new device into database
         
-        :param ai_id: active interlock id
+        :param ai_id: active interlock ID
         :type ai_id: int
         
         :param ai_status: active interlock status
@@ -795,12 +796,12 @@ class epsai(object):
         :param definition: definition of device. It can be bm (bending magnet) or id (insertion device)
         :type definition: str
         
-        :param logic: name of the logic that has t be saved in the database
+        :param logic: name of the logic that must be saved in the database
         :type logic: str
         
-        :param props: device properties' values in a Python dictionary format.
+        :param props: device property values in a Python dictionary format.
             
-            Property dict for bending magnet should have the following structure::
+            Property dictionary for bending magnet should have the following structure::
             
                 {
                     'bm_cell': '',
@@ -815,7 +816,7 @@ class epsai(object):
                     'bm_in_use': ''
                 }
             
-            and property dict for insertion device should have the following structure::
+            and property dictionary for insertion device should have the following structure::
                 
                 {
                     'cell': '',
@@ -853,9 +854,9 @@ class epsai(object):
         :type props: dict
         
         :return:
-            Python dictionary::
+            Python dictionary with structure::
             
-                 {'id': id of the saved device}
+                 {'id': ID of the saved device}
         
         :raises:
             ValueError, MySQLError
@@ -935,9 +936,9 @@ class epsai(object):
 
     def updateDevice(self, aid_id, name = None, logic = None):
         '''
-        Update device's name and logic
+        Updates device name and logic
         
-        :param aid_id: active interlock device id
+        :param aid_id: active interlock device ID
         :type aid_id: int
         
         :param name: device name
@@ -947,7 +948,7 @@ class epsai(object):
         :type logic: string
         
         :return:
-            True if everything is ok
+                True, if successful.
         '''
         
         # Define query dict
@@ -1000,13 +1001,13 @@ class epsai(object):
 
     def deleteDevice(self, aid_id):
         '''
-        Delete active interlock device by active interlock device id
+        Deletes active interlock device by active interlock device ID
         
-        :param aid_id: active interlock device id
+        :param aid_id: active interlock device ID
         :type aid_id: int
         
         :returns:
-            True if everything is ok
+                True, if successful.
         
         :Raises:
             MySQLError
@@ -1049,13 +1050,13 @@ class epsai(object):
 
     def deleteActiveInterlock(self, status):
         '''
-        Delete active interlock by active interlock status
+        Deletes active interlock by active interlock status
         
         :param status: active interlock status
         :type status: int
         
         :returns:
-            True if everything is ok
+                True, if successful.
         
         :Raises:
             MySQLError
@@ -1118,10 +1119,10 @@ class epsai(object):
 
     def retrieveStatusInfo(self):
         '''
-        Retrieve information about active interlock statuses. The returned Python dictionary will include the number of datasets in each status.
+        Retrieves information about active interlock status. The returned Python dictionary will include the number of datasets in each status.
         
         :returns:
-            Returned Python dictionary::
+            Returned Python dictionary with structure::
             
                 {'status':
                     {
@@ -1210,17 +1211,17 @@ class epsai(object):
 
     def downloadActiveInterlock(self, status, modified_by):
         '''
-        Retrieve complete dataset by status and set it to active if previous status is approved
+        Retrieves complete dataset by status and sets it to active if previous status is approved
         
-        :param status: status of the active interlock we want to download
+        :param status: status of the active interlock to download
         :type status: int
         
-        :param modified_by: who modified active interlock
+        :param modified_by: user that last modified the active interlock dataset
         :type modified_by: string
         
         :return:
         
-            Python dictionary::
+            Python dictionary with structure::
         
              {'bm':{
                      bm data
@@ -1266,25 +1267,25 @@ class epsai(object):
 
     def retrieveActiveInterlockHeader(self, status=None, id=None, datefrom=None, dateto=None):
         '''
-        Retrieve a data set according its saved time, status or id.
+        Retrieves a dataset according its saved time, status or ID.
         
         :param status: Current status.
         :type status: int
         
-        :param id: Id in the database.
+        :param id: ID in the database.
         :type id: int
         
-        :param datefrom: data saved after this time. Default is None, which means data from very beginning. It has format as **yyyy-MM-dd hh:mm:ss** since dates in MySql are represented with the format.
+        :param datefrom: data saved after this time. Default is None, which means data from very beginning. It has format as **yyyy-MM-dd hh:mm:ss** since dates in MySql are represented with this format.
         :type datafrom: datetime
         
-        :param dateto: data saved before this time. Default is None, which means data till current. It has format as **yyyy-MM-dd hh:mm:ss** since dates in MySql are represented with the format.
+        :param dateto: data saved before this time. Default is None, which means data till current. It has format as **yyyy-MM-dd hh:mm:ss** since dates in MySql are represented with this format.
         :type datato: datetime
         
-        :param withdata: get data set. Default is true, which means always gets data by default. Otherwise, only device names are retrieved for desired data set.
+        :param withdata: get dataset. Default is true, which means always gets data by default. Otherwise, only device names are retrieved for desired dataset.
         :type withdata: boolean
         
         :Returns:
-            Python dictionary::
+            Python dictionary with structure::
         
              {'id': {
                      'status':,.
@@ -1370,20 +1371,20 @@ class epsai(object):
             return resdict
             
         except MySQLdb.Error as e:
-            self.logger.info('Error when fetching active interlock data set headers:\n%s (%d)' %(e.args[1], e.args[0]))
-            raise MySQLError('Error when fetching active interlock data set headers:\n%s (%d)' %(e.args[1], e.args[0]))
+            self.logger.info('Error when fetching active interlock dataset headers:\n%s (%d)' %(e.args[1], e.args[0]))
+            raise MySQLError('Error when fetching active interlock dataset headers:\n%s (%d)' %(e.args[1], e.args[0]))
 
     def saveActiveInterlockHeader(self, description=None, created_by=None):
         '''
-        Save a new active interlock.
+        Saves a new active interlock.
             
-        :param description: comments or any other notes for this data set.
+        :param description: comments or any other notes for this dataset.
         :type description: str
         
-        :param created_by: the person who set this data set.
+        :param created_by: the person who set this dataset.
         :type created_by: str
         
-        :Returns: Active interlock internal id if saved successfully.
+        :Returns: Active interlock internal ID if saved successfully.
             
         :Raises: ValueError, MySQLError
 
@@ -1395,7 +1396,7 @@ class epsai(object):
         # Create property types if there are none
         #self.saveDeviceProperties()
         
-        # Save header onformation of a active interlock data set
+        # Save header onformation of a active interlock dataset
         sql = '''
         INSERT INTO active_interlock (created_date, status, created_by, description) VALUES (NOW(), 0, %s, %s)
         '''
@@ -1425,9 +1426,9 @@ class epsai(object):
 
     def updateActiveInterlockHeader(self, description=None, modified_by=None):
         '''
-        Update active interlock header
+        Updates active interlock header
         
-        :param ai_id: active interlock id
+        :param ai_id: active interlock ID
         :type ai_id: int
         
         :param description: active interlock description
@@ -1437,7 +1438,7 @@ class epsai(object):
         :type modified_by: string
         
         :return:
-            True if everything is ok
+                True, if successful.
         '''
         
         # Define query dict
@@ -1474,13 +1475,13 @@ class epsai(object):
 
     def retrieveActiveInterlockPropType(self, name, unit=None, description=None):
         '''
-        Each involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, and so on.
-        This method is to retrieve active interlock property type information with given name, unit, and/or description.
+        Retrieve active interlock property type information with the given name, unit, and/or description.
+        Each device involved in the active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, etc.
         
-        Wildcast matching is supported with:
+        Wildcard matching is supported with:
         
-            - ``*`` for multiple characters match, 
-            - ``?`` for single character match.
+            - ``*`` to match multiple characters, 
+            - ``?`` to match single characters.
 
         :param name: property type name.
         :type name: str
@@ -1493,7 +1494,7 @@ class epsai(object):
         
         :returns:
             
-            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below::
+            A Python dictionary is returned with each field as a list which could be converted into a table. Its structure is::
             
                 {'id: 
                     {
@@ -1556,10 +1557,10 @@ class epsai(object):
         
     def saveActiveInterlockPropType(self, name, unit=None, description=None):
         '''
-        Each device involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, and so on.
-        This method is to save active interlock property type information with given name, unit, and/or description.
+        Save active interlock property type information with the given name, unit, and/or description.
+        Each device involved in active interlock system has some properties like offset, AIHOL/AIVOL, AIHAL/AIVAL, safe current, etc.
         
-        The property name with given unit is unique in the database. It allows user to reuse a property type name, but given it 
+        The property name with given unit is unique in the database. It allows a user to reuse a property type name, but to give it 
         a different unit.
         
         :param name: property type name.
@@ -1572,7 +1573,7 @@ class epsai(object):
         :type description: str
         
         :returns:
-            Python dictionary::
+            Python dictionary with structure::
             
                 {'id': internal property type id}
             
@@ -1617,13 +1618,13 @@ class epsai(object):
             
     def isLogicUsed(self, logic):
         '''
-        Retrieve the number of uses of specific logic
+        Retrieves the number of uses of the specified logic
         
         :param logic: name of the logic
         :type logic: str
         
         :return:
-            Python dictionary::
+            Python dictionary with structure::
             
                 {'num': usage count}
         '''
@@ -1658,17 +1659,17 @@ class epsai(object):
     
     def retrieveActiveInterlockLogic(self, name, shape=None, logic=None, status=None, ai_id=None):
         '''
-        Retrieve logic information according given search constrains.
-        Active interlock envelop name has to be provided as a minimum requirement for this function.
+        Retrieves logic information according to the given search constraints.
+        The active interlock envelop name must be provided as a minimum input for this function.
         
-        Wildcast matching is supported for name and shape with:
+        Wildcard matching is supported for name and shape with:
         
-            - ``*`` for multiple characters match, 
-            - ``?`` for single character match.
+            - ``*`` to match multiple characters, 
+            - ``?`` to match single characters.
 
-        Wildcast is not supported for logic since the * is a math symbol.
+        Wildcards are not supported for logic since * is a mathematical symbol.
 
-        :param name: active interlock envelop name.
+        :param name: active interlock envelop name
         :type name: str
         
         :param shape: active interlock shape name in phase space.
@@ -1680,12 +1681,12 @@ class epsai(object):
         :param status: status of the logic
         :type status: int
         
-        :param ai_id: active interlock id
+        :param ai_id: active interlock ID
         :type ai_id: int
         
         :returns:
             
-            A python dictionary is return with each field as an list which could be converted into a table. Its structure is as below::
+            A Python dictionary is returned with each field as a list which could be converted into a table. Its structure is::
             
                 {'id':
                     {'label':          , # str, column's name
@@ -1774,10 +1775,10 @@ class epsai(object):
     
     def saveActiveInterlockLogic(self, name, shape=None, logic=None, code=None, created_by=None):
         '''
-        Save logic information for active interlock system.
-        The time is automatically captured when the data is saved into RDB.
+        Saves logic information for the active interlock system.
+        The time is automatically captured when the data is saved into the RDB.
         
-        It checks whether given envelop name with given phase space shape and logic exists. If yes, it raises a ValueError exception.
+        It checks whether the given envelop name with the given phase space shape and logic exists. If it does, then it raises a ValueError exception.
         
         :param name: active interlock envelop name
         :type name: str
@@ -1791,11 +1792,11 @@ class epsai(object):
         :param code: logic algorithm encoding code for hardware convenience
         :type code: int
 
-        :param created_by: who creates this data set
+        :param created_by: user who first created this dataset
         :type created_by: str
             
         :returns:
-            Returned Python dictionary::
+            Python dictionary with structure::
             
                 {'id': internal id of active interlock logic}
                 
@@ -1847,15 +1848,15 @@ class epsai(object):
 
     def updateActiveInterlockLogic(self, id, name=None, shape=None, logic=None, code=None, status=None):
         '''
-        Save logic information for active interlock system.
-        The time is automatically captured when the data is saved into RDB.
+        Saves logic information for active interlock system.
+        The time is automatically captured when the data is saved into the RDB.
         
-        It checks whether given envelop name with given phase space shape and logic exists. If yes, it raises a ValueError exception.
+        It checks whether the given envelop name with the given phase space shape and logic exists. If it does, then it raises a ValueError exception.
         
-        Currently implementation assumes that an active interlock envelop is for a particular shap, which is unique globally. 
-        If logic is changed, a new name should be defined.
+        The current implementation assumes that an active interlock envelop applies to a particular shape, which is globally unique. 
+        If the logic is changed, a new name should be defined.
         
-        :param id: active interlock envelop id
+        :param id: active interlock envelop ID
         :type id: int
         
         :param name: active interlock envelop name
@@ -1870,7 +1871,8 @@ class epsai(object):
         :param code: logic algorithm encoding code for hardware convenience
         :type code: int
             
-        :returns: True if everything is ok
+        :returns: 
+            True, if successful.
                 
         :Raises: ValueError, Exception
         '''
@@ -1931,13 +1933,13 @@ class epsai(object):
 
     def deleteActiveInterlockLogic(self, logic_id):
         '''
-        Delete active interlock logic by active interlock logic id
+        Deletes active interlock logic by active interlock logic ID
         
-        :param logic_id: active interlock logic id
+        :param logic_id: active interlock logic ID
         :type logic_id: int
         
         :returns:
-            True if everything went ok
+            True, if successful.
         
         :Raises:
             MySQLError

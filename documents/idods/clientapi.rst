@@ -1,4 +1,4 @@
-Client API
+The Client API
 =============================
 
 The client is implemented in Python and accesses the service through a RESTful interface.
