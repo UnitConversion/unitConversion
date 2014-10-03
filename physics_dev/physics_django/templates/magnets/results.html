@@ -4,13 +4,13 @@
 <div>
 	<ul class="nav nav-tabs">
 		<li ng-class="{'active': (subview == undefined || subview == 'results')}">
-			<a href="{{url}}{{tab.index}}{{view}}/results">Conversion results</a>
+			<a href="{{url}}view/{{view}}/subview/results">Conversion results</a>
 		</li>
 		<li ng-if="data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'data'}">
-			<a href="{{url}}{{tab.index}}{{view}}/data">Measurement data</a>
+			<a href="{{url}}view/{{view}}/subview/data">Measurement data</a>
 		</li>
 		<li ng-class="{'active': subview == 'properties'}">
-			<a href="{{url}}{{tab.index}}{{view}}/properties">Properties</a>
+			<a href="{{url}}view/{{view}}/subview/properties">Properties</a>
 		</li>
 	</ul>
 </div>

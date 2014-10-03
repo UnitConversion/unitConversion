@@ -48,7 +48,7 @@ app.controller('mainCtrl', function($scope, $window){
 	$scope.login = function() {
 
 		$.ajax({
-			url: serviceurl + "user/login/",
+			url: ucserviceurl + "user/login/",
 			method: "POST",
 			data: "username=" + $scope.session.username + "&password=" + $scope.session.password
 		}).success(function(data, status, headers, config) {
@@ -65,7 +65,7 @@ app.controller('mainCtrl', function($scope, $window){
 	$scope.logout = function() {
 
 		$.ajax({
-			url: serviceurl + "user/logout/",
+			url: ucserviceurl + "user/logout/",
 			method: "POST"
 		}).success(function(data, status, headers, config) {
 			$window.location.reload();
@@ -85,6 +85,7 @@ app.controller('searchFormCtrl', function($scope, systemService, $window, $route
 	$scope.search.displayName = "display_search_filter";
 	$scope.search.displaySystem = "display_search_filter";
 	$scope.search.type = "install";
+	l("Show search form!!!");
 
 	// Set search type
 	if($routeParams.type !== undefined) {
@@ -128,8 +129,9 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 
 	$scope.devices = [];
 	var previousDevice;
+	l("Show list!!!");
 
-	var query = serviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
+	var query = ucserviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
 
 	$http.get(query).success(function(data){
 
@@ -176,7 +178,7 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 			id = device.name;
 		}
 
-		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + id + "/0/results#" + id;
+		$window.location = createDeviceListQuery($routeParams, true) + "/id/" + id + "/view/0/subview/results#" + id;
 	};
 });
 
@@ -196,7 +198,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 	var detailsTabsIndex = 0;
 	$scope.tabs = [];
 	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.id + '/';
-	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst_id/" + $routeParams.id + '/';
+	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst/" + $routeParams.id + '/';
 	$scope.view = $routeParams.view;
 	$scope.properties = {};
 
@@ -211,17 +213,18 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 	$scope.scroll = {};
 	$scope.scroll.scroll = $routeParams.id;
 
-	$scope.goToMuniconv = function() {
-		var url = $scope.inst_url + 'step/mt/m';
+	$scope.goToMuniconvDetails = function() {
+		var url = $scope.inst_url + 'step/' + new Date().getTime() + '/mt/m';
 		$window.location = url;
 	};
 
-	$scope.goToMeasurementData = function() {
-		var url = $scope.inst_url + 'step/md';
+	$scope.goToMeasurementDataDetails = function() {
+		var url = $scope.inst_url + 'step/' + new Date().getTime() + '/md';
 		$window.location = url;
 	};
 
 	l("hash: " + $location.hash());
+	l("Show details!!!");
 
 	detailsService.getDetails($routeParams).then(function(data) {
 		$scope.data = data[$routeParams.id];
@@ -264,7 +267,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 			idParameter = "name";
 		}
 
-		var conversionQuery = serviceurl
+		var conversionQuery = ucserviceurl
 				+ 'magnets/conversion/?' + idParameter
 				+ '=' + $routeParams.id
 				+ '&from=' + $scope.source_unit
@@ -335,13 +338,13 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Show details in the right pane
  */
-app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, detailsService, $location){
+app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, detailsService, inventoryTypeFactory, InventoryType, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	l("Show wizard!");
 	l($routeParams);
 
-	$routeParams.id = $routeParams.inst_id;
+	$routeParams.id = $routeParams.inst;
 	$scope.id = $routeParams.id;
 	$scope.data = {};
 	$scope.rawData = {};
@@ -352,8 +355,8 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.detailsTabs = [];
 	var detailsTabsIndex = 0;
 	$scope.tabs = [];
-	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst_id/" + $routeParams.inst_id + '/';
-	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.inst_id + '/';
+	$scope.inst_url = createDeviceListQuery($routeParams, true) + "/inst/" + $routeParams.inst + '/';
+	$scope.url = createDeviceListQuery($routeParams, true) + "/id/" + $routeParams.inst + '/';
 	$scope.view = $routeParams.view;
 	$scope.properties = {};
 
@@ -384,24 +387,60 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 		'complex:3': {}
 	};
 
+	$scope.toggleData = function(id, type, key) {
+		l($scope.rawData[id]);
+
+		if($scope.rawData[id][type][key] || ($scope.rawData[id][type][key] && $scope.rawData[id][type][key].display && $scope.rawData[id][type][key].display === true)) {
+			delete $scope.rawData[id][type][key];
+
+		} else if(!$scope.rawData[id][type][key]) {
+
+			$scope.rawData[id][type][key] = {
+				display: true,
+				description: "",
+				defaultEnergy: "",
+				algorithms: {}
+			};
+
+		} else {
+			$scope.rawData[id][type][key].display = true;
+		}
+	};
+
 	$scope.goToMuniconv = function() {
-		var url = $scope.inst_url + 'step/mt_m';
+		var url = $scope.inst_url + 'step/' + $routeParams.si + '/mt/m';
 		$window.location = url;
 	};
 
 	$scope.goToMuniconvChain = function() {
-		var url = $scope.inst_url + 'step/mt_mc';
+		var url = $scope.inst_url + 'step/' + $routeParams.si + '/mt/mc';
 		$window.location = url;
 	};
 
 	$scope.goToMeasurementData = function() {
-		var url = $scope.inst_url + 'step/md';
+		var url = $scope.inst_url + 'step/' + new Date().getTime() + '/md';
 		$window.location = url;
 	};
 
 	$scope.goToDetails = function() {
-		var url = $scope.url + "0/results#" + $routeParams.inst_id;
-		$window.location = url;
+		var url = $scope.url + "view/0/subview/results#" + $routeParams.inst;
+		//l($scope.rawData);
+
+		$.each($scope.rawData, function(i, tmplt) {
+			var keys = Object.keys(tmplt);
+
+			inventoryTypeFactory.retrieveItems({name: keys[0], cmpnt_type_name: $scope.device.componentType}).then(function(data) {
+
+				if(Object.keys().length < 1) {
+
+					inventoryTypeFactory.saveItems({name: keys[0], cmpnt_type_name: $scope.device.componentType}).then(function(saveTmpltResult) {
+						// TODO: Save or update property
+					});
+				}
+			});
+		});
+
+		//$window.location = url;
 	};
 
 	$scope.manageMeasurementData = function() {
@@ -411,13 +450,13 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 			deviceId = $scope.device.componentType;
 		}
 
-		var newWindowUrl = serviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
+		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
 
 
 		$window.open(newWindowUrl);
 	};
 
-	var query = serviceurl + 'magnets/install/?name=' + $scope.id;
+	var query = ucserviceurl + 'magnets/install/?name=' + $scope.id;
 
 	$http.get(query).success(function(deviceData){
 		l(deviceData[0]);
@@ -457,10 +496,16 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 	});
 });
 
-app.controller('showMdCtrl', function($scope, $routeParams, $http, detailsService, $location){
+app.controller('showMdCtrl', function($scope, $routeParams){
 });
 
-app.controller('showMtCtrl', function($scope, $routeParams, $http, detailsService, $location){
+app.controller('showMtCtrl', function($scope){
+});
+
+app.controller('showMtMCtrl', function($scope, $routeParams){
+});
+
+app.controller('showMtMcCtrl', function($scope, $routeParams){
 });
 
 /*
@@ -476,6 +521,13 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.data = undefined;
 	l("Show results!!!");
 	l($routeParams);
+
+	if ($routeParams.subview === undefined) {
+		l("return");
+		return;
+	}
+
+	l("did not reutrn");
 
 	var detailsTabsIndex = 0;
 	$scope.scroll.scroll = $routeParams.id;

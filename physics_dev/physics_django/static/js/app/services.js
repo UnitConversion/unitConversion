@@ -9,7 +9,7 @@
  */
 app.factory('systemService', function($resource){
 
-	return $resource(serviceurl + 'magnets/system/', {}, {
+	return $resource(ucserviceurl + 'magnets/system/', {}, {
 		transform: {
 			method:'GET',
 			isArray:false,
@@ -31,10 +31,10 @@ app.factory('detailsService', function($q, $http) {
 		var deferred = $q.defer();
 
 		// Create query string
-		var query = serviceurl + 'magnets/conversion/?id=' + params.id;
+		var query = ucserviceurl + 'magnets/conversion/?id=' + params.id;
 
 		if(params.type === "install") {
-			query = serviceurl + 'magnets/conversion/?name=' + params.id;
+			query = ucserviceurl + 'magnets/conversion/?name=' + params.id;
 		}
 
 		$http.get(query).success(function(data){

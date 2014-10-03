@@ -247,6 +247,32 @@ def updateInventoryWS(request):
 
 
 @require_http_methods(["GET"])
+def retrieveInventoryPropWS(request):
+    '''
+    Retrieve inventory property
+    '''
+    return _retrieveData(request, idodsi.retrieveInventoryProperty, ['inventory_id', 'inventory_property_template_name', 'value', 'cmpnt_type_name'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def saveInventoryPropWS(request):
+    '''
+    Save inventory property
+    '''
+    return _saveData(request, idodsi.saveInventoryProperty, ['inventory_id', 'inventory_property_template_name', 'value', 'cmpnt_type_name'])
+
+
+@require_http_methods(["POST"])
+@has_perm_or_basicauth('id.can_modify_id')
+def updateInventoryPropWS(request):
+    '''
+    Update inventory property
+    '''
+    return _updateData(request, idodsi.updateInventoryProperty, ['inventory_id', 'inventory_property_template_name', 'value', 'cmpnt_type_name'])
+
+
+@require_http_methods(["GET"])
 def retrieveInventoryPropTmpltWS(request):
     '''
     Retrieve inventory property template

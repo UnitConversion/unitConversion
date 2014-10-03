@@ -13,3 +13,10 @@ var version = "0.1";
 
 //Write logs to console
 var writeLogs = true;
+
+// Unit conversion service URL
+var ucserviceurl = serviceurl;
+var serviceurlraw = serviceurl;
+
+// Idods service URL
+var serviceurl = serviceurlraw + "id/device";

@@ -424,6 +424,67 @@ app.factory('inventoryFactory', function($http, $q, Inventory, EntityError) {
 });
 
 /*
+ * Provide a factory for the inventory property entity. Inventory property can be checked, retrieved, saved and updated
+ */
+app.factory('inventoryPropFactory', function($http, $q, InventoryProp, EntityError) {
+	var factory = {};
+	factory.entity = new InventoryProp();
+	factory.error = new EntityError();
+
+	// Set inventory property template object
+	factory.setItem = function(item) {
+		this.entity.set(item);
+	};
+
+	// Check inventory property tempalte before sending it to the server
+	factory.checkItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return checkItem(this.entity, this.error);
+	};
+
+	// Get inventory property template from server
+	factory.retrieveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return retrieveItem($q, $http, "inventoryprop", this.entity, InventoryProp);
+	};
+
+	// Get inventorie property templates from server
+	factory.retrieveItems = function(params) {
+		return retrieveItems($q, $http, "inventoryprop", this.entity.list, params, this.entity.search_m);
+	};
+
+	// Save new inventory property template
+	factory.saveItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return saveItem($q, $http, "saveinventoryprop", this.entity);
+	};
+
+	// Update inventory property template
+	factory.updateItem = function(item) {
+
+		if(item !== undefined) {
+			this.setItem(item);
+		}
+
+		return updateItem($q, $http, "updateinventoryprop", this.entity);
+	};
+
+	return factory;
+});
+
+/*
  * Provide a factory for the inventory property template entity. Inventory property template can be checked, retrieved, saved and updated
  */
 app.factory('inventoryTypeFactory', function($http, $q, InventoryType, EntityError) {

@@ -403,6 +403,57 @@ app.value('InventoryInfo', {
  	}
  });
 
+/*
+ * Inventory property object
+ */
+ app.value('InventoryProp', function(obj){
+
+ 	// Mandatory parameters that have to be set in the save form
+ 	this.m = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	// Mandatory parameters that have to be present in an URL when searching
+ 	this.search_m = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	// Parameters that are displayed when showing item details
+ 	this.retrieve = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	// Parameters that are checked before saving or updating
+ 	this.list = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	// Parameters used for save URL
+ 	this.save = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	// Parameters that are displayed when saving new item
+ 	this.save_show = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	// Parameters used as update URL parameters
+ 	this.update = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	this.all = ["inventory_id", "inventory_property_template_name", "value", "cmpnt_type_name"];
+
+ 	this.set = function(obj) {
+
+ 		if(obj === undefined) {
+ 			return undefined;
+ 		}
+
+ 		for(i=0; i<this.all.length; i++) {
+
+ 			if(obj[this.all[i]] === null) {
+ 				this[this.all[i]] = undefined;
+
+ 			} else {
+ 				this[this.all[i]] = obj[this.all[i]];
+ 			}
+
+  		}
+ 	};
+
+ 	if(obj !== undefined) {
+ 		this.set(obj);
+ 	}
+ });
+
  /*
  * Inventory property template info object
  */

@@ -4,6 +4,7 @@ from physics_django.idods.views import (retrieveVendorWS, saveVendorWS, updateVe
 from physics_django.idods.views import (retrieveCompntTypePropTypeWS, saveCompntTypePropTypeWS, updateCmpntTypePropTypeWS)
 from physics_django.idods.views import (retrieveCompntTypeWS, saveCompntTypeWS, updateCmpntTypeWS)
 from physics_django.idods.views import (retrieveInventoryWS, retrieveInventoryByIdWS, saveInventoryWS, updateInventoryWS)
+from physics_django.idods.views import (retrieveInventoryPropWS, saveInventoryPropWS, updateInventoryPropWS)
 from physics_django.idods.views import (retrieveInventoryPropTmpltWS, saveInventoryPropTmpltWS, updateInventoryPropTmpltWS)
 from physics_django.idods.views import (retrieveInstallWS, saveInstallWS, updateInstallWS)
 from physics_django.idods.views import (retrieveInstallRelWS, saveInstallRelWS, updateInstallRelWS, deleteInstallRelWS)
@@ -49,6 +50,11 @@ urlpatterns = patterns(
     url(r'^id/device/inventorybyid/$', retrieveInventoryByIdWS),
     url(r'^id/device/saveinventory/$', saveInventoryWS),
     url(r'^id/device/updateinventory/$', updateInventoryWS),
+
+    # Retrieve, save and update inventory property
+    url(r'^id/device/inventoryprop/$', retrieveInventoryPropWS),
+    url(r'^id/device/saveinventoryprop/$', saveInventoryPropWS),
+    url(r'^id/device/updateinventoryprop/$', updateInventoryPropWS),
 
     # Retrieve, save and update inventory property template
     url(r'^id/device/inventoryproptmplt/$', retrieveInventoryPropTmpltWS),
