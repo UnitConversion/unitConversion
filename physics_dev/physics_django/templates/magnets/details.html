@@ -11,7 +11,7 @@
 
 	<ul class="nav nav-tabs">
 		<li ng-repeat="tab in detailsTabs" ng-class="{'active': view == tab.index}">
-			<a href="{{url}}{{tab.index}}/results"><b>{{tab.first}}</b><br/>{{tab.second}}</a>
+			<a href="{{url}}view/{{tab.index}}/subview/results"><b>{{tab.first}}</b><br/>{{tab.second}}</a>
 		</li>
 	</ul>
 </div>

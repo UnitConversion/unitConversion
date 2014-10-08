@@ -338,7 +338,7 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 /*
  * Show details in the right pane
  */
-app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, detailsService, inventoryTypeFactory, InventoryType, $location){
+app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $window, detailsService, inventoryTypeFactory, InventoryType, inventoryPropFactory, InventoryProp, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
 	l("Show wizard!");
@@ -390,6 +390,11 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 	$scope.toggleData = function(id, type, key) {
 		l($scope.rawData[id]);
 
+		// Init type
+		if(!$scope.rawData[id][type]) {
+			$scope.rawData[id][type] = {};
+		}
+
 		if($scope.rawData[id][type][key] || ($scope.rawData[id][type][key] && $scope.rawData[id][type][key].display && $scope.rawData[id][type][key].display === true)) {
 			delete $scope.rawData[id][type][key];
 
@@ -424,17 +429,38 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 
 	$scope.goToDetails = function() {
 		var url = $scope.url + "view/0/subview/results#" + $routeParams.inst;
-		//l($scope.rawData);
 
-		$.each($scope.rawData, function(i, tmplt) {
-			var keys = Object.keys(tmplt);
+		var installs = Object.keys($scope.rawData);
 
-			inventoryTypeFactory.retrieveItems({name: keys[0], cmpnt_type_name: $scope.device.componentType}).then(function(data) {
+		$.each($scope.rawData[installs[0]], function(i, type) {
 
-				if(Object.keys().length < 1) {
+			inventoryTypeFactory.retrieveItems({name: i, cmpnt_type_name: $scope.device.componentType}).then(function(data) {
+				l(Object.keys(data).length);
 
-					inventoryTypeFactory.saveItems({name: keys[0], cmpnt_type_name: $scope.device.componentType}).then(function(saveTmpltResult) {
+				if(Object.keys(data).length < 1) {
+
+					inventoryTypeFactory.saveItems({name: i, cmpnt_type_name: $scope.device.componentType}).then(function(saveTmpltResult) {
 						// TODO: Save or update property
+						l(saveTmpltResult);
+					});
+
+				} else {
+
+					inventoryPropFactory.retrieveItems({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType}).then(function(data) {
+						l(data);
+
+						if(Object.keys(data).length < 1) {
+
+							inventoryPropFactory.saveItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
+								l(result);
+							});
+
+						} else {
+
+							inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
+								l(result);
+							});
+						}
 					});
 				}
 			});
@@ -494,6 +520,31 @@ app.controller('showWizardCtrl', function($scope, $routeParams, $http, $window, 
 			}
 		}
 	});
+
+	$scope.addAlgorithm = function(type, subtype) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/add_alg.html',
+			controller: 'addAlgorithmCtrl',
+			resolve: {
+				data: function() {
+					return $scope.rawData[$scope.id];
+				},
+				type: function() {
+					return type;
+				},
+				subtype: function() {
+					return subtype;
+				},
+				inventoryId: function() {
+					return $scope.device.inventoryId;
+				},
+				cmpntTypeName: function() {
+					return $scope.device.componentType;
+				}
+			}
+		});
+	};
 });
 
 app.controller('showMdCtrl', function($scope, $routeParams){
@@ -511,7 +562,7 @@ app.controller('showMtMcCtrl', function($scope, $routeParams){
 /*
  * Show conversion results in tabs
  */
-app.controller('showResultsCtrl', function($scope, $routeParams, $window, detailsService, $location, $anchorScroll){
+app.controller('showResultsCtrl', function($scope, $http, $routeParams, $window, detailsService, $location, $anchorScroll){
 	$scope.view = $routeParams.view;
 	$scope.subview = $routeParams.subview;
 	$scope.plot = {};
@@ -521,6 +572,7 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 	$scope.data = undefined;
 	l("Show results!!!");
 	l($routeParams);
+	$scope.mdType = "inventory_id";
 
 	if ($routeParams.subview === undefined) {
 		l("return");
@@ -529,8 +581,28 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 
 	l("did not reutrn");
 
+	$scope.viewMeasurementData = function() {
+		var deviceId = $scope.device.inventoryId;
+
+		if($scope.mdType === "cmpnt_type_name") {
+			deviceId = $scope.device.componentType;
+		}
+
+		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readonly";
+
+
+		$window.open(newWindowUrl);
+	};
+
 	var detailsTabsIndex = 0;
 	$scope.scroll.scroll = $routeParams.id;
+
+	var query = ucserviceurl + 'magnets/install/?name=' + $routeParams.id;
+
+	$http.get(query).success(function(deviceData){
+		l(deviceData[0]);
+		$scope.device = deviceData[0];
+	});
 
 	// Get and parse device details
 	detailsService.getDetails($routeParams).then(function(data) {
@@ -588,5 +660,75 @@ app.controller('showResultsCtrl', function($scope, $routeParams, $window, detail
 		+ "&view=" + $scope.data.detailsTabs[$routeParams.view]['first'] + "_" + $scope.data.detailsTabs[$routeParams.view]['second'];
 
 		$window.open(newWindowUrl);
+	};
+});
+
+/*
+ * Add algorithm controller
+ */
+app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inventoryPropFactory, InventoryProp, inventoryId, cmpntTypeName, data, type, subtype, algorithmId, algorithmType, unitTypes) {
+	$scope.upload = {};
+	$scope.upload.description = "";
+	$scope.alert = {};
+	$scope.showSaveButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+
+	$scope.algorithmId = algorithmId;
+	$scope.algorithmType = algorithmType;
+	$scope.unitTypes = unitTypes;
+
+	$scope.form = {};
+	$scope.form.type = type;
+	$scope.form.subtype = subtype;
+	$scope.rawData = data;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+
+		// Push data into json
+		$scope.rawData[type][subtype]['algorithms'][$scope.form.id] = {
+			algorithmId: 0,
+			auxInfo: 0,
+			function: $scope.form.a2 + "*input^2 + " + $scope.form.a1 + "*input + " + $scope.form.a0,
+			initialUnit: $scope.form.init_unit,
+			resultUnit: $scope.form.dest_unit
+		};
+
+		$scope.alert.show = false;
+
+		// inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
+		// 						l(result);
+		// 					});
+
+		var promise = inventoryPropFactory.updateItem({inventory_id: inventoryId, inventory_property_template_name: type, cmpnt_type_name: cmpntTypeName, value: JSON.stringify($scope.rawData[type])});
+
+		promise.then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Algorithm successfully added!";
+			$scope.showSaveButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		//$window.location.reload();
+		$modalInstance.dismiss('cancel');
 	};
 });

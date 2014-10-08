@@ -16,10 +16,25 @@
 </div>
 
 <div ng-if="subview == 'data'">
-	<button ng-click="openNewVindow()" class="btn">Expand to vector view</button>
+	<!-- <button ng-click="openNewVindow()" class="btn">Expand to vector view</button>
 	<br/>
+	<br/> -->
+	<!-- <div key-value-table="" table-data="data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" visible="true"></div> -->
+	<div class="form-inline">
+		<label class="radio">
+			<input name="md_type" type="radio" value="inventory_id" ng-model="mdType"> Individual device
+		</label>
+		<label class="radio">
+			<input name="md_type" type="radio" ng-model="mdType" value="cmpnt_type_name"> Component type
+		</label>
+	</div>
+
 	<br/>
-	<div key-value-table="" table-data="data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" visible="true"></div>
+	<p>
+		<!-- <button ng-click="manageMeasurementData()" class="btn">Create</button> -->
+		<button ng-click="viewMeasurementData()" class="btn">View measurement data</button>
+		<!-- <button class="btn">Delete</button> -->
+	</p>
 </div>
 
 <div ng-if="subview == 'results'">
