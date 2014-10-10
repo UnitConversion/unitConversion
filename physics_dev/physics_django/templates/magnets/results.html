@@ -6,7 +6,7 @@
 		<li ng-class="{'active': (subview == undefined || subview == 'results')}">
 			<a href="{{url}}view/{{view}}/subview/results">Conversion results</a>
 		</li>
-		<li ng-if="data.details[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].measurementData" ng-class="{'active': subview == 'data'}">
+		<li ng-class="{'active': subview == 'data'}">
 			<a href="{{url}}view/{{view}}/subview/data">Measurement data</a>
 		</li>
 		<li ng-class="{'active': subview == 'properties'}">
@@ -32,7 +32,7 @@
 	<br/>
 	<p>
 		<!-- <button ng-click="manageMeasurementData()" class="btn">Create</button> -->
-		<button ng-click="viewMeasurementData()" class="btn">View measurement data</button>
+		<button ng-click="viewMeasurementData(mdType)" class="btn">View measurement data</button>
 		<!-- <button class="btn">Delete</button> -->
 	</p>
 </div>

@@ -372,7 +372,6 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 	$scope.scroll.scroll = $routeParams.id;
 
 	//l("hash: " + $location.hash());
-	$scope.mdType = "inventory_id";
 
 	$scope.municonv = {
 		'standard': {},
@@ -385,31 +384,6 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 		'complex:1': {},
 		'complex:2': {},
 		'complex:3': {}
-	};
-
-	$scope.toggleData = function(id, type, key) {
-		l($scope.rawData[id]);
-
-		// Init type
-		if(!$scope.rawData[id][type]) {
-			$scope.rawData[id][type] = {};
-		}
-
-		if($scope.rawData[id][type][key] || ($scope.rawData[id][type][key] && $scope.rawData[id][type][key].display && $scope.rawData[id][type][key].display === true)) {
-			delete $scope.rawData[id][type][key];
-
-		} else if(!$scope.rawData[id][type][key]) {
-
-			$scope.rawData[id][type][key] = {
-				display: true,
-				description: "",
-				defaultEnergy: "",
-				algorithms: {}
-			};
-
-		} else {
-			$scope.rawData[id][type][key].display = true;
-		}
 	};
 
 	$scope.goToMuniconv = function() {
@@ -467,19 +441,6 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 		});
 
 		//$window.location = url;
-	};
-
-	$scope.manageMeasurementData = function() {
-		var deviceId = $scope.device.inventoryId;
-
-		if($scope.mdType === "cmpnt_type_name") {
-			deviceId = $scope.device.componentType;
-		}
-
-		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
-
-
-		$window.open(newWindowUrl);
 	};
 
 	var query = ucserviceurl + 'magnets/install/?name=' + $scope.id;
@@ -547,7 +508,65 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 	};
 });
 
-app.controller('showMdCtrl', function($scope, $routeParams){
+app.controller('showMdCtrl', function($scope, $routeParams, $window){
+	$scope.mdType = "inventory_id";
+
+	$scope.manageMeasurementData = function() {
+		var deviceId = $scope.device.inventoryId;
+
+		if($scope.mdType === "cmpnt_type_name") {
+			deviceId = $scope.device.componentType;
+		}
+
+		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
+
+
+		$window.open(newWindowUrl);
+	};
+
+	$scope.toggleData = function(id, type, key) {
+		l($scope.rawData[id]);
+
+		// Init type
+		if(!$scope.rawData[id][type]) {
+			$scope.rawData[id][type] = {};
+		}
+
+		if($scope.rawData[id][type][key] || ($scope.rawData[id][type][key] && $scope.rawData[id][type][key].display && $scope.rawData[id][type][key].display === true)) {
+
+			var modalInstance = $modal.open({
+				templateUrl: 'modal/warning.html',
+				controller: 'warningCtrl',
+				resolve: {
+					reason: function() {
+						return "Data will be lost. Do you want to continue?";
+					}
+				}
+			});
+
+			modalInstance.result.then(function() {
+				delete $scope.rawData[id][type][key];
+
+			}, function() {
+				l("cancel");
+				l($('input#' + type + '_' + key));
+				$('#' + type + '_' + key).prop('checked', true);
+			});
+
+
+		} else if(!$scope.rawData[id][type][key]) {
+
+			$scope.rawData[id][type][key] = {
+				display: true,
+				description: "",
+				defaultEnergy: "",
+				algorithms: {}
+			};
+
+		} else {
+			$scope.rawData[id][type][key].display = true;
+		}
+	};
 });
 
 app.controller('showMtCtrl', function($scope){
@@ -581,16 +600,14 @@ app.controller('showResultsCtrl', function($scope, $http, $routeParams, $window,
 
 	l("did not reutrn");
 
-	$scope.viewMeasurementData = function() {
+	$scope.viewMeasurementData = function(mdType) {
 		var deviceId = $scope.device.inventoryId;
 
-		if($scope.mdType === "cmpnt_type_name") {
+		if(mdType === "cmpnt_type_name") {
 			deviceId = $scope.device.componentType;
 		}
 
-		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readonly";
-
-
+		var newWindowUrl = ucserviceurl + "id/measurement/#/" + mdType + "/" + deviceId + "/view/readonly";
 		$window.open(newWindowUrl);
 	};
 
@@ -729,6 +746,29 @@ app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inv
 
 	$scope.finish = function() {
 		//$window.location.reload();
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Warning controller
+ */
+app.controller('warningCtrl', function($scope, $modalInstance, reason) {
+	$scope.alert = {};
+	$scope.showSaveButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	$scope.alert.body = reason;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$modalInstance.close();
+	};
+
+	$scope.cancel = function() {
 		$modalInstance.dismiss('cancel');
 	};
 });
