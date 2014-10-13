@@ -1,61 +1,69 @@
-Web client
+IDODS Web Client
 ==============================================
 
-Web client is implemented using *Angular.js* and *jquery*. It connects to the server through RESTful Interface and is served by the Django server.
+The IDODS web client is implemented using *Angular.js* and *jquery*. It connects to the server through a RESTful Interface and is served by the Django server.
 
-It is a tool for searching, adding and modifying data and it tries to offer all these actions in a clean, modular way. Entities e.g. Offline data, Install, Component type, ... are accessible by selecting the right view from the dropdown.
+The web client is a tool for searching, adding and modifying data and it tries to offer all these actions in a clean, modular way. 
 
-Description of the interface
+Description of the Interface
 -----------------------------
 
 Layout
 ~~~~~~~~
 
-Web user interface comprises of search/navigation pane on the left, result/summary pane in the middle and details pane on the right. On the top right there is a dropdown menu that allows user to log in and log out of the system.
+The web user interface comprises of 3 main regions: a top bar, a result/summary pane, in the body, on the left and a details pane, in the body, on the right. 
 
 .. figure:: _static/ui.png
    :scale: 50%
 
-   Home screen is displaying Component type
+   Home screen displaying details of a Component type 
 
-Usage of the interface
+The top bar contains 3 dropdowns. From the left, these: 
+	* select entities e.g. Offline data, Install, Component type, etc.
+	* search/navigate entries,
+	* allow users to login and logout of the system.
+
+
+Usage of the Interface
 ------------------------
 
-Navigating through views/data
+Navigating through Views/Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every view has a dropdown menu at the top of the left pane. By selecting an item from the dropdown menu, page will automatically reload with the new data.
+The left-most dropdown on the top bar allows for selection of entities e.g., Offline data, Install, Component type, etc. When an item is selected from the dropdown menu, the page is automatically reloaded with the new data.
 
 .. figure:: _static/dropdown.png
    :scale: 50%
 
-   Dropdown menu for selecting a view
+   Dropdown menu for selecting a View
 
 Searching
 ~~~~~~~~~~~
 
-You can search through a data by navigating to the right view, filling out the search inputs in the left search pane and clicking **Search** button.
-
-String search fields also allow you to use wildcard characters to make more complex searches. In you search strings, you can use the following wildcard characters:
-
-- \* for multiple characters matching
-- ? for single character matching
-
-After clicking on a search button, results will appear in the middle pane. Every item in the list has a summary of the complete result e.g. name and description. By clicking on it, complete result will appear in the right, details pane.
+The middle dropdown on the top bar allows a user to search through entries in the database by Name or Description. When a name or description is filled in, click on the magnifier to search. If neither Name nor Description is filled in, when the magnifier is clicked, all the entries of the database are returned. 
 
 .. figure:: _static/search.png
    :scale: 50%
 
    Online data search form
 
+
+The search fields also allow use of wildcards for more complex searches. The following wildcard characters can be used:
+
+- \* for multiple character matching
+- ? for single character matching
+
+Search results appear in the appear in the result/summary pane on the left. Every item in the list has a summary of the complete result e.g. name and description. By clicking on it, complete result will appear in the details pane on the right.
+
+
 .. figure:: _static/middle_pane.png
    :scale: 50%
 
-   Offline data results in the middle pane
+   Example of a wildcard search and offline data results in the left pane
 
-Results in the middle pane can also be filtered by entering a filter string. Results that do not match the filter will automatically disappear from the result list.
+Search results can also be further filtered by entering a filter string in the text field at the top. Results that do not match the filter will not be displayed in the list of results.
 
-Adding data
+Adding Data
 ~~~~~~~~~~~~
 
 At the top of the middle pane there is an **Add** button that allows you to add a new data into the database. After clicking on it, form will appear in the details pane. After you fill in the form you can click on a **Save** button to save it. Mandatory fields are labeled by a name followed by a \* symbol.
