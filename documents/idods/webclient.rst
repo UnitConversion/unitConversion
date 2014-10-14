@@ -33,7 +33,7 @@ Navigating through Views/Data
 The left-most dropdown on the top bar allows for selection of entities e.g., Offline data, Install, Component type, etc. When an item is selected from the dropdown menu, the page is automatically reloaded with the new data.
 
 .. figure:: _static/dropdown.png
-   :scale: 50%
+   :scale: 75%
 
    Dropdown menu for selecting a View
 
@@ -43,7 +43,7 @@ Searching
 The middle dropdown on the top bar allows a user to search through entries in the database by Name or Description. When a name or description is filled in, click on the magnifier to search. If neither Name nor Description is filled in, when the magnifier is clicked, all the entries of the database are returned. 
 
 .. figure:: _static/search.png
-   :scale: 50%
+   :scale: 75%
 
    Online data search form
 
@@ -57,7 +57,7 @@ Search results appear in the appear in the result/summary pane on the left. Ever
 
 
 .. figure:: _static/middle_pane.png
-   :scale: 50%
+   :scale: 75%
 
    Example of a wildcard search and offline data results in the left pane
 
@@ -66,41 +66,57 @@ Search results can also be further filtered by entering a filter string in the t
 Adding Data
 ~~~~~~~~~~~~
 
-At the top of the middle pane there is an **Add** button that allows you to add a new data into the database. After clicking on it, form will appear in the details pane. After you fill in the form you can click on a **Save** button to save it. Mandatory fields are labeled by a name followed by a \* symbol.
+To the right of the Search dropdown, there is a context-sensitive button that allows you to add new data into the database. 
 
-In some of the views you can add new properties. You can add them by clicking on **Add property**, selecting key from the dropdown and inserting a value.
+.. figure:: _static/add_inventory.png
+   :scale: 75%
 
-.. figure:: _static/save_component_type.png
-   :scale: 50%
+Context-sensitive add button
+   
+After clicking on the add button, a form appears in the details pane. 
 
-   Form for saving new Component type
+.. figure:: _static/save_inventory.png
+   :scale: 75%
 
-Updating data
+Form to add Inventory
+
+After the form has been filled in, click on the **Save** button to save the data. Mandatory fields are indicated with an \* after the field name.
+
+In some of the views, new properties can be added., by clicking on the **+Add property** button, selecting the key from the dropdown list and inserting a value.
+
+Updating Data
 ~~~~~~~~~~~~~~
 
-You can update existing data by clicking on **Update** button which is located in the top right corner in the details pane. After clicking on in, form is displayed with old values already filled in. After you modify values you can click on **Update** button which is placed below the form to save updated data.
+Existing data can be updated by clicking on the **Update** button which is located in the top right corner in the details pane. 
 
-.. figure:: _static/update_component_type.png
-   :scale: 50%
+.. figure:: _static/update_inventory_button.png
+   :scale: 75%
 
-   Form for updating Component type
+   Button to update Inventory
 
-Deleting data
+After clicking on the button, a form is displayed with the exisiting values filled in. After the values have been modified, click on the **Update** button which is placed below the form to save updated data.
+
+.. figure:: _static/update_inventory_form.png
+   :scale: 75%
+
+   Form for updating Inventory
+
+Deleting Data
 ~~~~~~~~~~~~~~
 
-Some of the data can also be deleted. **Delete** button will be displayed in the top right corner of the detail pane. After clicking on it, confirmation pop-up will be displayed. Clicking the **Yes** button will delete the data.
+Some data can also be deleted. For the cases when the data can be deleted, the **Delete** button will be displayed in the top right corner of the detail pane. After clicking on the Delete button, a confirmation dialog will be displayed. Clicking on **Yes** will delete the data.
 
 .. figure:: _static/delete_component_type.png
-   :scale: 50%
+   :scale: 75%
 
    Form for deleting Offline data
 
-Sign in/Sign out
+Sign In/Sign Out
 ~~~~~~~~~~~~~~~
 
-All actions that modify the data can only be executed by an authenticated user. To execute those action on a web client, user has to sign in. He can do that by clicking on the button in the top right corner which has a **Guest** label when user is not signed in. After clicking on a button dropdown will show up with sign in form. User should enter his credentials and click on the **Sign in** button. If entered credentials are correct, page will refresh and user will be signed in.
+All actions that modify the data can only be executed by an authenticated user. To execute those action on a web client, the user must sign in. Sign-in is done by clicking on the button in the top right corner which is called **Guest** when a user is not signed in. After clicking on the button, a dropdown will appear which allows the user to sign in. The user should enter the login credentials and click on the **Sign in** button. If the entered credentials are correct, the page will refresh and user will be signed in.
 
 .. figure:: _static/sign_in.png
-   :scale: 50%
+   :scale: 75%
 
    Sign in form
