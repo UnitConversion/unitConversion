@@ -91,7 +91,7 @@ class IDODSClient(object):
             # requests.get(self.__baseURL + self.__resource, headers=copy(self.__jsonheader), auth=self.__auth).raise_for_status()
 
         except Exception as e:
-            raise Exception('Failed to create client.')
+            raise Exception('Failed to create client: ' + str(e))
 
     def __getdefaultconfig(self, arg, value):
         if value is None and _conf.has_option('DEFAULT', arg):
@@ -4431,3 +4431,101 @@ class IDODSClient(object):
             http_error = HTTPError(http_error_msg)
             http_error.response = self
             raise http_error
+
+    def saveDevice(self, device_name, cmpnt_type_name, device_description=None, device_coordinatecenter=None, cmpnt_type_description=None, cmpnt_type_props=None):
+        '''
+        Saves insertion device installation
+
+        :param device_name: installation name, which is its label in the field
+        :type device_name: str
+        
+        :param cmpnt_type_name: component type of the device
+        :type cmpnt_type_name: str
+
+        :param device_description: installation description
+        :type device_description: str
+
+        :param device_coordinatecenter: coordinate center number
+        :type device_coordinatecenter: float
+
+        :param cmpnt_type_description: installation description
+        :type cmpnt_type_description: str    
+
+        :param  cmpnt_type_props: component type properties
+        :type  cmpnt_type_props: python dict    
+
+        :raises:
+            HTTPError
+
+        :returns:
+            new device id
+        '''
+        # Save component type if it does not exist
+        if len(self.retrieveComponentType(cmpnt_type_name)) == 0:
+            self.saveComponentType(cmpnt_type_name, description=cmpnt_type_description, props=cmpnt_type_props)
+
+        # Save device if it does not exist
+        if len(self.retrieveInstall(device_name)) == 0:
+            return self.saveInstall(device_name, cmpnt_type_name=cmpnt_type_name, description=device_description, coordinatecenter=device_coordinatecenter)['id']
+
+    def retrieveDevice(self, device_name, description=None, cmpnt_type_name=None, coordinatecenter=None):
+        '''Retrieves insertion device installation using any of the acceptable key words:
+
+        :param device_name: installation name, which is its label in the field
+        :type device_name: str
+
+        :param description: installation description
+        :type description: str
+
+        :param cmpnt_type_name: component type name of the device
+        :type cmpnt_type_name: str
+
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: str
+
+        :return: a map with structure:
+
+            .. code-block:: python
+
+                {
+                    'id':                     #int,
+                    'name':                   #string,
+                    'description':            #string,
+                    'cmpnt_type_name':        #string,
+                    'cmpnt_type_description': #string,
+                    'coordinatecenter':       #float,
+                    'key1':                   #str,
+                    ...
+                    'prop_keys':              ['key1', 'key2']
+                }
+
+        :Raises: ValueError, MySQLError
+        '''
+        return self.retrieveInstall(device_name, description, cmpnt_type_name, coordinatecenter).itervalues().next()
+
+    def updateDevice(self, device_name_old, device_name_new, description=None, cmpnt_type_name=None, coordinatecenter=None):
+        '''
+        Updates a device installation using any of the acceptable key words:
+
+        :param device_name_old: installation name, which is its label in the field
+        :type device_name_old: str
+
+        :param device_name_new: installation name, which is its label in the field
+        :type device_name_new: str
+
+        :param description: installation description
+        :type description: str
+
+        :param cmpnt_type_name: component type of the device
+        :type cmpnt_type_name: str
+
+        :param coordinatecenter: coordinate center number
+        :type coordinatecenter: float
+
+        raises:
+            HTTPError
+
+        returns:
+            True, if successful
+        '''
+        return self.updateInstall(device_name_old, device_name_new, description, cmpnt_type_name, coordinatecenter)
