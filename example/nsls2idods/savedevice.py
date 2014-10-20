@@ -44,10 +44,11 @@ deviceID = client.saveDevice(device_name=device_name, cmpnt_type_name=cmpnt_type
 client.retrieveDevice(device_name, description=None, cmpnt_type_name=None, coordinatecenter=None)
 
 # Update a device using all parameters.
-client.updateDevice(device_name, device_name_new, description=None, cmpnt_type_name=None, coordinatecenter=None)
+if len(client.retrieveDevice(device_name_new, description=None, cmpnt_type_name=None, coordinatecenter=None).keys()) == 0:
+    client.updateDevice(device_name, device_name_new, description=None, cmpnt_type_name=None, coordinatecenter=None)
 
 # Save online data
-savedOnlineData = client.saveOnlineData('new name', status=1, meas_time='2014-09-16')
+savedOnlineData = client.saveOnlineData(device_name_new, status=1, meas_time='2014-09-16')
 
 # Update online data
 client.updateOnlineData(savedOnlineData['id'], rawdata_path='/usr/sth')
