@@ -13,15 +13,29 @@
 	</div>
 
 		<div>
-			<div class="form-group">
-				<label for="inputDesc">Id</label>
-				<select ng-options="id.name as id.value for id in algorithmId" ng-model="form.id"></select>
+			<div class="control-group" ng-class="{'error': error.messages.id}">
+				<label class="control-label">Id</label>
+				<div class="controls">
+					<select ng-options="id.name as id.value for id in algorithmId" ng-model="form.id"></select>
+					<span class="help-inline">{{error.messages.id}}</span>
+				</div>
 			</div>
-			<div class="form-group">
-				<label for="inputDesc">Type</label>
-				<select ng-options="atype.name as atype.value for atype in algorithmType" ng-model="alg_type"></select>
+			<div class="control-group" ng-class="{'error': error.messages.alg_type}">
+				<label class="control-label">Type</label>
+				<div class="controls">
+					<select ng-options="atype.name as atype.value for atype in algorithmType" ng-model="form.alg_type"></select>
+					<span class="help-inline">{{error.messages.alg_type}}</span>
+				</div>
 			</div>
-			<div class="form-group">
+			<div ng-if="form.alg_type == 1" class="form-group">
+				<label for="inputDesc">Parameters</label>
+				<span>f(x)=</span>
+				<input ng-model="form.a0" class="span1" type="text" />
+				<span>+</span>
+				<input ng-model="form.a1" class="span1" type="text" />
+				<span>*x</span>
+			</div>
+			<div ng-if="form.alg_type == 2" class="form-group">
 				<label for="inputDesc">Parameters</label>
 				<span>f(x)=</span>
 				<input ng-model="form.a0" class="span1" type="text" />

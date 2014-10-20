@@ -700,44 +700,67 @@ app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inv
 	$scope.form.subtype = subtype;
 	$scope.rawData = data;
 
+	$scope.error = {};
+
 	$scope.closeAlert = function() {
 		$scope.alert.show = false;
 	};
 
 	$scope.ok = function() {
+		$scope.error.exists = false;
+		$scope.error.messages = {};
 
-		// Push data into json
-		$scope.rawData[type][subtype]['algorithms'][$scope.form.id] = {
-			algorithmId: 0,
-			auxInfo: 0,
-			function: $scope.form.a2 + "*input^2 + " + $scope.form.a1 + "*input + " + $scope.form.a0,
-			initialUnit: $scope.form.init_unit,
-			resultUnit: $scope.form.dest_unit
-		};
+		// Check id
+		if(!$scope.form.id) {
+			$scope.error.exists = true;
+			$scope.error.messages.id = "Id must be set!";
+		}
 
-		$scope.alert.show = false;
+		// Check type
+		if(!$scope.form.alg_type) {
+			$scope.error.exists = true;
+			$scope.error.messages.alg_type = "Type must be set!";
+		}
 
-		// inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
-		// 						l(result);
-		// 					});
+		// If no error, continue
+		if(!$scope.error.exists) {
 
-		var promise = inventoryPropFactory.updateItem({inventory_id: inventoryId, inventory_property_template_name: type, cmpnt_type_name: cmpntTypeName, value: JSON.stringify($scope.rawData[type])});
+			// Push data into json
+			$scope.rawData[type][subtype]['algorithms'][$scope.form.id] = {
+				algorithmId: 0,
+				auxInfo: 0,
+				function: $scope.form.a2 + "*input^2 + " + $scope.form.a1 + "*input + " + $scope.form.a0,
+				initialUnit: $scope.form.init_unit,
+				resultUnit: $scope.form.dest_unit
+			};
 
-		promise.then(function(data) {
-			$scope.alert.show = true;
-			$scope.alert.success = true;
-			$scope.alert.title = "Success!";
-			$scope.alert.body = "Algorithm successfully added!";
-			$scope.showSaveButton = false;
-			$scope.showCancelButton = false;
-			$scope.showFinishButton = true;
+			$scope.alert.show = false;
 
-		}, function(error) {
-			$scope.alert.show = true;
-			$scope.alert.success = false;
-			$scope.alert.title = "Error!";
-			$scope.alert.body = error;
-		});
+			// inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
+			// 						l(result);
+			// 					});
+
+			var promise = inventoryPropFactory.updateItem({inventory_id: inventoryId, inventory_property_template_name: type, cmpnt_type_name: cmpntTypeName, value: JSON.stringify($scope.rawData[type])});
+
+			promise.then(function(data) {
+				$scope.alert.show = true;
+				$scope.alert.success = true;
+				$scope.alert.title = "Success!";
+				$scope.alert.body = "Algorithm successfully added!";
+				$scope.showSaveButton = false;
+				$scope.showCancelButton = false;
+				$scope.showFinishButton = true;
+
+			}, function(error) {
+				$scope.alert.show = true;
+				$scope.alert.success = false;
+				$scope.alert.title = "Error!";
+				$scope.alert.body = error;
+			});
+
+		} else {
+			l($scope.error);
+		}
 	};
 
 	$scope.cancel = function() {
