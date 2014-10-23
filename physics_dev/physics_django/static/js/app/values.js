@@ -25,3 +25,8 @@ app.constant('unitTypes', [
 	{name: "T", value:"T"},
 	{name: "T-m", value:"T-m"}
 ]);
+
+app.constant('mdTypes', [
+	{name: "rot_coil_data", value:"Rotating coild data"},
+	{name: "hall_probe_data", value:"Hall probe data"}
+]);

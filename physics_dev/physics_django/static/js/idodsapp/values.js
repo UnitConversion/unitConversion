@@ -1589,6 +1589,12 @@ app.value('RotCoilDataInfo', {
  	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'author',
  	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
 
+ 	this.tableColumns = ['meas_loc', 'run_number',
+ 	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
+ 	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
+ 	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'meas_date', 'author',
+ 	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
+
  	this.display = {
  		"id": "Id",
  		"inventory_id": "Inventory id",
@@ -1675,6 +1681,10 @@ app.value('HallProbeDataInfo', {
     'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
 
+    this.tableColumns = ['sub_device', 'meas_date', 'current_1', 'current_2',
+    'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+    'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
+
  	this.display = {
  		"id": "Id",
  		"inventory_id": "Inventory id",
@@ -1754,6 +1764,12 @@ app.value('HallProbeDataInfo', {
  	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'author',
  	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
 
+ 	this.tableColumns = ['meas_loc', 'run_number',
+ 	'sub_device', 'current_1', 'current_2', 'current_3', 'up_dn_1', 'up_dn_2',
+ 	'up_dn_3', 'analysis_number', 'integral_xfer_function', 'orig_offset_x',
+ 	'orig_offset_y', 'b_ref_int', 'roll_angle', 'meas_notes', 'meas_date', 'author',
+ 	'a1', 'a2', 'a3', 'b1', 'b2', 'b3', 'a4_21', 'b4_21', 'data_issues', 'data_usage'];
+
  	this.display = {
  		"id": "Id",
  		"cmpnt_type_name": "Component type name",
@@ -1822,6 +1838,10 @@ app.value('HallProbeDataInfo', {
  	// Parameters used as update URL parameters
  	this.update = ['hall_probe_id', 'cmpnt_type_name', 'sub_device', 'alias', 'measured_at_location',
     'run_identifier', 'login_name', 'conditioning_current', 'current_1', 'current_2',
+    'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
+    'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
+
+    this.tableColumns = ['sub_device', 'meas_date', 'current_1', 'current_2',
     'current_3', 'up_dn1', 'up_dn2', 'up_dn3', 'mag_volt_1', 'mag_volt_2', 'mag_volt_3',
     'x', 'y', 'z', 'bx_t', 'by_t', 'bz_t', 'meas_notes', 'data_issues', 'data_usage'];
 

@@ -55,6 +55,53 @@ function trim(str) {
 }
 
 /**
+ * Function returns "-" if input parsed to float is lower than 0 or "+" if parsed float is greater of equal to 0
+ * @param  {type} str input float number parsed as string
+ * @return "+" or "-" string
+ */
+function returnSign(str) {
+	var floatNumber = parseFloat(str);
+
+	if(floatNumber < 0) {
+		return "";
+
+	} else {
+		return "+";
+	}
+}
+
+/**
+ * Parse function string and determine algorithm type and all parameters
+ * @param  {type} str function string
+ * @return {type} Obj object with algorithm type and all parameters
+ */
+function parseAlgFunction(algFunction) {
+	var returnObj = {};
+
+	var tryMeasurementData = algFunction.split(",");
+	var tryPlinom = algFunction.split("input");
+
+	if(tryMeasurementData.length == 2) {
+		returnObj.alg_type = "3";
+		returnObj.current = $.trim(tryMeasurementData[0]);
+		returnObj.field = $.trim(tryMeasurementData[1]);
+
+	} else if(tryPlinom.length == 2) {
+		returnObj.alg_type = "1";
+		returnObj.a1 = $.trim(tryPlinom[0].replace("*", "").replace("+", ""));
+		returnObj.a0 = $.trim(tryPlinom[1].replace("+", ""));
+
+	} else if (tryPlinom.length == 3) {
+		returnObj.alg_type = "2";
+		returnObj.a2 = $.trim(tryPlinom[0].replace("*", "").replace("+", ""));
+		returnObj.a1 = $.trim(tryPlinom[1].replace("*", "").replace("^2", "").replace("+", ""));
+		returnObj.a0 = $.trim(tryPlinom[2].replace("+", ""));
+	}
+
+	return returnObj;
+}
+
+/**
  * Check if elements is present in the current DOM or not
  * @returns {Boolean}
  */

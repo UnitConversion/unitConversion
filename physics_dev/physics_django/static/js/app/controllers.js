@@ -482,48 +482,6 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 		}
 	});
 
-	$scope.addAlgorithm = function(type, subtype) {
-
-		var modalInstance = $modal.open({
-			templateUrl: 'modal/add_alg.html',
-			controller: 'addAlgorithmCtrl',
-			resolve: {
-				data: function() {
-					return $scope.rawData[$scope.id];
-				},
-				type: function() {
-					return type;
-				},
-				subtype: function() {
-					return subtype;
-				},
-				inventoryId: function() {
-					return $scope.device.inventoryId;
-				},
-				cmpntTypeName: function() {
-					return $scope.device.componentType;
-				}
-			}
-		});
-	};
-});
-
-app.controller('showMdCtrl', function($scope, $routeParams, $window){
-	$scope.mdType = "inventory_id";
-
-	$scope.manageMeasurementData = function() {
-		var deviceId = $scope.device.inventoryId;
-
-		if($scope.mdType === "cmpnt_type_name") {
-			deviceId = $scope.device.componentType;
-		}
-
-		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
-
-
-		$window.open(newWindowUrl);
-	};
-
 	$scope.toggleData = function(id, type, key) {
 		l($scope.rawData[id]);
 
@@ -566,6 +524,113 @@ app.controller('showMdCtrl', function($scope, $routeParams, $window){
 		} else {
 			$scope.rawData[id][type][key].display = true;
 		}
+	};
+
+	$scope.addAlgorithm = function(type, subtype) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/add_alg.html',
+			controller: 'addAlgorithmCtrl',
+			resolve: {
+				data: function() {
+					return $scope.rawData[$scope.id];
+				},
+				type: function() {
+					return type;
+				},
+				subtype: function() {
+					return subtype;
+				},
+				inventoryId: function() {
+					return $scope.device.inventoryId;
+				},
+				cmpntTypeName: function() {
+					return $scope.device.componentType;
+				},
+				existingAlg: function() {
+					return undefined;
+				},
+				existingAlgId: function() {
+					return undefined;
+				}
+			}
+		});
+	};
+
+	$scope.editAlgorithm = function(type, subtype, existing, existingId) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/edit_alg.html',
+			controller: 'addAlgorithmCtrl',
+			resolve: {
+				data: function() {
+					return $scope.rawData[$scope.id];
+				},
+				type: function() {
+					return type;
+				},
+				subtype: function() {
+					return subtype;
+				},
+				inventoryId: function() {
+					return $scope.device.inventoryId;
+				},
+				cmpntTypeName: function() {
+					return $scope.device.componentType;
+				},
+				existingAlg: function() {
+					return existing;
+				},
+				existingAlgId: function() {
+					return existingId;
+				}
+			}
+		});
+	};
+
+	$scope.deleteAlgorithm = function(type, subtype, id) {
+
+		var modalInstance = $modal.open({
+			templateUrl: 'modal/delete_alg.html',
+			controller: 'deleteAlgorithmCtrl',
+			resolve: {
+				data: function() {
+					return $scope.rawData[$scope.id];
+				},
+				type: function() {
+					return type;
+				},
+				subtype: function() {
+					return subtype;
+				},
+				algId: function() {
+					return id;
+				},
+				inventoryId: function() {
+					return $scope.device.inventoryId;
+				},
+				cmpntTypeName: function() {
+					return $scope.device.componentType;
+				}
+			}
+		});
+	};
+});
+
+app.controller('showMdCtrl', function($scope, $routeParams, $window){
+	$scope.mdType = "inventory_id";
+
+	$scope.manageMeasurementData = function() {
+		var deviceId = $scope.device.inventoryId;
+
+		if($scope.mdType === "cmpnt_type_name") {
+			deviceId = $scope.device.componentType;
+		}
+
+		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
+
+
+		$window.open(newWindowUrl);
 	};
 });
 
@@ -683,7 +748,7 @@ app.controller('showResultsCtrl', function($scope, $http, $routeParams, $window,
 /*
  * Add algorithm controller
  */
-app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inventoryPropFactory, InventoryProp, inventoryId, cmpntTypeName, data, type, subtype, algorithmId, algorithmType, unitTypes) {
+app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inventoryPropFactory, InventoryProp, inventoryId, cmpntTypeName, data, type, subtype, algorithmId, algorithmType, unitTypes, mdTypes, RotCoilData, HallProbeData, existingAlg, existingAlgId) {
 	$scope.upload = {};
 	$scope.upload.description = "";
 	$scope.alert = {};
@@ -695,9 +760,29 @@ app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inv
 	$scope.algorithmType = algorithmType;
 	$scope.unitTypes = unitTypes;
 
+	$scope.mdTypes = mdTypes;
+
+	var rotCoilDataColumns = new RotCoilData().tableColumns;
+	var hallProbeDataColumns = new HallProbeData().tableColumns;
+
+	$scope.mdData = {"rot_coil_data": rotCoilDataColumns, "hall_probe_data": hallProbeDataColumns};
+	l($scope.mdData);
+
 	$scope.form = {};
 	$scope.form.type = type;
+	$scope.form.mdType = "rot_coil_data";
 	$scope.form.subtype = subtype;
+
+	// Fill in data into form
+	if(existingAlg) {
+		$scope.form = parseAlgFunction(existingAlg.function);
+		$scope.form.id = existingAlgId;
+		$scope.form.init_unit = existingAlg.initialUnit;
+		$scope.form.dest_unit = existingAlg.resultUnit;
+	}
+
+	l($scope.form);
+
 	$scope.rawData = data;
 
 	$scope.error = {};
@@ -709,6 +794,7 @@ app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inv
 	$scope.ok = function() {
 		$scope.error.exists = false;
 		$scope.error.messages = {};
+		l($scope.form);
 
 		// Check id
 		if(!$scope.form.id) {
@@ -722,25 +808,71 @@ app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inv
 			$scope.error.messages.alg_type = "Type must be set!";
 		}
 
+		// Check parameters
+		if($scope.form.alg_type === "1") {
+
+			if(!$scope.form.a0 || !$scope.form.a1) {
+				$scope.error.exists = true;
+				$scope.error.messages.params = "Parameters must be set!";
+			}
+
+		} else if ($scope.form.alg_type === "2") {
+
+			if(!$scope.form.a0 || !$scope.form.a1 || !$scope.form.a2) {
+				$scope.error.exists = true;
+				$scope.error.messages.params = "Parameters must be set!";
+			}
+
+		} else if ($scope.form.alg_type === "3") {
+
+			if(!$scope.form.current || !$scope.form.field) {
+				$scope.error.exists = true;
+				$scope.error.messages.params = "Parameters must be set!";
+			}
+		}
+
+		// Check initial unit
+		if(!$scope.form.init_unit) {
+			$scope.error.exists = true;
+			$scope.error.messages.init = "Initial unit must be set!";
+		}
+
+		// Check destination unit
+		if(!$scope.form.dest_unit) {
+			$scope.error.exists = true;
+			$scope.error.messages.dest = "Destination unit must be set!";
+		}
+
 		// If no error, continue
 		if(!$scope.error.exists) {
+
+			var functionString = "";
+
+			// 1. order
+			if($scope.form.alg_type === "1") {
+				functionString = $scope.form.a1 + "*input" + returnSign($scope.form.a0) + $scope.form.a0;
+
+			// 2. order
+			} else if($scope.form.alg_type === "2") {
+				functionString = $scope.form.a2 + "*input^2" + returnSign($scope.form.a1) + $scope.form.a1 + "*input" + returnSign($scope.form.a0) + $scope.form.a0;
+
+			// md
+			} else if($scope.form.alg_type === "3") {
+				functionString = $scope.form.current + ", " + $scope.form.field;
+			}
 
 			// Push data into json
 			$scope.rawData[type][subtype]['algorithms'][$scope.form.id] = {
 				algorithmId: 0,
 				auxInfo: 0,
-				function: $scope.form.a2 + "*input^2 + " + $scope.form.a1 + "*input + " + $scope.form.a0,
+				function: functionString,
 				initialUnit: $scope.form.init_unit,
 				resultUnit: $scope.form.dest_unit
 			};
 
 			$scope.alert.show = false;
 
-			// inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
-			// 						l(result);
-			// 					});
-
-			var promise = inventoryPropFactory.updateItem({inventory_id: inventoryId, inventory_property_template_name: type, cmpnt_type_name: cmpntTypeName, value: JSON.stringify($scope.rawData[type])});
+			var promise = inventoryPropFactory.updateItem({inventory_id: inventoryId, inventory_property_template_name: type, cmpnt_type_name: cmpntTypeName, value: encodeURIComponent(JSON.stringify($scope.rawData[type]))});
 
 			promise.then(function(data) {
 				$scope.alert.show = true;
@@ -761,6 +893,57 @@ app.controller('addAlgorithmCtrl', function($scope, $modalInstance, $window, inv
 		} else {
 			l($scope.error);
 		}
+	};
+
+	$scope.cancel = function() {
+		$modalInstance.dismiss('cancel');
+	};
+
+	$scope.finish = function() {
+		//$window.location.reload();
+		$modalInstance.dismiss('cancel');
+	};
+});
+
+/*
+ * Delete algorithm controller
+ */
+app.controller('deleteAlgorithmCtrl', function($scope, $modalInstance, $window, inventoryPropFactory, InventoryProp, inventoryId, cmpntTypeName, data, type, subtype, algId, algorithmId, algorithmType, unitTypes, mdTypes, RotCoilData, HallProbeData) {
+	$scope.upload = {};
+	$scope.upload.description = "";
+	$scope.alert = {};
+	$scope.showSaveButton = true;
+	$scope.showCancelButton = true;
+	$scope.showFinishButton = false;
+	$scope.rawData = data;
+
+	$scope.closeAlert = function() {
+		$scope.alert.show = false;
+	};
+
+	$scope.ok = function() {
+		$scope.alert.show = false;
+
+		// Delete data from json
+		delete $scope.rawData[type][subtype]['algorithms'][algId];
+
+		var promise = inventoryPropFactory.updateItem({inventory_id: inventoryId, inventory_property_template_name: type, cmpnt_type_name: cmpntTypeName, value: JSON.stringify($scope.rawData[type])});
+
+		promise.then(function(data) {
+			$scope.alert.show = true;
+			$scope.alert.success = true;
+			$scope.alert.title = "Success!";
+			$scope.alert.body = "Algorithm successfully deleted!";
+			$scope.showSaveButton = false;
+			$scope.showCancelButton = false;
+			$scope.showFinishButton = true;
+
+		}, function(error) {
+			$scope.alert.show = true;
+			$scope.alert.success = false;
+			$scope.alert.title = "Error!";
+			$scope.alert.body = error;
+		});
 	};
 
 	$scope.cancel = function() {

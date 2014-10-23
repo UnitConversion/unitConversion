@@ -26,7 +26,6 @@
 			<table class="table table-bordered table-condensed">
 				<tr>
 					<th>Id</th>
-					<th>Type</th>
 					<th>Function</th>
 					<th>Init unit</th>
 					<th>Dest unit</th>
@@ -35,12 +34,11 @@
 				</tr>
 				<tr ng-repeat="(id, otherValues) in rawData[id]['municonvChain'][key].algorithms">
 					<td>{{id}}</td>
-					<td>{{otherValues.type}}</td>
 					<td>{{otherValues.function}}</td>
 					<td>{{otherValues.initialUnit}}</td>
 					<td>{{otherValues.resultUnit}}</td>
-					<td><a href="#">Edit</a></td>
-					<td><a href="#">Delete</a></td>
+					<td><a href ng-click="editAlgorithm('municonv', key, otherValues, id)">Edit</a></td>
+					<td><a href ng-click="deleteAlgorithm('municonv', key, id)">Delete</a></td>
 				</tr>
 				<tr>
 					<td colspan="7">
