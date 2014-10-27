@@ -463,9 +463,6 @@ class Test(unittest.TestCase):
         retrievedOnlineDataKeys = retrievedOnlineData.keys()
         retrievedOnlineDataObject = retrievedOnlineData[retrievedOnlineDataKeys[0]]
 
-        # Test username
-        self.assertEqual('user', retrievedOnlineDataObject['username'])
-
         # Test URL
         self.assertTrue('datafile' in retrievedOnlineDataObject['feedforward_file_name'])
 
@@ -518,7 +515,6 @@ class Test(unittest.TestCase):
 
         self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
         self.assertEqual(data[firstKey]['alias'], 'alias')
-        self.assertEqual(data[firstKey]['login_name'], 'user')
 
         # Test deleting with an error in function call
         self.assertRaises(self.client.deleteRotCoilData, None)
@@ -553,7 +549,6 @@ class Test(unittest.TestCase):
 
         self.assertEqual(data[firstKey]['inventory_id'], inv['id'])
         self.assertEqual(data[firstKey]['sub_device'], 'sub device')
-        self.assertEqual(data[firstKey]['login_name'], 'user')
 
         # Test deleting with an error in function call
         self.assertRaises(self.client.deleteHallProbeData, None)
@@ -676,6 +671,34 @@ class Test(unittest.TestCase):
 
         # Test the number of items in the table
         self.assertEqual(len(data.keys()), 0)
+
+    def testDevice(self):
+        '''
+        Test retrieving, saving and updating devices
+        '''
+
+        # Save a device
+        deviceID = self.client.saveDevice(device_name="device_name", cmpnt_type_name="cmpnt_type_name", device_description="device_description", device_coordinatecenter=None, cmpnt_type_description="cmpnt_type_description", cmpnt_type_props=None)
+
+        # Retrieve a device
+        self.assertEqual(len(self.client.retrieveDevice("device_name", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 1)
+        self.assertEqual(len(self.client.retrieveDevice("*", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 1)
+
+        # Save another device
+        deviceID = self.client.saveDevice(device_name="device_name2", cmpnt_type_name="cmpnt_type_name", device_description="device_description", device_coordinatecenter=None, cmpnt_type_description="cmpnt_type_description", cmpnt_type_props=None)
+
+        # Retrieve a device
+        self.assertEqual(len(self.client.retrieveDevice("device_name2", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 1)
+        self.assertEqual(len(self.client.retrieveDevice("*", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 2)
+
+        # Update a device
+        if len(self.client.retrieveDevice("device_name_new", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()) == 0:
+            self.assertTrue(self.client.updateDevice("device_name", "device_name_new", description=None, cmpnt_type_name=None, coordinatecenter=None))
+
+        # Retrieve a device
+        self.assertEqual(len(self.client.retrieveDevice("device_name", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 0)
+        self.assertEqual(len(self.client.retrieveDevice("device_name_new", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 1)
+        self.assertEqual(len(self.client.retrieveDevice("*", description=None, cmpnt_type_name=None, coordinatecenter=None).keys()), 2)
 
 if __name__ == "__main__":
     unittest.main()
