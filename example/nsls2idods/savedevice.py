@@ -37,8 +37,8 @@ device_name_new = 'NTT4XX-2'
 device_description = 'Device description.'
 device_location = 'Device location.'
 
-# Save a new device, here are all possible parameters. Necesary parameters are device_name and cmpnt_type_name. Returns an id of a newly saved device.
-deviceID = client.saveDevice(device_name=device_name, cmpnt_type_name=cmpnt_type_name, device_description=device_description, device_coordinatecenter=None, cmpnt_type_description=cmpnt_type_description, cmpnt_type_props=None)
+# Save a new device, here are all possible parameters. Necesary parameters are device_name and cmpnt_type_name. Returns a map structure of a newly saved device, containing it's id.
+data = client.saveDevice(device_name=device_name, cmpnt_type_name=cmpnt_type_name, device_description=device_description, device_coordinatecenter=None, cmpnt_type_description=cmpnt_type_description, cmpnt_type_props=None)
 
 # Retrieve a device using all parameters.
 client.retrieveDevice(device_name, description=None, cmpnt_type_name=None, coordinatecenter=None)
