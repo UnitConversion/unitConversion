@@ -1,5 +1,6 @@
 {% load verbatim %}
 {% verbatim %}
+
 <br />
 
 {% endverbatim %}
@@ -18,55 +19,54 @@
 
 <h3>Rotating Coil data</h3>
 
-<!-- If there is no data in the table, do not display the header table. -->
-<div ng-if="firstRotCoilDataId != -1 && inv.__measurement_data_settings__.source['rot_coil_data']">
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readwrite'" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<divng-repeat="column in rcdHeaderColumns">
+	<div ng-if="firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% endif %}
 {% verbatim %}
-		<p>
-			<span class="float-left">{{rcdColumns[column]}}:</span>
-			<span ng-if="column != 'login_name'" class="edit-wrapper header float-left">
-				<a href="#" onbeforesave="updateItem(rotCoilData[firstRotCoilDataId], column, $data, 'rot_coil_data')" class="edit" editable-text="rotCoilData[firstRotCoilDataId][column]">{{rotCoilData[firstRotCoilDataId][column] || "undefined"}}</a>
-			</span>
-			<span ng-if="column == 'login_name'" class="edit-wrapper header float-left">
-				{{rotCoilData[firstRotCoilDataId][column] || "undefined"}}
-			</span>
-		</p>
-		<br/>
-	</div>
+	<p>
+		<span class="float-left">{{rcdColumns[column]}}:</span>
+		<span ng-if="column != 'login_name'" class="edit-wrapper header float-left">
+			<a href="#" onbeforesave="updateItem(rotCoilData[firstRotCoilDataId], column, $data, 'rot_coil_data')" class="edit" editable-text="rotCoilData[firstRotCoilDataId][column]">{{rotCoilData[firstRotCoilDataId][column] || "undefined"}}</a>
+		</span>
+		<span ng-if="column == 'login_name'" class="edit-wrapper header float-left">
+			{{rotCoilData[firstRotCoilDataId][column] || "undefined"}}
+		</span>
+	</p>
+	<br/>
+</div>
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readonly'" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="view == 'readonly' && firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<div ng-if="view == 'readwrite'" ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstRotCoilDataId != -1" ng-repeat="column in rcdHeaderColumns">
 {% endif %}
 {% verbatim %}
-		<p>
-			<span class="float-left">{{rcdColumns[column]}}:</span>
-			<span class="edit-wrapper header float-left">
-				{{rotCoilData[firstRotCoilDataId][column] || ""}}
-			</span>
-		</p>
-		<br/>
-	</div>
+	<p>
+		<span class="float-left">{{rcdColumns[column]}}:</span>
+		<span class="edit-wrapper header float-left">
+			{{rotCoilData[firstRotCoilDataId][column] || ""}}
+		</span>
+	</p>
+	<br/>
 </div>
 <br/>
 
-<div ng-if="firstRotCoilDataId == -1 || !inv.__measurement_data_settings__.source['rot_coil_data']">
-	<span>Rotating coil data is not set for this device
+<div ng-if="inv.__measurement_data_settings__.source.rot_coil_data == undefined || inv.__measurement_data_settings__.source.rot_coil_data == false">
+	<span>Hall probe data is not set for this device
 		{% endverbatim %}
 			{% if user.is_authenticated %}
-				<button ng-if="view == 'readwrite'" ng-click="generateColumns('rot_coil_data')" class="btn btn-default">Create table</button>
+				<button ng-click="generateColumns('rot_coil_data')" class="btn btn-default">Create table</button>
 			{% endif %}
 		{% verbatim %}
 	</span>
 </div>
-<div ng-if="firstRotCoilDataId != -1 && inv.__measurement_data_settings__.source['rot_coil_data']">
+
+<div ng-if="inv.__measurement_data_settings__.source.rot_coil_data != undefined && inv.__measurement_data_settings__.source.rot_coil_data == true">
+
 {% endverbatim %}
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readwrite'" class="table-responsive">
@@ -75,95 +75,96 @@
 {% endif %}
 {% verbatim %}
 
-		<table class="table table-bordered table-hover table-condensed">
-			<tr>
-				<th ng-repeat="column in rawRcdColumns">
-					{{rcdColumns[column]}}
-				</th>
-				<th>
-					<button ng-click="manageColumns('rot_coil_data')" class="btn btn-info">Manage columns</button>
-					<button ng-click="deleteTable('rot_coil_data')" class="btn btn-info">Empty table</button>
-					<button ng-click="closeTable('rot_coil_data')" class="btn btn-info">Close table</button>
-				</th>
-			</tr>
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th ng-repeat="column in rawRcdColumns">
+				{{rcdColumns[column]}}
+			</th>
+			<th>
+				<button ng-click="manageColumns('rot_coil_data')" class="btn btn-info">Manage columns</button>
+				<button ng-click="deleteTable('rot_coil_data')" class="btn btn-info">Empty table</button>
+				<button ng-click="closeTable('rot_coil_data')" class="btn btn-info">Close table</button>
+			</th>
+		</tr>
 
-			<tbody>
-			<!-- Show retrieved -->
-			<tr ng-repeat="(row, rowData) in rotCoilData | orderObjectBy:'id'" ng-if="!$first">
-				<td ng-repeat="column in rawRcdColumns">
-					<span ng-if="column == 'inventory_name'" class="edit-wrapper">
-						{{rowData[column] || '&nbsp;'}}
-					</span>
-					<span ng-if="column != 'inventory_name'" class="edit-wrapper">
-						<a href="#" onbeforesave="updateItem(rowData, column, $data, 'rot_coil_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
-					</span>
-				</td>
-				<td>
-					<button ng-click="addRow(rowData, 'rot_coil_data')" class="btn btn-default">Copy&Create</button>
-					<button ng-click="deleteRow(rowData, 'rot_coil_data')" class="btn btn-default">Delete</button>
-				</td>
-			</tr>
+		<tbody>
+		<!-- Show retrieved -->
+		<tr ng-repeat="(row, rowData) in rotCoilData | orderObjectBy:'id'" ng-if="!$first">
+			<td ng-repeat="column in rawRcdColumns">
+				<span ng-if="column == 'inventory_name'" class="edit-wrapper">
+					{{rowData[column] || '&nbsp;'}}
+				</span>
+				<span ng-if="column != 'inventory_name'" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(rowData, column, $data, 'rot_coil_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>
+				<button ng-click="addRow(rowData, 'rot_coil_data')" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(rowData, 'rot_coil_data')" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
 
-			<!-- Show new -->
-			<tr ng-repeat="(row, rowData) in rotCoilData2">
-				<td ng-repeat="column in rawRcdColumns">
-					<span ng-if="column == 'inventory_name'" class="edit-wrapper">
-						{{rowData[column] || '&nbsp;'}}
-					</span>
-					<span ng-if="column != 'inventory_name'" class="edit-wrapper">
-						<a href="#" onbeforesave="updateItem(rowData, column, $data, 'rot_coil_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
-					</span>
-				</td>
-				<td>
-					<button ng-click="addRow(rowData, 'rot_coil_data')" class="btn btn-default">Copy&Create</button>
-					<button ng-click="deleteRow(rowData, 'rot_coil_data')" class="btn btn-default">Delete</button>
-				</td>
-			</tr>
+		<!-- Show new -->
+		<tr ng-repeat="(row, rowData) in rotCoilData2">
+			<td ng-repeat="column in rawRcdColumns">
+				<span ng-if="column == 'inventory_name'" class="edit-wrapper">
+					{{rowData[column] || '&nbsp;'}}
+				</span>
+				<span ng-if="column != 'inventory_name'" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(rowData, column, $data, 'rot_coil_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>
+				<button ng-click="addRow(rowData, 'rot_coil_data')" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(rowData, 'rot_coil_data')" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
 
-			<tr ng-repeat="(time, newMD) in newRCDs">
-				<td class="new_data" ng-repeat="prop in rawRcdColumns">
-					<span class="form-group" ng-class="{'has-error': error[prop]}">
-						<input ng-paste="paste(time, prop, $index, $event, 'rot_coil_data')" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'inventory_name'" class="form-control input-sm" />
-					</span>
-				</td>
-				<td ng-if="$first" rowspan="{{numRCDs}}">
-					<button ng-click="saveItems('rot_coil_data')" class="btn btn-warning">Add</button>
-					<button ng-click="cancel('rot_coil_data')" class="btn btn-default">Cancel</button>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="{{rawRcdColumns.length + 1}}"><button ng-click="addRow(undefined, 'rot_coil_data')" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
-			</tr>
-			</tbody>
-		</table>
-	</div>
+		<tr ng-repeat="(time, newMD) in newRCDs">
+			<td class="new_data" ng-repeat="prop in rawRcdColumns">
+				<span class="form-group" ng-class="{'has-error': error[prop]}">
+					<input ng-paste="paste(time, prop, $index, $event, 'rot_coil_data')" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'inventory_name'" class="form-control input-sm" />
+				</span>
+			</td>
+			<td ng-if="$first" rowspan="{{numRCDs}}">
+				<button ng-click="saveItems('rot_coil_data')" class="btn btn-warning">Add</button>
+				<button ng-click="cancel('rot_coil_data')" class="btn btn-default">Cancel</button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="{{rawRcdColumns.length + 1}}"><button ng-click="addRow(undefined, 'rot_coil_data')" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readonly'" class="table-responsive">
+<div ng-if="view == 'readonly'" class="table-responsive">
 {% else %}
-	<div ng-if="true" class="table-responsive">
+<div ng-if="true" class="table-responsive">
 {% endif %}
 {% verbatim %}
 
-		<table class="table table-bordered table-hover table-condensed">
-			<tr>
-				<th ng-repeat="column in rawRcdColumns">
-				{{rcdColumns[column]}}
-				</th>
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th ng-repeat="column in rawRcdColumns">
+			{{rcdColumns[column]}}
+			</th>
+		</tr>
+		<tbody>
+			<tr ng-repeat="(row, rowData) in rotCoilData" ng-if="!$first">
+				<td ng-repeat="column in rawRcdColumns">
+					<span>
+						{{rowData[column] || '&nbsp;'}}
+					</span>
+				</td>
 			</tr>
-			<tbody>
-				<tr ng-repeat="(row, rowData) in rotCoilData" ng-if="!$first">
-					<td ng-repeat="column in rawRcdColumns">
-						<span>
-							{{rowData[column] || '&nbsp;'}}
-						</span>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+		</tbody>
+	</table>
 </div>
+</div>
+
 <br/>
 
 <!-- Hall probe data -->
@@ -171,54 +172,54 @@
 <h3>Hall Probe data</h3>
 
 {% endverbatim %}
-<div ng-if="firstHallProbeDataId != -1 && inv.__measurement_data_settings__.source['hall_probe_data']">
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readwrite'" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% else %}
-	<div ng-if="view == 'readwrite'" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="view == 'readwrite' && firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% endif %}
 {% verbatim %}
-		<p>
-			<span class="float-left">{{hpdColumns[column]}}:</span>
-			<span ng-if="column != 'login_name'" class="edit-wrapper header float-left">
-				<a href="#" onbeforesave="updateItem(hallProbeData[firstHallProbeDataId], column, $data, 'hall_probe_data')" class="edit" editable-text="hallProbeData[firstHallProbeDataId][column]">{{hallProbeData[firstHallProbeDataId][column] || "undefined"}}</a>
-			</span>
-			<span ng-if="column == 'login_name'" class="edit-wrapper header float-left">
-				{{hallProbeData[firstHallProbeDataId][column] || "undefined"}}
-			</span>
-		</p>
-		<br/>
-	</div>
+	<p>
+		<span class="float-left">{{hpdColumns[column]}}:</span>
+		<span ng-if="column != 'login_name'" class="edit-wrapper header float-left">
+			<a href="#" onbeforesave="updateItem(hallProbeData[firstHallProbeDataId], column, $data, 'hall_probe_data')" class="edit" editable-text="hallProbeData[firstHallProbeDataId][column]">{{hallProbeData[firstHallProbeDataId][column] || "undefined"}}</a>
+		</span>
+		<span ng-if="column == 'login_name'" class="edit-wrapper header float-left">
+			{{hallProbeData[firstHallProbeDataId][column] || "undefined"}}
+		</span>
+	</p>
+	<br/>
+</div>
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readonly'" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="view == 'readonly' && firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% else %}
-	<div ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="firstHallProbeDataId != -1" ng-repeat="column in hpdHeaderColumns">
 {% endif %}
 {% verbatim %}
-		<p>
-			<span class="float-left">{{hpdColumns[column]}}:</span>
-			<span class="edit-wrapper header float-left">
-				{{hallProbeData[firstHallProbeDataId][column] || ""}}
-			</span>
-		</p>
-		<br/>
-	</div>
+	<p>
+		<span class="float-left">{{hpdColumns[column]}}:</span>
+		<span class="edit-wrapper header float-left">
+			{{hallProbeData[firstHallProbeDataId][column] || ""}}
+		</span>
+	</p>
+	<br/>
 </div>
+
 <br/>
 
-<div ng-if="!inv.__measurement_data_settings__.source['hall_probe_data']">
+<div ng-if="inv.__measurement_data_settings__.source.hall_probe_data == undefined || inv.__measurement_data_settings__.source.hall_probe_data == false">
 	<span>Hall probe data is not set for this device
 		{% endverbatim %}
 			{% if user.is_authenticated %}
-				<button ng-if="view == 'readwrite'" ng-click="generateColumns('hall_probe_data')" class="btn btn-default">Create table</button>
+				<button ng-click="generateColumns('hall_probe_data')" class="btn btn-default">Create table</button>
 			{% endif %}
 		{% verbatim %}
 	</span>
 </div>
 
-<div ng-if="inv.__measurement_data_settings__.source['hall_probe_data']">
+<div ng-if="inv.__measurement_data_settings__.source.hall_probe_data != undefined && inv.__measurement_data_settings__.source.hall_probe_data == true">
+
 {% endverbatim %}
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readwrite'" class="table-responsive">
@@ -227,92 +228,95 @@
 {% endif %}
 {% verbatim %}
 
-		<table class="table table-bordered table-hover table-condensed">
-			<tr>
-				<th ng-repeat="column in rawHpdColumns">
-					{{hpdColumns[column]}}
-				</th>
-				<th>
-					<button ng-click="manageColumns('hall_probe_data')" class="btn btn-info">Manage columns</button>
-					<button ng-click="deleteTable('hall_probe_data')" class="btn btn-info">Empty table</button>
-					<button ng-click="closeTable('hall_probe_data')" class="btn btn-info">Close table</button>
-				</th>
-			</tr>
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th ng-repeat="column in rawHpdColumns">
+				{{hpdColumns[column]}}
+			</th>
+			<th>
+				<button ng-click="manageColumns('hall_probe_data')" class="btn btn-info">Manage columns</button>
+				<button ng-click="deleteTable('hall_probe_data')" class="btn btn-info">Empty table</button>
+				<button ng-click="closeTable('hall_probe_data')" class="btn btn-info">Close table</button>
+			</th>
+		</tr>
 
-			<tbody>
-			<!-- Show retrieved -->
-			<tr ng-repeat="(row, rowData) in hallProbeData | orderObjectBy:'id'" ng-if="!$first">
-				<td ng-repeat="column in rawHpdColumns">
-					<span ng-if="column == 'inventory_name'" class="edit-wrapper">
-						{{rowData[column] || '&nbsp;'}}
-					</span>
-					<span ng-if="column != 'inventory_name'" class="edit-wrapper">
-						<a href="#" onbeforesave="updateItem(rowData, column, $data, 'hall_probe_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
-					</span>
-				</td>
-				<td>
-					<button ng-click="addRow(rowData, 'hall_probe_data')" class="btn btn-default">Copy&Create</button>
-					<button ng-click="deleteRow(rowData, 'hall_probe_data')" class="btn btn-default">Delete</button>
-				</td>
-			</tr>
+		<tbody>
+		<!-- Show retrieved -->
+		<tr ng-repeat="(row, rowData) in hallProbeData | orderObjectBy:'id'" ng-if="!$first">
+			<td ng-repeat="column in rawHpdColumns">
+				<span ng-if="column == 'inventory_name'" class="edit-wrapper">
+					{{rowData[column] || '&nbsp;'}}
+				</span>
+				<span ng-if="column != 'inventory_name'" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(rowData, column, $data, 'hall_probe_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>
+				<button ng-click="addRow(rowData, 'hall_probe_data')" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(rowData, 'hall_probe_data')" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
 
-			<!-- Show new -->
-			<tr ng-repeat="(row, rowData) in hallProbeData2">
-				<td ng-repeat="column in rawHpdColumns">
-					<span ng-if="column == 'inventory_name'" class="edit-wrapper">
-						{{rowData[column] || '&nbsp;'}}
-					</span>
-					<span ng-if="column != 'inventory_name'" class="edit-wrapper">
-						<a href="#" onbeforesave="updateItem(rowData, column, $data, 'hall_probe_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
-					</span>
-				</td>
-				<td>
-					<button ng-click="addRow(rowData, 'hall_probe_data')" class="btn btn-default">Copy&Create</button>
-					<button ng-click="deleteRow(rowData, 'hall_probe_data')" class="btn btn-default">Delete</button>
-				</td>
-			</tr>
+		<!-- Show new -->
+		<tr ng-repeat="(row, rowData) in hallProbeData2">
+			<td ng-repeat="column in rawHpdColumns">
+				<span ng-if="column == 'inventory_name'" class="edit-wrapper">
+					{{rowData[column] || '&nbsp;'}}
+				</span>
+				<span ng-if="column != 'inventory_name'" class="edit-wrapper">
+					<a href="#" onbeforesave="updateItem(rowData, column, $data, 'hall_probe_data')" class="edit" editable-text="rowData[column]">{{rowData[column] || '&nbsp;'}}</a>
+				</span>
+			</td>
+			<td>
+				<button ng-click="addRow(rowData, 'hall_probe_data')" class="btn btn-default">Copy&Create</button>
+				<button ng-click="deleteRow(rowData, 'hall_probe_data')" class="btn btn-default">Delete</button>
+			</td>
+		</tr>
 
-			<tr ng-repeat="(time, newMD) in newHPDs">
-				<td class="new_data" ng-repeat="prop in rawHpdColumns">
-					<span class="form-group" ng-class="{'has-error': error[prop]}">
-						<input ng-paste="paste(time, prop, $index, $event, 'hall_probe_data')" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'inventory_name'" class="form-control input-sm" />
-					</span>
-				</td>
-				<td ng-if="$first" rowspan="{{numHPDs}}">
-					<button ng-click="saveItems('hall_probe_data')" class="btn btn-warning">Add</button>
-					<button ng-click="cancel('hall_probe_data')" class="btn btn-default">Cancel</button>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="{{rawHpdColumns.length + 1}}"><button ng-click="addRow(undefined, 'hall_probe_data')" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
-			</tr>
-			</tbody>
-		</table>
-	</div>
+		<tr ng-repeat="(time, newMD) in newHPDs">
+			<td class="new_data" ng-repeat="prop in rawHpdColumns">
+				<span class="form-group" ng-class="{'has-error': error[prop]}">
+					<input ng-paste="paste(time, prop, $index, $event, 'hall_probe_data')" type="text" ng-model="newMD[prop]" ng-disabled="prop == 'inventory_name'" class="form-control input-sm" />
+				</span>
+			</td>
+			<td ng-if="$first" rowspan="{{numHPDs}}">
+				<button ng-click="saveItems('hall_probe_data')" class="btn btn-warning">Add</button>
+				<button ng-click="cancel('hall_probe_data')" class="btn btn-default">Cancel</button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="{{rawHpdColumns.length + 1}}"><button ng-click="addRow(undefined, 'hall_probe_data')" class="btn btn-info"><i class="glyphicon glyphicon-plus"></i> Add new data</button></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
 
 {% endverbatim %}
 {% if user.is_authenticated %}
-	<div ng-if="view == 'readonly'" class="table-responsive">
+<div ng-if="view == 'readonly'" class="table-responsive">
 {% else %}
-	<div ng-if="true" class="table-responsive">
+<div ng-if="true" class="table-responsive">
 {% endif %}
 {% verbatim %}
-		<table class="table table-bordered table-hover table-condensed">
-			<tr>
-				<th ng-repeat="column in rawHpdColumns">
-				{{hpdColumns[column]}}
-				</th>
+
+	<table class="table table-bordered table-hover table-condensed">
+		<tr>
+			<th ng-repeat="column in rawHpdColumns">
+			{{hpdColumns[column]}}
+			</th>
+		</tr>
+		<tbody>
+			<tr ng-repeat="(row, rowData) in hallProbeData" ng-if="!$first">
+				<td ng-repeat="column in rawHpdColumns">
+					<span>
+						{{rowData[column] || '&nbsp;'}}
+					</span>
+				</td>
 			</tr>
-			<tbody>
-				<tr ng-repeat="(row, rowData) in hallProbeData" ng-if="!$first">
-					<td ng-repeat="column in rawHpdColumns">
-						<span>
-							{{rowData[column] || '&nbsp;'}}
-						</span>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+		</tbody>
+	</table>
 </div>
+
+</div>
+
 {% endverbatim %}
