@@ -21,10 +21,11 @@
 <!-- If there is no data in the table, do not display the header table. -->
 <div ng-if="firstRotCoilDataId != -1 && inv.__measurement_data_settings__.source['rot_coil_data']">
 {% endverbatim %}
+<!-- If user is authenticated in readwrite view, display dynamic form. -->
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readwrite'" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<div ng-repeat="column in rcdHeaderColumns">
+	<div ng-if="false">
 {% endif %}
 {% verbatim %}
 		<p>
@@ -40,16 +41,17 @@
 	</div>
 
 {% endverbatim %}
+<!-- If user is authenticated in readonly view or user is not authenticated, display static form. -->
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readonly'" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<div ng-if="view == 'readwrite'" ng-repeat="column in rcdHeaderColumns">
+	<div ng-repeat="column in rcdHeaderColumns">
 {% endif %}
 {% verbatim %}
 		<p>
 			<span class="float-left">{{rcdColumns[column]}}:</span>
 			<span class="edit-wrapper header float-left">
-				{{rotCoilData[firstRotCoilDataId][column] || ""}}
+				{{rotCoilData[firstRotCoilDataId][column] || "undefined"}}
 			</span>
 		</p>
 		<br/>
@@ -166,16 +168,15 @@
 </div>
 <br/>
 
-<!-- Hall probe data -->
-
 <h3>Hall Probe data</h3>
 
 {% endverbatim %}
 <div ng-if="firstHallProbeDataId != -1 && inv.__measurement_data_settings__.source['hall_probe_data']">
+<!-- If user is authenticated in readwrite view, display dynamic form. -->
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readwrite'" ng-repeat="column in hpdHeaderColumns">
 {% else %}
-	<div ng-if="view == 'readwrite'" ng-repeat="column in hpdHeaderColumns">
+	<div ng-if="false">
 {% endif %}
 {% verbatim %}
 		<p>
@@ -191,6 +192,7 @@
 	</div>
 
 {% endverbatim %}
+<!-- If user is authenticated in readonly view or user is not authenticated, display static form. -->
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readonly'" ng-repeat="column in hpdHeaderColumns">
 {% else %}
@@ -200,7 +202,7 @@
 		<p>
 			<span class="float-left">{{hpdColumns[column]}}:</span>
 			<span class="edit-wrapper header float-left">
-				{{hallProbeData[firstHallProbeDataId][column] || ""}}
+				{{hallProbeData[firstHallProbeDataId][column] || "undefined"}}
 			</span>
 		</p>
 		<br/>

@@ -70,7 +70,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.rcdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.rcdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -94,7 +94,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.hpdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.hpdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -115,9 +115,8 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}, function(error) {
 					l("ERROR: " + error);
 				});
-			}
 			// Normally load data.
-			else {
+			} else {
 				$scope.rotCoilData = result;
 				l(result);
 
@@ -138,9 +137,8 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}, function(error) {
 					l("ERROR: " + error);
 				});
-			}
 			// Normally load data.
-			else {
+			} else {
 				$scope.hallProbeData = result;
 				l(result);
 

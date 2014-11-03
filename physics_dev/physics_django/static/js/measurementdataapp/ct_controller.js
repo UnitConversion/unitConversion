@@ -66,7 +66,7 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.rcdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.rcdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -90,7 +90,7 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.hpdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.hpdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -111,9 +111,8 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				}, function(error) {
 					l("ERROR: " + error);
 				});
-			}
 			// Normally load data.
-			else {
+			} else {
 				$scope.rotCoilData = result;
 				l(result);
 
@@ -134,9 +133,8 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				}, function(error) {
 					l("ERROR: " + error);
 				});
-			}
 			// Normally load data.
-			else {
+			} else {
 				$scope.hallProbeData = result;
 				l(result);
 
