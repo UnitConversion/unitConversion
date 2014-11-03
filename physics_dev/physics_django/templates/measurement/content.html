@@ -24,7 +24,7 @@
 {% if user.is_authenticated %}
 	<div ng-if="view == 'readwrite'" ng-repeat="column in rcdHeaderColumns">
 {% else %}
-	<divng-repeat="column in rcdHeaderColumns">
+	<div ng-repeat="column in rcdHeaderColumns">
 {% endif %}
 {% verbatim %}
 		<p>
@@ -57,7 +57,7 @@
 </div>
 <br/>
 
-<div ng-if="!inv.__measurement_data_settings__.source['rot_coil_data']">
+<div ng-if="firstRotCoilData == -1 || !inv.__measurement_data_settings__.source['rot_coil_data']">
 	<span>Rotating coil data is not set for this device
 		{% endverbatim %}
 			{% if user.is_authenticated %}
@@ -81,7 +81,7 @@
 					{{rcdColumns[column]}}
 				</th>
 				<th>
-					<button ng-click="manageColumns('rot_coil_data')" class="btn btn-info">Manage columns</button>
+					<button ng-click="manageColumns('rot_coil_data', false)" class="btn btn-info">Manage columns</button>
 					<button ng-click="deleteTable('rot_coil_data')" class="btn btn-info">Empty table</button>
 					<button ng-click="closeTable('rot_coil_data')" class="btn btn-info">Close table</button>
 				</th>
@@ -233,7 +233,7 @@
 					{{hpdColumns[column]}}
 				</th>
 				<th>
-					<button ng-click="manageColumns('hall_probe_data')" class="btn btn-info">Manage columns</button>
+					<button ng-click="manageColumns('hall_probe_data', false)" class="btn btn-info">Manage columns</button>
 					<button ng-click="deleteTable('hall_probe_data')" class="btn btn-info">Empty table</button>
 					<button ng-click="closeTable('hall_probe_data')" class="btn btn-info">Close table</button>
 				</th>
