@@ -66,7 +66,7 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.rcdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.rcdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -90,7 +90,7 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.hpdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'cmpnt_type_name' || $.inArray(column, $scope.hpdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -101,23 +101,48 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 		}
 
 		cmpntTypeRotCoilDataFactory.retrieveItems({'cmpnt_type_name': $scope.inv.name}).then(function(result) {
-			$scope.rotCoilData = result;
-			l(result);
+			// Delete everything in a table if a refresh happened during table creation.
+			if(!isArrayEmpty(result) && !$scope.inv.__measurement_data_settings__.source['rot_coil_data']) {
+				var promise = cmpntTypeRotCoilDataFactory.deleteItem({'cmpnt_type_name': $scope.inv.name, 'rot_coil_data_id': undefined});
 
-			if($scope.numElements(result) > 0) {
-				$scope.firstCmpntTypeRotCoilDataId = Object.keys(result)[0];
+				promise.then(function(data) {
+					l("Deleting cmpntTypeRotCoilData table data after refresh successful.");
+
+				}, function(error) {
+					l("ERROR: " + error);
+				});
+			// Normally load data.
+			} else {
+				$scope.rotCoilData = result;
+				l(result);
+
+				if($scope.numElements(result) > 0) {
+					$scope.firstCmpntTypeRotCoilDataId = Object.keys(result)[0];
+				}
 			}
 		});
 
 		cmpntTypeHallProbeDataFactory.retrieveItems({'cmpnt_type_name': $scope.inv.name}).then(function(result) {
-			$scope.hallProbeData = result;
-			l(result);
+			// Delete everything in a table if a refresh happened during table creation.
+			if(!isArrayEmpty(result) && !$scope.inv.__measurement_data_settings__.source['hall_probe_data']) {
+				var promise = cmpntTypeHallProbeDataFactory.deleteItem({'cmpnt_type_name': $scope.inv.name, 'hall_probe_data_id': undefined});
 
-			if($scope.numElements(result) > 0) {
-				$scope.firstCmpntTypeHallProbeDataId = Object.keys(result)[0];
+				promise.then(function(data) {
+					l("Deleting cmpntTypeHallProbeData table data after refresh successful.");
+
+				}, function(error) {
+					l("ERROR: " + error);
+				});
+			// Normally load data.
+			} else {
+				$scope.hallProbeData = result;
+				l(result);
+
+				if($scope.numElements(result) > 0) {
+					$scope.firstCmpntTypeHallProbeDataId = Object.keys(result)[0];
+				}
 			}
 		});
-
 	});
 
 	$scope.numElements = function(obj) {
@@ -316,7 +341,7 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 		});
 	};
 
-	$scope.manageColumns = function(sourceTable) {
+	$scope.manageColumns = function(sourceTable, button) {
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/update_measurement_data_columns.html',
@@ -327,6 +352,9 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 				},
 				inventory_obj: function() {
 					return $scope.inv;
+				},
+				button: function() {
+					return button;
 				}
 			}
 		});
@@ -363,7 +391,7 @@ app.controller('ctDataCtrl', function($scope, $routeParams, $http, $modal, $time
 		l($scope.inv.__measurement_data_settings__);
 
 		// Open new window with column manager
-		$scope.manageColumns(sourceTable);
+		$scope.manageColumns(sourceTable, true);
 
 		// Create header item
 		var headerItem;
@@ -689,7 +717,7 @@ app.controller('cTcloseDataCtrl', function($scope, $modalInstance, $window, cmpn
 /*
  * Manage measurement data columns controller
  */
-app.controller('cTmanageMeasurementDataColumnsCtrl', function($scope, $modalInstance, $window, CmpntTypeRotCoilData, CmpntTypeHallProbeData, cmpntTypeFactory, source, inventory_obj) {
+app.controller('cTmanageMeasurementDataColumnsCtrl', function($scope, $modalInstance, $window, CmpntTypeRotCoilData, CmpntTypeHallProbeData, cmpntTypeFactory, source, inventory_obj, button, cmpntTypeRotCoilDataFactory, cmpntTypeHallProbeDataFactory) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
@@ -741,12 +769,36 @@ app.controller('cTmanageMeasurementDataColumnsCtrl', function($scope, $modalInst
 	};
 
 	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
+		l("Preform delete function on X button: " + button);
+		if(button)	{
+			$scope.cancelDestroy();
+		}
+		else {
+			$modalInstance.dismiss('cancel');
+		}
+	};
+
+	$scope.cancelDestroy = function() {
+		var promise;
+
+		if(source === 'rot_coil_data') {
+			promise = cmpntTypeRotCoilDataFactory.deleteItem({'cmpnt_type_name': inventory_obj.name, 'rot_coil_data_id': undefined});
+
+		} else {
+			promise = cmpntTypeHallProbeDataFactory.deleteItem({'cmpnt_type_name': inventory_obj.name, 'hall_probe_id': undefined});
+		}
+
+		promise.then(function(data) {
+			l("Deleting table data successful.");
+
+		}, function(error) {
+			l("ERROR: " + error);
+		});
+		$window.location.reload();
 	};
 
 	$scope.finish = function() {
 		$window.location.reload();
-
 		$modalInstance.dismiss('cancel');
 	};
 });

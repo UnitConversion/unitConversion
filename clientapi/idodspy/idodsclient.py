@@ -4501,7 +4501,7 @@ class IDODSClient(object):
 
         :Raises: ValueError, MySQLError
         '''
-        return self.retrieveInstall(device_name, description, cmpnt_type_name, coordinatecenter).itervalues().next()
+        return self.retrieveInstall(device_name, description, cmpnt_type_name, coordinatecenter)
 
     def updateDevice(self, device_name_old, device_name_new, description=None, cmpnt_type_name=None, coordinatecenter=None):
         '''

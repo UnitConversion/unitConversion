@@ -70,7 +70,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.rcdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.rcdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -94,7 +94,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				}
 
 				// Skip some columns
-				if((column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.hpdHeaderColumns) != -1) && $routeParams.view === 'readwrite') {
+				if(column === 'id' || column === 'inventory_id' || $.inArray(column, $scope.hpdHeaderColumns) != -1) {
 					return;
 				}
 
@@ -105,22 +105,49 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		}
 
 		rotCoilDataFactory.retrieveItems({'inventory_id': $scope.inv.id}).then(function(result) {
-			$scope.rotCoilData = result;
+			// Delete everything in a table if a refresh happened during table creation.
+			if(!isArrayEmpty(result) && !$scope.inv.__measurement_data_settings__.source['rot_coil_data']) {
+				var promise = rotCoilDataFactory.deleteItem({'inventory_id': $scope.inv.id, 'rot_coil_data_id': undefined});
 
-			if($scope.numElements(result) > 0) {
-				$scope.firstRotCoilDataId = Object.keys(result)[0];
+				promise.then(function(data) {
+					l("Deleting RotCoilData table data after refresh successful.");
+
+				}, function(error) {
+					l("ERROR: " + error);
+				});
+			// Normally load data.
+			} else {
+				$scope.rotCoilData = result;
+				l(result);
+
+				if($scope.numElements(result) > 0) {
+					$scope.firstRotCoilDataId = Object.keys(result)[0];
+				}
 			}
 		});
 
 		hallProbeDataFactory.retrieveItems({'inventory_id': $scope.inv.id}).then(function(result) {
-			$scope.hallProbeData = result;
-			l(result);
+			// Delete everything in a table if a refresh happened during table creation.
+			if(!isArrayEmpty(result) && !$scope.inv.__measurement_data_settings__.source['hall_probe_data']) {
+				var promise = hallProbeDataFactory.deleteItem({'inventory_id': $scope.inv.id, 'hall_probe_data_id': undefined});
 
-			if($scope.numElements(result) > 0) {
-				$scope.firstHallProbeDataId = Object.keys(result)[0];
+				promise.then(function(data) {
+					l("Deleting HallProbeData table data after refresh successful.");
+
+				}, function(error) {
+					l("ERROR: " + error);
+				});
+			// Normally load data.
+			} else {
+				$scope.hallProbeData = result;
+				l(result);
+
+				if($scope.numElements(result) > 0) {
+					$scope.firstHallProbeDataId = Object.keys(result)[0];
+				}
 			}
-		});
 
+		});	
 	});
 
 	$scope.numElements = function(obj) {
@@ -319,7 +346,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		});
 	};
 
-	$scope.manageColumns = function(sourceTable) {
+	$scope.manageColumns = function(sourceTable, button) {
 
 		var modalInstance = $modal.open({
 			templateUrl: 'modal/update_measurement_data_columns.html',
@@ -330,6 +357,9 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 				},
 				inventory_obj: function() {
 					return $scope.inv;
+				},
+				button: function() {
+					return button;
 				}
 			}
 		});
@@ -366,7 +396,7 @@ app.controller('dataCtrl', function($scope, $routeParams, $http, $modal, $timeou
 		l($scope.inv.__measurement_data_settings__);
 
 		// Open new window with column manager
-		$scope.manageColumns(sourceTable);
+		$scope.manageColumns(sourceTable, true);
 
 		// Create header item
 		var headerItem;
@@ -690,7 +720,7 @@ app.controller('closeDataCtrl', function($scope, $modalInstance, $window, invent
 /*
  * Manage measurement data columns controller
  */
-app.controller('manageMeasurementDataColumnsCtrl', function($scope, $modalInstance, $window, RotCoilData, HallProbeData, inventoryFactory, source, inventory_obj) {
+app.controller('manageMeasurementDataColumnsCtrl', function($scope, $modalInstance, $window, RotCoilData, HallProbeData, inventoryFactory, source, inventory_obj, button, rotCoilDataFactory, hallProbeDataFactory) {
 	$scope.alert = {};
 	$scope.showYesButton = true;
 	$scope.showCancelButton = true;
@@ -742,12 +772,36 @@ app.controller('manageMeasurementDataColumnsCtrl', function($scope, $modalInstan
 	};
 
 	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
+		l("Preform delete function on X button: " + button);
+		if(button) {
+			$scope.cancelDestroy();
+		}
+		else {
+			$modalInstance.dismiss('cancel');
+		}
+	};
+
+	$scope.cancelDestroy = function() {
+		var promise;
+
+		if(source === 'rot_coil_data') {
+			promise = rotCoilDataFactory.deleteItem({'inventory_id': inventory_obj.id, 'rot_coil_data_id': undefined});
+
+		} else {
+			promise = hallProbeDataFactory.deleteItem({'inventory_id': inventory_obj.id, 'hall_probe_id': undefined});
+		}
+
+		promise.then(function(data) {
+			l("Deleting table data successful.");
+
+		}, function(error) {
+			l("ERROR: " + error);
+		});
+		$window.location.reload();
 	};
 
 	$scope.finish = function() {
 		$window.location.reload();
-
 		$modalInstance.dismiss('cancel');
 	};
 });

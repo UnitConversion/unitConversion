@@ -547,3 +547,12 @@ function createCsvString(data, selection, factor) {
 
 	return outputArr.join("\n");
 }
+
+/**
+ * Checks if a JSON array is empty
+ * @param {type} JSON array
+ * @returns {boolean}
+ */
+function isArrayEmpty(array) {
+		return Object.keys(array).length == 0;
+	}
