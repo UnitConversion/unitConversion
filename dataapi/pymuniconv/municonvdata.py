@@ -26,7 +26,13 @@ import MySQLdb
 
 from utils import (_wildcardformat, _assemblesql)
 from pyphysics.physics import physics
+from pyidods.idods import idods
 from _mysql_exceptions import MySQLError
+
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
 
 
 class municonvdata(object):
@@ -44,6 +50,7 @@ class municonvdata(object):
 
         self.cachedconversioninfo = {}
         self.physics = physics(connection, None)
+        self.idods = idods(connection, None)
 
     def connectdb(self, host=None, user=None, pwd=None, db=None, port=3306):
         if host is None or user is None or pwd is None or db is None:
@@ -669,6 +676,185 @@ class municonvdata(object):
             system.append(r[0])
         return system
 
+    def retrieveMeasurementData(self, inventory_id, cmpnt_type_name, with_data=False):
+        '''
+        Get information about measurement data and measurement data
+
+        :param inventory_id: Inventory id
+        :type inventory_id: int
+
+        :param cmpnt_type_name: Component type name
+        :type cmpnt_type_name: str
+
+        :param with_data: Do we want data to be returned or not
+        :type with_data: str
+
+        :return: a map with structure like:
+
+            .. code-block:: python
+
+                {
+                    'type':, #int (0 - no MD, 1 - MD in component type, 2 - MD in inventory)
+                    'data':  #JSON string
+                }
+
+        :Raises: Exception
+        '''
+
+        # COnstruct return object
+        ret = {'type': 0, 'data': {}}
+        rcdData = {}
+        hpdData = {}
+
+        # Get component type id
+        componentTypeData = self.physics.retrieveComponentType(cmpnt_type_name)
+
+        if len(componentTypeData) < 1:
+            raise ValueError("No component type with name (%s) in the database" % cmpnt_type_name)
+
+        cmpntTypeId = componentTypeData[0][0]
+
+        # Get measurement data settigns inventory property template
+        invPropTmplt = self.physics.retrieveInventoryPropertyTemplate('__measurement_data_settings__', cmpntTypeId)
+
+        if len(invPropTmplt) >= 1:
+            invPropTmpltId = invPropTmplt[0][0]
+
+            # Retrieve inventory MD settings
+            invProp = self.physics.retrieveInventoryProperty(inventory_id, invPropTmpltId)
+
+            if len(invProp) >= 1:
+                ret['type'] = 2
+                invMdSettings = invProp[0][1]
+
+        else:
+            # Get MD settings component type property type
+            cmpntTypePropType = self.physics.retrieveComponentTypePropertyType('__measurement_data_settings__')
+
+            if len(cmpntTypePropType) >= 1:
+                cmpntTypePropTypeId = cmpntTypePropType[0][0]
+
+                # Get cmpnt type MD settings
+                cmpntTypeProp = self.physics.retrieveComponentTypeProperty(cmpntTypeId, cmpntTypePropTypeId)
+
+                if len(cmpntTypeProp) >= 1:
+                    ret['type'] = 1
+                    cmpntTypeMdSettings = cmpntTypeProp[0][1]
+
+        # If with data is set to True, retrieve data
+        if with_data and ret['type'] > 0:
+
+            # Get cmpnt type MD data
+            if ret['type'] == 1:
+
+                # Convert json to asoc array
+                cmpntTypeMdSettingsObj = json.loads(cmpntTypeMdSettings)
+
+                # Which measurement data types are enabled
+                for mdType in cmpntTypeMdSettingsObj['source']:
+
+                    if cmpntTypeMdSettingsObj['source'][mdType]:
+
+                        # Get rot coil data
+                        if mdType == "rot_coil_data":
+                            rcd = self.idods.retrieveComponentTypeRotCoilData(cmpnt_type_name)
+
+                            # Transpose table
+                            for index in rcd:
+
+                                for column in rcd[index]:
+
+                                    if column in rcdData:
+                                        rcdData[column].append(rcd[index][column])
+
+                                    else:
+                                        rcdData[column] = [rcd[index][column]]
+
+                        else:
+                            hpd = self.idods.retrieveComponentTypeHallProbeData(cmpnt_type_name)
+
+                            # Transpose table
+                            for index in hpd:
+
+                                for column in hpd[index]:
+
+                                    if column in hpdData:
+                                        hpdData[column].append(hpd[index][column])
+
+                                    else:
+                                        hpdData[column] = [hpd[index][column]]
+
+                        # Go through all of the visible columns
+                        for column in cmpntTypeMdSettingsObj[mdType]:
+
+                            if cmpntTypeMdSettingsObj[mdType][column]['displayed']:
+                                ret['data'][mdType + '.' + column] = []
+
+            # Get inv MD data
+            else:
+
+                # Convert json to asoc array
+                invMdSettingsObj = json.loads(invMdSettings)
+
+                # Check which measurement data types are enabled
+                for mdType in invMdSettingsObj['source']:
+
+                    if invMdSettingsObj['source'][mdType]:
+
+                        # Get rot coil data
+                        if mdType == "rot_coil_data":
+                            rcd = self.idods.retrieveRotCoilData(inventory_id)
+
+                            # Transpose table
+                            for index in rcd:
+
+                                for column in rcd[index]:
+
+                                    if column in rcdData:
+                                        rcdData[column].append(rcd[index][column])
+
+                                    else:
+                                        rcdData[column] = [rcd[index][column]]
+
+                        else:
+                            hpd = self.idods.retrieveHallProbeData(inventory_id)
+
+                            # Transpose table
+                            for index in hpd:
+
+                                for column in hpd[index]:
+
+                                    if column in hpdData:
+                                        hpdData[column].append(hpd[index][column])
+
+                                    else:
+                                        hpdData[column] = [hpd[index][column]]
+
+                        # Go through all of the visible columns
+                        for column in invMdSettingsObj[mdType]:
+
+                            if invMdSettingsObj[mdType][column]['displayed']:
+
+                                # Append rot coil data to the response
+                                if mdType == "rot_coil_data":
+
+                                    if column in rcdData:
+                                        ret['data'][mdType + '.' + column] = rcdData[column]
+
+                                    else:
+                                        ret['data'][mdType + '.' + column] = []
+
+                                # Append hall probe data to the response
+                                else:
+
+                                    if column in hpdData:
+                                        ret['data'][mdType + '.' + column] = hpdData[column]
+
+                                    else:
+                                        ret['data'][mdType + '.' + column] = []
+
+        return ret
+
     def retrievemuniconv4inventory(self, invid, invproptmpltname, invproptmpltdesc):
         '''
         Get magnet unit conversion information for given inventory id with inventory property template name and its description.
@@ -694,7 +880,19 @@ class municonvdata(object):
             cur.execute(sql, (invid, invproptmpltname, invproptmpltdesc))
             res = cur.fetchone()
 
-        except MySQLdb.Error as e:
+            # Retrieve MD
+            if len(res) >= 1:
+                md = self.retrieveMeasurementData(invid, res[3], True)
+                invValue = json.loads(res[4])
+
+                for munType in invValue:
+
+                    if(md['type'] > 0):
+                        invValue[munType]['md'] = md['data']
+
+                res = (res[0], res[1], res[2], res[3], json.dumps(invValue))
+
+        except Exception as e:
             self.logger.info('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' % (e.args[1], e.args[0]))
             raise Exception('Error when fetching magnet unit conversion information for inventory:\n%s (%d)' % (e.args[1], e.args[0]))
 

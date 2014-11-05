@@ -8,7 +8,7 @@ try:
 except ImportError:
     import json
 
-from pymuniconv.municonvinfo import (retrievemagnetinfo, retrievesystemdata, retrieveconversioninfo)
+from pymuniconv.municonvinfo import (retrievemagnetinfo, retrievesystemdata, retrieveconversioninfo, retrieveMeasurementDataInfo)
 from utils.utils import _checkkeys
 
 
@@ -47,6 +47,16 @@ def systemlist(request):
     try:
         _checkkeys(params.keys(), ['name'])
         res = retrievesystemdata(params)
+    except ValueError as e:
+        return HttpResponseBadRequest(HttpResponse(content=e))
+    return HttpResponse(json.dumps(res), mimetype="application/json")
+
+
+def measurementDataInfo(request):
+    params = _retrievecmddict(request)
+    try:
+        _checkkeys(params.keys(), ['inventory_id', 'cmpnt_type_name'])
+        res = retrieveMeasurementDataInfo(params)
     except ValueError as e:
         return HttpResponseBadRequest(HttpResponse(content=e))
     return HttpResponse(json.dumps(res), mimetype="application/json")

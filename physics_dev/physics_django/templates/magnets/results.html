@@ -89,7 +89,21 @@
 </div>
 
 <div ng-if="subview == 'properties'">
-	<div key-value-table="" table-data="properties[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']]" visible="true"></div>
+
+	<table class="table table-bordered">
+		<tr>
+			<th>Key</th>
+			<th>Value</th>
+		</tr>
+		<tr>
+			<td>Default energy</td>
+			<td>{{properties[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].defaultEnergy}}</td>
+		</tr>
+		<tr>
+			<td>Description</td>
+			<td>{{properties[data.detailsTabs[view]['first']][data.detailsTabs[view]['second']].description}}</td>
+		</tr>
+	</table>
 </div>
 
 {% endverbatim %}

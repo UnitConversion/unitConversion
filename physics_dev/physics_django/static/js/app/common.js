@@ -132,8 +132,8 @@ function createDeviceListQuery(search, returnUrl) {
 			url += "/system/" + search.system;
 
 		} else {
-				query += "system=*&";
-				url += "/system/";
+			query += "system=*&";
+			url += "/system/";
 		}
 	}
 
@@ -145,10 +145,13 @@ function createDeviceListQuery(search, returnUrl) {
 			query += "name=" + search.name + '&';
 			url += "/name/" + search.name;
 
-		} else {
+		} else if(search.inst !== undefined) {
+			query += "name=" + search.inst + '&';
+			url += "/name/";
 
-				query += "name=*&";
-				url += "/name/";
+		} else {
+			query += "name=*&";
+			url += "/name/";
 		}
 	}
 

@@ -85,7 +85,6 @@ app.controller('searchFormCtrl', function($scope, systemService, $window, $route
 	$scope.search.displayName = "display_search_filter";
 	$scope.search.displaySystem = "display_search_filter";
 	$scope.search.type = "install";
-	l("Show search form!!!");
 
 	// Set search type
 	if($routeParams.type !== undefined) {
@@ -129,7 +128,6 @@ app.controller('listDevicesCtrl', function($scope, $routeParams, $http, $window)
 
 	$scope.devices = [];
 	var previousDevice;
-	l("Show list!!!");
 
 	var query = ucserviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
 
@@ -223,9 +221,6 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 		$window.location = url;
 	};
 
-	l("hash: " + $location.hash());
-	l("Show details!!!");
-
 	detailsService.getDetails($routeParams).then(function(data) {
 		$scope.data = data[$routeParams.id];
 
@@ -278,8 +273,6 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 		if($scope.energy !== undefined && $scope.energy !== "") {
 			conversionQuery += '&energy=' + $scope.energy;
 		}
-
-		l(conversionQuery);
 
 		// Execute conversion query
 		$http.get(conversionQuery).success(function(data){
@@ -341,8 +334,6 @@ app.controller('showDetailsCtrl', function($scope, $routeParams, $http, $window,
 app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $window, detailsService, inventoryTypeFactory, InventoryType, inventoryPropFactory, InventoryProp, $location){
 	// Remove image from the middle pane if there is something to show
 	$scope.style.right_class = "container-scroll-last-one-no-img";
-	l("Show wizard!");
-	l($routeParams);
 
 	$routeParams.id = $routeParams.inst;
 	$scope.id = $routeParams.id;
@@ -425,13 +416,13 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 
 						if(Object.keys(data).length < 1) {
 
-							inventoryPropFactory.saveItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
+							inventoryPropFactory.saveItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: encodeURIComponent(JSON.stringify($scope.rawData[installs[0]][i]))}).then(function(result) {
 								l(result);
 							});
 
 						} else {
 
-							inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: JSON.stringify($scope.rawData[installs[0]][i])}).then(function(result) {
+							inventoryPropFactory.updateItem({inventory_id: $scope.device.inventoryId, inventory_property_template_name: i, cmpnt_type_name: $scope.device.componentType, value: encodeURIComponent(JSON.stringify($scope.rawData[installs[0]][i]))}).then(function(result) {
 								l(result);
 							});
 						}
@@ -440,7 +431,7 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 			});
 		});
 
-		//$window.location = url;
+		$window.location = url;
 	};
 
 	var query = ucserviceurl + 'magnets/install/?name=' + $scope.id;
@@ -617,8 +608,34 @@ app.controller('showWizardCtrl', function($scope, $modal, $routeParams, $http, $
 	};
 });
 
-app.controller('showMdCtrl', function($scope, $routeParams, $window){
+app.controller('showMdCtrl', function($scope, $routeParams, $window, $http, mdService){
 	$scope.mdType = "inventory_id";
+	$scope.md = {};
+	l("showMdCtrl");
+
+	var query = ucserviceurl + 'magnets/' + createDeviceListQuery($routeParams, false);
+	l(query);
+	l($routeParams);
+
+	$http.get(query).success(function(data){
+		$scope.device = data[0];
+
+		// Get MD info
+		mdService.getInfo({inventory_id: $scope.device.inventoryId, cmpnt_type_name:$scope.device.componentType}).then(function(data) {
+			$scope.md = data;
+			l(data);
+
+			if($scope.md.type === 2) {
+				$scope.mdType = "inventory_id";
+
+			} else if($scope.md.type === 1) {
+				$scope.mdType = "cmpnt_type_name";
+
+			} else {
+				$scope.mdType = "";
+			}
+		});
+	});
 
 	$scope.manageMeasurementData = function() {
 		var deviceId = $scope.device.inventoryId;
@@ -628,7 +645,6 @@ app.controller('showMdCtrl', function($scope, $routeParams, $window){
 		}
 
 		var newWindowUrl = ucserviceurl + "id/measurement/#/" + $scope.mdType + "/" + deviceId + "/view/readwrite";
-
 
 		$window.open(newWindowUrl);
 	};

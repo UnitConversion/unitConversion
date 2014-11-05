@@ -48,3 +48,26 @@ app.factory('detailsService', function($q, $http) {
 		getDetails: getDetails
 	};
 });
+
+/*
+ * Provide measurement data info to controllers
+ */
+app.factory('mdService', function($q, $http) {
+
+	var getInfo = function(params) {
+		var deferred = $q.defer();
+
+		// Create query string
+		var query = ucserviceurl + 'magnets/md/?inventory_id=' + params.inventory_id + '&cmpnt_type_name=' + params.cmpnt_type_name;
+
+		$http.get(query).success(function(data){
+			deferred.resolve(data);
+		});
+
+		return deferred.promise;
+	};
+
+	return {
+		getInfo: getInfo
+	};
+});
