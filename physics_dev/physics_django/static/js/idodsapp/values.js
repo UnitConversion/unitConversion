@@ -1272,7 +1272,7 @@ app.value('OfflineDataInstallInfo', {
  app.value('OfflineDataInstall', function(obj){
 
  	// Mandatory parameters that have to be set in the save form
- 	this.m = ["inventory_id", "data_id", "status", "method_name"];
+ 	this.m = ["inventory_id", "data_id", "status"];
 
  	// Mandatory parameters that have to be present in an URL when searching
  	this.search_m = ["install_name"];
@@ -1321,7 +1321,7 @@ app.value('OfflineDataInstallInfo', {
  		"script": "Script file content",
  		"status": "Data status"
  	};
-
+ 	
  	this.id = "";
  	this.install_name = "";
  	this.inventory_id = "";
@@ -1339,7 +1339,7 @@ app.value('OfflineDataInstallInfo', {
  	this.data_file_name = "";
  	this.script_name = "";
  	this.script = "";
- 	this.method_name = "";
+ 	this.method_name = undefined;
  	this.methoddesc = "";
  	this.data_id = "";
 

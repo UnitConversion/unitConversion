@@ -2637,7 +2637,7 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 		});
 
 		if($routeParams.action == "retrieve") {
-			$scope.inventory = $scope.inventoriesMap[$routeParams.inventory_name];
+			$scope.inventory = $scope.inventoriesMap[$routeParams.inventory_id];
 		}
 	});
 
@@ -2660,7 +2660,9 @@ app.controller('showOfflineDataCtrl', function($scope, $modal, $routeParams, $ht
 		$scope.uploadFileName = data.files[0].name;
 
 		uploadData = data;
-		delete $scope.error.data_id;
+		if ($scope.error != undefined) {
+			delete $scope.error.data_id;
+		}
 	});
 
 	$scope.$on('fileuploaddone', function(e, data) {
@@ -2924,6 +2926,7 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 	$scope.uploadFileName = "";
 	$scope.statusArr = statusArr;
 	$scope.inventory = {};
+	uploadData = undefined;
 
 	$scope.inventories = [];
 	$scope.inventoriesMap = {};
@@ -2969,7 +2972,9 @@ app.controller('showOfflineDataInstallCtrl', function($scope, $modal, $routePara
 		$scope.uploadFileName = data.files[0].name;
 
 		uploadData = data;
-		delete $scope.error.data_id;
+		if ($scope.error != undefined) {
+			delete $scope.error.data_id;
+		}
 	});
 
 	$scope.$on('fileuploaddone', function(e, data) {
