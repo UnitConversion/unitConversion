@@ -477,7 +477,7 @@ class lattice(object):
 #        fd, filename = tempfile.mkstemp(suffix, prefix+"_", dirname)
 #        return fd, filename
 
-    def _processlatticedata(self, latticefile, latticedata, latticetypeid=0, savefile=True):
+    def _processlatticedata(self, latticefile, latticedata, latticetypeid=0, savefile=True, emptyValue=0.0):
         '''
         latticefile: lattice file name
         latticedata: body having real data
@@ -596,7 +596,8 @@ class lattice(object):
                             tmpdict[cols[j]] = attr
                             typeprop.append(cols[j])
                         else:
-                            if float(attrs[j]) != 0.0:
+                            if (isinstance(emptyValue, basestring) and (attrs[j] != emptyValue)) or  \
+                                    (isinstance(emptyValue, (int,float)) and (float(attrs[j]) != emptyValue)):
                                 if cols[j].lower() not in ['dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
                                     typeprop.append(cols[j])
                                 tmpdict[cols[j]] = attr
@@ -629,7 +630,7 @@ class lattice(object):
         cursor.execute(elementidsql, (latticeid, ))
         return cursor.fetchall()
 
-    def _savetabformattedlattice(self, cur, latticeid, lattice):
+    def _savetabformattedlattice(self, cur, latticeid, lattice, emptyValue=0.0):
         '''
         save real lattice data information
         
@@ -651,7 +652,8 @@ class lattice(object):
         # pre-process and reorganize the data
         url, elemdict, unitdict = self._processlatticedata(latticefile, 
                                                            latticedata,
-                                                           latticetypeid=0)
+                                                           latticetypeid=0,
+                                                           emptyValue=emptyValue)
         if url != None:
             if lattice.has_key('map'):
                 self._savemapfile(url, lattice['map'])
@@ -1351,6 +1353,8 @@ class lattice(object):
                 # save lattice data
                 if latticetypename == 'plain':
                     self._savetabformattedlattice(cur, latticeid, params['lattice'])
+                elif latticetypename == 'impact':
+                    self._savetabformattedlattice(cur, latticeid, params['lattice'], emptyValue='NONE')
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
                     self._savetracylattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
