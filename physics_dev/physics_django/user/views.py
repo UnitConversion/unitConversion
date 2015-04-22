@@ -1,7 +1,6 @@
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
-import ldap
 import traceback
 import sys
 
