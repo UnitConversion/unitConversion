@@ -977,6 +977,9 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance, $windo
 	$scope.modal.controlFile = {};
 	$scope.modal.controlFile.show = false;
 
+	$scope.modal.kickmapFile = {};
+	$scope.modal.kickmapFile.show = true;
+
 	$scope.modal.finishButton = "Cancel";
 
 	$scope.modal.latticeTypes = latticeTypes;
@@ -989,7 +992,7 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance, $windo
 		if(newValue !== undefined) {
 			value = JSON.parse(newValue);
 
-			if(value.name === "plain") {
+			if(value.name === "plain" || value.name === "impact") {
 				$scope.modal.doSimulation.show = false;
 				$scope.modal.doSimulation.selected = false;
 
@@ -1003,6 +1006,12 @@ app.controller('uploadLatticeModalCtrl', function($scope, $modalInstance, $windo
 
 			} else {
 				$scope.modal.controlFile.show = false;
+			}
+
+			if(value.name === "impact") {
+				$scope.modal.kickmapFile.show = false;
+			} else {
+				$scope.modal.kickmapFile.show = true;
 			}
 		}
 	});
