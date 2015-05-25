@@ -1204,7 +1204,7 @@ app.controller('copyDatasetCtrl', function($scope, $modalInstance, $window, stat
 			var keys = Object.keys(data);
 			$scope.ai = data[keys[0]];
 			//$scope.description = "Copy from dataset id: " + $scope.ai.id + ", " + $scope.ai.description;
-			$scope.description = "Copy from dataset id: " + $scope.ai.id;
+			$scope.description = $scope.ai.description;
 		}
 	});
 
