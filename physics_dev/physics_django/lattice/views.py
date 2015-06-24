@@ -515,7 +515,7 @@ Save model helper function that parses uploaded files and prepares data for savi
 def saveModelHelper(request):
     
     # Define file types
-    resultFileFileTypes = ['pm']
+    resultFileFileTypes = ['pm', 'csv' ]
     controlFileFileTypes = ['ele']
     
     resultFile = None
@@ -592,14 +592,13 @@ def saveModelHelper(request):
         del request.POST['finalEnergy']
         
         # Handle result file
+        beamParameters = {}
         if resultFile != None:
             fileContent = handle_uploaded_file(resultFile)
             beamParametersHeaderLineParts = []
-            beamParameters = {}
             
             # For each liin in a result file, split it and prepare necessary objects
             for line in fileContent.splitlines():
-                
                 # Skip comments, find beam parameter header line and save it
                 if line.startswith(('#', '!', '//')):
                     commentLineParts = line.split()
@@ -631,16 +630,20 @@ def saveModelHelper(request):
                     beamParametersRow['position'] = beamParametersRow['s']
                     
                     # Correct codx property
-                    beamParametersRow['codx'] = beamParametersRow['xcod']
+                    if 'xcod' in beamParametersRow:
+                        beamParametersRow['codx'] = beamParametersRow['xcod']
                     
                     # Correct cody property
-                    beamParametersRow['cody'] = beamParametersRow['ycod']
+                    if 'ycod' in beamParametersRow:
+                        beamParametersRow['cody'] = beamParametersRow['ycod']
                     
                     # Correct phasex property
-                    beamParametersRow['phasex'] = beamParametersRow['nux']
+                    if 'nux' in beamParametersRow:
+                        beamParametersRow['phasex'] = beamParametersRow['nux']
                     
                     # Correct phasey property
-                    beamParametersRow['phasey'] = beamParametersRow['nuy']
+                    if 'nuy' in beamParametersRow:
+                        beamParametersRow['phasey'] = beamParametersRow['nuy']
                     
                     # Add transfer matrix that should be at the end
                     matrixIndex = 1
@@ -659,7 +662,6 @@ def saveModelHelper(request):
                         
                     beamParametersRow['transferMatrix'] = transferMatrix
                     beamParameters[lineParts[0]] = beamParametersRow
-            
         model[modelName]['beamParameter'] = beamParameters
         
         # Handle control file
