@@ -474,7 +474,17 @@ function transformModelDetails(data) {
 			return;
 		}
 
-		header.push(column);
+		var empty = true;
+		$.each(data[modelNames[0]][column], function(i, param) {
+			if( (param !== null) && (param !== "") ) {
+				empty = false;
+				return;
+			}
+		})
+
+		if( !empty ) {
+			header.push(column);
+		}
 	});
 
 	var outputData = data[modelNames[0]];
