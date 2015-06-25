@@ -864,6 +864,38 @@ CREATE TABLE `beam_parameter` (
 )
 ENGINE=INNODB;
 
+-- Drop table beam_param_prop_type
+DROP TABLE IF EXISTS `beam_param_prop_type`;
+
+CREATE TABLE `beam_param_prop_type` (
+  `beam_param_prop_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `beam_param_prop_type_name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  `beam_param_prop_type_desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  `beam_param_prop_type_unit` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  PRIMARY KEY(`beam_param_prop_type_id`)
+)
+ENGINE=INNODB;
+
+-- Drop table beam_param_prop
+DROP TABLE IF EXISTS `beam_param_prop`;
+
+CREATE TABLE `beam_param_prop` (
+  `beam_param_prop_id` int(11) NOT NULL AUTO_INCREMENT,
+  `beam_parameter_id` int(11),
+  `beam_param_prop_type_id` int(11),
+  `beam_param_prop_value` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
+  PRIMARY KEY(`beam_param_prop_id`),
+  CONSTRAINT `FK_beam_parameter_id` FOREIGN KEY (`beam_parameter_id`)
+    REFERENCES `beam_parameter`(`beam_parameter_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `FK_beam_param_prop_type_id` FOREIGN KEY (`beam_param_prop_type_id`)
+    REFERENCES `beam_param_prop_type`(`beam_param_prop_type_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+)
+ENGINE=INNODB;
+
 -- Drop table element__install
 DROP TABLE IF EXISTS `element__install`;
 

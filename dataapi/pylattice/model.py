@@ -6,6 +6,7 @@ Created on Apr 15, 2013
 
 from collections import OrderedDict
 
+import sys, re
 import logging
 import MySQLdb
 
@@ -17,6 +18,7 @@ except ImportError:
 from .lattice import lattice
 
 from utils import _wildcardformat
+
 
 class model(object):
     def __init__(self, conn, lat=None, transaction=None):
@@ -384,20 +386,23 @@ class model(object):
                 sql = sqlhead + '(%s, %s, '
                 sqlval = [modelid, elementid]
                 #sql += '(%s, %s, '%(modelid, elementid)
-                for key in ['position', 
-                            'alphax', 'alphay', 'betax', 'betay', 'etax', 'etay', 'etapx', 'etapy', 'phasex', 'phasey',
-                            'codx', 'cody',
-                            'indexSliceCheck',
-                            's',
-                            'energy',
-                            'particleSpecies',
-                            'particleMass',
-                            'particleCharge',
-                            'beamChargeDensity',
-                            'beamCurrent',
-                            'x', 'xp', 'y', 'yp', 'z', 'zp',
-                            'emittancex', 'emittancey', 'emittancexz',
-                            'transferMatrix']:
+
+                beamparams = ['position',
+                             'alphax', 'alphay', 'betax', 'betay', 'etax', 'etay', 'etapx', 'etapy', 'phasex', 'phasey',
+                             'codx', 'cody',
+                             'indexSliceCheck',
+                             's',
+                             'energy',
+                             'particleSpecies',
+                             'particleMass',
+                             'particleCharge',
+                             'beamChargeDensity',
+                             'beamCurrent',
+                             'x', 'xp', 'y', 'yp', 'z', 'zp',
+                             'emittancex', 'emittancey', 'emittancexz',
+                             'transferMatrix']
+
+                for key in beamparams:
                     if bpval.has_key(key):
                         sql += '%s, '
                         if key == 'transferMatrix':
@@ -411,9 +416,76 @@ class model(object):
                 #sql= sql[:-2]+'),'
                 sql= sql[:-2]+')'
                 cursor.execute(sql, sqlval)
+                bpid = cursor.lastrowid
             else:
                 raise ValueError('elements in lattice do not match that in model')
+
+
+            sql = """
+            INSERT INTO beam_param_prop (
+                beam_parameter_id,
+                beam_param_prop_type_id,
+                beam_param_prop_value
+            ) VALUES
+            """
+            # remaining non-standard parameters will
+            # be stored as beam parameter properties
+            propnames = set(bpval.keys()) - set(beamparams)
+            # ignore the element 'name' parameter
+            propnames.discard("name")
+            for propname in propnames:
+                # property units can be specified with trailing '[]'
+                m = re.match(r"(.+)\[(.*)\]", propname)
+                if m:
+                    bpptname = str(m.group(1))
+                    bpptunit = str(m.group(2))
+                else:
+                    bpptname = propname
+                    bpptunit = None
+
+                bppt = self.retrievebeamparamproptype(cursor, bpptname, bpptunit)
+                if bppt is not None:
+                    bpptid = bppt[0]
+                else:
+                    bpptid = self._savebeamparamproptype(cursor, bpptname, bpptunit)
+                sql += "( %s, %s, '%s' )," % (bpid, bpptid, bpval[propname])
+
+            cursor.execute(sql[:-1])
+
         #cursor.execute(sql[:-1])
+
+
+    def _savebeamparamproptype(self, cursor, bpptname, bpptunit=None, bpptdesc=None):
+        """Save the beam parameter type with the specified name, description and units.
+
+        :param cursor: SQL connection cursor
+        :param bpptname: Beam Parameter Property Type Name
+        :param bpptunit: Beam Parameter Property Type Unit
+        :param bpptdesc: Beam Parameter Property Type Description
+        :return: Beam Parameter Property Type ID of new record
+        """
+        sql = """
+        INSERT INTO beam_param_prop_type (
+            beam_param_prop_type_name,
+            beam_param_prop_type_desc,
+            beam_param_prop_type_unit
+        ) VALUES (
+            '%s', %s, %s
+        )
+        """
+        if bpptunit is None:
+            bpptunit = "NULL"
+        else:
+            bpptunit = "'%s'" % (bpptunit,)
+
+        if bpptdesc is None:
+            bpptdesc = "NULL"
+        else:
+            bpptdesc = "'%s'" % (bpptdesc,)
+
+        cursor.execute(sql % (bpptname, bpptdesc, bpptunit))
+        return cursor.lastrowid
+
 
     def _updatebeamparameters(self, cursor, latticeid, modelid, beamparameter):
         '''
@@ -513,7 +585,56 @@ class model(object):
                 raise ValueError('elements in lattice do not match that in model')
             sql = sql[:-1] +' where element_id = %s'%elementid
             cursor.execute(sql)
-        
+
+            sql="""
+            SELECT
+                bpp.beam_param_prop_id,
+                bpp.beam_param_prop_value,
+                bppt.beam_param_prop_type_name,
+                bppt.beam_param_prop_type_unit
+            FROM unitconv.beam_param_prop AS bpp
+            JOIN unitconv.beam_param_prop_type AS bppt
+                ON (bpp.beam_param_prop_type_id=bppt.beam_param_prop_type_id)
+            WHERE bpp.beam_parameter_id = %s
+            """
+
+            cursor.execute(sql, (elementid,))
+            bpps = cursor.fetchall()
+
+            def findBeamParamProp(name, unit):
+                for bpp in bpps:
+                    if bpp[2] == name and bpp[3] == unit:
+                        return bpp
+                return None
+
+
+            sql = """
+                UPDATE beam_param_prop
+                SET
+                    beam_param_prop_value = '%s'
+                WHERE
+                    beam_param_prop_id = %s
+                """
+
+            propnames = set(bpval.keys()) - set(keyvals.keys())
+
+            for propname in propnames:
+                #_LOGGER.debug("Extra Beam Parameter: %s: %s", key, bpval[key])
+                m = re.match(r"(.+)\[(.*)\]", propname)
+                if m:
+                    bpptname = str(m.group(1))
+                    bpptunit = str(m.group(2))
+                else:
+                    bpptname = propname
+                    bpptunit = None
+
+                bpp = findBeamParamProp(bpptname, bpptunit)
+                if bpp is not None:
+                    cursor.execute(sql % (bpval[propname], bpp[0]))
+                else:
+                    raise RuntimeError("Update property '%s[%s]' not found" % (bpptname,bpptunit))
+
+
     def savemodel(self, model, latticename, latticeversion, latticebranch, defaultuser=None):
         '''
         Save a model.
@@ -1322,7 +1443,8 @@ class model(object):
         select model.model_id, model_name, element_name, element_order, bp.pos, element.s, 
         alpha_x, alpha_y, beta_x, beta_y, eta_x, eta_y, etap_x, etap_y, nu_x, nu_y,
         co_x, co_y, 
-        transfer_matrix
+        transfer_matrix,
+        bp.beam_parameter_id
         from model
         left join lattice on lattice.lattice_id = model.lattice_id
         left join element on element.lattice_id = lattice.lattice_id
@@ -1359,6 +1481,17 @@ class model(object):
                              %(e.args[1], e.args[0]))
             raise Exception('Error when retrieving closed orbit:\n%s (%d)'
                              %(e.args[1], e.args[0]))
+        sql="""
+        SELECT
+            bpp.beam_param_prop_id,
+            bpp.beam_param_prop_value,
+            bppt.beam_param_prop_type_name,
+            bppt.beam_param_prop_type_unit
+        FROM unitconv.beam_param_prop AS bpp
+        JOIN unitconv.beam_param_prop_type AS bppt
+            ON (bpp.beam_param_prop_type_id=bppt.beam_param_prop_type_id)
+        WHERE bpp.beam_parameter_id = %s
+        """
         
         resdict = OrderedDict()
         if len(results) != 0:
@@ -1380,6 +1513,7 @@ class model(object):
             codx=[]
             cody=[]
             tmat = []
+            props = {}
             for res in results:
                 if modelid == res[0] and modelname == res[1]:
                     ename.append(res[2])
@@ -1449,6 +1583,20 @@ class model(object):
                                       'cody': cody,
                                       'transferMatrix': tmat}
 
+                cur.execute(sql % (res[19],))
+                bpps = cur.fetchall()
+                for bpp in bpps:
+                    if bpp[3] is None:
+                        propname = "%s" % (bpp[2],)
+                    else:
+                        propname = "%s[%s]" % (bpp[2],bpp[3])
+
+                    if propname not in props:
+                        props[propname] = []
+                    props[propname].append(bpp[1])
+
+                resdict[modelname].update(props)
+
         return resdict
 #    def retrieveemittance(self):
 #        '''
@@ -1457,7 +1605,30 @@ class model(object):
 #    def retrievebeamcoordinate(self):
 #        '''
 #        '''
-    
-    
-    
-    
+
+
+    def retrievebeamparamproptype(self, cursor, bpptname, bpptunit=None):
+        """Query the DB for the beam parameter property type with the given name and units.
+
+        :param bpptname: beam parameter property type name
+        :param bpptunit: beam parameter property type unit
+        :return: tuple (id, name, desc, unit) or None if not found
+        """
+        sql = """
+        SELECT
+            beam_param_prop_type_id,
+            beam_param_prop_type_name,
+            beam_param_prop_type_desc,
+            beam_param_prop_type_unit
+        FROM
+            beam_param_prop_type
+        WHERE
+        """
+        sql += "beam_param_prop_type_name = '%s'" % (bpptname,)
+        if bpptunit is None:
+            sql += " AND beam_param_prop_type_unit IS NULL"
+        else:
+            sql += " AND beam_param_prop_type_unit = '%s'" % (bpptunit,)
+        cursor.execute(sql)
+        return cursor.fetchone()
+
