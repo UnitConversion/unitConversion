@@ -93,15 +93,15 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'physics_django.urls'
+ROOT_URLCONF = 'urls'
 
-WSGI_APPLICATION = 'physics_django.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(ROOT_PATH, 'templates')
+    os.path.join(ROOT_PATH, 'templates'),
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -141,7 +141,7 @@ INSTALLED_APPS_DEV = (
     'lattice',
     'activeinterlock',
     'user',
-	'idods',
+    'idods',
 )
 
 if PRODUCTION:

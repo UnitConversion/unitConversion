@@ -49,7 +49,7 @@ def systemlist(request):
         res = retrievesystemdata(params)
     except ValueError as e:
         return HttpResponseBadRequest(HttpResponse(content=e))
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 def measurementDataInfo(request):
@@ -59,7 +59,7 @@ def measurementDataInfo(request):
         res = retrieveMeasurementDataInfo(params)
     except ValueError as e:
         return HttpResponseBadRequest(HttpResponse(content=e))
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 def magnetinstall(request):
@@ -70,7 +70,7 @@ def magnetinstall(request):
     except ValueError as e:
         return HttpResponseBadRequest(HttpResponse(content=e))
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 def magnetinventory(request):
@@ -81,7 +81,7 @@ def magnetinventory(request):
     except ValueError as e:
         return HttpResponseBadRequest(HttpResponse(content=e))
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 def conversion(request):
@@ -93,4 +93,4 @@ def conversion(request):
     except ValueError as e:
         return HttpResponseBadRequest(HttpResponse(content=e))
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")

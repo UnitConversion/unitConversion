@@ -26,12 +26,11 @@ def user_login(request):
 
         # Check if we got user object
         if user is not None:
-
             # If user is active, log him in
             if user.is_active:
                 login(request, user)
                 result['result'] = 'ok'
-                return HttpResponse(json.dumps(result), mimetype="application/json")
+                return HttpResponse(json.dumps(result), content_type="application/json")
 
             # User exists but is not active
             else:
@@ -54,4 +53,4 @@ def user_logout(request):
     result = {'result': 'ok'}
     logout(request)
 
-    return HttpResponse(json.dumps(result), mimetype="application/json")
+    return HttpResponse(json.dumps(result), content_type="application/json")

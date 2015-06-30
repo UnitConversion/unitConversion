@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import (patterns, include)
+from django.conf.urls import (patterns, include)
 from django.conf import settings
 #from django.views.generic.simple import direct_to_template
 #from django.views.generic.simple import redirect_to
@@ -10,11 +10,11 @@ admin.autodiscover()
 # Production URLS
 urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
-    (r'^', include('physics_django.magnets.urls')),
-    (r'^', include('physics_django.lattice.urls')),
-    (r'^', include('physics_django.user.urls')),
-	(r'^', include('physics_django.idods.urls')),
-    (r'^', include('physics_django.activeinterlock.urls')),
+    (r'^', include('magnets.urls')),
+    (r'^', include('lattice.urls')),
+    (r'^', include('user.urls')),
+    (r'^', include('idods.urls')),
+    (r'^', include('activeinterlock.urls')),
     
     
     # do not use this setting for your production.
@@ -28,7 +28,7 @@ urlpatterns = patterns('',
 if not settings.PRODUCTION:
     urlpatterns += patterns('',
 
-        (r'^', include('physics_django.magnets.urls')),
-        (r'^', include('physics_django.lattice.urls')),
-        (r'^', include('physics_django.activeinterlock.urls')),
+        (r'^', include('magnets.urls')),
+        (r'^', include('lattice.urls')),
+        (r'^', include('activeinterlock.urls')),
     )

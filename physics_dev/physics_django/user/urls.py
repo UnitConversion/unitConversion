@@ -1,6 +1,6 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
-from physics_django.user.views import (user_login, user_logout)
+from user.views import (user_login, user_logout)
 
 # Url paterns for logging in and logging out
 urlpatterns = patterns(

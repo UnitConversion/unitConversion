@@ -112,22 +112,22 @@ def lattices(request):
 #                res = {'message': 'No function specified.'}
         else:
             latticemodel_log.debug('Unsupported HTTP method %s'%request.method)
-            return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'), mimetype="application/json")
+            return HttpResponseBadRequest(HttpResponse(content='Unsupported HTTP method'), content_type="application/json")
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 """
 Call saveLatticeInfo but before that check if user is logged in and if he has needed permissions
@@ -142,20 +142,20 @@ def saveLatticeInfo(request):
         res = savelatticeinfo(params)
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
 
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 """
 Call saveLattice but before that check if user is logged in and if he has needed permissions
@@ -172,20 +172,20 @@ def saveLattice(request):
         res = savelattice(params)
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
 
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 """
 Call saveLatticeStatus but before that check if user is logged in and if he has needed permissions
@@ -199,20 +199,20 @@ def saveLatticeStatus(request):
         res = savelatticestatus(params)
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
 
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 """
 Call saveLatticeType but before that check if user is logged in and if he has needed permissions
@@ -226,20 +226,20 @@ def saveLatticeType(request):
         res = savelatticetype(params)
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseBadRequest(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
 
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 """
 Call saveModel but before that check if user is logged in and if he has needed permissions
@@ -254,20 +254,20 @@ def saveModel(request):
         res = savemodel(params, defaultuser = request.user.username)
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
 
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 """
 Call saveModelStatus but before that check if user is logged in and if he has needed permissions
@@ -281,20 +281,20 @@ def saveModelStatus(request):
         res = savemodelstatus(params)
     except ValueError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content=e), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
         latticemodel_log.exception(e)
-        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), mimetype="application/json")
+        return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
         latticemodel_log.exception(e)
-        return HttpResponseBadRequest(content=e, mimetype="application/json")
+        return HttpResponseBadRequest(content=e, content_type="application/json")
     try:
         finalres = json.dumps(res)
     except Exception as e:
         latticemodel_log.exception(e)
         raise e
 
-    return HttpResponse(finalres, mimetype="application/json")
+    return HttpResponse(finalres, content_type="application/json")
 
 def lattice_home(request):
     return render_to_response("lattice/index.html")

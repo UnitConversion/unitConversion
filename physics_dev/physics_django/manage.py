@@ -12,7 +12,6 @@ sys.path.append(os.path.join(BASE_PATH, '../../'))
 #sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib/python2.6/site-packages/'))
 #sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib64/python2.7/site-packages/'))
 #sys.path.append(os.path.join(BASE_PATH, '../physics_dev_packages/lib64/python2.6/site-packages/'))
-from django.core.management import execute_manager
 
 try:
     import settings # Assumed to be in the same directory.
@@ -21,4 +20,8 @@ except ImportError as exc:
     sys.exit(1)
 
 if __name__ == "__main__":
-    execute_manager(settings)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+
+    from django.core.management import execute_from_command_line
+
+    execute_from_command_line(sys.argv)

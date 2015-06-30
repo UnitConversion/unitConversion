@@ -60,7 +60,7 @@ def _retrieveData(request, fun, propList, customDict = {}):
         activeinterlock_log.exception(e)
         raise e
     
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 '''
 Private template for save function
@@ -95,7 +95,7 @@ def _saveData(request, fun, propList):
         activeinterlock_log.exception(e)
         raise e
     
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 '''
 Private template for update function
@@ -130,7 +130,7 @@ def _updateData(request, fun, propList, customDict = {}):
         activeinterlock_log.exception(e)
         raise e
     
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 @require_http_methods(["GET"])
 def retrieveStatusesWS(request):

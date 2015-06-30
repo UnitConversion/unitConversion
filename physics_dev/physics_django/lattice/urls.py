@@ -1,10 +1,10 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
-from physics_django.lattice.views import (lattices)
-from physics_django.lattice.views import (saveLatticeInfo, saveLattice)
-from physics_django.lattice.views import (saveModel)
-from physics_django.lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_model_list, lattice_content_details, lattice_content_model_details)
-from physics_django.lattice.views import (lattice_modal, saveLatticeHelper, saveLatticeTypeHelper, saveLatticeStatusHelper, saveModelHelper, saveModelStatusHelper)
+from lattice.views import (lattices)
+from lattice.views import (saveLatticeInfo, saveLattice)
+from lattice.views import (saveModel)
+from lattice.views import (lattice_home, lattice_content_home, lattice_content_search, lattice_content_list, lattice_content_model_list, lattice_content_details, lattice_content_model_details)
+from lattice.views import (lattice_modal, saveLatticeHelper, saveLatticeTypeHelper, saveLatticeStatusHelper, saveModelHelper, saveModelStatusHelper)
 
 urlpatterns = patterns(
     '',

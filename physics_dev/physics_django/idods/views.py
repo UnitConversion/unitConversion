@@ -56,7 +56,7 @@ def _retrieveData(request, fun, propList, customDict={}):
         idods_log.exception(e)
         raise e
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 def _saveData(request, fun, propList):
@@ -95,7 +95,7 @@ def _saveData(request, fun, propList):
         idods_log.exception(e)
         raise e
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 def _updateData(request, fun, propList, customDict={}):
@@ -131,7 +131,7 @@ def _updateData(request, fun, propList, customDict={}):
         idods_log.exception(e)
         raise e
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 @require_http_methods(["GET"])
@@ -508,7 +508,7 @@ def saveRawDataWS(request):
         idods_log.exception(e)
         raise e
 
-    return HttpResponse(json.dumps(res), mimetype="application/json")
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 
 @require_http_methods(["GET"])
@@ -640,7 +640,7 @@ def uploadFileWS(request):
         res = {
             'path': filePath['path']
         }
-        return HttpResponse(json.dumps(res), mimetype="application/json")
+        return HttpResponse(json.dumps(res), content_type="application/json")
 
     except Exception as e:
         idods_log.exception(e)
@@ -721,7 +721,7 @@ def testAuth(request):
     '''
     Test authentication
     '''
-    return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
+    return HttpResponse(json.dumps({'result': True}), content_type="application/json")
 
 
 @require_http_methods(["POST"])
@@ -729,7 +729,7 @@ def testCall(request):
     '''
     Test rest call without authentication
     '''
-    return HttpResponse(json.dumps({'result': True}), mimetype="application/json")
+    return HttpResponse(json.dumps({'result': True}), content_type="application/json")
 
 
 @require_http_methods(["POST"])

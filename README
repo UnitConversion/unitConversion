@@ -6,7 +6,7 @@ maintenance purpose, it uses the same architecture with the pyirmis project.
 
 Required package:
 (inherited from pyirmis project. To be optimized later.)
-Django (suggest version: 1.4.x)
+Django (suggest version: 1.7.x)
 MySQL-python  (suggest version: 1.2.x)
 
 for unit conversion, it needs 

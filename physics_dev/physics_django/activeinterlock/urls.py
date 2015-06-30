@@ -3,17 +3,17 @@ Created on Mar 10st, 2014
 @author dejan.dezman@cosylab.com
 """
 
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
-from physics_django.activeinterlock.views import (retrieveStatusesWS) 
-from physics_django.activeinterlock.views import (retrieveAiHeaderWS, saveAiHeaderWS, updateAiHeaderWS) 
-from physics_django.activeinterlock.views import (retrieveDeviceWS, saveDeviceWS, updateDeviceWS, deleteDeviceWS) 
-from physics_django.activeinterlock.views import (updateStatusWS, copyAiWS) 
-from physics_django.activeinterlock.views import (updatePropWS) 
-from physics_django.activeinterlock.views import (approveCellsWS) 
-from physics_django.activeinterlock.views import (retrieveLogicWS, saveLogicWS, updateLogicWS, deleteLogicWS) 
-from physics_django.activeinterlock.views import (downloadActiveInterlockWS) 
-from physics_django.activeinterlock.views import (aiIndexHtml, aiHtmls) 
+from activeinterlock.views import (retrieveStatusesWS) 
+from activeinterlock.views import (retrieveAiHeaderWS, saveAiHeaderWS, updateAiHeaderWS) 
+from activeinterlock.views import (retrieveDeviceWS, saveDeviceWS, updateDeviceWS, deleteDeviceWS) 
+from activeinterlock.views import (updateStatusWS, copyAiWS) 
+from activeinterlock.views import (updatePropWS) 
+from activeinterlock.views import (approveCellsWS) 
+from activeinterlock.views import (retrieveLogicWS, saveLogicWS, updateLogicWS, deleteLogicWS) 
+from activeinterlock.views import (downloadActiveInterlockWS) 
+from activeinterlock.views import (aiIndexHtml, aiHtmls) 
 
 urlpatterns = patterns(
     '',
