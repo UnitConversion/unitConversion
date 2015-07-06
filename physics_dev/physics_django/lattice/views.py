@@ -174,6 +174,7 @@ def saveLattice(request):
         latticemodel_log.exception(e)
         return HttpResponseNotFound(HttpResponse(content=e), content_type="application/json")
     except KeyError as e:
+        traceback.print_exc()
         latticemodel_log.exception(e)
         return HttpResponseNotFound(HttpResponse(content="Parameters is missing for function %s"%(params['function'])), content_type="application/json")
     except Exception as e:
@@ -391,7 +392,7 @@ Save lattice helper function that parses uploaded files and prepares data for sa
 def saveLatticeHelper(request):
     
     # Define file types
-    latticeFileTypes = ['lat', 'lte', 'txt']
+    latticeFileTypes = ['lat', 'lte', 'txt', 'in']
     controlFileFileTypes = ['ele']
     archiveFileFileTypes = ['zip']
     

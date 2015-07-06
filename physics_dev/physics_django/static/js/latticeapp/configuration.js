@@ -43,6 +43,7 @@ var modelDetails = [
 // Lattice types
 var latticeTypes = [
 	{name:"plain/txt", value:JSON.stringify({'name': 'plain', 'format': 'txt'})},
+	{name:"impact/in", value:JSON.stringify({'name': 'impact', 'format': 'in'})},
 	{name:"impact/txt", value:JSON.stringify({'name': 'impact', 'format': 'txt'})},
 	{name:"tracy3/lat", value:JSON.stringify({'name': 'tracy3',  'format': 'lat'})},
 	{name:"tracy4/lat", value:JSON.stringify({'name': 'tracy4',  'format': 'lat'})},

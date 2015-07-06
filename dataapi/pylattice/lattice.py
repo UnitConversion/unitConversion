@@ -6,6 +6,8 @@ Created on Feb 28, 2013
 @author: shengb
 '''
 import os
+import re
+import json
 import errno
 from collections import OrderedDict
 import zipfile
@@ -1107,7 +1109,12 @@ class lattice(object):
                 for etypeprop in v.keys():
                     if etypeprop not in ['name', 'position', 'length', 'type', 
                                          'dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
-                        etypeprops.append(etypeprop)
+                        m = re.match("(.*)\\[(.*)\\]", etypeprop)
+                        if m:
+                            etypeprops.append(m.group(1))
+                            etypepropunits[m.group(1)] = m.group(2)
+                        else:
+                            etypeprops.append(etypeprop)
 
                 # cache type dictionary
                 if typedict.has_key(etypename):
@@ -1225,8 +1232,11 @@ class lattice(object):
             for etypeprop in v.keys():
                 if etypeprop not in  ['name', 'position', 'length', 'type', 
                                          'dx', 'dy', 'dz', 'pitch', 'yaw', 'roll']:
-                    etypeprops.append(etypeprop)
-                    etypeproptidunit = typedict[etypename][etypeprop]
+                    m = re.match("(.*)\\[(.*)\\]", etypeprop)
+                    if m:
+                        etypeproptidunit = typedict[etypename][m.group(1)]
+                    else:
+                        etypeproptidunit = typedict[etypename][etypeprop]
 
                     if len(etypeproptidunit) > 0:
                         if "\"" in v[etypeprop] or "'" in v[etypeprop]:
@@ -1235,11 +1245,11 @@ class lattice(object):
                             sqltmp = '''('%s', %s, '%s', NULL),'''
                         if "%" in v[etypeprop]:
                             elempropsql +=  sqltmp%(elementid, 
-                                                    typedict[etypename][etypeprop][0],
+                                                    etypeproptidunit[0],
                                                     v[etypeprop].replace("%", "%%"))
                         else:
                             elempropsql += sqltmp%(elementid, 
-                                                   typedict[etypename][etypeprop][0],
+                                                   etypeproptidunit[0],
                                                    v[etypeprop])
                     else:
                         raise TypeError("Unknown structure for element type property value and unit.")
@@ -1301,6 +1311,99 @@ class lattice(object):
             # save lattice information
             self._saveelegantlatticeelement(cur, latticeid, params)
 
+
+    def _saveimpactlattice(self, cur, latticeid, params):
+        '''
+        Save the IMPACT lattice converting the raw data as required.
+
+        :param cur: database connection cursor
+        :param latticeid: lattice id to identify which lattice the data belongs to.
+        :param params:   lattice data dictionary:
+                         {'name': ,
+                          'data': ,
+                          'raw': ,
+                          'map': ,
+                          'alignment':,
+                          'control':
+                        }
+        '''
+        if not isinstance(params, dict):
+            raise TypeError("IMPACT lattice parameters must be type dict.")
+
+        if not params.has_key('name') or params['name'] is None or len(params['name']) == 0:
+            raise ValueError('IMPACT lattice name not specified.')
+
+        if (not params.has_key('data') or params['data']==None) and (not params.has_key('raw') or len(params['raw'])==0):
+            raise ValueError('IMPACT lattice data not specified.')
+
+        # save raw lattice file
+        if params.has_key('raw') and len(params['raw'])!=0:
+            furl, fpath = _generateFilePath()
+            with open(os.path.join(fpath, params['name']), 'w') as f:
+                for data in params['raw']:
+                    if data.endswith('\n'):
+                        f.write(data)
+                    else:
+                        f.write(data+'\n')
+            # update lattice with raw data url
+            sql = '''update lattice SET url = %s where lattice_id = %s'''
+            cur.execute(sql,('/'.join((furl, params['name'])),latticeid))
+            # save a zip file
+            self._ziplattice('%s_%s.zip'%(self._removeendbackslash(furl), params['name']), furl)
+
+        if not params.has_key('data') or params['data'] is None:
+            #Convert to the lattice data structure:
+            # params['lattice'] = {
+            #          element_order: {
+            #                 'name':,
+            #                 'type':,
+            #                 'length':,
+            #                 'position':,
+            #                 [ OTHER ]
+            #           }
+            #       }
+            latdata = {}
+            elemorder = 0
+            rawdata = params['raw']
+            # header is ignored for now
+            for index in xrange(len(rawdata)):
+                line = rawdata[index].strip()
+                if line.startswith("!!["):
+                    elemline = json.loads(line[2:])
+                    elemdata = {
+                            "name": elemline[0],
+                            "type": elemline[1],
+                            "length": elemline[2],
+                            "position": elemline[3]
+                        }
+
+                    elemvalues = None
+                    for index in xrange(index+1,len(rawdata)):
+                        line = rawdata[index].strip()
+                        if line.startswith("!!["):
+                            break
+                        elif line.startswith("!"):
+                            continue
+                        else:
+                            elemvalues = line.split()
+
+                    if elemvalues is None:
+                        raise RuntimeError("IMPACT lattice format error: element values not found.")
+
+                    for fname, findex in elemline[4].iteritems():
+                        elemdata[fname] = elemvalues[findex]
+
+                    elemorder += 1
+                    latdata[str(elemorder)] = elemdata
+
+            if len(latdata) != 0:
+                params['data'] = latdata
+
+        if params.has_key('data') and params['data'] is not None:
+            # Reuse the elegant code to since it is generic enough.
+            self._saveelegantlatticeelement(cur, latticeid, params)
+
+
     def savelattice(self, name, version, branch, **params):
         '''
         Save lattice data.
@@ -1341,11 +1444,12 @@ class lattice(object):
             latticeid= self.savelatticeinfo(name, version, branch, **params)
 
         latticetypename=None
-        if params.has_key('latticetype') and params['latticetype'] != None:
-            try:
+        latticetypeformat=None
+        if params.has_key('latticetype') and isinstance(params['latticetype'], dict):
+            if "name" in params['latticetype']:
                 latticetypename=params['latticetype']["name"]
-            except:
-                pass
+            if "format" in params['latticetype']:
+                latticetypeformat=params['latticetype']["format"]
         try:
             cur = self.conn.cursor()
             if params.has_key('lattice') and params['lattice'] != None:
@@ -1353,8 +1457,10 @@ class lattice(object):
                 # save lattice data
                 if latticetypename == 'plain':
                     self._savetabformattedlattice(cur, latticeid, params['lattice'])
-                elif latticetypename == 'impact':
+                elif latticetypename == 'impact' and latticetypeformat == 'txt':
                     self._savetabformattedlattice(cur, latticeid, params['lattice'], emptyValue='NONE')
+                elif latticetypename == 'impact' and latticetypeformat == 'in':
+                    self._saveimpactlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
                     self._savetracylattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
@@ -1442,19 +1548,24 @@ class lattice(object):
         self.updatelatticeinfo(name, version, branch, **params)
 
         latticetypename=None
-        if params.has_key('latticetype') and params['latticetype'] != None:
+        latticetypeformat=None
+        if params.has_key('latticetype') and isinstance(params['latticetype'], dict):
             # lattice type has been given.
             # try to get lattice type id
-            try:
+            if "name" in params['latticetype']:
                 latticetypename=params['latticetype']["name"]
-            except:
-                pass
+            if "format" in params['latticetype']:
+                latticetypename=params['latticetype']["format"]
         try:
             cur = self.conn.cursor()
             if params.has_key('lattice') and params['lattice'] != None:
                 # save lattice data
                 if latticetypename == 'plain':
                     latticeid = self._savetabformattedlattice(cur, latticeid, params['lattice'])
+                elif latticetypename == 'impact' and latticetypeformat == 'txt':
+                    self._savetabformattedlattice(cur, latticeid, params['lattice'], emptyValue='NONE')
+                elif latticetypename == 'impact' and latticetypeformat == 'in':
+                    self._saveimpactlattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'tracy3' or latticetypename == 'tracy4':
                     latticeid = self._savetracylattice(cur, latticeid, params['lattice'])
                 elif latticetypename == 'elegant':
