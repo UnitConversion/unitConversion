@@ -450,7 +450,8 @@ class model(object):
                     bpptid = self._savebeamparamproptype(cursor, bpptname, bpptunit)
                 sql += "( %s, %s, '%s' )," % (bpid, bpptid, bpval[propname])
 
-            cursor.execute(sql[:-1])
+            if sql.endswith(","):
+                cursor.execute(sql[:-1])
 
         #cursor.execute(sql[:-1])
 
