@@ -1594,7 +1594,7 @@ class model(object):
 
                     if propname not in props:
                         props[propname] = []
-                    props[propname].append(bpp[1])
+                    props[propname].append(float(bpp[1]))
 
                 resdict[modelname].update(props)
 
