@@ -21,6 +21,7 @@ class LatticeModelClient(object):
     It currently supports 3 different lattice formats, which are tab formatted lattice, tracy3 lattice, and elegant lattice.
     '''
     __jsonheader = {'content-type':'application/json', 'accept':'application/json'}
+    __postheader = {'content-type':'application/x-www-form-urlencoded','accept':'application/json'}
     __savelatticeResource = '/savelattice'
     __savelatticeinfoResource = '/savelatticeinfo'
     __savelatticetypeResource = '/savelatticetype'
@@ -114,11 +115,17 @@ class LatticeModelClient(object):
         
         r = requests.post(self.__baseURL + self.__savelatticeResource, \
                           data=payload, \
-                          headers=copy(self.__jsonheader), \
+                          headers=copy(self.__postheader), \
                           verify=False, \
                           auth=self.__auth)
-        
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except:
+            # The content of the response is text,
+            # despite the response content type
+            # indicating 'application/json'.
+            raise RuntimeError(r.text)
+
         return r.json()
         
     def retrieveLattice(self, name, branch, version, description=None, withdata=False, rawdata=False):
@@ -218,10 +225,16 @@ class LatticeModelClient(object):
                 'model': json.dumps(modelparams)}
         r = requests.post(self.__baseURL + self.__savemodelResource, \
                           data=payload, \
-                          headers=copy(self.__jsonheader), \
+                          headers=copy(self.__postheader), \
                           verify=False, \
                           auth=self.__auth)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except:
+            # The content of the response is text,
+            # despite the response content type
+            # indicating 'application/json'.
+            raise RuntimeError(r.text)
         return r.json()
         
     def retrieveTwiss(self, name):
@@ -258,10 +271,16 @@ class LatticeModelClient(object):
                  'format': formats}
         r = requests.post(self.__baseURL + self.__savelatticetypeResource, \
                           data=payload, \
-                          headers=copy(self.__jsonheader), \
+                          headers=copy(self.__postheader), \
                           verify=False, \
                           auth=self.__auth)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except:
+            # The content of the response is text,
+            # despite the response content type
+            # indicating 'application/json'.
+            raise RuntimeError(r.text)
         return r.json()
 
 
