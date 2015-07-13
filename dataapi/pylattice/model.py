@@ -1445,6 +1445,7 @@ class model(object):
         alpha_x, alpha_y, beta_x, beta_y, eta_x, eta_y, etap_x, etap_y, nu_x, nu_y,
         co_x, co_y, 
         transfer_matrix,
+        energy, x, y, z, xp, yp, zp,
         bp.beam_parameter_id
         from model
         left join lattice on lattice.lattice_id = model.lattice_id
@@ -1514,6 +1515,13 @@ class model(object):
             codx=[]
             cody=[]
             tmat = []
+            engy = []
+            x = []
+            y = []
+            z = []
+            xp = []
+            yp = []
+            zp = []
             props = {}
             for res in results:
                 if modelid == res[0] and modelname == res[1]:
@@ -1532,7 +1540,17 @@ class model(object):
                     nuy.append(res[15])
                     codx.append(res[16])
                     cody.append(res[17])
-                    tmat.append(json.loads(res[18]))
+                    if res[18] is None:
+                        tmat.append(None)
+                    else:
+                        tmat.append(json.loads(res[18]))
+                    engy.append(res[19])
+                    x.append(res[20])
+                    y.append(res[21])
+                    z.append(res[22])
+                    xp.append(res[23])
+                    yp.append(res[24])
+                    zp.append(res[25])
                 else:
                     # when retrieving 
                     resdict[modelname] = {'name': ename,
@@ -1550,7 +1568,10 @@ class model(object):
                                           'phasey': nuy,
                                           'codx': codx,
                                           'cody': cody,
-                                          'transferMatrix': tmat}
+                                          'transferMatrix': tmat,
+                                          'energy':engy,
+                                          'x':x, 'y':y, 'z':z,
+                                          'xp':xp, 'yp':yp, 'zp':zp}
                     modelid = results[0][0]
                     modelname = results[0][1]
                     alphax = []
@@ -1566,6 +1587,13 @@ class model(object):
                     codx=[]
                     cody=[]
                     tmat = []
+                    engy = []
+                    x = []
+                    y = []
+                    z = []
+                    xp = []
+                    yp = []
+                    zp = []
                 # save last value
                 resdict[modelname] = {'name': ename,
                                       'index': order,
@@ -1582,9 +1610,12 @@ class model(object):
                                       'phasey': nuy,
                                       'codx': codx,
                                       'cody': cody,
-                                      'transferMatrix': tmat}
+                                      'transferMatrix': tmat,
+                                      'energy':engy,
+                                      'x':x, 'y':y, 'z':z,
+                                      'xp':xp, 'yp':yp, 'zp':zp}
 
-                cur.execute(sql % (res[19],))
+                cur.execute(sql % (res[26],))
                 bpps = cur.fetchall()
                 for bpp in bpps:
                     if bpp[3] is None:
